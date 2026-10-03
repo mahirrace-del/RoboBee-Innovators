@@ -79,3 +79,53 @@
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
 }
+
+.mobileToggle {
+  display: none;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.mobileMenu {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none !important;
+  }
+  
+  .mobileToggle {
+    display: block;
+  }
+  
+  .mobileMenu {
+    display: flex;
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    flex-direction: column;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+  
+  .mobileLink {
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  
+  .mobileLoginBtn {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    background: var(--accent-primary);
+    color: #000;
+    font-weight: bold;
+    text-align: center;
+    border-radius: var(--radius-sm);
+  }
+}

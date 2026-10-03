@@ -8,11 +8,13 @@ import styles from "./dashboard.module.css";
 import { Logo } from "@/components/Logo";
 import { auth, db } from "@/lib/firebase";
 import { deleteDoc, doc } from "firebase/firestore";
+import { Menu, X } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, role, signOut } = useAuth();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -27,6 +29,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleSignOut = async () => {
     await signOut();
     router.push("/");
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
   };
 
   const handleDeleteDeclinedAccount = async () => {
@@ -96,50 +102,57 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className={styles.dashboardContainer}>
-      <aside className={styles.sidebar}>
-        <div style={{ marginBottom: '2rem', paddingLeft: '1rem' }}>
+      <div className={styles.mobileHeader}>
+        <Logo width={30} height={30} />
+        <button className={styles.mobileMenuBtn} onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+      </div>
+
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+        <div className={styles.sidebarLogoDesktop} style={{ marginBottom: '2rem', paddingLeft: '1rem' }}>
           <Logo width={30} height={30} />
         </div>
         <div style={{ marginTop: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
           CORE
         </div>
-        <Link href="/dashboard" className={styles.navItem}>
+        <Link href="/dashboard" className={styles.navItem} onClick={closeSidebar}>
           Dashboard Overview
         </Link>
-        <Link href="/dashboard/profile" className={styles.navItem}>
+        <Link href="/dashboard/profile" className={styles.navItem} onClick={closeSidebar}>
           My Profile
         </Link>
 
         <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
           ACTIVITIES
         </div>
-        <Link href="/dashboard/tasks" className={styles.navItem}>
+        <Link href="/dashboard/tasks" className={styles.navItem} onClick={closeSidebar}>
           My Tasks
         </Link>
-        <Link href="/dashboard/attendance" className={styles.navItem}>
+        <Link href="/dashboard/attendance" className={styles.navItem} onClick={closeSidebar}>
           Attendance
         </Link>
 
         <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
           RESOURCES
         </div>
-        <Link href="/dashboard/lab" className={styles.navItem}>
+        <Link href="/dashboard/lab" className={styles.navItem} onClick={closeSidebar}>
           Lab Status
         </Link>
-        <Link href="/dashboard/inventory" className={styles.navItem}>
+        <Link href="/dashboard/inventory" className={styles.navItem} onClick={closeSidebar}>
           Inventory
         </Link>
-        <Link href="/dashboard/checkout" className={styles.navItem}>
+        <Link href="/dashboard/checkout" className={styles.navItem} onClick={closeSidebar}>
           Hardware Checkout
         </Link>
-        <Link href="/dashboard/bom" className={styles.navItem}>
+        <Link href="/dashboard/bom" className={styles.navItem} onClick={closeSidebar}>
           Project BOM
         </Link>
 
         <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
           FINANCE
         </div>
-        <Link href="/dashboard/finance" className={styles.navItem}>
+        <Link href="/dashboard/finance" className={styles.navItem} onClick={closeSidebar}>
           Finance & bKash
         </Link>
         
@@ -148,19 +161,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div style={{ marginTop: '1.5rem', color: '#ff5555', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
               ADMIN CONTROLS
             </div>
-            <Link href="/dashboard/members" className={styles.navItem}>
+            <Link href="/dashboard/members" className={styles.navItem} onClick={closeSidebar}>
               Manage Members
             </Link>
-            <Link href="/dashboard/admin/finance" className={styles.navItem}>
+            <Link href="/dashboard/admin/finance" className={styles.navItem} onClick={closeSidebar}>
               Manage Finances
             </Link>
-            <Link href="/dashboard/admin/attendance" className={styles.navItem}>
+            <Link href="/dashboard/admin/attendance" className={styles.navItem} onClick={closeSidebar}>
               Manage Attendance
             </Link>
-            <Link href="/dashboard/admin/requests" className={styles.navItem}>
+            <Link href="/dashboard/admin/requests" className={styles.navItem} onClick={closeSidebar}>
               Parts Requests
             </Link>
-            <Link href="/dashboard/admin/public-site" className={styles.navItem}>
+            <Link href="/dashboard/admin/public-site" className={styles.navItem} onClick={closeSidebar}>
               Public Site Content
             </Link>
           </>
@@ -176,6 +189,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
       </aside>
+
+      {/* Overlay to close sidebar on mobile */}
+      {sidebarOpen && (
+        <div className={styles.sidebarOverlay} onClick={closeSidebar}></div>
+      )}
 
       <main className={styles.mainContent}>
         {children}

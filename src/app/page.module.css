@@ -327,8 +327,9 @@
   .ctaContainer {
     flex-direction: column;
   }
-  .navLinks {
-    display: none;
+  .timelineItem {
+    flex-direction: column;
+    text-align: center;
   }
 }
 
