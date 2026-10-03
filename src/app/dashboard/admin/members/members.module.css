@@ -1,0 +1,75 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  margin-bottom: 1rem;
+}
+
+.tableContainer {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  padding: 1rem 1.5rem;
+  background: rgba(0, 210, 255, 0.05);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table td {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.roleBadge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.roleAdmin {
+  background: rgba(255, 170, 0, 0.1);
+  color: #ffaa00;
+  border: 1px solid rgba(255, 170, 0, 0.2);
+}
+
+.roleMember {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.select {
+  padding: 0.5rem;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--text-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+}
+
+.select:focus {
+  border-color: var(--accent-primary);
+}

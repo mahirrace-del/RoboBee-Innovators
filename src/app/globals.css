@@ -1,0 +1,85 @@
+:root {
+  /* Premium Dark Theme Core */
+  --bg-primary: #0a0306;
+  --bg-secondary: #170711;
+  --bg-glass: rgba(43, 12, 35, 0.4);
+  --bg-glass-hover: rgba(43, 12, 35, 0.7);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  
+  /* Accents */
+  --accent-primary: #F4B304;
+  --accent-secondary: #2B0C23;
+  
+  /* Gradients */
+  --gradient-glow: linear-gradient(135deg, rgba(244, 179, 4, 0.2) 0%, rgba(43, 12, 35, 0) 100%);
+  --gradient-border: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  
+  /* Utils */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  
+  --transition-fast: 0.15s ease-out;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-inter), sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-outfit), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Base Glassmorphism Class */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Reusable glow effect */
+.glow-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  background: var(--gradient-glow);
+  filter: blur(40px);
+  z-index: -1;
+  pointer-events: none;
+}

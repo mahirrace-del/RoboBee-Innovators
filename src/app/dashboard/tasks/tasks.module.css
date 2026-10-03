@@ -1,0 +1,139 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.taskCard {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  border-left: 4px solid var(--accent-primary);
+}
+
+.taskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.taskTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.statusBadge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.statusPending {
+  background: rgba(255, 170, 0, 0.1);
+  color: #ffaa00;
+  border: 1px solid rgba(255, 170, 0, 0.2);
+}
+
+.statusCompleted {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.taskDesc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  flex-grow: 1;
+}
+
+.metaInfo {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.completeBtn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.8rem;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.completeBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+}
+
+.formCard {
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(0, 210, 255, 0.2);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.input {
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.submitBtn {
+  grid-column: 1 / -1;
+  padding: 1rem;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.submitBtn:hover {
+  background: #ccc;
+}

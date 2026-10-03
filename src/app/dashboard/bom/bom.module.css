@@ -1,0 +1,110 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.header p {
+  color: var(--text-secondary);
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.panel {
+  background: var(--bg-glass);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.input {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.btn {
+  background: var(--accent-primary);
+  color: #000;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: #ffc120;
+}
+
+.projectCard {
+  background: rgba(0,0,0,0.2);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.projectHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.projectName {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.projectTotal {
+  color: var(--accent-primary);
+  font-weight: bold;
+}
+
+.bomList {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 1rem;
+}
+
+.bomItem {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.select {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+}

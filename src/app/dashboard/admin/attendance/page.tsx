@@ -1,0 +1,255 @@
+"use client";
+
+import { useAuth } from "@/context/AuthContext";
+import { db } from "@/lib/firebase";
+import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, orderBy, deleteDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import styles from "../../lab/lab.module.css"; 
+
+export default function AttendancePage() {
+  const { role } = useAuth();
+  
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  
+  // Session Creation State
+  const isFriday = new Date().getDay() === 5;
+  const [newTitle, setNewTitle] = useState(isFriday ? "Regular Friday Class" : "Custom Class Session");
+  const [newDate, setNewDate] = useState(new Date().toISOString().split("T")[0]);
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Active Session Tracking (for taking attendance)
+  const [activeSession, setActiveSession] = useState<any>(null);
+  const [presentMemberIds, setPresentMemberIds] = useState<Set<string>>(new Set());
+  const [isSavingAttendance, setIsSavingAttendance] = useState(false);
+
+  useEffect(() => {
+    if (role !== "admin") return;
+
+    // Fetch Sessions
+    const qSessions = query(collection(db, "sessions"), orderBy("date", "desc"));
+    const unsubSessions = onSnapshot(qSessions, (snap) => {
+      setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    // Fetch Active Members (excluding pending and declined)
+    const qUsers = query(collection(db, "users"));
+    const unsubUsers = onSnapshot(qUsers, (snap) => {
+      const activeMembers = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter((u: any) => u.role === "member" || u.role === "admin");
+      setMembers(activeMembers);
+    });
+
+    return () => {
+      unsubSessions();
+      unsubUsers();
+    };
+  }, [role]);
+
+  const handleCreateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle || !newDate) return;
+    setIsCreating(true);
+
+    try {
+      await addDoc(collection(db, "sessions"), {
+        title: newTitle,
+        date: newDate,
+        attendees: [],
+        createdAt: serverTimestamp()
+      });
+      setNewTitle("Custom Class Session");
+    } catch (error) {
+      console.error("Error creating session:", error);
+      alert("Failed to create session.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleOpenSession = (session: any) => {
+    setActiveSession(session);
+    setPresentMemberIds(new Set(session.attendees || []));
+  };
+
+  const handleToggleAttendance = (memberId: string) => {
+    setPresentMemberIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(memberId)) {
+        newSet.delete(memberId);
+      } else {
+        newSet.add(memberId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleMarkAllPresent = () => {
+    const allIds = members.map(m => m.id);
+    setPresentMemberIds(new Set(allIds));
+  };
+
+  const handleMarkAllAbsent = () => {
+    setPresentMemberIds(new Set());
+  };
+
+  const handleSaveAttendance = async () => {
+    if (!activeSession) return;
+    setIsSavingAttendance(true);
+
+    try {
+      await updateDoc(doc(db, "sessions", activeSession.id), {
+        attendees: Array.from(presentMemberIds)
+      });
+      alert("Attendance saved successfully!");
+      setActiveSession(null);
+    } catch (error) {
+      console.error("Error saving attendance:", error);
+      alert("Failed to save attendance.");
+    } finally {
+      setIsSavingAttendance(false);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!confirm("Are you sure you want to delete this session? This will remove attendance records for it.")) return;
+    try {
+      await deleteDoc(doc(db, "sessions", sessionId));
+      if (activeSession?.id === sessionId) setActiveSession(null);
+    } catch (error) {
+      console.error("Error deleting session:", error);
+    }
+  };
+
+  if (role !== "admin") return <div style={{ color: 'var(--text-secondary)' }}>Permission Denied</div>;
+
+  return (
+    <div>
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '2rem', color: 'var(--text-primary)' }}>Attendance Tracking</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Schedule classes and track member attendance.</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: activeSession ? '1fr 1fr' : '1fr', gap: '2rem' }}>
+        
+        {/* Left Column: Sessions List & Creation */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          
+          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Create New Class Session</h2>
+            <form onSubmit={handleCreateSession} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Class Title</label>
+                <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className={styles.input} style={{ padding: '0.6rem' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Date</label>
+                <input type="date" required value={newDate} onChange={e => setNewDate(e.target.value)} className={styles.input} style={{ padding: '0.6rem' }} />
+              </div>
+              <button type="submit" disabled={isCreating} className={styles.submitBtn} style={{ padding: '0.6rem 1.2rem' }}>
+                {isCreating ? "Adding..." : "+ Add Session"}
+              </button>
+            </form>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Past & Upcoming Sessions</h2>
+            {sessions.length === 0 ? (
+              <div style={{ color: 'var(--text-secondary)' }}>No sessions scheduled yet.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {sessions.map(session => {
+                  const attendanceCount = (session.attendees || []).length;
+                  const isActive = activeSession?.id === session.id;
+                  
+                  return (
+                    <div key={session.id} style={{ 
+                      padding: '1rem', 
+                      background: isActive ? 'rgba(0, 210, 255, 0.1)' : 'rgba(0,0,0,0.2)', 
+                      border: isActive ? '1px solid #00d2ff' : '1px solid transparent',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: isActive ? '#00d2ff' : 'var(--text-primary)' }}>{session.title}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                          {new Date(session.date).toLocaleDateString()} &bull; {attendanceCount} / {members.length} Present
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => handleOpenSession(session)} className={styles.submitBtn} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+                          Take Attendance
+                        </button>
+                        <button onClick={() => handleDeleteSession(session.id)} style={{ background: 'rgba(255, 85, 85, 0.2)', border: 'none', color: '#ff5555', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer' }}>
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Active Session Attendance */}
+        {activeSession && (
+          <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 150px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', color: '#00d2ff' }}>{activeSession.title}</h2>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{new Date(activeSession.date).toLocaleDateString()}</div>
+              </div>
+              <button onClick={() => setActiveSession(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+              <button onClick={handleMarkAllPresent} style={{ background: 'rgba(46, 204, 113, 0.2)', color: '#2ecc71', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}>Mark All Present</button>
+              <button onClick={handleMarkAllAbsent} style={{ background: 'rgba(255, 85, 85, 0.2)', color: '#ff5555', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}>Mark All Absent</button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingRight: '0.5rem' }}>
+              {members.map(member => {
+                const isPresent = presentMemberIds.has(member.id);
+                return (
+                  <div key={member.id} onClick={() => handleToggleAttendance(member.id)} style={{
+                    padding: '0.8rem 1rem',
+                    background: isPresent ? 'rgba(46, 204, 113, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                    border: `1px solid ${isPresent ? '#2ecc71' : 'transparent'}`,
+                    borderRadius: '6px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold' }}>{member.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>@{member.username || 'unknown'}</div>
+                    </div>
+                    <div>
+                      {isPresent ? (
+                        <span style={{ color: '#2ecc71', fontWeight: 'bold' }}>Present &check;</span>
+                      ) : (
+                        <span style={{ color: 'var(--text-secondary)' }}>Absent</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <button onClick={handleSaveAttendance} disabled={isSavingAttendance} className={styles.submitBtn} style={{ width: '100%', fontSize: '1.1rem', padding: '0.8rem' }}>
+                {isSavingAttendance ? "Saving..." : "Save Attendance"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
