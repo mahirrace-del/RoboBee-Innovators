@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import styles from "./public-site.module.css";
 
 export default function AdminPublicSitePage() {
-  const [activeTab, setActiveTab] = useState<"projects" | "achievements" | "marquee">("projects");
+  const [activeTab, setActiveTab] = useState<"projects" | "achievements" | "marquee" | "leaders">("projects");
 
   // State for Projects
   const [projects, setProjects] = useState<any[]>([]);

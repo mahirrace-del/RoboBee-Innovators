@@ -44,7 +44,7 @@ export default function TasksPage() {
     // Fetch members if admin
     if (role === "admin") {
       const unsubUsers = onSnapshot(collection(db, "users"), (snapshot) => {
-        const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
         // Filter out pending users, or just show everyone. We will show all valid members and admins.
         const activeMembers = usersData.filter(u => u.role !== 'pending');
         setMembers(activeMembers);
