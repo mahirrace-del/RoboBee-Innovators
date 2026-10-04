@@ -14,12 +14,7 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   
-  const [payments, setPayments] = useState<any[]>([]);
-  const [submittingPayment, setSubmittingPayment] = useState(false);
-  const [paymentType, setPaymentType] = useState("monthly");
-  const [paymentMonth, setPaymentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
-  const [paymentMethod, setPaymentMethod] = useState("bKash");
-  const [paymentTxn, setPaymentTxn] = useState("");
+
 
   useEffect(() => {
     if (userData) {
@@ -28,18 +23,7 @@ export default function ProfilePage() {
       setPhone(userData.phone || "");
     }
     
-    if (user) {
-      const fetchPayments = async () => {
-        try {
-          const payQuery = query(collection(db, "payments"), where("userId", "==", user.uid));
-          const paySnap = await getDocs(payQuery);
-          setPayments(paySnap.docs.map(p => ({ id: p.id, ...p.data() })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        } catch (error) {
-          console.error("Error fetching payments:", error);
-        }
-      };
-      fetchPayments();
-    }
+
   }, [userData, user]);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -62,43 +46,13 @@ export default function ProfilePage() {
     }
   };
 
-  const handlePaymentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setSubmittingPayment(true);
-    try {
-      const newPayment = {
-        userId: user.uid,
-        type: paymentType,
-        month: paymentType === "monthly" ? paymentMonth : null,
-        amount: 1000,
-        method: paymentMethod,
-        txnId: paymentTxn,
-        status: "pending_verification",
-        date: new Date().toISOString(),
-      };
-      const docRef = await addDoc(collection(db, "payments"), newPayment);
-      setPayments(prev => [{ id: docRef.id, ...newPayment }, ...prev]);
-      alert("Payment submitted for verification!");
-      setPaymentTxn("");
-    } catch (error) {
-      console.error("Error submitting payment:", error);
-      alert("Failed to submit payment.");
-    } finally {
-      setSubmittingPayment(false);
-    }
-  };
+
 
   if (!user || !userData) {
     return <div style={{ color: 'var(--text-secondary)' }}>Loading profile...</div>;
   }
 
-  const hasEnrollment = payments.some(p => p.type === 'enrollment' && p.status === 'verified');
-  const hasPendingEnrollment = payments.some(p => p.type === 'enrollment' && p.status === 'pending_verification');
-  
-  const currentMonthStr = new Date().toISOString().slice(0, 7);
-  const hasCurrentMonth = payments.some(p => p.type === 'monthly' && p.month === currentMonthStr && p.status === 'verified');
-  const hasPendingCurrentMonth = payments.some(p => p.type === 'monthly' && p.month === currentMonthStr && p.status === 'pending_verification');
+
 
   return (
     <div>
@@ -184,99 +138,6 @@ export default function ProfilePage() {
             {isSaving ? "Saving..." : "Save Profile"}
           </button>
         </form>
-      </div>
-
-      <div className="glass-panel" style={{ padding: '2rem', maxWidth: '800px', marginTop: '2rem' }}>
-        <h2 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', color: 'var(--text-primary)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-          Lab Fees & Payments
-        </h2>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `4px solid ${hasEnrollment ? '#2ecc71' : hasPendingEnrollment ? '#F4B304' : '#ff5555'}` }}>
-            <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Enrollment Fee (One-Time)</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: hasEnrollment ? '#2ecc71' : hasPendingEnrollment ? '#F4B304' : '#ff5555' }}>
-              {hasEnrollment ? 'Paid' : hasPendingEnrollment ? 'Verification Pending' : 'Due (1000 BDT)'}
-            </div>
-          </div>
-          <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `4px solid ${hasCurrentMonth ? '#2ecc71' : hasPendingCurrentMonth ? '#F4B304' : '#ff5555'}` }}>
-            <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Monthly Fee ({currentMonthStr})</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: hasCurrentMonth ? '#2ecc71' : hasPendingCurrentMonth ? '#F4B304' : '#ff5555' }}>
-              {hasCurrentMonth ? 'Paid' : hasPendingCurrentMonth ? 'Verification Pending' : 'Due (1000 BDT)'}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Due by 5th of every month</div>
-          </div>
-        </div>
-
-        <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Submit Payment for Verification</h3>
-        <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap', background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '8px' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Payment Type</label>
-            <select value={paymentType} onChange={e => setPaymentType(e.target.value)} className={styles.input} style={{ appearance: 'auto', padding: '0.5rem' }}>
-              <option value="enrollment">Enrollment (1000 BDT)</option>
-              <option value="monthly">Monthly (1000 BDT)</option>
-            </select>
-          </div>
-          {paymentType === "monthly" && (
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>For Month</label>
-              <input type="month" required value={paymentMonth} onChange={e => setPaymentMonth(e.target.value)} className={styles.input} style={{ padding: '0.5rem' }} />
-            </div>
-          )}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Method</label>
-            <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} className={styles.input} style={{ appearance: 'auto', padding: '0.5rem' }}>
-              <option value="bKash">bKash</option>
-              <option value="Cash">Cash to Admin</option>
-            </select>
-          </div>
-          {paymentMethod === "bKash" && (
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Txn ID (Optional)</label>
-              <input type="text" value={paymentTxn} onChange={e => setPaymentTxn(e.target.value)} className={styles.input} placeholder="e.g. 9X2B..." style={{ padding: '0.5rem', width: '120px' }} />
-            </div>
-          )}
-          <button type="submit" disabled={submittingPayment} className={styles.submitBtn} style={{ padding: '0.6rem 1rem' }}>
-            {submittingPayment ? "Submitting..." : "Submit"}
-          </button>
-        </form>
-
-        <div style={{ marginTop: '2rem' }}>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Payment History</h3>
-          {payments.length === 0 ? <div style={{ color: 'var(--text-secondary)' }}>No payment records found.</div> : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', color: 'var(--text-secondary)' }}>
-                    <th style={{ padding: '0.5rem' }}>Date Submitted</th>
-                    <th style={{ padding: '0.5rem' }}>Type</th>
-                    <th style={{ padding: '0.5rem' }}>Method</th>
-                    <th style={{ padding: '0.5rem' }}>Txn ID</th>
-                    <th style={{ padding: '0.5rem' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map(p => (
-                    <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '0.5rem' }}>{new Date(p.date).toLocaleDateString()}</td>
-                      <td style={{ padding: '0.5rem', textTransform: 'capitalize' }}>
-                        {p.type} {p.type === 'monthly' ? `(${p.month})` : ''}
-                      </td>
-                      <td style={{ padding: '0.5rem' }}>{p.method}</td>
-                      <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{p.txnId || '-'}</td>
-                      <td style={{ padding: '0.5rem' }}>
-                        {p.status === 'verified' ? (
-                          <span style={{ color: '#2ecc71', background: 'rgba(46, 204, 113, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>Verified</span>
-                        ) : (
-                          <span style={{ color: '#F4B304', background: 'rgba(244, 179, 4, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>Pending</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

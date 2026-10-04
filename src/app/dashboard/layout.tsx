@@ -132,6 +132,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/dashboard/attendance" className={styles.navItem} onClick={closeSidebar}>
           Attendance
         </Link>
+        <Link href="/dashboard/competitions" className={styles.navItem} onClick={closeSidebar}>
+          Competitions
+        </Link>
 
         <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
           RESOURCES
@@ -175,6 +178,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
             <Link href="/dashboard/admin/public-site" className={styles.navItem} onClick={closeSidebar}>
               Public Site Content
+            </Link>
+            <Link href="/dashboard/admin/competitions" className={styles.navItem} onClick={closeSidebar}>
+              Manage Competitions
             </Link>
           </>
         )}

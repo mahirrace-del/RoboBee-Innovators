@@ -1,0 +1,151 @@
+.container {
+  padding: 1rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.compCard {
+  padding: 1.5rem;
+  border-top: 4px solid var(--accent-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.compHeader {
+  margin-bottom: 1.5rem;
+}
+
+.actionArea {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+}
+
+.applyBtn {
+  width: 100%;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.applyBtn:hover {
+  opacity: 0.9;
+}
+
+.statusArea {
+  font-size: 0.9rem;
+}
+
+.statusLabel {
+  color: var(--text-secondary);
+  margin-right: 0.5rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.badgeSuccess {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+}
+
+.badgeWarning {
+  background: rgba(244, 179, 4, 0.2);
+  color: #F4B304;
+}
+
+.badgeDanger {
+  background: rgba(255, 85, 85, 0.2);
+  color: #ff5555;
+}
+
+.payBtn {
+  width: 100%;
+  background: #2ecc71;
+  color: #000;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.payBtn:hover {
+  opacity: 0.9;
+}
+
+.paymentForm {
+  margin-top: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.submitBtn {
+  flex: 1;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
