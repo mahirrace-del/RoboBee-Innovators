@@ -11,6 +11,7 @@ export default function Home() {
   const [achievements, setAchievements] = useState<any[]>([]);
   const [marquees, setMarquees] = useState<any[]>([]);
   const [leaders, setLeaders] = useState<any[]>([]);
+  const [isMarqueePaused, setIsMarqueePaused] = useState(false);
 
   useEffect(() => {
     const unsubProjects = onSnapshot(collection(db, "projects"), (snap) => {
@@ -191,13 +192,32 @@ export default function Home() {
 
       {/* MEMBER MARQUEE */}
       {marquees.length > 0 && (
-        <section className={styles.marqueeSection} style={{ overflow: 'hidden', padding: '4rem 0', background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <h3 style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--text-secondary)', fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '2px' }}>Meet Our Members</h3>
-          <div className={styles.marqueeContainer}>
-            <div className={styles.marqueeContent}>
-              {[...marquees, ...marquees, ...marquees, ...marquees, ...marquees, ...marquees, ...marquees, ...marquees, ...marquees, ...marquees].map((m, i) => (
+        <section 
+          className={styles.marqueeSection}
+          onMouseEnter={() => setIsMarqueePaused(true)}
+          onMouseLeave={() => setIsMarqueePaused(false)}
+        >
+          <h2 className={styles.marqueeTitle}>Meet Our Members</h2>
+          <p className={styles.marqueeHint}>Hover or touch to pause and view</p>
+          <div 
+            className={styles.marqueeContainer}
+            onTouchStart={() => setIsMarqueePaused(true)}
+            onTouchEnd={() => setIsMarqueePaused(false)}
+          >
+            <div 
+              className={styles.marqueeContent}
+              style={isMarqueePaused ? { animationPlayState: 'paused' } : undefined}
+            >
+              {[...marquees, ...marquees, ...marquees, ...marquees, ...marquees, ...marquees].map((m, i) => (
                 <div key={i} className={styles.marqueeItem}>
-                  {m.image?.trim() ? <img src={m.image.trim()} alt="Member" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #F4B304' }} /> : null}
+                  {m.image?.trim() ? (
+                    <img 
+                      src={m.image.trim()} 
+                      alt="Team Member" 
+                      className={styles.marqueeAvatar} 
+                      loading="lazy"
+                    />
+                  ) : null}
                 </div>
               ))}
             </div>
