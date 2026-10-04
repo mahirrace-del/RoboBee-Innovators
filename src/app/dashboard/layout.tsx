@@ -14,7 +14,6 @@ import { getUserRoleBadge } from "@/lib/permissions";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, role, signOut, userData, canManage } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
   const [isDeleting, setIsDeleting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -23,12 +22,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.push("/portal");
     }
   }, [user, loading, router]);
-
-  useEffect(() => {
-    const handleToggle = () => setSidebarOpen(prev => !prev);
-    window.addEventListener('toggle-portal-sidebar', handleToggle);
-    return () => window.removeEventListener('toggle-portal-sidebar', handleToggle);
-  }, []);
 
   if (loading || !user) {
     return <div className={styles.loader}>Loading your dashboard...</div>;
@@ -75,7 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <h2 style={{ color: '#F4B304', marginBottom: '1rem' }}>Application Under Review</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
-            Your membership application has been received and is currently in a <strong>Pending</strong> state. 
+            Your membership application has been received and is currently in a <strong>Pending</strong> state.
             An admin must approve your application before you can access the member portal.
           </p>
           <button onClick={handleSignOut} className={styles.submitBtn} style={{ width: '100%' }}>
@@ -108,24 +101,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  useEffect(() => {
+    const handleToggle = () => setSidebarOpen(prev => !prev);
+    window.addEventListener('toggle-portal-sidebar', handleToggle);
+    return () => window.removeEventListener('toggle-portal-sidebar', handleToggle);
+  }, []);
+
+  const pathname = usePathname();
   const isAct = (href: string) => pathname === href ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
 
   return (
     <div className={styles.dashboardContainer}>
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 0.5rem 1.25rem 0.5rem', 
+          padding: '0 0.5rem 1.25rem 0.5rem',
           borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
           marginBottom: '0.75rem'
         }}>
-          <span style={{ 
-            fontSize: '0.72rem', 
-            fontWeight: 800, 
-            textTransform: 'uppercase', 
-            letterSpacing: '2px', 
+          <span style={{
+            fontSize: '0.72rem',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
             color: 'var(--accent-primary)',
             background: 'rgba(244, 179, 4, 0.1)',
             padding: '0.35rem 0.75rem',
@@ -135,7 +135,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           }}>
             Team Portal
           </span>
-          <button 
+          <button
             onClick={closeSidebar}
             className={styles.sidebarCloseBtn}
             aria-label="Close sidebar navigation"
@@ -188,7 +188,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/dashboard/finance" className={isAct("/dashboard/finance")} onClick={closeSidebar}>
           Finance & bKash
         </Link>
-        
+
         {/* Admin Controls */}
         {role === "admin" ? (
           <>
@@ -265,9 +265,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {(() => {
             const badge = getUserRoleBadge(userData);
             return (
-              <span style={{ 
-                fontSize: '0.75rem', 
-                color: badge.color, 
+              <span style={{
+                fontSize: '0.75rem',
+                color: badge.color,
                 background: badge.background,
                 padding: '0.2rem 0.6rem',
                 borderRadius: '4px',
@@ -298,35 +298,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Dedicated Mobile Bottom App Bar */}
       <nav className={styles.mobileBottomNav} aria-label="Mobile Navigation">
-        <Link 
-          href="/dashboard" 
+        <Link
+          href="/dashboard"
           className={`${styles.bottomNavItem} ${pathname === "/dashboard" ? styles.bottomNavItemActive : ""}`}
         >
           <Home size={20} />
           <span>Overview</span>
         </Link>
-        <Link 
-          href="/dashboard/inventory" 
+        <Link
+          href="/dashboard/inventory"
           className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/inventory") ? styles.bottomNavItemActive : ""}`}
         >
           <Package size={20} />
           <span>Store</span>
         </Link>
-        <Link 
-          href="/dashboard/competitions" 
+        <Link
+          href="/dashboard/competitions"
           className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/competitions") ? styles.bottomNavItemActive : ""}`}
         >
           <Trophy size={20} />
           <span>Events</span>
         </Link>
-        <Link 
-          href="/dashboard/profile" 
+        <Link
+          href="/dashboard/profile"
           className={`${styles.bottomNavItem} ${pathname === "/dashboard/profile" ? styles.bottomNavItemActive : ""}`}
         >
           <UserIcon size={20} />
           <span>Profile</span>
         </Link>
-        <button 
+        <button
           onClick={() => setSidebarOpen(prev => !prev)}
           className={`${styles.bottomNavItem} ${sidebarOpen ? styles.bottomNavItemActive : ""}`}
           aria-label="Toggle All Menus"

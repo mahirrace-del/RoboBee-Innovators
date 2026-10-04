@@ -9,20 +9,13 @@ export default function ClientLabStatus() {
   const [labStatus, setLabStatus] = useState<"Open" | "Closed" | "Loading">("Loading");
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      doc(db, "settings", "labStatus"), 
-      (docSnap) => {
-        if (docSnap.exists()) {
-          setLabStatus(docSnap.data().status);
-        } else {
-          setLabStatus("Closed");
-        }
-      },
-      (error) => {
-        console.warn("Could not read lab status, defaulting to Closed:", error);
+    const unsub = onSnapshot(doc(db, "settings", "labStatus"), (docSnap) => {
+      if (docSnap.exists()) {
+        setLabStatus(docSnap.data().status);
+      } else {
         setLabStatus("Closed");
       }
-    );
+    });
 
     return () => unsub();
   }, []);
@@ -32,7 +25,7 @@ export default function ClientLabStatus() {
   const isOpen = labStatus === "Open";
 
   return (
-    <div 
+    <div
       className={`${styles.statusBadge} ${isOpen ? styles.openBadge : styles.closedBadge}`}
       role="status"
       aria-label={`Robotics Lab status is currently ${labStatus}`}

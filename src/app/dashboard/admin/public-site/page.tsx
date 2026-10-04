@@ -55,6 +55,7 @@ export default function AdminPublicSitePage() {
     { key: "tasks", label: "Test Tasks", desc: "All task assignments across the team" },
     { key: "partRequests", label: "Parts Requests", desc: "Hardware part requests queue" },
     { key: "inventory", label: "Store Inventory", desc: "All components and hardware parts" },
+    { key: "checkouts", label: "Hardware Checkouts", desc: "All signed-out store hardware records" },
     { key: "payments", label: "Test Payments", desc: "All logged fee and bKash payments" },
     { key: "sessions", label: "Attendance Sessions", desc: "Class sessions and attendance lists" },
   ];
