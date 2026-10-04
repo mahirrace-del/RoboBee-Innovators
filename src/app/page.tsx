@@ -136,8 +136,8 @@ export default function Home() {
         )}
       </section>
 
-      <section id="achievements" className={styles.trophyRoom}>
-        <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '1rem' }}>Trophy Room</h2>
+      <section id="achievements" className={styles.achievements}>
+        <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '1rem' }}>Achievements</h2>
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', marginBottom: '3rem' }}>
           A timeline of our competitive milestones and achievements on the national and international stage.
         </p>
