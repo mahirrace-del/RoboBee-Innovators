@@ -8,7 +8,8 @@ import Link from "next/link";
 import styles from "../lab/lab.module.css"; // Reuse lab styles or we can add inline
 
 export default function InventoryDashboard() {
-  const { user, role } = useAuth();
+  const { user, role, canManage } = useAuth();
+  const canEditStore = role === "admin" || canManage("manage_store");
   
   const [inventory, setInventory] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,7 +36,7 @@ export default function InventoryDashboard() {
 
   const handleAddPart = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (role !== "admin" || !newPartName) return;
+    if (!canEditStore || !newPartName) return;
     
     setIsAddingPart(true);
     try {
@@ -76,7 +77,7 @@ export default function InventoryDashboard() {
   };
 
   const handleUpdateQuantity = async (id: string, delta: number, currentQty: number) => {
-    if (role !== "admin") return;
+    if (!canEditStore) return;
     const newQty = currentQty + delta;
     if (newQty < 0) return; // Prevent negative stock
     try {
@@ -89,7 +90,7 @@ export default function InventoryDashboard() {
   };
 
   const handleDeletePart = async (id: string) => {
-    if (role !== "admin") return;
+    if (!canEditStore) return;
     if (window.confirm("Are you sure you want to permanently remove this part from the inventory?")) {
       try {
         await deleteDoc(doc(db, "inventory", id));
@@ -129,7 +130,7 @@ export default function InventoryDashboard() {
         </Link>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: role === 'admin' ? '3fr 1fr' : '1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: canEditStore ? '3fr 1fr' : '1fr', gap: '2rem' }}>
         
         {/* Main Store View */}
         <div>
@@ -191,8 +192,8 @@ export default function InventoryDashboard() {
                     </div>
                   </div>
 
-                  {/* Admin Controls */}
-                  {role === 'admin' && (
+                  {/* Admin / Store Manager Controls */}
+                  {canEditStore && (
                     <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -220,8 +221,8 @@ export default function InventoryDashboard() {
           )}
         </div>
 
-        {/* Right Column: Admin Forms */}
-        {role === 'admin' && (
+        {/* Right Column: Admin / Store Manager Forms */}
+        {canEditStore && (
           <div>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Add New Part</h2>
             <form onSubmit={handleAddPart} className={`glass-panel ${styles.form}`}>

@@ -1,13 +1,14 @@
 "use client";
 
 import { db } from "@/lib/firebase";
-import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, getDocs, where } from "firebase/firestore";
+import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, getDocs, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import styles from "./admin-competitions.module.css";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminCompetitionsPage() {
-  const { user } = useAuth();
+  const { user, role, canManage } = useAuth();
+  const canAccess = role === "admin" || canManage("manage_competitions");
   
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [participants, setParticipants] = useState<any[]>([]);
@@ -94,6 +95,36 @@ export default function AdminCompetitionsPage() {
     }
   };
 
+  const handleDeleteCompetition = async (compId: string, compName: string) => {
+    if (!window.confirm(`Are you sure you want to remove the competition "${compName}"?\n\nThis will permanently delete this competition and all participant records associated with it.`)) {
+      return;
+    }
+    try {
+      // Delete the competition document
+      await deleteDoc(doc(db, "competitions", compId));
+
+      // Clean up participant registrations for this competition
+      const partQ = query(collection(db, "competition_participants"), where("competitionId", "==", compId));
+      const partSnap = await getDocs(partQ);
+      const deletes = partSnap.docs.map(d => deleteDoc(doc(db, "competition_participants", d.id)));
+      await Promise.all(deletes);
+
+      alert(`Competition "${compName}" has been removed.`);
+    } catch (error) {
+      console.error("Error deleting competition:", error);
+      alert("Failed to remove competition. Check your permissions.");
+    }
+  };
+
+  if (!canAccess) {
+    return (
+      <div className={styles.container} style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+        <h2 style={{ color: '#ff5555', marginBottom: '1rem' }}>Access Restricted</h2>
+        <p style={{ color: 'var(--text-secondary)' }}>You do not have permission to manage competitions.</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -145,7 +176,7 @@ export default function AdminCompetitionsPage() {
                     📅 {comp.date} | 📍 {comp.location} | 💰 {comp.fee} BDT | 👥 {compParts.filter(p => p.status === 'approved').length}/{comp.maxParticipants} slots filled
                   </div>
                 </div>
-                <div>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                   <select 
                     value={comp.status} 
                     onChange={(e) => updateCompetitionStatus(comp.id, e.target.value)}
@@ -156,6 +187,24 @@ export default function AdminCompetitionsPage() {
                     <option value="Ongoing">Ongoing</option>
                     <option value="Completed">Completed</option>
                   </select>
+
+                  <button 
+                    onClick={() => handleDeleteCompetition(comp.id, comp.name)}
+                    style={{
+                      background: 'rgba(255, 85, 85, 0.15)',
+                      color: '#ff5555',
+                      border: '1px solid rgba(255, 85, 85, 0.3)',
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap'
+                    }}
+                    title="Remove Competition"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
 

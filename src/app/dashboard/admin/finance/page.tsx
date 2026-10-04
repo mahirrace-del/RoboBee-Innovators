@@ -7,10 +7,12 @@ import styles from "./admin-finance.module.css";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminFinancePage() {
-  const { user } = useAuth();
+  const { user, role, canManage } = useAuth();
+  const canAccess = role === "admin" || canManage("manage_finance");
   const [payments, setPayments] = useState<any[]>([]);
 
   useEffect(() => {
+    if (!canAccess) return;
     const q = query(collection(db, "payments"));
     
     const unsub = onSnapshot(q, (snapshot) => {
@@ -48,6 +50,15 @@ export default function AdminFinancePage() {
   };
 
   const pendingCount = payments.filter(p => p.status === 'pending_verification').length;
+
+  if (!canAccess) {
+    return (
+      <div className={styles.container} style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+        <h2 style={{ color: '#ff5555', marginBottom: '1rem' }}>Access Restricted</h2>
+        <p style={{ color: 'var(--text-secondary)' }}>You do not have permission to manage club finances.</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

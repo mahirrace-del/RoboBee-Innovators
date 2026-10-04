@@ -9,9 +9,10 @@ import { Logo } from "@/components/Logo";
 import { auth, db } from "@/lib/firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 import { Menu, X } from "lucide-react";
+import { getUserRoleBadge } from "@/lib/permissions";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, role, signOut } = useAuth();
+  const { user, loading, role, signOut, userData, canManage } = useAuth();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -159,7 +160,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           Finance & bKash
         </Link>
         
-        {role === "admin" && (
+        {/* Admin Controls */}
+        {role === "admin" ? (
           <>
             <div style={{ marginTop: '1.5rem', color: '#ff5555', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
               ADMIN CONTROLS
@@ -183,13 +185,73 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               Manage Competitions
             </Link>
           </>
+        ) : (
+          /* Delegated Staff / Specialized Role Controls */
+          (canManage("manage_store") || canManage("manage_achievements") || canManage("manage_competitions") || canManage("manage_finance") || canManage("manage_attendance") || canManage("manage_members")) && (
+            <>
+              <div style={{ marginTop: '1.5rem', color: '#a855f7', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
+                STAFF CONTROLS
+              </div>
+              {canManage("manage_members") && (
+                <Link href="/dashboard/members" className={styles.navItem} onClick={closeSidebar}>
+                  Manage Members
+                </Link>
+              )}
+              {canManage("manage_store") && (
+                <>
+                  <Link href="/dashboard/inventory" className={styles.navItem} onClick={closeSidebar}>
+                    Store Management
+                  </Link>
+                  <Link href="/dashboard/admin/requests" className={styles.navItem} onClick={closeSidebar}>
+                    Parts Requests
+                  </Link>
+                </>
+              )}
+              {canManage("manage_competitions") && (
+                <Link href="/dashboard/admin/competitions" className={styles.navItem} onClick={closeSidebar}>
+                  Manage Competitions
+                </Link>
+              )}
+              {canManage("manage_achievements") && (
+                <Link href="/dashboard/admin/public-site" className={styles.navItem} onClick={closeSidebar}>
+                  Public Site Content
+                </Link>
+              )}
+              {canManage("manage_finance") && (
+                <Link href="/dashboard/admin/finance" className={styles.navItem} onClick={closeSidebar}>
+                  Manage Finances
+                </Link>
+              )}
+              {canManage("manage_attendance") && (
+                <Link href="/dashboard/admin/attendance" className={styles.navItem} onClick={closeSidebar}>
+                  Manage Attendance
+                </Link>
+              )}
+            </>
+          )
         )}
 
         <div className={styles.userInfo}>
           <span className={styles.userEmail}>{user.email}</span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
-            Role: {role}
-          </span>
+          {(() => {
+            const badge = getUserRoleBadge(userData);
+            return (
+              <span style={{ 
+                fontSize: '0.75rem', 
+                color: badge.color, 
+                background: badge.background,
+                padding: '0.2rem 0.6rem',
+                borderRadius: '4px',
+                fontWeight: '600',
+                display: 'inline-block',
+                marginTop: '0.3rem',
+                textTransform: 'uppercase',
+                border: `1px solid ${badge.color}33`
+              }}>
+                {badge.label}
+              </span>
+            );
+          })()}
           <button onClick={handleSignOut} className={styles.logoutBtn}>
             Sign Out
           </button>

@@ -9,7 +9,8 @@ import Link from "next/link";
 import styles from "../../lab/lab.module.css"; 
 
 export default function MemberProfileAdminView() {
-  const { role, user: currentUser } = useAuth();
+  const { role, user: currentUser, canManage } = useAuth();
+  const canAccess = role === "admin" || canManage("manage_members");
   const router = useRouter();
   const params = useParams();
   const userId = params.id as string;
@@ -34,7 +35,7 @@ export default function MemberProfileAdminView() {
   const [isLoggingPayment, setIsLoggingPayment] = useState(false);
 
   useEffect(() => {
-    if (role !== "admin") return;
+    if (!canAccess) return;
 
     const fetchMemberData = async () => {
       try {
@@ -78,7 +79,7 @@ export default function MemberProfileAdminView() {
     };
 
     fetchMemberData();
-  }, [role, userId]);
+  }, [canAccess, userId]);
 
   const handleAssignTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,8 +147,8 @@ export default function MemberProfileAdminView() {
     }
   };
 
-  if (role !== "admin") {
-    return <div style={{ color: 'var(--text-secondary)' }}>Permission Denied</div>;
+  if (!canAccess) {
+    return <div style={{ color: '#ff5555', padding: '2rem' }}>Permission Denied. Member Management or Admin privileges required.</div>;
   }
 
   if (loading) {

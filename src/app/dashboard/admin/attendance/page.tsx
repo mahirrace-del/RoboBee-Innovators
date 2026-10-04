@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 import styles from "../../lab/lab.module.css"; 
 
 export default function AttendancePage() {
-  const { role } = useAuth();
+  const { role, canManage } = useAuth();
+  const canAccess = role === "admin" || canManage("manage_attendance");
   
   const [sessions, setSessions] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
@@ -24,7 +25,7 @@ export default function AttendancePage() {
   const [isSavingAttendance, setIsSavingAttendance] = useState(false);
 
   useEffect(() => {
-    if (role !== "admin") return;
+    if (!canAccess) return;
 
     // Fetch Sessions
     const qSessions = query(collection(db, "sessions"), orderBy("date", "desc"));
@@ -45,7 +46,7 @@ export default function AttendancePage() {
       unsubSessions();
       unsubUsers();
     };
-  }, [role]);
+  }, [canAccess]);
 
   const handleCreateSession = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +123,7 @@ export default function AttendancePage() {
     }
   };
 
-  if (role !== "admin") return <div style={{ color: 'var(--text-secondary)' }}>Permission Denied</div>;
+  if (!canAccess) return <div style={{ color: '#ff5555', padding: '2rem' }}>Permission Denied. Attendance Management or Admin privileges required.</div>;
 
   return (
     <div>

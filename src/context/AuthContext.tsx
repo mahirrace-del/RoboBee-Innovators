@@ -5,12 +5,15 @@ import { onAuthStateChanged, User, signOut as firebaseSignOut } from "firebase/a
 import { auth, db } from "@/lib/firebase";
 import { doc, onSnapshot, setDoc, getDoc } from "firebase/firestore";
 
+import { hasPermission, PermissionKey } from "@/lib/permissions";
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   role: "admin" | "member" | "pending" | "declined" | null;
   signOut: () => Promise<void>;
   userData: any;
+  canManage: (permission: PermissionKey | string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   signOut: async () => {},
   userData: null,
+  canManage: () => false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -71,8 +75,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await firebaseSignOut(auth);
   };
 
+  const canManage = (permission: PermissionKey | string) => {
+    if (role === "admin") return true;
+    return hasPermission(userData, permission);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, role, signOut, userData }}>
+    <AuthContext.Provider value={{ user, loading, role, signOut, userData, canManage }}>
       {children}
     </AuthContext.Provider>
   );

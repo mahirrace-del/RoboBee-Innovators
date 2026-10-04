@@ -6,12 +6,13 @@ import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } fro
 import { useEffect, useState } from "react";
 
 export default function AdminPartRequestsPage() {
-  const { role } = useAuth();
+  const { role, canManage } = useAuth();
+  const canAccess = role === "admin" || canManage("manage_store");
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (role !== "admin") return;
+    if (!canAccess) return;
 
     const q = query(collection(db, "partRequests"), orderBy("requestedAt", "desc"));
     
@@ -25,7 +26,7 @@ export default function AdminPartRequestsPage() {
     });
 
     return () => unsubscribe();
-  }, [role]);
+  }, [canAccess]);
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     try {
@@ -48,8 +49,8 @@ export default function AdminPartRequestsPage() {
     }
   };
 
-  if (role !== "admin") {
-    return <div style={{ color: '#ff5555' }}>Access Denied. Admin privileges required.</div>;
+  if (!canAccess) {
+    return <div style={{ color: '#ff5555', padding: '2rem' }}>Access Denied. Store Management or Admin privileges required.</div>;
   }
 
   return (
