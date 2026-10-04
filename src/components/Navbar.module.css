@@ -99,6 +99,45 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.portalActiveBtn {
+  padding: 0.55rem 1.2rem;
+  background: rgba(244, 179, 4, 0.12);
+  border: 1px solid rgba(244, 179, 4, 0.4);
+  border-radius: var(--radius-sm);
+  color: var(--accent-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+}
+
+.portalActiveBtn:hover {
+  background: rgba(244, 179, 4, 0.22);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(244, 179, 4, 0.25);
+}
+
+.onlineDot {
+  width: 8px;
+  height: 8px;
+  background-color: #00ff88;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px #00ff88;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+}
+
 .mobileToggle {
   display: none;
   cursor: pointer;
@@ -165,6 +204,26 @@
     font-weight: bold;
     text-align: center;
     border-radius: var(--radius-sm);
+  }
+
+  .mobilePortalActiveBtn {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    background: rgba(244, 179, 4, 0.15);
+    border: 1px solid rgba(244, 179, 4, 0.4);
+    color: var(--accent-primary);
+    font-weight: bold;
+    text-align: center;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    text-decoration: none;
+  }
+
+  .mobilePortalActiveBtn:active {
+    background: rgba(244, 179, 4, 0.25);
   }
 }
 
