@@ -14,6 +14,7 @@ import { getUserRoleBadge } from "@/lib/permissions";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, role, signOut, userData, canManage } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [isDeleting, setIsDeleting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -22,6 +23,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.push("/portal");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const handleToggle = () => setSidebarOpen(prev => !prev);
+    window.addEventListener('toggle-portal-sidebar', handleToggle);
+    return () => window.removeEventListener('toggle-portal-sidebar', handleToggle);
+  }, []);
 
   if (loading || !user) {
     return <div className={styles.loader}>Loading your dashboard...</div>;
@@ -101,13 +108,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  useEffect(() => {
-    const handleToggle = () => setSidebarOpen(prev => !prev);
-    window.addEventListener('toggle-portal-sidebar', handleToggle);
-    return () => window.removeEventListener('toggle-portal-sidebar', handleToggle);
-  }, []);
-
-  const pathname = usePathname();
   const isAct = (href: string) => pathname === href ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
 
   return (
