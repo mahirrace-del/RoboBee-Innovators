@@ -214,56 +214,94 @@ export default function AdminCompetitionsPage() {
                 {compParts.length === 0 ? (
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No participants yet.</p>
                 ) : (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Member Email</th>
-                          <th>Application Status</th>
-                          <th>Payment Status</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {compParts.map(part => (
-                          <tr key={part.id}>
-                            <td>{part.userEmail}</td>
-                            <td>
-                              <span className={`${styles.badge} ${part.status === 'approved' ? styles.badgeSuccess : part.status === 'rejected' ? styles.badgeDanger : styles.badgeWarning}`}>
-                                {part.status.replace('_', ' ')}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                <span className={`${styles.badge} ${part.paymentStatus === 'verified' ? styles.badgeSuccess : part.paymentStatus === 'pending_verification' ? styles.badgeWarning : styles.badgeDanger}`}>
-                                  {part.paymentStatus.replace('_', ' ')}
-                                </span>
-                                {part.method && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{part.method} {part.txnId ? `(${part.txnId})` : ''}</span>}
-                              </div>
-                            </td>
-                            <td>
-                              <div className={styles.actionGroup}>
-                                {/* Application Actions */}
-                                {part.status === 'pending_approval' && (
-                                  <>
-                                    <button onClick={() => handleParticipantAction(part.id, 'approve', { status: 'approved' })} className={`${styles.actionBtn} ${styles.btnSuccess}`}>Approve</button>
-                                    <button onClick={() => handleParticipantAction(part.id, 'reject', { status: 'rejected' })} className={`${styles.actionBtn} ${styles.btnDanger}`}>Reject</button>
-                                  </>
-                                )}
-                                
-                                {/* Payment Actions */}
-                                {part.status === 'approved' && part.paymentStatus !== 'verified' && (
-                                  <button onClick={() => handleParticipantAction(part.id, 'verify payment', { paymentStatus: 'verified' })} className={`${styles.actionBtn} ${styles.btnPrimary}`}>
-                                    Verify Payment
-                                  </button>
-                                )}
-                              </div>
-                            </td>
+                  <>
+                    {/* Desktop Table */}
+                    <div className={styles.desktopTable} style={{ overflowX: 'auto' }}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Member Email</th>
+                            <th>Application Status</th>
+                            <th>Payment Status</th>
+                            <th>Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {compParts.map(part => (
+                            <tr key={part.id}>
+                              <td>{part.userEmail}</td>
+                              <td>
+                                <span className={`${styles.badge} ${part.status === 'approved' ? styles.badgeSuccess : part.status === 'rejected' ? styles.badgeDanger : styles.badgeWarning}`}>
+                                  {part.status.replace('_', ' ')}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                  <span className={`${styles.badge} ${part.paymentStatus === 'verified' ? styles.badgeSuccess : part.paymentStatus === 'pending_verification' ? styles.badgeWarning : styles.badgeDanger}`}>
+                                    {part.paymentStatus.replace('_', ' ')}
+                                  </span>
+                                  {part.method && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{part.method} {part.txnId ? `(${part.txnId})` : ''}</span>}
+                                </div>
+                              </td>
+                              <td>
+                                <div className={styles.actionGroup}>
+                                  {part.status === 'pending_approval' && (
+                                    <>
+                                      <button onClick={() => handleParticipantAction(part.id, 'approve', { status: 'approved' })} className={`${styles.actionBtn} ${styles.btnSuccess}`}>Approve</button>
+                                      <button onClick={() => handleParticipantAction(part.id, 'reject', { status: 'rejected' })} className={`${styles.actionBtn} ${styles.btnDanger}`}>Reject</button>
+                                    </>
+                                  )}
+                                  
+                                  {part.status === 'approved' && part.paymentStatus !== 'verified' && (
+                                    <button onClick={() => handleParticipantAction(part.id, 'verify payment', { paymentStatus: 'verified' })} className={`${styles.actionBtn} ${styles.btnPrimary}`}>
+                                      Verify Payment
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Participants Cards */}
+                    <div className={styles.mobileParticipantsList}>
+                      {compParts.map(part => (
+                        <div key={part.id} className={styles.participantCard}>
+                          <div className={styles.partEmail}>{part.userEmail}</div>
+                          <div className={styles.partBadges}>
+                            <span className={`${styles.badge} ${part.status === 'approved' ? styles.badgeSuccess : part.status === 'rejected' ? styles.badgeDanger : styles.badgeWarning}`}>
+                              {part.status.replace('_', ' ')}
+                            </span>
+                            <span className={`${styles.badge} ${part.paymentStatus === 'verified' ? styles.badgeSuccess : part.paymentStatus === 'pending_verification' ? styles.badgeWarning : styles.badgeDanger}`}>
+                              Pay: {part.paymentStatus.replace('_', ' ')}
+                            </span>
+                          </div>
+                          {part.method && (
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                              via {part.method} {part.txnId ? `(Txn: ${part.txnId})` : ''}
+                            </div>
+                          )}
+                          {(part.status === 'pending_approval' || (part.status === 'approved' && part.paymentStatus !== 'verified')) && (
+                            <div className={styles.mobileActions}>
+                              {part.status === 'pending_approval' && (
+                                <>
+                                  <button onClick={() => handleParticipantAction(part.id, 'approve', { status: 'approved' })} className={`${styles.mobileActionBtn} ${styles.btnSuccess}`}>Approve</button>
+                                  <button onClick={() => handleParticipantAction(part.id, 'reject', { status: 'rejected' })} className={`${styles.mobileActionBtn} ${styles.btnDanger}`}>Reject</button>
+                                </>
+                              )}
+                              {part.status === 'approved' && part.paymentStatus !== 'verified' && (
+                                <button onClick={() => handleParticipantAction(part.id, 'verify payment', { paymentStatus: 'verified' })} className={`${styles.mobileActionBtn} ${styles.btnPrimary}`}>
+                                  Verify Payment
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             </div>

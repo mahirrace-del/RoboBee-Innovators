@@ -287,7 +287,7 @@ export default function AdminPublicSitePage() {
       <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Public Site Management</h1>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Customize the public homepage features.</p>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+      <div className={styles.tabsContainer}>
         <button className={activeTab === 'projects' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('projects')}>Projects</button>
         <button className={activeTab === 'achievements' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('achievements')}>Achievements</button>
         <button className={activeTab === 'marquee' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('marquee')}>Member Marquee</button>
@@ -321,13 +321,13 @@ export default function AdminPublicSitePage() {
           <h2 style={{ marginBottom: '1.5rem' }}>Current Projects</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
             {projects.map(p => (
-              <div key={p.id} style={{ display: 'flex', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', alignItems: 'center' }}>
-                {p.image?.trim() ? <img src={p.image.trim()} alt={p.title} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px' }} /> : null}
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: '1.1rem' }}>{p.title}</h3>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{p.description}</p>
+              <div key={p.id} className={styles.itemCard}>
+                {p.image?.trim() ? <img src={p.image.trim()} alt={p.title} className={styles.itemImg} /> : null}
+                <div className={styles.itemContent}>
+                  <h3 className={styles.itemTitle}>{p.title}</h3>
+                  <p className={styles.itemDesc}>{p.description}</p>
                 </div>
-                <button onClick={() => handleDelete('projects', p.id)} style={{ padding: '0.5rem 1rem', background: '#ff5555', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Delete</button>
+                <button onClick={() => handleDelete('projects', p.id)} className={styles.deleteBtn}>Delete</button>
               </div>
             ))}
           </div>
@@ -349,13 +349,13 @@ export default function AdminPublicSitePage() {
           <h2 style={{ marginBottom: '1.5rem' }}>Current Achievements</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
             {achievements.map(a => (
-              <div key={a.id} style={{ display: 'flex', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', alignItems: 'center' }}>
-                {a.image?.trim() ? <img src={a.image.trim()} alt={a.title} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px' }} /> : null}
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: '1.1rem' }}><span style={{ color: '#F4B304' }}>{a.year}</span> | {a.title}</h3>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{a.description}</p>
+              <div key={a.id} className={styles.itemCard}>
+                {a.image?.trim() ? <img src={a.image.trim()} alt={a.title} className={styles.itemImg} /> : null}
+                <div className={styles.itemContent}>
+                  <h3 className={styles.itemTitle}><span style={{ color: '#F4B304' }}>{a.year}</span> | {a.title}</h3>
+                  <p className={styles.itemDesc}>{a.description}</p>
                 </div>
-                <button onClick={() => handleDelete('achievements', a.id)} style={{ padding: '0.5rem 1rem', background: '#ff5555', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Delete</button>
+                <button onClick={() => handleDelete('achievements', a.id)} className={styles.deleteBtn}>Delete</button>
               </div>
             ))}
           </div>

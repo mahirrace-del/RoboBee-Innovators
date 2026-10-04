@@ -124,19 +124,37 @@
   color: var(--text-secondary);
 }
 
+/* Mobile Bottom Navigation Bar */
+.mobileBottomNav {
+  display: none;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .dashboardContainer {
     flex-direction: column;
+    min-height: calc(100dvh - 80px);
   }
 
   .mobileHeader {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 80px;
+    z-index: 40;
+    padding: 0.85rem 1.25rem;
   }
 
   .sidebar {
     transform: translateX(-100%);
-    width: 280px;
+    width: 290px;
+    background: #0f1016;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
+    padding-bottom: 5rem;
   }
 
   .sidebarOpen {
@@ -153,8 +171,62 @@
 
   .mainContent {
     margin-left: 0;
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem 100px 1rem; /* 100px bottom clearance for bottom nav bar */
     width: 100%;
+    max-width: 100vw;
     overflow-x: hidden;
+  }
+
+  /* Dedicated Mobile App Bottom Bar */
+  .mobileBottomNav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: rgba(12, 13, 20, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 90;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 0.5rem;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.4);
+  }
+
+  .bottomNavItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 8px;
+    flex: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+  }
+
+  .bottomNavItem:active {
+    transform: scale(0.92);
+  }
+
+  .bottomNavItemActive {
+    color: var(--accent-primary) !important;
+    font-weight: 700;
+  }
+
+  .bottomNavItemActive svg {
+    filter: drop-shadow(0 0 6px rgba(244, 179, 4, 0.5));
   }
 }

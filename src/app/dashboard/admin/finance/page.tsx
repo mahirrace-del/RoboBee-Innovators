@@ -86,58 +86,103 @@ export default function AdminFinancePage() {
         {payments.length === 0 ? (
           <div className={styles.emptyState}>No payments recorded yet.</div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Member ID</th>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Method & Txn</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.map(payment => (
-                  <tr key={payment.id}>
-                    <td>{new Date(payment.date).toLocaleDateString()}</td>
-                    <td>
-                      <div style={{ fontWeight: '500', fontSize: '0.85rem' }}>{payment.userId}</div>
-                    </td>
-                    <td style={{ textTransform: 'capitalize' }}>
-                      {payment.type} {payment.month ? `(${payment.month})` : ''}
-                    </td>
-                    <td style={{ fontWeight: '600' }}>{payment.amount} BDT</td>
-                    <td>
-                      {payment.method}
-                      <br/>
-                      <span style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                        {payment.txnId || 'N/A'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`${styles.statusBadge} ${
-                        payment.status === 'verified' ? styles.statusApproved : 
-                        payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
-                      }`}>
-                        {payment.status === 'pending_verification' ? 'pending' : payment.status}
-                      </span>
-                    </td>
-                    <td>
-                      {payment.status === 'pending_verification' && (
-                        <div className={styles.actions}>
-                          <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>Verify</button>
-                          <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>Reject</button>
-                        </div>
-                      )}
-                    </td>
+          <>
+            {/* Desktop View Table */}
+            <div className={styles.desktopTable}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Member ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Method & Txn</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {payments.map(payment => (
+                    <tr key={payment.id}>
+                      <td>{new Date(payment.date).toLocaleDateString()}</td>
+                      <td>
+                        <div style={{ fontWeight: '500', fontSize: '0.85rem' }}>{payment.userId}</div>
+                      </td>
+                      <td style={{ textTransform: 'capitalize' }}>
+                        {payment.type} {payment.month ? `(${payment.month})` : ''}
+                      </td>
+                      <td style={{ fontWeight: '600' }}>{payment.amount} BDT</td>
+                      <td>
+                        {payment.method}
+                        <br/>
+                        <span style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                          {payment.txnId || 'N/A'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${
+                          payment.status === 'verified' ? styles.statusApproved : 
+                          payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
+                        }`}>
+                          {payment.status === 'pending_verification' ? 'pending' : payment.status}
+                        </span>
+                      </td>
+                      <td>
+                        {payment.status === 'pending_verification' && (
+                          <div className={styles.actions}>
+                            <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>Verify</button>
+                            <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>Reject</button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile View: Transaction Stream Cards */}
+            <div className={styles.mobileCardList}>
+              {payments.map(payment => (
+                <div key={payment.id} className={styles.paymentCard}>
+                  <div className={styles.paymentCardHeader}>
+                    <div>
+                      <div className={styles.paymentAmount}>{payment.amount} BDT</div>
+                      <div className={styles.paymentType}>
+                        {payment.type} {payment.month ? `(${payment.month})` : ''}
+                      </div>
+                    </div>
+                    <span className={`${styles.statusBadge} ${
+                      payment.status === 'verified' ? styles.statusApproved : 
+                      payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
+                    }`}>
+                      {payment.status === 'pending_verification' ? 'pending' : payment.status}
+                    </span>
+                  </div>
+
+                  <div className={styles.paymentMeta}>
+                    <div>Date: <strong>{new Date(payment.date).toLocaleDateString()}</strong></div>
+                    <div>User: <strong>{payment.userId}</strong></div>
+                    <div>Method: <strong>{payment.method}</strong></div>
+                    {payment.txnId && (
+                      <div>Txn ID: <code style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>{payment.txnId}</code></div>
+                    )}
+                  </div>
+
+                  {payment.status === 'pending_verification' && (
+                    <div className={styles.mobileActionRow}>
+                      <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>
+                        ✓ Verify
+                      </button>
+                      <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>
+                        ✕ Reject
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

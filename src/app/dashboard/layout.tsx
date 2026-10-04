@@ -1,14 +1,14 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { Logo } from "@/components/Logo";
 import { auth, db } from "@/lib/firebase";
 import { deleteDoc, doc } from "firebase/firestore";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Home, Package, Trophy, User as UserIcon, LayoutGrid, LogOut, Shield, DollarSign, CalendarCheck, CheckSquare, Layers } from "lucide-react";
 import { getUserRoleBadge } from "@/lib/permissions";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -101,12 +101,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  const pathname = usePathname();
+  const isAct = (href: string) => pathname === href ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
+
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.mobileHeader}>
-        <Logo width={30} height={30} />
-        <button className={styles.mobileMenuBtn} onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? <X size={28} /> : <Menu size={28} />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Logo width={28} height={28} />
+          <span style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--text-primary)' }}>RoboBee Portal</span>
+        </div>
+        <button 
+          className={styles.mobileMenuBtn} 
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label={sidebarOpen ? "Close menu" : "Open full menu"}
+        >
+          {sidebarOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>
 
@@ -114,74 +124,74 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className={styles.sidebarLogoDesktop} style={{ marginBottom: '2rem', paddingLeft: '1rem' }}>
           <Logo width={30} height={30} />
         </div>
-        <div style={{ marginTop: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
+        <div style={{ marginTop: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
           CORE
         </div>
-        <Link href="/dashboard" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard" className={isAct("/dashboard")} onClick={closeSidebar}>
           Dashboard Overview
         </Link>
-        <Link href="/dashboard/profile" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/profile" className={isAct("/dashboard/profile")} onClick={closeSidebar}>
           My Profile
         </Link>
 
-        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
+        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
           ACTIVITIES
         </div>
-        <Link href="/dashboard/tasks" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/tasks" className={isAct("/dashboard/tasks")} onClick={closeSidebar}>
           My Tasks
         </Link>
-        <Link href="/dashboard/attendance" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/attendance" className={isAct("/dashboard/attendance")} onClick={closeSidebar}>
           Attendance
         </Link>
-        <Link href="/dashboard/competitions" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/competitions" className={isAct("/dashboard/competitions")} onClick={closeSidebar}>
           Competitions
         </Link>
 
-        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
+        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
           RESOURCES
         </div>
-        <Link href="/dashboard/lab" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/lab" className={isAct("/dashboard/lab")} onClick={closeSidebar}>
           Lab Status
         </Link>
-        <Link href="/dashboard/inventory" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/inventory" className={isAct("/dashboard/inventory")} onClick={closeSidebar}>
           Inventory
         </Link>
-        <Link href="/dashboard/checkout" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/checkout" className={isAct("/dashboard/checkout")} onClick={closeSidebar}>
           Hardware Checkout
         </Link>
-        <Link href="/dashboard/bom" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/bom" className={isAct("/dashboard/bom")} onClick={closeSidebar}>
           Project BOM
         </Link>
 
-        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
+        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
           FINANCE
         </div>
-        <Link href="/dashboard/finance" className={styles.navItem} onClick={closeSidebar}>
+        <Link href="/dashboard/finance" className={isAct("/dashboard/finance")} onClick={closeSidebar}>
           Finance & bKash
         </Link>
         
         {/* Admin Controls */}
         {role === "admin" ? (
           <>
-            <div style={{ marginTop: '1.5rem', color: '#ff5555', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
+            <div style={{ marginTop: '1.5rem', color: '#ff5555', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
               ADMIN CONTROLS
             </div>
-            <Link href="/dashboard/members" className={styles.navItem} onClick={closeSidebar}>
+            <Link href="/dashboard/members" className={isAct("/dashboard/members")} onClick={closeSidebar}>
               Manage Members
             </Link>
-            <Link href="/dashboard/admin/finance" className={styles.navItem} onClick={closeSidebar}>
+            <Link href="/dashboard/admin/finance" className={isAct("/dashboard/admin/finance")} onClick={closeSidebar}>
               Manage Finances
             </Link>
-            <Link href="/dashboard/admin/attendance" className={styles.navItem} onClick={closeSidebar}>
+            <Link href="/dashboard/admin/attendance" className={isAct("/dashboard/admin/attendance")} onClick={closeSidebar}>
               Manage Attendance
             </Link>
-            <Link href="/dashboard/admin/requests" className={styles.navItem} onClick={closeSidebar}>
+            <Link href="/dashboard/admin/requests" className={isAct("/dashboard/admin/requests")} onClick={closeSidebar}>
               Parts Requests
             </Link>
-            <Link href="/dashboard/admin/public-site" className={styles.navItem} onClick={closeSidebar}>
+            <Link href="/dashboard/admin/public-site" className={isAct("/dashboard/admin/public-site")} onClick={closeSidebar}>
               Public Site Content
             </Link>
-            <Link href="/dashboard/admin/competitions" className={styles.navItem} onClick={closeSidebar}>
+            <Link href="/dashboard/admin/competitions" className={isAct("/dashboard/admin/competitions")} onClick={closeSidebar}>
               Manage Competitions
             </Link>
           </>
@@ -189,41 +199,41 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           /* Delegated Staff / Specialized Role Controls */
           (canManage("manage_store") || canManage("manage_achievements") || canManage("manage_competitions") || canManage("manage_finance") || canManage("manage_attendance") || canManage("manage_members")) && (
             <>
-              <div style={{ marginTop: '1.5rem', color: '#a855f7', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold' }}>
+              <div style={{ marginTop: '1.5rem', color: '#a855f7', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
                 STAFF CONTROLS
               </div>
               {canManage("manage_members") && (
-                <Link href="/dashboard/members" className={styles.navItem} onClick={closeSidebar}>
+                <Link href="/dashboard/members" className={isAct("/dashboard/members")} onClick={closeSidebar}>
                   Manage Members
                 </Link>
               )}
               {canManage("manage_store") && (
                 <>
-                  <Link href="/dashboard/inventory" className={styles.navItem} onClick={closeSidebar}>
+                  <Link href="/dashboard/inventory" className={isAct("/dashboard/inventory")} onClick={closeSidebar}>
                     Store Management
                   </Link>
-                  <Link href="/dashboard/admin/requests" className={styles.navItem} onClick={closeSidebar}>
+                  <Link href="/dashboard/admin/requests" className={isAct("/dashboard/admin/requests")} onClick={closeSidebar}>
                     Parts Requests
                   </Link>
                 </>
               )}
               {canManage("manage_competitions") && (
-                <Link href="/dashboard/admin/competitions" className={styles.navItem} onClick={closeSidebar}>
+                <Link href="/dashboard/admin/competitions" className={isAct("/dashboard/admin/competitions")} onClick={closeSidebar}>
                   Manage Competitions
                 </Link>
               )}
               {canManage("manage_achievements") && (
-                <Link href="/dashboard/admin/public-site" className={styles.navItem} onClick={closeSidebar}>
+                <Link href="/dashboard/admin/public-site" className={isAct("/dashboard/admin/public-site")} onClick={closeSidebar}>
                   Public Site Content
                 </Link>
               )}
               {canManage("manage_finance") && (
-                <Link href="/dashboard/admin/finance" className={styles.navItem} onClick={closeSidebar}>
+                <Link href="/dashboard/admin/finance" className={isAct("/dashboard/admin/finance")} onClick={closeSidebar}>
                   Manage Finances
                 </Link>
               )}
               {canManage("manage_attendance") && (
-                <Link href="/dashboard/admin/attendance" className={styles.navItem} onClick={closeSidebar}>
+                <Link href="/dashboard/admin/attendance" className={isAct("/dashboard/admin/attendance")} onClick={closeSidebar}>
                   Manage Attendance
                 </Link>
               )}
@@ -266,6 +276,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className={styles.mainContent}>
         {children}
       </main>
+
+      {/* Dedicated Mobile Bottom App Bar */}
+      <nav className={styles.mobileBottomNav} aria-label="Mobile Navigation">
+        <Link 
+          href="/dashboard" 
+          className={`${styles.bottomNavItem} ${pathname === "/dashboard" ? styles.bottomNavItemActive : ""}`}
+        >
+          <Home size={20} />
+          <span>Overview</span>
+        </Link>
+        <Link 
+          href="/dashboard/inventory" 
+          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/inventory") ? styles.bottomNavItemActive : ""}`}
+        >
+          <Package size={20} />
+          <span>Store</span>
+        </Link>
+        <Link 
+          href="/dashboard/competitions" 
+          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/competitions") ? styles.bottomNavItemActive : ""}`}
+        >
+          <Trophy size={20} />
+          <span>Events</span>
+        </Link>
+        <Link 
+          href="/dashboard/profile" 
+          className={`${styles.bottomNavItem} ${pathname === "/dashboard/profile" ? styles.bottomNavItemActive : ""}`}
+        >
+          <UserIcon size={20} />
+          <span>Profile</span>
+        </Link>
+        <button 
+          onClick={() => setSidebarOpen(prev => !prev)}
+          className={`${styles.bottomNavItem} ${sidebarOpen ? styles.bottomNavItemActive : ""}`}
+          aria-label="Toggle All Menus"
+        >
+          <LayoutGrid size={20} />
+          <span>Menu</span>
+        </button>
+      </nav>
     </div>
   );
 }

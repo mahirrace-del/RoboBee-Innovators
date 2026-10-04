@@ -5,7 +5,8 @@ import { db } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import styles from "../lab/lab.module.css";
+import styles from "./members.module.css";
+import { Shield, User as UserIcon, Trash2, Mail, Phone } from "lucide-react";
 import { 
   PERMISSION_LIST, 
   ROLE_PRESETS, 
@@ -179,15 +180,16 @@ export default function MembersDashboard() {
         />
       </div>
 
-      <div className="glass-panel" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      {/* Desktop View: Multi-Column Data Table */}
+      <div className={`glass-panel ${styles.desktopTableContainer}`} style={{ padding: '1.5rem' }}>
+        <table className={styles.table}>
           <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              <th style={{ padding: '1rem' }}>Member</th>
-              <th style={{ padding: '1rem' }}>Contact</th>
-              <th style={{ padding: '1rem' }}>Account Status</th>
-              <th style={{ padding: '1rem' }}>Assigned Role / Privileges</th>
-              <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
+            <tr>
+              <th>Member</th>
+              <th>Contact</th>
+              <th>Account Status</th>
+              <th>Assigned Role / Privileges</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -203,8 +205,8 @@ export default function MembersDashboard() {
                 const isSelf = u.id === currentUser?.uid;
 
                 return (
-                  <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '1rem' }}>
+                  <tr key={u.id}>
+                    <td>
                       <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>
                         {u.name || "N/A"} {isSelf && <span style={{ color: '#00d2ff', fontSize: '0.8rem' }}>(You)</span>}
                       </div>
@@ -212,22 +214,18 @@ export default function MembersDashboard() {
                         @{u.username || "unknown"}
                       </div>
                     </td>
-                    <td style={{ padding: '1rem' }}>
+                    <td>
                       <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{u.email}</div>
                       <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{u.phone || "No phone"}</div>
                     </td>
-                    <td style={{ padding: '1rem' }}>
+                    <td>
                       <select 
                         value={u.role || 'pending'} 
                         onChange={(e) => handleDirectStatusChange(u.id, e.target.value)}
                         disabled={isSelf && u.role === "admin"}
+                        className={styles.statusSelect}
                         style={{ 
-                          background: 'rgba(0,0,0,0.3)', 
                           color: u.role === 'admin' ? '#00d2ff' : u.role === 'declined' ? '#ff5555' : u.role === 'pending' ? '#F4B304' : 'var(--text-primary)', 
-                          border: '1px solid rgba(255,255,255,0.2)', 
-                          padding: '0.3rem 0.5rem',
-                          borderRadius: '4px',
-                          fontWeight: 'bold',
                           cursor: isSelf ? 'default' : 'pointer'
                         }}
                       >
@@ -237,7 +235,7 @@ export default function MembersDashboard() {
                         <option value="declined">Declined</option>
                       </select>
                     </td>
-                    <td style={{ padding: '1rem' }}>
+                    <td>
                       <span style={{ 
                         color: badge.color, 
                         background: badge.background,
@@ -253,7 +251,7 @@ export default function MembersDashboard() {
                         {badge.label}
                       </span>
                     </td>
-                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                    <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
                         <button
                           onClick={() => handleOpenRoleModal(u)}
@@ -313,6 +311,92 @@ export default function MembersDashboard() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile View: Dedicated Member Cards */}
+      <div className={styles.mobileCardsContainer}>
+        {filteredUsers.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+            {users.length === 0 ? "Loading users..." : "No matching members found."}
+          </div>
+        ) : (
+          filteredUsers.map(u => {
+            const badge = getUserRoleBadge(u);
+            const isSelf = u.id === currentUser?.uid;
+            const initials = (u.name || u.email || "M").substring(0, 2).toUpperCase();
+
+            return (
+              <div key={u.id} className={styles.memberCard}>
+                <div className={styles.cardTop}>
+                  <div className={styles.avatarCircle}>{initials}</div>
+                  <div className={styles.cardDetails}>
+                    <div className={styles.memberName}>
+                      {u.name || "N/A"} {isSelf && <span style={{ color: '#00d2ff', fontSize: '0.75rem' }}>(You)</span>}
+                    </div>
+                    <div className={styles.memberUsername}>@{u.username || "unknown"}</div>
+                    <div className={styles.memberContact}>{u.email}</div>
+                    {u.phone && <div className={styles.memberContact}>📞 {u.phone}</div>}
+                  </div>
+                </div>
+
+                <div className={styles.badgesRow}>
+                  <span style={{ 
+                    color: badge.color, 
+                    background: badge.background,
+                    padding: '0.25rem 0.6rem',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    fontWeight: '600',
+                    border: `1px solid ${badge.color}33`
+                  }}>
+                    {badge.label}
+                  </span>
+
+                  <select 
+                    value={u.role || 'pending'} 
+                    onChange={(e) => handleDirectStatusChange(u.id, e.target.value)}
+                    disabled={isSelf && u.role === "admin"}
+                    className={styles.statusSelect}
+                    style={{ 
+                      color: u.role === 'admin' ? '#00d2ff' : u.role === 'declined' ? '#ff5555' : u.role === 'pending' ? '#F4B304' : 'var(--text-primary)', 
+                      cursor: isSelf ? 'default' : 'pointer'
+                    }}
+                  >
+                    <option value="pending">Status: Pending</option>
+                    <option value="member">Status: Active</option>
+                    <option value="admin">Status: Admin</option>
+                    <option value="declined">Status: Declined</option>
+                  </select>
+                </div>
+
+                <div className={styles.mobileActionsGrid}>
+                  <button
+                    onClick={() => handleOpenRoleModal(u)}
+                    className={`${styles.mobileBtn} ${styles.roleBtn}`}
+                  >
+                    🛡️ Roles
+                  </button>
+
+                  <Link 
+                    href={`/dashboard/members/${u.id}`}
+                    className={`${styles.mobileBtn} ${styles.profileBtn}`}
+                  >
+                    Profile
+                  </Link>
+
+                  {!isSelf && (
+                    <button 
+                      onClick={() => handleDeleteUser(u.id, u.email)}
+                      className={`${styles.mobileBtn} ${styles.deleteBtn}`}
+                    >
+                      Delete Member
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Role & Permissions Assignment Modal */}
