@@ -9,13 +9,20 @@ export default function ClientLabStatus() {
   const [labStatus, setLabStatus] = useState<"Open" | "Closed" | "Loading">("Loading");
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "settings", "labStatus"), (docSnap) => {
-      if (docSnap.exists()) {
-        setLabStatus(docSnap.data().status);
-      } else {
+    const unsub = onSnapshot(
+      doc(db, "settings", "labStatus"), 
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setLabStatus(docSnap.data().status);
+        } else {
+          setLabStatus("Closed");
+        }
+      },
+      (error) => {
+        console.warn("Could not read lab status, defaulting to Closed:", error);
         setLabStatus("Closed");
       }
-    });
+    );
 
     return () => unsub();
   }, []);
