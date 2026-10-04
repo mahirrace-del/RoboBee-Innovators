@@ -60,6 +60,24 @@
   transition: width var(--transition-fast);
 }
 
+.brandGroup {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.brandLink {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity var(--transition-fast);
+}
+
+.brandLink:hover {
+  opacity: 0.9;
+}
+
 .link:hover::after {
   width: 100%;
 }
@@ -73,6 +91,7 @@
   font-weight: 600;
   font-size: 0.9rem;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .loginBtn:hover {
@@ -84,6 +103,15 @@
   display: none;
   cursor: pointer;
   color: var(--text-primary);
+  background: none;
+  border: none;
+  padding: 0.4rem;
+  border-radius: 8px;
+  touch-action: manipulation;
+}
+
+.mobileToggle:active {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .mobileMenu {
@@ -91,12 +119,22 @@
 }
 
 @media (max-width: 768px) {
+  .navContainer {
+    padding: 0 1rem;
+  }
+
+  .brandGroup {
+    gap: 0.75rem;
+  }
+
   .desktopOnly {
     display: none !important;
   }
   
   .mobileToggle {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .mobileMenu {
@@ -107,13 +145,13 @@
     right: 0;
     background: var(--bg-primary);
     flex-direction: column;
-    padding: 1rem 2rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
   }
   
   .mobileLink {
-    padding: 1rem 0;
+    padding: 0.85rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
     font-weight: 500;
@@ -129,3 +167,14 @@
     border-radius: var(--radius-sm);
   }
 }
+
+@media (max-width: 420px) {
+  .navContainer {
+    padding: 0 0.75rem;
+  }
+
+  .brandGroup {
+    gap: 0.5rem;
+  }
+}
+

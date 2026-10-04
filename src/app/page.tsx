@@ -62,12 +62,6 @@ export default function Home() {
               Learn More
             </Link>
           </div>
-
-          <div className={styles.heroHighlights}>
-            <div className={styles.highlightPill}>🤖 15+ Robotics Projects</div>
-            <div className={styles.highlightPill}>🏆 National Champions</div>
-            <div className={styles.highlightPill}>⚡ 24/7 Innovation Lab</div>
-          </div>
         </div>
       </section>
 

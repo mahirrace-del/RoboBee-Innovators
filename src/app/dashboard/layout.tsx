@@ -101,30 +101,49 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  useEffect(() => {
+    const handleToggle = () => setSidebarOpen(prev => !prev);
+    window.addEventListener('toggle-portal-sidebar', handleToggle);
+    return () => window.removeEventListener('toggle-portal-sidebar', handleToggle);
+  }, []);
+
   const pathname = usePathname();
   const isAct = (href: string) => pathname === href ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
 
   return (
     <div className={styles.dashboardContainer}>
-      <div className={styles.mobileHeader}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Logo width={28} height={28} />
-          <span style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--text-primary)' }}>RoboBee Portal</span>
-        </div>
-        <button 
-          className={styles.mobileMenuBtn} 
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label={sidebarOpen ? "Close menu" : "Open full menu"}
-        >
-          {sidebarOpen ? <X size={26} /> : <Menu size={26} />}
-        </button>
-      </div>
-
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
-        <div className={styles.sidebarLogoDesktop} style={{ marginBottom: '2rem', paddingLeft: '1rem' }}>
-          <Logo width={30} height={30} />
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          padding: '0 0.5rem 1.25rem 0.5rem', 
+          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+          marginBottom: '0.75rem'
+        }}>
+          <span style={{ 
+            fontSize: '0.72rem', 
+            fontWeight: 800, 
+            textTransform: 'uppercase', 
+            letterSpacing: '2px', 
+            color: 'var(--accent-primary)',
+            background: 'rgba(244, 179, 4, 0.1)',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '6px',
+            border: '1px solid rgba(244, 179, 4, 0.25)',
+            display: 'inline-block'
+          }}>
+            Team Portal
+          </span>
+          <button 
+            onClick={closeSidebar}
+            className={styles.sidebarCloseBtn}
+            aria-label="Close sidebar navigation"
+          >
+            <X size={20} />
+          </button>
         </div>
-        <div style={{ marginTop: '1rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
+        <div style={{ marginTop: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
           CORE
         </div>
         <Link href="/dashboard" className={isAct("/dashboard")} onClick={closeSidebar}>
