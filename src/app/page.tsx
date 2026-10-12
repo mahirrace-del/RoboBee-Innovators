@@ -4,14 +4,36 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp } from "firebase/firestore";
+import { Trophy, Calendar, MapPin, X, CheckCircle, PhoneCall, Sparkles } from "lucide-react";
+
+interface Segment {
+  id: string;
+  name: string;
+  fee: number;
+  maxParticipants: number;
+  description?: string;
+}
 
 export default function Home() {
   const [projects, setProjects] = useState<any[]>([]);
   const [achievements, setAchievements] = useState<any[]>([]);
   const [marquees, setMarquees] = useState<any[]>([]);
   const [leaders, setLeaders] = useState<any[]>([]);
+  const [competitions, setCompetitions] = useState<any[]>([]);
   const [isMarqueePaused, setIsMarqueePaused] = useState(false);
+
+  // Modal Registration State
+  const [selectedCompForModal, setSelectedCompForModal] = useState<any | null>(null);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string>("");
+  const [regFullName, setRegFullName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regWhatsapp, setRegWhatsapp] = useState("");
+  const [regLocation, setRegLocation] = useState("");
+  const [regExperience, setRegExperience] = useState("");
+  const [regAgreed, setRegAgreed] = useState(false);
+  const [isSubmittingReg, setIsSubmittingReg] = useState(false);
+  const [regSuccess, setRegSuccess] = useState(false);
 
   useEffect(() => {
     const unsubProjects = onSnapshot(collection(db, "projects"), (snap) => {
@@ -30,19 +52,93 @@ export default function Home() {
       setLeaders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    // Fetch public competitions
+    const unsubComp = onSnapshot(collection(db, "competitions"), (snap) => {
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+      // Filter only public & active competitions
+      const publicComps = data.filter(c => c.visibility !== "members_only" && c.status !== "Completed");
+      publicComps.sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
+      setCompetitions(publicComps);
+    });
+
     return () => {
       unsubProjects();
       unsubAchievements();
       unsubMarquee();
       unsubLeaders();
+      unsubComp();
     };
   }, []);
+
+  // Open Registration Modal
+  const handleOpenRegistration = (comp: any) => {
+    setSelectedCompForModal(comp);
+    const segs: Segment[] = Array.isArray(comp.segments) && comp.segments.length > 0 
+      ? comp.segments 
+      : [{ id: "default", name: comp.name || "General Contest", fee: comp.fee || 0, maxParticipants: comp.maxParticipants || 30 }];
+    setSelectedSegmentId(segs[0]?.id || "");
+    setRegFullName("");
+    setRegEmail("");
+    setRegWhatsapp("");
+    setRegLocation("");
+    setRegExperience("");
+    setRegAgreed(false);
+    setRegSuccess(false);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedCompForModal(null);
+    setRegSuccess(false);
+  };
+
+  // Submit Public Registration to Firestore
+  const handleSubmitPublicRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCompForModal) return;
+
+    if (!regAgreed) {
+      alert("Please agree to the tournament guidelines and participation fee terms to continue.");
+      return;
+    }
+
+    const segments: Segment[] = Array.isArray(selectedCompForModal.segments) && selectedCompForModal.segments.length > 0 
+      ? selectedCompForModal.segments 
+      : [{ id: "default", name: selectedCompForModal.name || "General Contest", fee: selectedCompForModal.fee || 0, maxParticipants: selectedCompForModal.maxParticipants || 30 }];
+
+    const chosenSeg = segments.find(s => s.id === selectedSegmentId) || segments[0];
+
+    setIsSubmittingReg(true);
+    try {
+      await addDoc(collection(db, "public_competition_registrations"), {
+        competitionId: selectedCompForModal.id,
+        competitionName: selectedCompForModal.name,
+        segmentId: chosenSeg.id,
+        segmentName: chosenSeg.name,
+        fee: chosenSeg.fee,
+        fullName: regFullName.trim(),
+        email: regEmail.trim(),
+        whatsapp: regWhatsapp.trim(),
+        location: regLocation.trim(),
+        experience: regExperience.trim(),
+        agreedToTerms: true,
+        status: "pending",
+        submittedAt: serverTimestamp(),
+      });
+      setRegSuccess(true);
+    } catch (error) {
+      console.error("Error submitting public registration:", error);
+      alert("Failed to submit registration. Please check your network connection and try again.");
+    } finally {
+      setIsSubmittingReg(false);
+    }
+  };
 
   return (
     <div className={styles.main}>
       <div className={styles.shape1 + ' ' + styles.shape}></div>
       <div className={styles.shape2 + ' ' + styles.shape}></div>
 
+      {/* HERO SECTION */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.badge}>Next-Gen Robotics Club</div>
@@ -59,13 +155,20 @@ export default function Home() {
             <Link href="/recruitment" className={styles.primaryBtn}>
               Apply for Membership
             </Link>
-            <Link href="#features" className={styles.secondaryBtn}>
-              Learn More
-            </Link>
+            {competitions.length > 0 ? (
+              <Link href="#competitions" className={styles.secondaryBtn} style={{ borderColor: 'rgba(244, 179, 4, 0.4)' }}>
+                🔥 View Competitions ({competitions.length})
+              </Link>
+            ) : (
+              <Link href="#features" className={styles.secondaryBtn}>
+                Learn More
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
+      {/* WHAT WE DO */}
       <section id="features" className={styles.features}>
         <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '1rem' }}>What We Do</h2>
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>
@@ -73,7 +176,6 @@ export default function Home() {
         </p>
 
         <div className={styles.featuresGrid}>
-          
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -96,7 +198,7 @@ export default function Home() {
                 <polyline points="2 12 12 17 22 12"></polyline>
               </svg>
             </div>
-            <h3>AI & ML</h3>
+            <h3>AI &amp; ML</h3>
             <p>Implement machine learning models, computer vision, and neural networks to make our hardware intelligent.</p>
           </div>
 
@@ -109,10 +211,10 @@ export default function Home() {
             <h3>IoT Automation</h3>
             <p>Create interconnected smart systems, sensor networks, and home automation tools using modern protocols.</p>
           </div>
-
         </div>
       </section>
 
+      {/* PROJECTS SHOWCASE */}
       <section id="projects" className={styles.projects}>
         <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '1rem' }}>Dynamic Project Showcase</h2>
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', marginBottom: '3rem' }}>
@@ -137,6 +239,75 @@ export default function Home() {
         )}
       </section>
 
+      {/* PUBLIC COMPETITIONS & CHALLENGES SECTION */}
+      <section id="competitions" className={styles.competitionsSection}>
+        <h2>Competitions &amp; Challenges</h2>
+        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', maxWidth: '650px', margin: '0 auto', fontSize: '1.05rem', lineHeight: '1.6' }}>
+          Open for passionate builders, students, and enthusiasts. Choose your category, register below, and battle in the arena!
+        </p>
+
+        {competitions.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-secondary)' }}>
+            <Trophy size={48} style={{ opacity: 0.35, margin: '0 auto 1rem auto' }} />
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>New Contests Coming Soon</h3>
+            <p style={{ fontSize: '0.92rem' }}>Stay tuned! Our upcoming robotics tournaments and open challenges will be announced right here.</p>
+          </div>
+        ) : (
+          <div className={styles.competitionsGrid}>
+            {competitions.map((comp) => {
+              const compSegments: Segment[] = Array.isArray(comp.segments) && comp.segments.length > 0 
+                ? comp.segments 
+                : [{ id: "default", name: comp.name || "General Contest", fee: comp.fee || 0, maxParticipants: comp.maxParticipants || 30 }];
+
+              return (
+                <div key={comp.id} className={styles.publicCompCard}>
+                  <div className={styles.publicCompHeader}>
+                    <div>
+                      <h3>{comp.name}</h3>
+                      <div className={styles.publicCompMeta} style={{ marginTop: '0.4rem' }}>
+                        <span className={styles.publicCompMetaItem}>
+                          <Calendar size={14} color="var(--accent-primary)" /> {comp.date || "Announced Soon"}
+                        </span>
+                        <span className={styles.publicCompMetaItem}>
+                          <MapPin size={14} color="var(--accent-primary)" /> {comp.location || "Club Arena"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {comp.description && (
+                    <p className={styles.publicCompDesc}>
+                      {comp.description}
+                    </p>
+                  )}
+
+                  <div className={styles.segmentsShowcase}>
+                    <div className={styles.segmentsShowcaseTitle}>Available Categories:</div>
+                    <div className={styles.segmentsChipsList}>
+                      {compSegments.map(seg => (
+                        <div key={seg.id} className={styles.segmentChip}>
+                          <span>🤖 {seg.name}</span>
+                          <span className={styles.segmentChipFee}>{seg.fee} BDT</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => handleOpenRegistration(comp)}
+                    className={styles.publicRegisterBtn}
+                  >
+                    <Trophy size={18} />
+                    Register for Competition
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ACHIEVEMENTS */}
       <section id="achievements" className={styles.achievements}>
         <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '1rem' }}>Achievements</h2>
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', marginBottom: '3rem' }}>
@@ -225,6 +396,191 @@ export default function Home() {
         </section>
       )}
 
+      {/* INTERACTIVE REGISTRATION MODAL POPUP */}
+      {selectedCompForModal && (
+        <div className={styles.modalOverlay} onClick={handleCloseModal}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={handleCloseModal} 
+              className={styles.modalCloseBtn}
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </button>
+
+            {!regSuccess ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                  <Sparkles size={18} color="var(--accent-primary)" />
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Open Competition Registration
+                  </span>
+                </div>
+                <h2 className={styles.modalTitle}>{selectedCompForModal.name}</h2>
+                <p className={styles.modalSubtitle}>
+                  Choose your category and fill out your details. Our club leadership will review your submission and contact you directly on WhatsApp!
+                </p>
+
+                <form onSubmit={handleSubmitPublicRegistration}>
+                  {/* CATEGORY / SEGMENT SELECTION */}
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel}>
+                      Select Category / Segment *
+                    </label>
+                    <div className={styles.modalCategoriesGrid}>
+                      {(selectedCompForModal.segments || [{ id: "default", name: "General Contest", fee: selectedCompForModal.fee || 0, maxParticipants: 30 }]).map((seg: Segment) => {
+                        const isSelected = seg.id === selectedSegmentId;
+                        return (
+                          <label 
+                            key={seg.id} 
+                            className={`${styles.modalCategoryRadio} ${isSelected ? styles.modalCategoryRadioActive : ""}`}
+                          >
+                            <input
+                              type="radio"
+                              name="modal_segment"
+                              value={seg.id}
+                              checked={isSelected}
+                              onChange={() => setSelectedSegmentId(seg.id)}
+                              className={styles.modalRadioDot}
+                            />
+                            <div className={styles.modalCategoryDetails}>
+                              <div className={styles.modalCategoryTop}>
+                                <span>{seg.name}</span>
+                                <span className={styles.modalCategoryFee}>{seg.fee} BDT</span>
+                              </div>
+                              <div className={styles.modalCategoryNote}>
+                                Limit: {seg.maxParticipants} slots {seg.description ? `• ${seg.description}` : ""}
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* FULL NAME */}
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel}>Your Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Mahir Rahman"
+                      value={regFullName}
+                      onChange={e => setRegFullName(e.target.value)}
+                      className={styles.modalInput}
+                    />
+                  </div>
+
+                  {/* EMAIL */}
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel}>Email Address *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="name@example.com"
+                      value={regEmail}
+                      onChange={e => setRegEmail(e.target.value)}
+                      className={styles.modalInput}
+                    />
+                  </div>
+
+                  {/* WHATSAPP NUMBER */}
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel}>
+                      WhatsApp Number * <span style={{ color: '#25D366', fontSize: '0.8rem' }}>(Direct Contact via WhatsApp)</span>
+                    </label>
+                    <div className={styles.whatsappPrefixBox}>
+                      <div className={styles.whatsappIconBadge}>
+                        <PhoneCall size={18} />
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="e.g. 017XXXXXXXX or +8801XXXXXXXXX"
+                        value={regWhatsapp}
+                        onChange={e => setRegWhatsapp(e.target.value)}
+                        className={styles.whatsappInput}
+                      />
+                    </div>
+                  </div>
+
+                  {/* LOCATION / INSTITUTION */}
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel}>Location / University / School *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Dhaka, BUET / BRACU / Notre Dame College"
+                      value={regLocation}
+                      onChange={e => setRegLocation(e.target.value)}
+                      className={styles.modalInput}
+                    />
+                  </div>
+
+                  {/* PAST WORKING EXPERIENCE */}
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel}>Past Working / Robotics Experience *</label>
+                    <textarea
+                      required
+                      placeholder="Share your experience (e.g. robots built, Arduino/Raspberry Pi projects, line followers, sensor integration, or previous hackathons/competitions attended)..."
+                      value={regExperience}
+                      onChange={e => setRegExperience(e.target.value)}
+                      className={styles.modalTextarea}
+                    />
+                  </div>
+
+                  {/* TERMS AND REGISTRATION FEE AGREEMENT */}
+                  <label className={styles.modalCheckboxLabel}>
+                    <input
+                      type="checkbox"
+                      required
+                      checked={regAgreed}
+                      onChange={e => setRegAgreed(e.target.checked)}
+                      className={styles.modalCheckbox}
+                    />
+                    <span>
+                      I agree to the tournament rules and confirm that the registration fee for the selected category will be payable upon entry confirmation.
+                    </span>
+                  </label>
+
+                  <button 
+                    type="submit" 
+                    disabled={isSubmittingReg} 
+                    className={styles.modalSubmitBtn}
+                  >
+                    {isSubmittingReg ? "Submitting Registration..." : "Submit Registration Form"}
+                  </button>
+                </form>
+              </>
+            ) : (
+              /* SUCCESS STATE */
+              <div className={styles.modalSuccessCard}>
+                <div className={styles.modalSuccessIcon}>
+                  <CheckCircle size={36} />
+                </div>
+                <h3 style={{ fontSize: '1.6rem', color: '#fff', marginBottom: '0.75rem' }}>
+                  Registration Submitted!
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '440px', margin: '0 auto 1.5rem auto' }}>
+                  Thank you, <strong style={{ color: 'var(--accent-primary)' }}>{regFullName}</strong>! Your registration for <strong style={{ color: '#fff' }}>{selectedCompForModal.name}</strong> has been received.
+                </p>
+                <div style={{ background: 'rgba(37, 211, 102, 0.1)', border: '1px solid rgba(37, 211, 102, 0.3)', padding: '1rem', borderRadius: '8px', color: '#25D366', fontSize: '0.9rem', marginBottom: '1.75rem' }}>
+                  📱 Our team will review your application and contact you directly at <strong>{regWhatsapp}</strong> via WhatsApp for confirmation and tournament updates.
+                </div>
+                <button
+                  onClick={handleCloseModal}
+                  className={styles.modalSubmitBtn}
+                  style={{ maxWidth: '240px', margin: '0 auto' }}
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
       <footer className={styles.footer}>
         <div className={styles.socialContainer}>
           <a 

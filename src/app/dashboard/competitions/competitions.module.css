@@ -1,5 +1,7 @@
 .container {
-  padding: 1rem;
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
@@ -10,41 +12,145 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.75rem;
 }
 
 .compCard {
-  padding: 1.5rem;
+  padding: 1.75rem;
   border-top: 4px solid var(--accent-primary);
   display: flex;
   flex-direction: column;
+  background: var(--bg-glass);
+  border-radius: var(--radius-md);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .compHeader {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.compMeta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+
+/* Segments Selection Box inside Member Card */
+.segmentsSelectionSection {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.segmentsSelectionTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.segmentOptionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.segmentRadioCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.segmentRadioCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(244, 179, 4, 0.3);
+}
+
+.segmentRadioCardActive {
+  background: rgba(244, 179, 4, 0.12);
+  border-color: var(--accent-primary);
+}
+
+.segmentRadioInput {
+  margin-top: 0.2rem;
+  accent-color: var(--accent-primary);
+}
+
+.segmentCardInfo {
+  flex: 1;
+}
+
+.segmentCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.segmentCardFee {
+  color: var(--accent-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.segmentCardDesc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  line-height: 1.35;
 }
 
 .actionArea {
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.25rem;
 }
 
 .applyBtn {
   width: 100%;
   background: var(--accent-primary);
-  color: #fff;
+  color: #000;
   border: none;
-  padding: 0.8rem;
-  border-radius: 4px;
-  font-weight: bold;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-.applyBtn:hover {
+.applyBtn:hover:not(:disabled) {
   opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(244, 179, 4, 0.3);
+}
+
+.applyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .statusArea {
@@ -85,15 +191,16 @@
   background: #2ecc71;
   color: #000;
   border: none;
-  padding: 0.6rem;
-  border-radius: 4px;
+  padding: 0.7rem;
+  border-radius: var(--radius-sm);
   font-weight: bold;
   cursor: pointer;
   margin-top: 0.5rem;
+  transition: all var(--transition-fast);
 }
 
 .payBtn:hover {
-  opacity: 0.9;
+  background: #27ae60;
 }
 
 .paymentForm {
@@ -101,17 +208,18 @@
   background: rgba(0, 0, 0, 0.3);
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.6rem 0.8rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   color: var(--text-primary);
   font-family: inherit;
+  font-size: 0.9rem;
 }
 
 .input:focus {
@@ -122,12 +230,13 @@
 .submitBtn {
   flex: 1;
   background: var(--accent-primary);
-  color: #fff;
+  color: #000;
   border: none;
-  padding: 0.5rem;
+  padding: 0.6rem 1rem;
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
+  transition: opacity var(--transition-fast);
 }
 
 .submitBtn:disabled {
@@ -140,7 +249,7 @@
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   border: none;
-  padding: 0.5rem;
+  padding: 0.6rem 1rem;
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
@@ -148,4 +257,13 @@
 
 .cancelBtn:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem 0.75rem;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

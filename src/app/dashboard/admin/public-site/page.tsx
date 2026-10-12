@@ -103,6 +103,12 @@ export default function AdminPublicSitePage() {
           const partDeletes = partSnap.docs.map(d => deleteDoc(doc(db, "competition_participants", d.id)));
           await Promise.all(partDeletes);
           totalDeleted += partSnap.docs.length;
+
+          // Clean public_competition_registrations
+          const pubSnap = await getDocs(collection(db, "public_competition_registrations"));
+          const pubDeletes = pubSnap.docs.map(d => deleteDoc(doc(db, "public_competition_registrations", d.id)));
+          await Promise.all(pubDeletes);
+          totalDeleted += pubSnap.docs.length;
         } else if (collKey === "sessions") {
           // Clean sessions and classes
           const sessSnap = await getDocs(collection(db, "sessions"));

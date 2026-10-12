@@ -35,6 +35,7 @@ export default function Navbar() {
           ) : (
             <>
               <Link href="/#projects" className={styles.link}>Projects</Link>
+              <Link href="/#competitions" className={styles.link}>Competitions</Link>
               <Link href="/#achievements" className={styles.link}>Achievements</Link>
               <Link href="/recruitment" className={styles.link}>Apply</Link>
               {!authLoading && user ? (
@@ -65,6 +66,7 @@ export default function Navbar() {
       {!isDashboard && isOpen && (
         <div className={styles.mobileMenu}>
           <Link href="/#projects" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Projects</Link>
+          <Link href="/#competitions" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Competitions</Link>
           <Link href="/#achievements" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Achievements</Link>
           <Link href="/recruitment" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Apply</Link>
           {!authLoading && user ? (
