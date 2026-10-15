@@ -1,0 +1,71 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" width="600" height="380" role="img" aria-label="Reference wiring illustration: Complete obstacle-avoiding rover with HC-SR04 sonar, TB6612FNG driver, Arduino, and two TT motors.">
+  <rect width="600" height="380" fill="#0f172a" rx="12"/>
+  <text x="300" y="26" font-family="monospace" font-size="12" fill="#F5B800" text-anchor="middle" font-weight="bold">BEGINNER 09 â€” Obstacle-Avoiding Rover (Complete Wiring Reference)</text>
+  <text x="300" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference wiring illustration â€” verify against your exact board/module before power. Test with stationary cardboard obstacles only.</text>
+  <!-- Arduino -->
+  <rect x="20" y="65" width="120" height="240" rx="8" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="2"/>
+  <text x="80" y="84" font-family="monospace" font-size="10" fill="#86efac" text-anchor="middle" font-weight="bold">Arduino Uno</text>
+  <text x="80" y="97" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">Sonar: Pins 9,10</text>
+  <text x="80" y="108" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">Driver: Pins 3,4,5,6,7,8</text>
+  <rect x="138" y="110" width="12" height="8" rx="2" fill="#38bdf8"/>
+  <text x="133" y="116" font-family="monospace" font-size="7" fill="#38bdf8" text-anchor="end">5V</text>
+  <rect x="138" y="122" width="12" height="8" rx="2" fill="#38bdf8"/>
+  <text x="133" y="128" font-family="monospace" font-size="7" fill="#38bdf8" text-anchor="end">Pin 9â†’TRIG</text>
+  <rect x="138" y="134" width="12" height="8" rx="2" fill="#38bdf8"/>
+  <text x="133" y="140" font-family="monospace" font-size="7" fill="#38bdf8" text-anchor="end">Pin10â†’ECHO</text>
+  <rect x="138" y="150" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="133" y="156" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">3â†’PWMA</text>
+  <rect x="138" y="162" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="133" y="168" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">4â†’AIN1</text>
+  <rect x="138" y="174" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="133" y="180" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">5â†’AIN2</text>
+  <rect x="138" y="186" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="133" y="192" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">6â†’STBY</text>
+  <rect x="138" y="198" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="133" y="204" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">7â†’BIN1</text>
+  <rect x="138" y="210" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="133" y="216" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">8â†’BIN2</text>
+  <rect x="138" y="222" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="133" y="228" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">9â†’PWMB</text>
+  <rect x="138" y="238" width="12" height="8" rx="2" fill="#94a3b8"/>
+  <text x="133" y="244" font-family="monospace" font-size="7" fill="#94a3b8" text-anchor="end">GND</text>
+  <!-- HC-SR04 Sensor -->
+  <rect x="220" y="65" width="120" height="70" rx="8" fill="#0c1821" stroke="#38bdf8" stroke-width="2"/>
+  <text x="280" y="84" font-family="monospace" font-size="9" fill="#38bdf8" text-anchor="middle" font-weight="bold">HC-SR04</text>
+  <text x="280" y="97" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Ultrasonic Sonar</text>
+  <text x="280" y="112" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">VCC 5V | TRIG | ECHO | GND</text>
+  <line x1="150" y1="114" x2="220" y2="80" stroke="#38bdf8" stroke-width="1.5"/>
+  <line x1="150" y1="126" x2="220" y2="98" stroke="#38bdf8" stroke-width="1.5"/>
+  <line x1="150" y1="138" x2="220" y2="108" stroke="#38bdf8" stroke-width="1.5"/>
+  <!-- TB6612FNG -->
+  <rect x="220" y="175" width="120" height="120" rx="8" fill="#1e1b4b" stroke="#7c3aed" stroke-width="2"/>
+  <text x="280" y="194" font-family="monospace" font-size="9" fill="#a78bfa" text-anchor="middle" font-weight="bold">TB6612FNG</text>
+  <text x="280" y="207" font-family="monospace" font-size="8" fill="#7c3aed" text-anchor="middle">Motor Driver</text>
+  <text x="280" y="228" font-family="monospace" font-size="7.5" fill="#F5B800" text-anchor="middle">PWMA,AIN1,AIN2 â†’ Motor A</text>
+  <text x="280" y="243" font-family="monospace" font-size="7.5" fill="#a78bfa" text-anchor="middle">PWMB,BIN1,BIN2 â†’ Motor B</text>
+  <text x="280" y="258" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">VM â†’ Battery+ (6V)</text>
+  <text x="280" y="273" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">GND â†’ Common GND</text>
+  <line x1="150" y1="154" x2="220" y2="210" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="150" y1="166" x2="220" y2="222" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="150" y1="178" x2="220" y2="235" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="150" y1="190" x2="220" y2="248" stroke="#a78bfa" stroke-width="1.2"/>
+  <line x1="150" y1="202" x2="220" y2="258" stroke="#a78bfa" stroke-width="1.2"/>
+  <line x1="150" y1="214" x2="220" y2="268" stroke="#a78bfa" stroke-width="1.2"/>
+  <line x1="150" y1="226" x2="220" y2="278" stroke="#a78bfa" stroke-width="1.2"/>
+  <!-- Motors -->
+  <rect x="415" y="175" width="80" height="45" rx="5" fill="#292524" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="455" y="200" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="middle">Motor A (Left)</text>
+  <line x1="340" y1="210" x2="415" y2="197" stroke="#fbbf24" stroke-width="1.5"/>
+  <rect x="415" y="250" width="80" height="45" rx="5" fill="#292524" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="455" y="275" font-family="monospace" font-size="8" fill="#a78bfa" text-anchor="middle">Motor B (Right)</text>
+  <line x1="340" y1="265" x2="415" y2="265" stroke="#c4b5fd" stroke-width="1.5"/>
+  <!-- Battery -->
+  <rect x="415" y="320" width="120" height="40" rx="5" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="475" y="338" font-family="monospace" font-size="8" fill="#fca5a5" text-anchor="middle">4Ã—AA Battery Pack</text>
+  <text x="475" y="352" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">6V â†’ TB6612FNG VM</text>
+  <!-- Safety note -->
+  <rect x="20" y="320" width="390" height="50" rx="6" fill="rgba(107,15,36,0.25)" stroke="#6B0F24" stroke-width="1.5"/>
+  <text x="215" y="338" font-family="monospace" font-size="8.5" fill="#fca5a5" text-anchor="middle">âš  Safety: Test sonar readings in Serial Monitor BEFORE powering motors.</text>
+  <text x="215" y="353" font-family="monospace" font-size="8.5" fill="#fca5a5" text-anchor="middle">NEVER aim rover at people or pets. Use stationary cardboard/foam obstacles only.</text>
+  <text x="300" y="376" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration â€” RoboBEE Innovators Â© Proprietary</text>
+</svg>

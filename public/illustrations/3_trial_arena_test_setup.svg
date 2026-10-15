@@ -1,0 +1,30 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" width="560" height="300" role="img" aria-label="Reference illustration: 3-trial test arena layout for rover reliability showcase.">
+  <rect width="560" height="300" fill="#0f172a" rx="12"/>
+  <text x="280" y="26" font-family="monospace" font-size="12" fill="#F5B800" text-anchor="middle" font-weight="bold">BEGINNER 10 â€” Rover Reliability Test Arena Setup</text>
+  <text x="280" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference setup illustration â€” adjust dimensions to your available lab floor space.</text>
+  <!-- Arena floor outline -->
+  <rect x="60" y="60" width="440" height="180" rx="8" fill="#0f172a" stroke="#F5B800" stroke-width="2" stroke-dasharray="10,5"/>
+  <text x="280" y="78" font-family="monospace" font-size="9" fill="#64748b" text-anchor="middle">Clear floor area (approx. 1.5m Ã— 1m recommended)</text>
+  <!-- Start line -->
+  <line x1="80" y1="90" x2="80" y2="230" stroke="#10b981" stroke-width="3"/>
+  <text x="80" y="246" font-family="monospace" font-size="9" fill="#10b981" text-anchor="middle">START</text>
+  <!-- Obstacle zones for 3 trials -->
+  <rect x="200" y="115" width="50" height="70" rx="4" fill="#292524" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="225" y="148" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">Trial 1</text>
+  <text x="225" y="160" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Obstacle</text>
+  <rect x="310" y="115" width="50" height="70" rx="4" fill="#292524" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="335" y="148" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">Trial 2</text>
+  <text x="335" y="160" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Obstacle</text>
+  <rect x="420" y="115" width="50" height="70" rx="4" fill="#292524" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="445" y="148" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">Trial 3</text>
+  <text x="445" y="160" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Obstacle</text>
+  <!-- Rover -->
+  <rect x="88" y="148" width="36" height="26" rx="4" fill="#1e3a1e" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="106" y="164" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle">ðŸ¤–</text>
+  <!-- Measurement tape lines -->
+  <line x1="80" y1="240" x2="200" y2="240" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="140" y="255" font-family="monospace" font-size="8" fill="#38bdf8" text-anchor="middle">~50cm</text>
+  <!-- Table -->
+  <rect x="60" y="270" width="440" height="22" rx="4" fill="#090e18" stroke="#1e293b"/>
+  <text x="280" y="285" font-family="monospace" font-size="8.5" fill="#F5B800" text-anchor="middle">Observation Table: Trial | Stop Distance | Pass/Fail | Improvement Note</text>
+</svg>

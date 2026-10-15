@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 320" width="560" height="320" role="img" aria-label="Reference wiring illustration: Arduino Uno button with INPUT_PULLUP on Pin 2, external LED on Pin 9 with 220-ohm resistor.">
+  <rect width="560" height="320" fill="#0f172a" rx="12"/>
+  <text x="280" y="26" font-family="monospace" font-size="13" fill="#F5B800" text-anchor="middle" font-weight="bold">BEGINNER 03 — Button INPUT_PULLUP (Pin 2) + LED Output (Pin 9)</text>
+  <text x="280" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference wiring illustration — verify against your exact board/module before power.</text>
+  <!-- Arduino -->
+  <rect x="30" y="60" width="130" height="220" rx="8" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="2"/>
+  <text x="95" y="79" font-family="monospace" font-size="10" fill="#86efac" text-anchor="middle" font-weight="bold">Arduino Uno</text>
+  <rect x="148" y="100" width="14" height="10" rx="2" fill="#38bdf8"/>
+  <text x="143" y="97" font-family="monospace" font-size="8" fill="#38bdf8" text-anchor="end">Pin 2</text>
+  <rect x="148" y="120" width="14" height="10" rx="2" fill="#F5B800"/>
+  <text x="143" y="117" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="end">Pin 9</text>
+  <rect x="148" y="145" width="14" height="10" rx="2" fill="#ef4444"/>
+  <text x="143" y="142" font-family="monospace" font-size="8" fill="#ef4444" text-anchor="end">GND</text>
+  <!-- Pushbutton -->
+  <rect x="230" y="90" width="60" height="40" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="260" y="113" font-family="monospace" font-size="10" fill="#38bdf8" text-anchor="middle">BUTTON</text>
+  <line x1="162" y1="105" x2="230" y2="105" stroke="#38bdf8" stroke-width="2"/>
+  <!-- Button to GND -->
+  <line x1="260" y1="130" x2="260" y2="175" stroke="#ef4444" stroke-width="2"/>
+  <line x1="260" y1="175" x2="162" y2="175" stroke="#ef4444" stroke-width="2"/>
+  <line x1="162" y1="175" x2="162" y2="150" stroke="#ef4444" stroke-width="2"/>
+  <text x="190" y="170" font-family="monospace" font-size="8" fill="#ef4444">GND</text>
+  <!-- Internal pull-up label -->
+  <rect x="215" y="60" width="90" height="25" rx="4" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" stroke-width="1"/>
+  <text x="260" y="76" font-family="monospace" font-size="8" fill="#38bdf8" text-anchor="middle">INPUT_PULLUP active</text>
+  <!-- LED circuit -->
+  <rect x="350" y="100" width="40" height="14" rx="4" fill="#8B4513" stroke="#d97706" stroke-width="1.5"/>
+  <text x="370" y="94" font-family="monospace" font-size="8" fill="#fbbf24" text-anchor="middle">220Ω</text>
+  <line x1="162" y1="125" x2="220" y2="125" stroke="#F5B800" stroke-width="2"/>
+  <line x1="220" y1="125" x2="350" y2="107" stroke="#F5B800" stroke-width="2"/>
+  <line x1="390" y1="107" x2="410" y2="107" stroke="#F5B800" stroke-width="2"/>
+  <!-- LED triangle -->
+  <polygon points="410,97 410,117 428,107" fill="#F5B800" opacity="0.9"/>
+  <line x1="428" y1="97" x2="428" y2="117" stroke="#F5B800" stroke-width="2.5"/>
+  <text x="420" y="130" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle">LED</text>
+  <line x1="428" y1="107" x2="450" y2="107" stroke="#ef4444" stroke-width="2"/>
+  <line x1="450" y1="107" x2="450" y2="175" stroke="#ef4444" stroke-width="2"/>
+  <line x1="450" y1="175" x2="162" y2="175" stroke="#ef4444" stroke-width="2"/>
+  <!-- Note box -->
+  <rect x="340" y="200" width="190" height="100" rx="8" fill="#090e18" stroke="#1e293b" stroke-width="1"/>
+  <text x="435" y="218" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle" font-weight="bold">INPUT_PULLUP Logic</text>
+  <text x="435" y="232" font-family="monospace" font-size="8.5" fill="#cbd5e1" text-anchor="middle">Button NOT pressed → Pin 2 reads HIGH</text>
+  <text x="435" y="246" font-family="monospace" font-size="8.5" fill="#cbd5e1" text-anchor="middle">Button pressed (GND) → Pin 2 reads LOW</text>
+  <text x="435" y="263" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">No external resistor needed;</text>
+  <text x="435" y="277" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">Arduino internal pull-up ~20-50kΩ</text>
+  <text x="280" y="308" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration — RoboBEE Innovators © Proprietary</text>
+</svg>

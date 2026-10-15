@@ -7,7 +7,7 @@ import { CurriculumSimulator } from "./CurriculumSimulator";
 import { 
   Play, Pause, RotateCcw, Maximize, X, ArrowLeft, ArrowRight,
   Clock, Shield, CheckCircle, Code, Eye, HelpCircle, Phone, MapPin,
-  Cpu, Wrench, AlertTriangle, Sparkles
+  Cpu, Wrench
 } from "lucide-react";
 
 interface ProjectorViewProps {
@@ -38,6 +38,16 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
     setCurrentSlide(prev => (prev > 0 ? prev - 1 : prev));
   }, []);
 
+  const toggleFullScreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  }, []);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -55,7 +65,7 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nextSlide, prevSlide, onClose]);
+  }, [nextSlide, prevSlide, onClose, toggleFullScreen]);
 
   // Rhythm timer countdown
   useEffect(() => {
@@ -80,16 +90,6 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
     const nextMode = !isCompactMode;
     setIsCompactMode(nextMode);
     resetTimer(nextMode ? 60 : 90);
-  };
-
-  const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      }
-    }
   };
 
   // Format timer into MM:SS
@@ -373,10 +373,25 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
                 <p className={styles.slideSubtitle}>Project: {lesson.project.name} ({lesson.project.deliverableType.replace('_', ' ')})</p>
               </div>
               <div className={styles.slideBody}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
-                  {/* Steps */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                    {lesson.activity.steps.map((st, i) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {/* Connection Diagram for projector */}
+                  {lesson.physicalBuildPack?.connectionPhotoOrClearlyLabeledIllustration && (
+                    <div style={{ background: '#090e18', border: '1px solid #1e293b', borderRadius: '12px', padding: '0.85rem' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+                        ⚠ Reference wiring illustration — verify against your exact board/module before applying power. Instructor-developed. Proprietary — RoboBEE Innovators.
+                      </div>
+                      <img
+                        src={lesson.physicalBuildPack.connectionPhotoOrClearlyLabeledIllustration}
+                        alt={`Connection diagram for ${lesson.title}`}
+                        style={{ width: '100%', maxWidth: '700px', borderRadius: '8px', border: '1px solid #1e293b', background: '#090e18', display: 'block', margin: '0 auto' }}
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
+                    {/* Steps */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                      {lesson.activity.steps.map((st, i) => (
                       <div key={i} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '10px', padding: '1rem', display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
                         <div style={{ background: '#F5B800', color: '#161B26', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>
                           {i + 1}
@@ -424,7 +439,8 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
                   </div>
                 </div>
               </div>
-            </>
+            </div>
+          </>
           )}
 
           {/* SLIDE 7: FORMATIVE EXIT TICKET */}

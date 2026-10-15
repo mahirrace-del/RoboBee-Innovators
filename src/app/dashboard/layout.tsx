@@ -152,7 +152,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/dashboard/curriculum" className={isAct("/dashboard/curriculum")} onClick={closeSidebar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span>Robotics Curriculum</span>
           <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.15rem 0.45rem', borderRadius: '10px', fontWeight: 800 }}>
-            14 Classes
+            36 Classes
           </span>
         </Link>
         <Link href="/dashboard/profile" className={isAct("/dashboard/profile")} onClick={closeSidebar}>

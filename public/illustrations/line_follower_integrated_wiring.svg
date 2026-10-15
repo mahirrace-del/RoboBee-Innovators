@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" width="600" height="380" role="img" aria-label="Reference wiring illustration: Intermediate 05 Integrated Line-Following Robot with Dual IR Reflectance Sensors, TB6612FNG Driver, and Arduino Uno.">
+  <rect width="600" height="380" fill="#0f172a" rx="12"/>
+  <text x="300" y="26" font-family="monospace" font-size="13" fill="#F5B800" text-anchor="middle" font-weight="bold">INTERMEDIATE 05 — Integrated Line-Following Robot Wiring</text>
+  <text x="300" y="44" font-family="monospace" font-size="9.5" fill="#94a3b8" text-anchor="middle">Reference wiring plan — verify driver datasheet and motor polarity before power.</text>
+
+  <!-- Arduino Uno Block (Center Left) -->
+  <rect x="30" y="70" width="180" height="230" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+  <text x="120" y="92" font-family="monospace" font-size="11" fill="#60a5fa" text-anchor="middle" font-weight="bold">Arduino Uno R3</text>
+  <!-- Pins List -->
+  <text x="45" y="118" font-family="monospace" font-size="9" fill="#cbd5e1">D3  ➔ STBY (Driver Enable)</text>
+  <text x="45" y="136" font-family="monospace" font-size="9" fill="#cbd5e1">D5  ➔ PWMA (Left Motor Speed)</text>
+  <text x="45" y="154" font-family="monospace" font-size="9" fill="#cbd5e1">D7  ➔ AIN1 (Left Dir A)</text>
+  <text x="45" y="172" font-family="monospace" font-size="9" fill="#cbd5e1">D8  ➔ AIN2 (Left Dir B)</text>
+  <text x="45" y="190" font-family="monospace" font-size="9" fill="#cbd5e1">D6  ➔ PWMB (Right Motor Speed)</text>
+  <text x="45" y="208" font-family="monospace" font-size="9" fill="#cbd5e1">D9  ➔ BIN1 (Right Dir A)</text>
+  <text x="45" y="226" font-family="monospace" font-size="9" fill="#cbd5e1">D10 ➔ BIN2 (Right Dir B)</text>
+  <text x="45" y="244" font-family="monospace" font-size="9" fill="#facc15">A0  ➔ Left IR Analog/DO</text>
+  <text x="45" y="262" font-family="monospace" font-size="9" fill="#facc15">A1  ➔ Right IR Analog/DO</text>
+  <text x="45" y="280" font-family="monospace" font-size="9" fill="#ef4444">5V / GND ➔ Logic Bus</text>
+
+  <!-- TB6612FNG Driver Block (Center) -->
+  <rect x="250" y="80" width="160" height="170" rx="8" fill="#1e1e38" stroke="#a855f7" stroke-width="2"/>
+  <text x="330" y="102" font-family="monospace" font-size="11" fill="#c084fc" text-anchor="middle" font-weight="bold">TB6612FNG Driver</text>
+  <text x="260" y="125" font-family="monospace" font-size="8.5" fill="#e9d5ff">PWMA, AIN1, AIN2</text>
+  <text x="260" y="145" font-family="monospace" font-size="8.5" fill="#e9d5ff">PWMB, BIN1, BIN2</text>
+  <text x="260" y="165" font-family="monospace" font-size="8.5" fill="#f43f5e">VM (7.4V Motor Bat)</text>
+  <text x="260" y="185" font-family="monospace" font-size="8.5" fill="#facc15">VCC (5V Arduino)</text>
+  <text x="260" y="205" font-family="monospace" font-size="8.5" fill="#94a3b8">GND (Shared Common)</text>
+  <text x="260" y="225" font-family="monospace" font-size="8.5" fill="#38bdf8">AO1/AO2 ➔ Left Motor</text>
+  <text x="260" y="240" font-family="monospace" font-size="8.5" fill="#38bdf8">BO1/BO2 ➔ Right Motor</text>
+
+  <!-- Dual IR Sensors (Top Right) -->
+  <rect x="440" y="70" width="135" height="100" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+  <text x="507" y="90" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle" font-weight="bold">Dual IR Sensors</text>
+  <text x="450" y="110" font-family="monospace" font-size="8.5" fill="#a7f3d0">Left IR: VCC, GND, OUT➔A0</text>
+  <text x="450" y="130" font-family="monospace" font-size="8.5" fill="#a7f3d0">Right IR: VCC, GND, OUT➔A1</text>
+  <text x="450" y="152" font-family="monospace" font-size="8" fill="#34d399">Calibrate pot threshold!</text>
+
+  <!-- 2x TT Gear Motors (Bottom Right) -->
+  <rect x="440" y="190" width="135" height="90" rx="8" fill="#1c1917" stroke="#f97316" stroke-width="2"/>
+  <text x="507" y="210" font-family="monospace" font-size="10" fill="#fb923c" text-anchor="middle" font-weight="bold">2WD TT Motors</text>
+  <text x="450" y="230" font-family="monospace" font-size="8.5" fill="#fed7aa">Left: Connected to AO1/AO2</text>
+  <text x="450" y="250" font-family="monospace" font-size="8.5" fill="#fed7aa">Right: Connected to BO1/BO2</text>
+  <text x="450" y="268" font-family="monospace" font-size="8" fill="#f97316">Capacitor 0.1uF across terminals</text>
+
+  <!-- Battery Pack Notice (Bottom Left) -->
+  <rect x="30" y="315" width="545" height="48" rx="6" fill="#090e18" stroke="#1e293b" stroke-width="1"/>
+  <text x="300" y="334" font-family="monospace" font-size="9" fill="#f87171" text-anchor="middle" font-weight="bold">⚠ Common Ground Rule: Connect Arduino GND, Driver GND, and Motor Battery (-) together.</text>
+  <text x="300" y="350" font-family="monospace" font-size="8.5" fill="#94a3b8" text-anchor="middle">Never power motors directly from Arduino 5V pin. Use separate 2S (7.4V) battery pack for VM.</text>
+</svg>

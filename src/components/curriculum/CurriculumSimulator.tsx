@@ -168,17 +168,32 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
     : 'PERFECT 3D PRINT FIT (+0.5mm)';
 
   // -----------------------------------------------------------------
-  // 9. CLASS 09: smart_bee_integration_sim
+  // 9. CLASS 09: obstacle_avoiding_rover_sim
   // -----------------------------------------------------------------
-  const [c9Checks, setC9Checks] = useState<boolean[]>([true, true, false, false]);
-  const toggleC9 = (idx: number) => {
-    setC9Checks(prev => {
-      const copy = [...prev];
-      copy[idx] = !copy[idx];
-      return copy;
-    });
-  };
-  const allC9Passed = c9Checks.every(Boolean);
+  const [roverObstacleDist, setRoverObstacleDist] = useState<number>(45);
+  const [roverRunning, setRoverRunning] = useState<boolean>(false);
+  const roverThreshold = 20;
+  const roverIsBlocked = roverObstacleDist <= roverThreshold;
+
+  // Motor state derived from distance and running flag
+  const roverMotorState = !roverRunning
+    ? { left: 'STOP', right: 'STOP', action: 'Rover OFF', color: '#64748b' }
+    : roverIsBlocked
+    ? { left: 'REV', right: 'FWD', action: 'OBSTACLE DETECTED — Brake → Pivot Right', color: '#ef4444' }
+    : { left: 'FWD', right: 'FWD', action: 'Path Clear — Driving Forward', color: '#10b981' };
+
+  // Simulate autonomous drive: if running and clear, slowly reduce distance to test avoidance
+  useEffect(() => {
+    if (type !== 'obstacle_avoiding_rover_sim') return;
+    if (!roverRunning) return;
+    const interval = setInterval(() => {
+      setRoverObstacleDist(prev => {
+        if (prev <= roverThreshold) return prev; // blocked, don't approach further
+        return Math.max(roverThreshold - 1, prev - 1); // slowly approach obstacle
+      });
+    }, 300);
+    return () => clearInterval(interval);
+  }, [type, roverRunning, roverObstacleDist]);
 
   // -----------------------------------------------------------------
   // 10. CLASS 10: test_log_sim
@@ -472,6 +487,35 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
   };
 
   // -----------------------------------------------------------------
+  // -----------------------------------------------------------------
+  // 19. invent_helper_sim (Explorer 04)
+  // -----------------------------------------------------------------
+  const [helperSensor, setHelperSensor] = useState<'camera' | 'sound' | 'touch' | 'temp'>('touch');
+  const [helperRule, setHelperRule] = useState<'bump' | 'dark' | 'loud' | 'hot'>('bump');
+  const [helperActuator, setHelperActuator] = useState<'wheels' | 'lights' | 'buzzer' | 'arm'>('wheels');
+  const [helperTriggered, setHelperTriggered] = useState<boolean>(false);
+
+  // -----------------------------------------------------------------
+  // 20. breadboard_circuit_sim (Beginner 02)
+  // -----------------------------------------------------------------
+  const [bbResistor, setBbResistor] = useState<number>(220);
+  const [bbBtnPressed, setBbBtnPressed] = useState<boolean>(false);
+
+  // -----------------------------------------------------------------
+  // 21. sensor_observatory_sim (Beginner 04)
+  // -----------------------------------------------------------------
+  const [obsSensor, setObsSensor] = useState<'pot' | 'ldr'>('pot');
+  const [obsPotAngle, setObsPotAngle] = useState<number>(50);
+  const [obsLux, setObsLux] = useState<number>(300);
+
+  // -----------------------------------------------------------------
+  // 22. reaction_game_sim (Beginner 05)
+  // -----------------------------------------------------------------
+  const [rxState, setRxState] = useState<'idle' | 'waiting' | 'ready' | 'finished' | 'early'>('idle');
+  const [rxStartTime, setRxStartTime] = useState<number>(0);
+  const [rxTime, setRxTime] = useState<number | null>(null);
+  const [rxBestTime, setRxBestTime] = useState<number | null>(null);
+
   // RENDER SWITCH
   // -----------------------------------------------------------------
   return (
@@ -1111,47 +1155,139 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
         </>
       )}
 
-      {/* CLASS 09: SMART BEE INTEGRATION SIM */}
-      {type === 'smart_bee_integration_sim' && (
+      {/* CLASS 09: OBSTACLE-AVOIDING ROVER SIMULATOR */}
+      {type === 'obstacle_avoiding_rover_sim' && (
         <>
           <div className={styles.canvasBox}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', width: '100%', maxWidth: '480px' }}>
-              {[
-                { title: '1. Chassis & Wheels', sub: 'Motors spin freely without wire rubs' },
-                { title: '2. Power & Shared GND', sub: 'Battery polarities & common ground verified' },
-                { title: '3. Sensor Serial Stream', sub: 'HC-SR04 pings validated in Serial Monitor' },
-                { title: '4. Autonomous Avoidance', sub: 'Braking and turning subroutine validated' }
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => toggleC9(idx)}
-                  style={{
-                    background: c9Checks[idx] ? 'rgba(16, 185, 129, 0.15)' : '#1e293b',
-                    border: `1px solid ${c9Checks[idx] ? '#10b981' : '#334155'}`,
-                    borderRadius: '8px',
-                    padding: '0.85rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.8rem', color: c9Checks[idx] ? '#34d399' : '#f1f5f9' }}>
-                    <CheckCircle size={16} color={c9Checks[idx] ? '#10b981' : '#64748b'} />
-                    <span>{item.title}</span>
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.25rem' }}>
-                    {item.sub}
-                  </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '520px' }}>
+              {/* Arena top-down view */}
+              <div style={{
+                background: '#090e18',
+                border: '1px solid #1e293b',
+                borderRadius: '10px',
+                padding: '1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  Top-Down Arena View (Simulation)
                 </div>
-              ))}
+                {/* Rover and obstacle visual */}
+                <div style={{ position: 'relative', width: '300px', height: '80px', background: '#0f172a', borderRadius: '8px', border: '1px solid #334155', display: 'flex', alignItems: 'center' }}>
+                  {/* Rover */}
+                  <div style={{
+                    position: 'absolute',
+                    left: '10px',
+                    width: '44px',
+                    height: '44px',
+                    background: roverIsBlocked && roverRunning ? '#6B0F24' : roverRunning ? '#1e3a5f' : '#1e293b',
+                    border: `2px solid ${roverMotorState.color}`,
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    transition: 'border-color 0.3s'
+                  }}>🤖</div>
+                  {/* Sonar beam */}
+                  <div style={{
+                    position: 'absolute',
+                    left: '56px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: `${Math.min(roverObstacleDist * 2, 220)}px`,
+                    height: '2px',
+                    background: roverIsBlocked ? '#ef4444' : '#38bdf8',
+                    opacity: 0.6,
+                    transition: 'width 0.3s, background 0.3s'
+                  }} />
+                  {/* Obstacle */}
+                  <div style={{
+                    position: 'absolute',
+                    left: `${Math.min(64 + roverObstacleDist * 2, 255)}px`,
+                    width: '30px',
+                    height: '60px',
+                    background: '#374151',
+                    border: '2px solid #6b7280',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    color: '#9ca3af'
+                  }}>📦</div>
+                </div>
+
+                {/* Distance slider */}
+                <div style={{ width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '4px' }}>
+                    <span>Move Obstacle (Static Foam/Cardboard Prop):</span>
+                    <span style={{ fontWeight: 800, color: roverIsBlocked ? '#ef4444' : '#38bdf8' }}>{roverObstacleDist} cm</span>
+                  </div>
+                  <input
+                    type="range" min={5} max={60} step={1}
+                    value={roverObstacleDist}
+                    onChange={e => setRoverObstacleDist(Number(e.target.value))}
+                    className={styles.slider}
+                    aria-label="Obstacle distance in cm"
+                  />
+                </div>
+              </div>
+
+              {/* If/else decision box */}
+              <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.85rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                <div style={{ color: '#94a3b8', marginBottom: '4px' }}>// Arduino avoidance logic (running in sketch):</div>
+                <div style={{ color: roverObstacleDist <= roverThreshold ? '#f87171' : '#64748b' }}>
+                  <span style={{ color: '#38bdf8' }}>if</span> (distance &lt;= {roverThreshold}) &#123; <span style={{ color: '#f87171' }}>// ← {roverIsBlocked ? 'TRUE now' : 'false now'}</span>
+                </div>
+                <div style={{ paddingLeft: '1.2rem', color: roverIsBlocked ? '#fca5a5' : '#334155' }}>brake(); reverseLeft(); pivotRight();</div>
+                <div style={{ color: '#64748b' }}>&#125; <span style={{ color: '#38bdf8' }}>else</span> &#123;</div>
+                <div style={{ paddingLeft: '1.2rem', color: !roverIsBlocked ? '#86efac' : '#334155' }}>driveForward(); <span style={{ color: '#10b981' }}>// ← {!roverIsBlocked ? 'TRUE now' : ''}</span></div>
+                <div style={{ color: '#64748b' }}>&#125;</div>
+              </div>
+
+              {/* Motor state cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                {[
+                  { label: 'Left Motor', val: roverMotorState.left },
+                  { label: 'Right Motor', val: roverMotorState.right },
+                  { label: 'HC-SR04', val: `${roverObstacleDist} cm` }
+                ].map((card, i) => (
+                  <div key={i} style={{ background: '#111827', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.65rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{card.label}</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: roverMotorState.color, marginTop: '3px' }}>{card.val}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className={`${styles.statusBanner} ${allC9Passed ? styles.statusSuccess : styles.statusWarning}`}>
+          <div className={styles.controlGrid}>
+            <div className={styles.controlCard} style={{ textAlign: 'center' }}>
+              <button
+                onClick={() => {
+                  setRoverRunning(r => !r);
+                  if (!roverRunning) setRoverObstacleDist(45);
+                }}
+                className={`${styles.simBtn} ${roverRunning ? styles.simBtnRed : styles.simBtnGreen}`}
+                style={{ width: '100%', padding: '0.8rem' }}
+              >
+                {roverRunning ? '⏹ Stop Rover' : '▶ Start Autonomous Run'}
+              </button>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.35rem' }}>
+                ⚠ Simulation only — does not control real hardware.
+              </div>
+            </div>
+          </div>
+
+          <div className={`${styles.statusBanner} ${roverIsBlocked && roverRunning ? styles.statusDanger : roverRunning ? styles.statusSuccess : styles.statusNormal}`}>
             <Shield size={18} />
             <span>
-              {allC9Passed
-                ? 'ALL PRE-FLIGHT SUB-SYSTEMS VERIFIED — CLEARED FOR AUTONOMOUS FLOOR DEPLOYMENT!'
-                : `Pre-flight in progress: ${c9Checks.filter(Boolean).length}/4 subsystems verified. Complete checklist before launch!`}
+              {!roverRunning && 'Press ▶ Start to simulate. Use the slider to move the static cardboard obstacle prop.'}
+              {roverRunning && roverIsBlocked && `⛔ OBSTACLE at ${roverObstacleDist} cm ≤ ${roverThreshold} cm threshold → Braking & pivoting!`}
+              {roverRunning && !roverIsBlocked && `✅ Path clear (${roverObstacleDist} cm) — driving forward. Move obstacle closer to test avoidance!`}
             </span>
           </div>
         </>
@@ -1445,7 +1581,7 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
                 OPP
               </div>
 
-              {/* Smart Bee Sumo */}
+              {/* Autonomous Mini-Sumo Robot */}
               <div style={{
                 position: 'absolute',
                 bottom: c14Priority === 'edge' ? '8px' : '40px',
@@ -2124,6 +2260,488 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
               {pidPreset === 'tuned' && 'OPTIMIZED: Proportional drive corrects error rapidly while Derivative damping prevents overshoot!'}
               {pidPreset === 'oscillating' && 'INSTABILITY: Excessive Kp causes over-correction and violently throws the robot off the line!'}
               {pidPreset === 'sluggish' && 'SLUGGISH: Low Kp reacts too slowly to sharp corners, missing track intersections.'}
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* 19. INVENT HELPER SIM (Explorer 04) */}
+      {type === 'invent_helper_sim' && (
+        <>
+          <div className={styles.canvasBox}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '100%', maxWidth: '520px' }}>
+              <div style={{
+                width: '160px',
+                height: '130px',
+                background: '#161B26',
+                border: '2px solid #F5B800',
+                borderRadius: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                boxShadow: helperTriggered ? '0 0 25px rgba(245, 184, 0, 0.4)' : 'none',
+                transition: 'all 0.3s'
+              }}>
+                <div style={{ fontSize: '40px' }}>
+                  {helperActuator === 'wheels' ? '🏎️' : helperActuator === 'lights' ? '💡' : helperActuator === 'buzzer' ? '📢' : '🦾'}
+                </div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F5B800', marginTop: '4px' }}>
+                  HelperBot 3000
+                </div>
+                <div style={{ fontSize: '0.68rem', color: helperTriggered ? '#10b981' : '#94a3b8' }}>
+                  {helperTriggered ? '⚡ ACTION TRIGGERED!' : 'Listening for input...'}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem', width: '100%' }}>
+                <div style={{ background: '#1e293b', border: '1px solid #38bdf8', borderRadius: '8px', padding: '0.6rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#38bdf8', fontWeight: 800 }}>1. SENSE (Input)</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9', marginTop: '2px' }}>
+                    {helperSensor === 'touch' ? 'Touch Bumper' : helperSensor === 'camera' ? 'Vision Camera' : helperSensor === 'sound' ? 'Microphone' : 'Temp Sensor'}
+                  </div>
+                </div>
+                <div style={{ background: '#1e293b', border: '1px solid #F5B800', borderRadius: '8px', padding: '0.6rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#F5B800', fontWeight: 800 }}>2. DECIDE (Brain)</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9', marginTop: '2px' }}>
+                    {helperRule === 'bump' ? 'If bumped' : helperRule === 'dark' ? 'If dark room' : helperRule === 'loud' ? 'If sound heard' : 'If room is hot'}
+                  </div>
+                </div>
+                <div style={{ background: '#1e293b', border: '1px solid #10b981', borderRadius: '8px', padding: '0.6rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: 800 }}>3. ACT (Output)</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9', marginTop: '2px' }}>
+                    {helperActuator === 'wheels' ? 'Drive Forward' : helperActuator === 'lights' ? 'Flash LEDs' : helperActuator === 'buzzer' ? 'Sound Alarm' : 'Lift Gripper'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.controlGrid}>
+            <div className={styles.controlCard}>
+              <div className={styles.controlLabel}><span>Step 1: Choose Sensor</span></div>
+              <div className={styles.btnGroup}>
+                {[
+                  { id: 'touch', label: 'Bumper' },
+                  { id: 'camera', label: 'Camera' },
+                  { id: 'sound', label: 'Mic' },
+                  { id: 'temp', label: 'Temp' }
+                ].map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => { setHelperSensor(s.id as any); setHelperTriggered(false); }}
+                    className={`${styles.simBtn} ${helperSensor === s.id ? styles.simBtnCyan : ''}`}
+                    style={{ flex: 1 }}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.controlCard}>
+              <div className={styles.controlLabel}><span>Step 2: Choose Rule</span></div>
+              <div className={styles.btnGroup}>
+                {[
+                  { id: 'bump', label: 'On Bump' },
+                  { id: 'dark', label: 'On Dark' },
+                  { id: 'loud', label: 'On Noise' },
+                  { id: 'hot', label: 'On Heat' }
+                ].map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => { setHelperRule(r.id as any); setHelperTriggered(false); }}
+                    className={`${styles.simBtn} ${helperRule === r.id ? styles.simBtnAmber : ''}`}
+                    style={{ flex: 1 }}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.controlCard}>
+              <div className={styles.controlLabel}><span>Step 3: Choose Output</span></div>
+              <div className={styles.btnGroup}>
+                {[
+                  { id: 'wheels', label: 'Wheels' },
+                  { id: 'lights', label: 'Lights' },
+                  { id: 'buzzer', label: 'Alarm' },
+                  { id: 'arm', label: 'Arm' }
+                ].map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => { setHelperActuator(a.id as any); setHelperTriggered(false); }}
+                    className={`${styles.simBtn} ${helperActuator === a.id ? styles.simBtnGreen : ''}`}
+                    style={{ flex: 1 }}
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '0.85rem' }}>
+            <button
+              onClick={() => {
+                setHelperTriggered(true);
+                setTimeout(() => setHelperTriggered(false), 2500);
+              }}
+              className={`${styles.simBtn} ${styles.simBtnGreen}`}
+              style={{ width: '100%', padding: '0.75rem', fontWeight: 800 }}
+            >
+              ▶ Test Your Helper Robot!
+            </button>
+          </div>
+
+          <div className={`${styles.statusBanner} ${helperTriggered ? styles.statusSuccess : styles.statusNormal}`}>
+            <CheckCircle size={18} />
+            <span>
+              {helperTriggered
+                ? `SUCCESS: Sensed "${helperSensor}" ➔ Brain evaluated "${helperRule}" ➔ Actuator activated: "${helperActuator}"!`
+                : 'Select your robot’s sensor, decision rule, and output actuator, then press Test!'}
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* 20. BREADBOARD CIRCUIT & RESISTOR SIM (Beginner 02) */}
+      {type === 'breadboard_circuit_sim' && (
+        <>
+          <div className={styles.canvasBox}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '100%', maxWidth: '520px' }}>
+              <div style={{
+                width: '100%',
+                background: '#f8fafc',
+                border: '2px solid #cbd5e1',
+                borderRadius: '12px',
+                padding: '1rem',
+                color: '#1e293b',
+                position: 'relative'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', letterSpacing: '1px' }}>SOLDERLESS BREADBOARD TERMINAL STRIP</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: bbResistor === 0 && bbBtnPressed ? '#ef4444' : '#0284c7' }}>
+                    {bbResistor === 0 && bbBtnPressed ? '💥 LED BURNT OUT!' : bbBtnPressed ? '⚡ CIRCUIT CLOSED' : '⭕ CIRCUIT OPEN'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                  <div style={{ height: '6px', flex: 1, background: '#ef4444', borderRadius: '3px' }} title="+5V Bus Rail" />
+                  <div style={{ height: '6px', flex: 1, background: '#0284c7', borderRadius: '3px' }} title="GND Bus Rail" />
+                </div>
+
+                <div style={{
+                  background: '#f1f5f9',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  padding: '12px',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '8px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ background: '#fff', padding: '8px', borderRadius: '6px', border: `2px solid ${bbBtnPressed ? '#10b981' : '#cbd5e1'}` }}>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Pushbutton</div>
+                    <div style={{ fontSize: '1.2rem', margin: '4px 0' }}>{bbBtnPressed ? '🔘' : '⚪'}</div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: bbBtnPressed ? '#10b981' : '#64748b' }}>
+                      {bbBtnPressed ? 'PRESSED' : 'OPEN'}
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#fff', padding: '8px', borderRadius: '6px', border: `2px solid ${bbResistor === 0 ? '#ef4444' : '#F5B800'}` }}>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Resistor (R)</div>
+                    <div style={{ fontSize: '1rem', fontWeight: 800, color: '#b45309', margin: '6px 0' }}>
+                      {bbResistor === 0 ? '0 Ω (Wire)' : `${bbResistor} Ω`}
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: bbResistor === 220 ? '#10b981' : '#64748b' }}>
+                      {bbResistor === 220 ? 'Optimal' : bbResistor === 0 ? 'DANGER' : 'High Ohm'}
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#fff',
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: `2px solid ${bbResistor === 0 && bbBtnPressed ? '#ef4444' : bbBtnPressed ? '#10b981' : '#cbd5e1'}`
+                  }}>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>5mm LED</div>
+                    <div style={{
+                      fontSize: '1.4rem',
+                      margin: '2px 0',
+                      filter: bbBtnPressed && bbResistor > 0 ? 'drop-shadow(0 0 8px #ef4444)' : 'none'
+                    }}>
+                      {bbResistor === 0 && bbBtnPressed ? '💥' : bbBtnPressed ? '🔴' : '⚫'}
+                    </div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: bbBtnPressed && bbResistor > 0 ? '#dc2626' : '#64748b' }}>
+                      {bbResistor === 0 && bbBtnPressed ? 'DESTROYED' : bbBtnPressed ? 'LIT UP' : 'OFF'}
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Current (I)</div>
+                    <div style={{
+                      fontSize: '1rem',
+                      fontWeight: 800,
+                      color: bbResistor === 0 && bbBtnPressed ? '#ef4444' : bbBtnPressed ? '#0284c7' : '#64748b',
+                      margin: '6px 0'
+                    }}>
+                      {!bbBtnPressed ? '0.0 mA' : bbResistor === 0 ? 'OVERLOAD!' : `${((3.0 / bbResistor) * 1000).toFixed(1)} mA`}
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: '#64748b' }}>I = (V - Vf) / R</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.controlGrid}>
+            <div className={styles.controlCard}>
+              <div className={styles.controlLabel}><span>Switch State</span></div>
+              <button
+                onClick={() => setBbBtnPressed(p => !p)}
+                className={`${styles.simBtn} ${bbBtnPressed ? styles.simBtnGreen : ''}`}
+                style={{ width: '100%', padding: '0.65rem', fontWeight: 800 }}
+              >
+                {bbBtnPressed ? 'Release Switch' : 'Press Switch (Close Circuit)'}
+              </button>
+            </div>
+
+            <div className={styles.controlCard}>
+              <div className={styles.controlLabel}><span>Select Resistor Value</span></div>
+              <div className={styles.btnGroup}>
+                {[220, 1000, 10000, 0].map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setBbResistor(r)}
+                    className={`${styles.simBtn} ${bbResistor === r ? (r === 0 ? styles.simBtnRed : styles.simBtnAmber) : ''}`}
+                    style={{ flex: 1 }}
+                  >
+                    {r === 0 ? '0 Ω (None!)' : `${r >= 1000 ? r/1000 + 'k' : r} Ω`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className={`${styles.statusBanner} ${bbResistor === 0 && bbBtnPressed ? styles.statusDanger : bbBtnPressed ? styles.statusSuccess : styles.statusNormal}`}>
+            <AlertTriangle size={18} />
+            <span>
+              {bbResistor === 0 && bbBtnPressed
+                ? '💥 CATASTROPHIC FAILURE: Without a current-limiting resistor, excessive current instantly burned out the LED!'
+                : bbBtnPressed && bbResistor === 220
+                ? '✅ OPTIMAL: 220Ω resistor safely limits current to ~13.6 mA. LED glows bright with zero overheating.'
+                : bbBtnPressed && bbResistor > 1000
+                ? 'ℹ HIGH RESISTANCE: Current is restricted to < 3mA. LED is safe but glows very dimly.'
+                : 'Click "Press Switch" to close the circuit and watch current flow through the breadboard.'}
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* 21. SENSOR OBSERVATORY & VOLTAGE DIVIDER SIM (Beginner 04) */}
+      {type === 'sensor_observatory_sim' && (
+        <>
+          <div className={styles.canvasBox}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '100%', maxWidth: '520px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem', width: '100%' }}>
+                <div style={{ background: '#090e18', border: '1px solid #1e293b', borderRadius: '10px', padding: '1rem' }}>
+                  <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    Arduino ADC Reading (Pin A0)
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span style={{ fontSize: '2.5rem', fontWeight: 900, color: '#38bdf8', fontFamily: 'monospace' }}>
+                      {obsSensor === 'pot' ? Math.round((obsPotAngle / 100) * 1023) : Math.round((obsLux / 1000) * 1023)}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: '#64748b' }}>/ 1023 (10-bit)</span>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#F5B800' }}>
+                    Analog Voltage: <strong>{((obsSensor === 'pot' ? (obsPotAngle / 100) : (obsLux / 1000)) * 5.0).toFixed(2)} V</strong>
+                  </div>
+                  <div style={{ marginTop: '4px', fontSize: '0.72rem', color: '#64748b', fontFamily: 'monospace' }}>
+                    analogRead(A0) = (Vout / 5.0V) * 1023
+                  </div>
+                </div>
+
+                <div style={{ background: '#090e18', border: '1px solid #1e293b', borderRadius: '10px', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ fontSize: '2.2rem' }}>
+                    {obsSensor === 'pot' ? '🎛️' : '☀️'}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f1f5f9', marginTop: '6px' }}>
+                    {obsSensor === 'pot' ? `Knob: ${obsPotAngle}%` : `Light: ${obsLux} Lux`}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                    {obsSensor === 'pot' ? 'Potentiometer Wiper' : 'LDR Photoresistor'}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ width: '100%', background: '#050811', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.75rem', color: '#86efac' }}>
+                <div style={{ color: '#64748b', marginBottom: '4px' }}>// Serial Monitor (9600 baud):</div>
+                <div>[SERIAL] PIN A0 RAW: {obsSensor === 'pot' ? Math.round((obsPotAngle / 100) * 1023) : Math.round((obsLux / 1000) * 1023)} | VOLTS: {((obsSensor === 'pot' ? (obsPotAngle / 100) : (obsLux / 1000)) * 5.0).toFixed(2)}V</div>
+                <div style={{ color: '#94a3b8' }}>[SERIAL] Condition: {((obsSensor === 'pot' ? (obsPotAngle / 100) : (obsLux / 1000)) * 1023) > 512 ? 'HIGH (>= 2.5V)' : 'LOW (< 2.5V)'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.controlGrid}>
+            <div className={styles.controlCard}>
+              <div className={styles.controlLabel}><span>Sensor Module</span></div>
+              <div className={styles.btnGroup}>
+                <button
+                  onClick={() => setObsSensor('pot')}
+                  className={`${styles.simBtn} ${obsSensor === 'pot' ? styles.simBtnCyan : ''}`}
+                  style={{ flex: 1 }}
+                >
+                  Potentiometer
+                </button>
+                <button
+                  onClick={() => setObsSensor('ldr')}
+                  className={`${styles.simBtn} ${obsSensor === 'ldr' ? styles.simBtnAmber : ''}`}
+                  style={{ flex: 1 }}
+                >
+                  LDR (Light)
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.controlCard}>
+              <div className={styles.controlLabel}>
+                <span>{obsSensor === 'pot' ? 'Turn Potentiometer Knob' : 'Ambient Light Level'}</span>
+                <span>{obsSensor === 'pot' ? `${obsPotAngle}%` : `${obsLux} Lux`}</span>
+              </div>
+              {obsSensor === 'pot' ? (
+                <input
+                  type="range" min={0} max={100} step={1}
+                  value={obsPotAngle}
+                  onChange={e => setObsPotAngle(Number(e.target.value))}
+                  className={styles.slider}
+                  aria-label="Potentiometer angle"
+                />
+              ) : (
+                <input
+                  type="range" min={10} max={1000} step={10}
+                  value={obsLux}
+                  onChange={e => setObsLux(Number(e.target.value))}
+                  className={styles.slider}
+                  aria-label="Light lux level"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className={`${styles.statusBanner} ${styles.statusNormal}`}>
+            <Info size={18} />
+            <span>
+              Notice how the Arduino analog-to-digital converter (ADC) quantizes smooth real-world voltages into integers from 0 to 1023.
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* 22. REACTION TIME GAME SIM (Beginner 05) */}
+      {type === 'reaction_game_sim' && (
+        <>
+          <div className={styles.canvasBox}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', width: '100%', maxWidth: '520px' }}>
+              <div style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                background: rxState === 'ready' ? '#10b981' : rxState === 'waiting' ? '#f59e0b' : rxState === 'early' ? '#ef4444' : '#1e293b',
+                border: '4px solid #334155',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: rxState === 'ready' ? '0 0 40px #10b981' : rxState === 'waiting' ? '0 0 25px #f59e0b' : 'none',
+                transition: 'all 0.15s'
+              }}>
+                <span style={{ fontSize: '28px' }}>
+                  {rxState === 'ready' ? '🟢' : rxState === 'waiting' ? '🟡' : rxState === 'early' ? '❌' : '⚪'}
+                </span>
+              </div>
+
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  {rxState === 'idle' && 'Click Start Game to Test Reflexes'}
+                  {rxState === 'waiting' && 'Wait for GREEN... Do not click early!'}
+                  {rxState === 'ready' && 'CLICK THE BUTTON NOW!'}
+                  {rxState === 'finished' && 'Measured Reaction Time:'}
+                  {rxState === 'early' && 'FALSE START! Clicked before green light.'}
+                </div>
+                {rxState === 'finished' && rxTime !== null && (
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: rxTime < 250 ? '#10b981' : rxTime < 350 ? '#38bdf8' : '#f59e0b', margin: '4px 0' }}>
+                    {rxTime} ms
+                  </div>
+                )}
+                {rxBestTime !== null && (
+                  <div style={{ fontSize: '0.75rem', color: '#F5B800', marginTop: '2px' }}>
+                    🏆 Best Time: {rxBestTime} ms
+                  </div>
+                )}
+              </div>
+
+              <div style={{ width: '100%', background: '#050811', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.75rem', color: '#cbd5e1' }}>
+                <span style={{ color: '#38bdf8' }}>while</span> (digitalRead(PIN_BTN) == HIGH) &#123; <span style={{ color: '#64748b' }}>// wait for click</span> &#125;<br/>
+                <span style={{ color: '#F5B800' }}>unsigned long</span> reaction = millis() - lightTurnOnTime;
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.controlGrid}>
+            <div className={styles.controlCard} style={{ textAlign: 'center' }}>
+              {rxState === 'idle' || rxState === 'finished' || rxState === 'early' ? (
+                <button
+                  onClick={() => {
+                    setRxState('waiting');
+                    setRxTime(null);
+                    const randomDelay = 1200 + Math.random() * 2500;
+                    setTimeout(() => {
+                      setRxState(current => {
+                        if (current === 'waiting') {
+                          setRxStartTime(Date.now());
+                          return 'ready';
+                        }
+                        return current;
+                      });
+                    }, randomDelay);
+                  }}
+                  className={`${styles.simBtn} ${styles.simBtnAmber}`}
+                  style={{ width: '100%', padding: '0.85rem', fontWeight: 800, fontSize: '0.9rem' }}
+                >
+                  ▶ Start Reaction Test
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (rxState === 'waiting') {
+                      setRxState('early');
+                    } else if (rxState === 'ready') {
+                      const elapsed = Date.now() - rxStartTime;
+                      setRxTime(elapsed);
+                      setRxBestTime(b => (b === null || elapsed < b ? elapsed : b));
+                      setRxState('finished');
+                    }
+                  }}
+                  className={`${styles.simBtn} ${rxState === 'ready' ? styles.simBtnGreen : styles.simBtnRed}`}
+                  style={{ width: '100%', padding: '0.85rem', fontWeight: 800, fontSize: '1rem' }}
+                >
+                  🔴 PRESS BUTTON (Pin 2)
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className={`${styles.statusBanner} ${rxState === 'ready' ? styles.statusSuccess : rxState === 'early' ? styles.statusDanger : styles.statusNormal}`}>
+            <Activity size={18} />
+            <span>
+              {rxState === 'idle' && 'Tests program timing and human reaction response using millis() timestamp subtraction.'}
+              {rxState === 'waiting' && 'Timer armed with a random delay. Keep your finger ready on the button!'}
+              {rxState === 'ready' && 'GREEN ACTIVE! Button click triggers digitalRead() active LOW.'}
+              {rxState === 'finished' && rxTime !== null && `Reaction recorded: ${rxTime} ms. ${rxTime < 250 ? 'Lightning reflexes! ⚡' : 'Solid reaction speed! 👍'}`}
+              {rxState === 'early' && 'Early click detected: The if-condition checked the button before the light turned on.'}
             </span>
           </div>
         </>

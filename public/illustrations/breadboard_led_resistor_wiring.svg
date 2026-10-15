@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 340" width="560" height="340" role="img" aria-label="Reference wiring illustration: Breadboard LED and resistor circuit with external LED on Arduino pin 9 and 220-ohm series resistor.">
+  <rect width="560" height="340" fill="#0f172a" rx="12"/>
+  <text x="280" y="26" font-family="monospace" font-size="13" fill="#F5B800" text-anchor="middle" font-weight="bold">BEGINNER 02 — External LED + 220Ω Resistor on Breadboard</text>
+  <text x="280" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference wiring illustration — verify resistor value and LED polarity before power.</text>
+
+  <!-- Arduino board -->
+  <rect x="30" y="65" width="130" height="200" rx="8" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="2"/>
+  <text x="95" y="84" font-family="monospace" font-size="10" fill="#86efac" text-anchor="middle" font-weight="bold">Arduino Uno</text>
+
+  <!-- Pin 9 -->
+  <rect x="148" y="118" width="14" height="10" rx="2" fill="#F5B800"/>
+  <text x="142" y="115" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="end">Pin 9</text>
+
+  <!-- GND pin -->
+  <rect x="148" y="145" width="14" height="10" rx="2" fill="#ef4444"/>
+  <text x="142" y="142" font-family="monospace" font-size="9" fill="#ef4444" text-anchor="end">GND</text>
+
+  <!-- Breadboard -->
+  <rect x="220" y="80" width="200" height="190" rx="6" fill="#1e1b4b" stroke="#3730a3" stroke-width="1.5"/>
+  <text x="320" y="98" font-family="monospace" font-size="10" fill="#a5b4fc" text-anchor="middle">Breadboard</text>
+
+  <!-- Breadboard rows -->
+  <line x1="230" y1="110" x2="410" y2="110" stroke="#312e81" stroke-width="0.8"/>
+  <line x1="230" y1="140" x2="410" y2="140" stroke="#312e81" stroke-width="0.8"/>
+  <line x1="230" y1="170" x2="410" y2="170" stroke="#312e81" stroke-width="0.8"/>
+  <line x1="230" y1="200" x2="410" y2="200" stroke="#312e81" stroke-width="0.8"/>
+
+  <!-- Resistor (220Ω) -->
+  <rect x="260" y="132" width="50" height="14" rx="4" fill="#8B4513" stroke="#d97706" stroke-width="1.5"/>
+  <line x1="245" y1="139" x2="260" y2="139" stroke="#F5B800" stroke-width="2"/>
+  <line x1="310" y1="139" x2="325" y2="139" stroke="#F5B800" stroke-width="2"/>
+  <text x="285" y="127" font-family="monospace" font-size="9" fill="#fbbf24" text-anchor="middle">220Ω</text>
+
+  <!-- LED symbol -->
+  <!-- Anode -->
+  <line x1="325" y1="139" x2="355" y2="139" stroke="#F5B800" stroke-width="2"/>
+  <polygon points="355,128 355,150 375,139" fill="#F5B800" opacity="0.9"/>
+  <!-- Cathode bar -->
+  <line x1="375" y1="128" x2="375" y2="150" stroke="#F5B800" stroke-width="2.5"/>
+  <!-- LED light rays -->
+  <line x1="380" y1="125" x2="392" y2="115" stroke="#F5B800" stroke-width="1.5" opacity="0.6"/>
+  <line x1="380" y1="135" x2="395" y2="128" stroke="#F5B800" stroke-width="1.5" opacity="0.6"/>
+  <text x="365" y="165" font-family="monospace" font-size="10" fill="#F5B800" text-anchor="middle">LED</text>
+  <text x="360" y="177" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">Anode(+) → Cathode(-)</text>
+
+  <!-- GND line from LED cathode -->
+  <line x1="375" y1="139" x2="395" y2="139" stroke="#ef4444" stroke-width="2"/>
+  <line x1="395" y1="139" x2="395" y2="200" stroke="#ef4444" stroke-width="2"/>
+  <line x1="395" y1="200" x2="162" y2="200" stroke="#ef4444" stroke-width="2"/>
+  <line x1="162" y1="200" x2="162" y2="150" stroke="#ef4444" stroke-width="2"/>
+  <text x="395" y="220" font-family="monospace" font-size="9" fill="#ef4444" text-anchor="middle">GND</text>
+
+  <!-- Wire from Pin 9 to resistor -->
+  <line x1="162" y1="123" x2="220" y2="123" stroke="#F5B800" stroke-width="2"/>
+  <line x1="220" y1="123" x2="245" y2="139" stroke="#F5B800" stroke-width="2"/>
+
+  <!-- Labels -->
+  <text x="185" y="118" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="middle">Yellow wire</text>
+
+  <!-- Safety note box -->
+  <rect x="440" y="80" width="105" height="130" rx="8" fill="rgba(107,15,36,0.25)" stroke="#6B0F24" stroke-width="1.5"/>
+  <text x="493" y="98" font-family="monospace" font-size="9" fill="#fca5a5" text-anchor="middle" font-weight="bold">⚠ Safety</text>
+  <text x="493" y="113" font-family="monospace" font-size="9" fill="#cbd5e1" text-anchor="middle">Always use</text>
+  <text x="493" y="126" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle">220Ω–470Ω</text>
+  <text x="493" y="139" font-family="monospace" font-size="9" fill="#cbd5e1" text-anchor="middle">resistor in series</text>
+  <text x="493" y="155" font-family="monospace" font-size="9" fill="#cbd5e1" text-anchor="middle">Never wire LED</text>
+  <text x="493" y="168" font-family="monospace" font-size="9" fill="#cbd5e1" text-anchor="middle">direct to 5V/pin!</text>
+  <text x="493" y="181" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">Check polarity:</text>
+  <text x="493" y="194" font-family="monospace" font-size="9" fill="#fbbf24" text-anchor="middle">Long leg = (+)</text>
+  <text x="493" y="207" font-family="monospace" font-size="9" fill="#fbbf24" text-anchor="middle">Short leg = (−)</text>
+
+  <!-- Wire table summary -->
+  <rect x="30" y="278" width="390" height="52" rx="6" fill="#090e18" stroke="#1e293b" stroke-width="1"/>
+  <text x="225" y="294" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle" font-weight="bold">Wire Summary</text>
+  <text x="225" y="309" font-family="monospace" font-size="8.5" fill="#86efac" text-anchor="middle">Arduino Pin 9 → 220Ω resistor → LED Anode (+) → LED Cathode (−) → Arduino GND</text>
+  <text x="225" y="323" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration — RoboBEE Innovators © Proprietary</text>
+</svg>

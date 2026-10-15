@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 400" width="620" height="400" role="img" aria-label="Reference wiring illustration: Advanced 11 Autonomous Robotics Capstone Rover with Integrated Sensors, TB6612 Motor Driver, and Regulated Power Architecture.">
+  <rect width="620" height="400" fill="#0f172a" rx="12"/>
+  <text x="310" y="26" font-family="monospace" font-size="13" fill="#F5B800" text-anchor="middle" font-weight="bold">ADVANCED 11 — Autonomous Capstone Rover Architecture</text>
+  <text x="310" y="44" font-family="monospace" font-size="9.5" fill="#94a3b8" text-anchor="middle">Frozen Competition Hardware Configuration: Dual Encoders, HC-SR04, IR Array, TB6612, 7.4V Regulated Bus.</text>
+
+  <!-- Central Microcontroller -->
+  <rect x="220" y="70" width="180" height="220" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+  <text x="310" y="92" font-family="monospace" font-size="11" fill="#60a5fa" text-anchor="middle" font-weight="bold">Arduino Controller</text>
+  <text x="235" y="115" font-family="monospace" font-size="8.5" fill="#cbd5e1">D2/D3  ➔ Optical Encoders (INT)</text>
+  <text x="235" y="133" font-family="monospace" font-size="8.5" fill="#cbd5e1">D4/D11 ➔ HC-SR04 (Trig/Echo)</text>
+  <text x="235" y="151" font-family="monospace" font-size="8.5" fill="#cbd5e1">D5/D6  ➔ Motor PWM (A &amp; B)</text>
+  <text x="235" y="169" font-family="monospace" font-size="8.5" fill="#cbd5e1">D7/D8  ➔ Left Direction (AIN1/2)</text>
+  <text x="235" y="187" font-family="monospace" font-size="8.5" fill="#cbd5e1">D9/D10 ➔ Right Direction (BIN1/2)</text>
+  <text x="235" y="205" font-family="monospace" font-size="8.5" fill="#cbd5e1">D12    ➔ TB6612 STBY</text>
+  <text x="235" y="223" font-family="monospace" font-size="8.5" fill="#facc15">A0..A4 ➔ 5-Channel IR Reflectance</text>
+  <text x="235" y="241" font-family="monospace" font-size="8.5" fill="#ef4444">5V / GND ➔ Common Sensor Bus</text>
+  <text x="235" y="260" font-family="monospace" font-size="8" fill="#38bdf8">Loop Rate Target: 100Hz Non-blocking</text>
+
+  <!-- Left Side: Power Architecture -->
+  <rect x="30" y="70" width="160" height="120" rx="6" fill="#1c1917" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="110" y="92" font-family="monospace" font-size="10.5" fill="#fca5a5" text-anchor="middle" font-weight="bold">Power Subsystem</text>
+  <text x="45" y="114" font-family="monospace" font-size="8.5" fill="#cbd5e1">2S LiPo (7.4V 1500mAh)</text>
+  <text x="45" y="132" font-family="monospace" font-size="8.5" fill="#cbd5e1">Master Switch + 3A Fuse</text>
+  <text x="45" y="150" font-family="monospace" font-size="8.5" fill="#f87171">VM ➔ Driver Motor Rail</text>
+  <text x="45" y="168" font-family="monospace" font-size="8.5" fill="#facc15">5V Buck ➔ Arduino &amp; Sensors</text>
+
+  <!-- Left Side: Ultrasonic Sonar -->
+  <rect x="30" y="210" width="160" height="80" rx="6" fill="#0f2b38" stroke="#0ea5e9" stroke-width="1.5"/>
+  <text x="110" y="232" font-family="monospace" font-size="10.5" fill="#7dd3fc" text-anchor="middle" font-weight="bold">HC-SR04 Sonar</text>
+  <text x="45" y="252" font-family="monospace" font-size="8.5" fill="#bae6fd">Trig ➔ D4 | Echo ➔ D11</text>
+  <text x="45" y="270" font-family="monospace" font-size="8.5" fill="#bae6fd">Range: 2cm – 200cm</text>
+
+  <!-- Right Side: Motor Drive & Encoders -->
+  <rect x="430" y="70" width="160" height="120" rx="6" fill="#2e1065" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="510" y="92" font-family="monospace" font-size="10.5" fill="#d8b4fe" text-anchor="middle" font-weight="bold">TB6612FNG Driver</text>
+  <text x="445" y="114" font-family="monospace" font-size="8.5" fill="#e9d5ff">Left Motor ➔ AO1 / AO2</text>
+  <text x="445" y="132" font-family="monospace" font-size="8.5" fill="#e9d5ff">Right Motor ➔ BO1 / BO2</text>
+  <text x="445" y="150" font-family="monospace" font-size="8.5" fill="#e9d5ff">1.2A Continuous / 3.2A Peak</text>
+  <text x="445" y="168" font-family="monospace" font-size="8.5" fill="#f43f5e">VM = 7.4V, VCC = 5V</text>
+
+  <!-- Right Side: Optical Encoders -->
+  <rect x="430" y="210" width="160" height="80" rx="6" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="510" y="232" font-family="monospace" font-size="10.5" fill="#86efac" text-anchor="middle" font-weight="bold">Dual Wheel Encoders</text>
+  <text x="445" y="252" font-family="monospace" font-size="8.5" fill="#bbf7d0">Left D0 ➔ Pin 2 (INT0)</text>
+  <text x="445" y="270" font-family="monospace" font-size="8.5" fill="#bbf7d0">Right D0 ➔ Pin 3 (INT1)</text>
+
+  <!-- Inspection Checklist Banner -->
+  <rect x="30" y="310" width="560" height="70" rx="6" fill="#090e18" stroke="#1e293b" stroke-width="1"/>
+  <text x="310" y="330" font-family="monospace" font-size="9" fill="#10b981" text-anchor="middle" font-weight="bold">✔ Capstone Pre-Flight Inspection: 1. Polarity checked 2. Common GND verified 3. Fuse in place 4. Failsafe timeout active</text>
+  <text x="310" y="348" font-family="monospace" font-size="8.5" fill="#cbd5e1" text-anchor="middle">Emergency Cutoff: Physical toggle switch disconnects battery positive lead immediately in case of software runaway.</text>
+  <text x="310" y="364" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration — RoboBEE Innovators © Proprietary</text>
+</svg>

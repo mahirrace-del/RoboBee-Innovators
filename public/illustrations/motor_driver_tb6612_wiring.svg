@@ -1,0 +1,63 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" width="600" height="360" role="img" aria-label="Reference wiring illustration: TB6612FNG motor driver connected to Arduino Uno and DC TT gear motor.">
+  <rect width="600" height="360" fill="#0f172a" rx="12"/>
+  <text x="300" y="26" font-family="monospace" font-size="12" fill="#F5B800" text-anchor="middle" font-weight="bold">BEGINNER 06 â€” TB6612FNG Motor Driver (Reference Configuration)</text>
+  <text x="300" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference wiring illustration â€” verify pinout against your exact TB6612FNG board before power.</text>
+  <!-- Arduino -->
+  <rect x="20" y="60" width="120" height="240" rx="8" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="2"/>
+  <text x="80" y="79" font-family="monospace" font-size="10" fill="#86efac" text-anchor="middle" font-weight="bold">Arduino Uno</text>
+  <text x="80" y="95" font-family="monospace" font-size="8" fill="#4ade80" text-anchor="middle">(Logic: 5V)</text>
+  <rect x="138" y="105" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="133" y="111" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">5â†’ AIN1</text>
+  <rect x="138" y="118" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="133" y="124" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">4â†’ AIN2</text>
+  <rect x="138" y="131" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="133" y="137" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">3â†’PWMA</text>
+  <rect x="138" y="144" width="12" height="8" rx="2" fill="#38bdf8"/>
+  <text x="133" y="150" font-family="monospace" font-size="7" fill="#38bdf8" text-anchor="end">6â†’STBY</text>
+  <rect x="138" y="157" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="133" y="163" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">7â†’ BIN1</text>
+  <rect x="138" y="170" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="133" y="176" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">8â†’ BIN2</text>
+  <rect x="138" y="183" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="133" y="189" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">9â†’PWMB</text>
+  <rect x="138" y="200" width="12" height="8" rx="2" fill="#94a3b8"/>
+  <text x="133" y="206" font-family="monospace" font-size="7" fill="#94a3b8" text-anchor="end">GND</text>
+  <!-- TB6612FNG driver -->
+  <rect x="220" y="80" width="140" height="220" rx="8" fill="#1e1b4b" stroke="#7c3aed" stroke-width="2"/>
+  <text x="290" y="100" font-family="monospace" font-size="10" fill="#a78bfa" text-anchor="middle" font-weight="bold">TB6612FNG</text>
+  <text x="290" y="115" font-family="monospace" font-size="8" fill="#7c3aed" text-anchor="middle">Motor Driver</text>
+  <text x="230" y="145" font-family="monospace" font-size="7.5" fill="#F5B800">AIN1, AIN2 (dir A)</text>
+  <text x="230" y="160" font-family="monospace" font-size="7.5" fill="#F5B800">PWMA (speed A)</text>
+  <text x="230" y="180" font-family="monospace" font-size="7.5" fill="#38bdf8">STBY (enable all)</text>
+  <text x="230" y="200" font-family="monospace" font-size="7.5" fill="#a78bfa">BIN1,BIN2 (dir B)</text>
+  <text x="230" y="215" font-family="monospace" font-size="7.5" fill="#a78bfa">PWMB (speed B)</text>
+  <text x="230" y="235" font-family="monospace" font-size="7.5" fill="#ef4444">VCC â†’ Arduino 5V</text>
+  <text x="230" y="250" font-family="monospace" font-size="7.5" fill="#ef4444">VM â†’ Motor Battery+</text>
+  <text x="230" y="265" font-family="monospace" font-size="7.5" fill="#94a3b8">GND â†’ Common GND</text>
+  <!-- Lines from Arduino to driver -->
+  <line x1="150" y1="109" x2="220" y2="140" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="150" y1="122" x2="220" y2="155" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="150" y1="135" x2="220" y2="157" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="150" y1="148" x2="220" y2="177" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="150" y1="161" x2="220" y2="197" stroke="#a78bfa" stroke-width="1.2"/>
+  <line x1="150" y1="174" x2="220" y2="212" stroke="#a78bfa" stroke-width="1.2"/>
+  <line x1="150" y1="187" x2="220" y2="215" stroke="#a78bfa" stroke-width="1.2"/>
+  <!-- Motors -->
+  <rect x="420" y="90" width="90" height="50" rx="6" fill="#292524" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="465" y="118" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle">Motor A (Left)</text>
+  <line x1="360" y1="130" x2="420" y2="115" stroke="#fbbf24" stroke-width="2"/>
+  <line x1="360" y1="145" x2="420" y2="130" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="420" y="200" width="90" height="50" rx="6" fill="#292524" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="465" y="228" font-family="monospace" font-size="9" fill="#a78bfa" text-anchor="middle">Motor B (Right)</text>
+  <line x1="360" y1="225" x2="420" y2="215" stroke="#c4b5fd" stroke-width="2"/>
+  <line x1="360" y1="240" x2="420" y2="230" stroke="#94a3b8" stroke-width="2"/>
+  <!-- Battery pack -->
+  <rect x="430" y="290" width="100" height="40" rx="6" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="480" y="305" font-family="monospace" font-size="9" fill="#fca5a5" text-anchor="middle">Battery Pack</text>
+  <text x="480" y="320" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">4Ã—AA = 6V (VM)</text>
+  <line x1="480" y1="290" x2="480" y2="270" stroke="#ef4444" stroke-width="1.5"/>
+  <line x1="480" y1="270" x2="315" y2="270" stroke="#ef4444" stroke-width="1.5"/>
+  <line x1="315" y1="270" x2="315" y2="248" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="300" y="345" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">âš  Common GND: Arduino GND + Battery GND + TB6612FNG GND must all connect together</text>
+  <text x="300" y="357" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration â€” RoboBEE Innovators Â© Proprietary</text>
+</svg>

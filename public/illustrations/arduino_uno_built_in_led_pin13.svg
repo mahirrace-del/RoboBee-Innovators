@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 320" width="520" height="320" role="img" aria-label="Reference wiring illustration: Arduino Uno built-in LED on Pin 13. No external wires required for this variant.">
+  <rect width="520" height="320" fill="#0f172a" rx="12"/>
+  <!-- Title -->
+  <text x="260" y="28" font-family="monospace" font-size="13" fill="#F5B800" text-anchor="middle" font-weight="bold">BEGINNER 01 — Arduino First-Light Blink (Built-in LED)</text>
+  <text x="260" y="46" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference wiring illustration — verify against your exact board before power.</text>
+
+  <!-- Arduino Uno board body -->
+  <rect x="80" y="70" width="220" height="200" rx="10" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="2"/>
+  <text x="190" y="92" font-family="monospace" font-size="11" fill="#86efac" text-anchor="middle" font-weight="bold">Arduino Uno R3</text>
+  <text x="190" y="107" font-family="monospace" font-size="9" fill="#4ade80" text-anchor="middle">(Illustrative reference)</text>
+
+  <!-- Digital pins strip -->
+  <rect x="88" y="115" width="204" height="18" rx="3" fill="#0f2a0f" stroke="#1e4d1e" stroke-width="1"/>
+  <text x="190" y="128" font-family="monospace" font-size="9" fill="#86efac" text-anchor="middle">DIGITAL PINS (0–13)</text>
+
+  <!-- Pin 13 highlight -->
+  <rect x="264" y="117" width="22" height="14" rx="2" fill="#6B0F24" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="275" y="127" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="middle">13</text>
+
+  <!-- Built-in LED marker on board -->
+  <circle cx="240" cy="165" r="10" fill="#F5B800" opacity="0.9"/>
+  <text x="240" y="169" font-family="monospace" font-size="8" fill="#0f172a" text-anchor="middle" font-weight="bold">L</text>
+  <text x="240" y="182" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle">Built-in LED</text>
+  <text x="240" y="194" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">(on board)</text>
+
+  <!-- Internal connection line from pin 13 to LED -->
+  <line x1="264" y1="124" x2="252" y2="158" stroke="#F5B800" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+  <text x="305" y="145" font-family="monospace" font-size="9" fill="#94a3b8">Internal</text>
+  <text x="305" y="157" font-family="monospace" font-size="9" fill="#94a3b8">trace on</text>
+  <text x="305" y="169" font-family="monospace" font-size="9" fill="#94a3b8">board PCB</text>
+
+  <!-- USB port -->
+  <rect x="88" y="218" width="38" height="24" rx="4" fill="#334155" stroke="#475569" stroke-width="1"/>
+  <text x="107" y="233" font-family="monospace" font-size="8" fill="#94a3b8" text-anchor="middle">USB</text>
+
+  <!-- Power pins -->
+  <rect x="88" y="248" width="180" height="16" rx="3" fill="#0f2a0f" stroke="#1e4d1e" stroke-width="1"/>
+  <text x="178" y="259" font-family="monospace" font-size="9" fill="#86efac" text-anchor="middle">POWER: 5V  3.3V  GND  GND  Vin</text>
+
+  <!-- No external wire note -->
+  <rect x="340" y="90" width="155" height="120" rx="8" fill="rgba(107,15,36,0.2)" stroke="#6B0F24" stroke-width="1.5"/>
+  <text x="418" y="112" font-family="monospace" font-size="10" fill="#fca5a5" text-anchor="middle" font-weight="bold">⚠ No External</text>
+  <text x="418" y="126" font-family="monospace" font-size="10" fill="#fca5a5" text-anchor="middle" font-weight="bold">Wires Needed</text>
+  <text x="418" y="145" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">For this variant:</text>
+  <text x="418" y="160" font-family="monospace" font-size="9" fill="#cbd5e1" text-anchor="middle">LED_BUILTIN (pin 13)</text>
+  <text x="418" y="174" font-family="monospace" font-size="9" fill="#cbd5e1" text-anchor="middle">is wired on-board.</text>
+  <text x="418" y="189" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">Just connect USB</text>
+  <text x="418" y="203" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">and upload sketch.</text>
+
+  <!-- Code snippet -->
+  <rect x="80" y="280" width="360" height="32" rx="6" fill="#090e18" stroke="#1e293b" stroke-width="1"/>
+  <text x="260" y="293" font-family="monospace" font-size="9" fill="#86efac" text-anchor="middle">pinMode(LED_BUILTIN, OUTPUT);  digitalWrite(LED_BUILTIN, HIGH/LOW);</text>
+  <text x="260" y="306" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration — RoboBEE Innovators © Proprietary</text>
+</svg>

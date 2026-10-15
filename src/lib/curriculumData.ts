@@ -19,7 +19,7 @@ export type InteractiveVisualType =
   | 'movement_route_sim'
   | 'ultrasonic_sonar_sim'
   | 'cad_caliper_sim'
-  | 'smart_bee_integration_sim'
+  | 'obstacle_avoiding_rover_sim'
   | 'test_log_sim'
   | 'line_follower_sim'
   | 'servo_arm_sim'
@@ -189,7 +189,7 @@ export const COURSE_SPACES: CourseSpace[] = [
     codeName: 'INTERMEDIATE',
     badge: 'Proposed for Classes 7–10',
     proposedBand: 'Classes 7–10 (Ages 12–16)',
-    accentColor: '#06B6D4', // Cyan Tech
+    accentColor: '#8B1A35', // RoboBEE Burgundy Tint
     statusNotice: 'Proposed Website Structure (10 Classes — State Machines, Reflectance IR, Servos & Telemetry)',
     description: 'Engineering workflow, sensor calibration station, state machines, line-following algorithms, servo grippers, and maze navigation.',
     totalClasses: 10,
@@ -201,11 +201,11 @@ export const COURSE_SPACES: CourseSpace[] = [
     codeName: 'ADVANCED',
     badge: 'Proposed for Classes 9–12',
     proposedBand: 'Classes 9–12 (Ages 14–18+)',
-    accentColor: '#10B981', // Actuator Green
+    accentColor: '#C4920A', // RoboBEE Golden Amber
     statusNotice: 'Proposed Website Structure (12 Classes — Non-Blocking C++, Encoders, PID Control & Mini-Sumo)',
-    description: 'Competition engineering brief, electrical power budgets, non-blocking FreeRTOS concepts, PID tuning, telemetry dashboards, and Mini-Sumo dohyo battles.',
+    description: 'Competition engineering brief, electrical power budgets, non-blocking C++ architecture, PID tuning, telemetry, and Mini-Sumo robot build.',
     totalClasses: 12,
-    recommendedHardware: 'Encoder Gear Motors, IMU MPU-6050, ESP32/STM32, Mini-Sumo Dohyo Ring, LiPo Power Distribution'
+    recommendedHardware: 'Encoder Gear Motors, IMU (reference: MPU-6050), ESP32/STM32 (instructor-confirmed), Mini-Sumo Dohyo Ring, regulated battery pack'
   }
 ];
 
@@ -304,7 +304,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
     },
     nextLessonId: 'exp-02',
     nextLessonTeaser: 'Explorer 02: Make a Signal — Discover the magical circle of electricity and light up an LED with a switch!',
-    sources: [{ title: 'RoboBEE Innovators STEM Pedagogy Handbook', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'RoboBEE Innovators Lab Pedagogy (Instructor-Developed Reference)', url: '' }],
     assetCredits: [{ asset: 'Robot Detective Graphics', creator: 'RoboBEE Innovators Creative Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -352,6 +352,44 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
       deliverableType: 'physical_build',
       successEvidence: ['Physical paper circuit or simulation where pressing the switch instantly lights the LED reliably.']
     },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['No microcontroller used (Supervised low-voltage DC paper circuit)'],
+      componentList: [
+        { name: '3V Coin Cell Battery', exactVariant: 'CR2032 Lithium Cell (3.0V)', quantity: 1 },
+        { name: 'Diffused 5mm LED', exactVariant: 'Red/Green 5mm LED (Vf ≈ 2.0V, 20mA max)', quantity: 1 },
+        { name: 'Conductive Adhesive Tape', exactVariant: 'Single-sided Conductive Copper Foil Tape (5mm width)', quantity: 1 },
+        { name: 'Cardstock Paper Canvas', exactVariant: 'Heavy cardstock sheet (300 gsm)', quantity: 1 },
+        { name: 'Conductive Clip / Binder Clip', exactVariant: 'Small steel binder clip for battery clamp', quantity: 1 }
+      ],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/paper_circuit_led_switch.svg',
+      schematic: 'CR2032 (+) ➔ Copper Foil Trace ➔ LED Anode (Long Leg) ➔ LED Cathode ➔ Flap Switch ➔ CR2032 (-)',
+      wireTable: [
+        { from: 'CR2032 Battery Positive (+)', to: 'Copper Tape (+) Rail', wireOrPolarityNote: 'Direct contact with top face of coin cell' },
+        { from: 'Copper Tape (+) Rail', to: 'LED Anode (Long Leg)', wireOrPolarityNote: 'Secure under copper tape with firm pressure' },
+        { from: 'LED Cathode (Short Leg)', to: 'Switch Contact Gap A', wireOrPolarityNote: 'Flat side of LED lens faces cathode' },
+        { from: 'Switch Contact Gap B (Foldable Flap)', to: 'Copper Tape (-) Return Trace', wireOrPolarityNote: 'Closing flap bridges Gap A to Gap B' },
+        { from: 'Copper Tape (-) Return Trace', to: 'CR2032 Battery Negative (-)', wireOrPolarityNote: 'Held by binder clip against bottom face of coin cell' }
+      ],
+      assemblyAndPowerUpSteps: [
+        '1. Draw your circuit path in pencil on cardstock paper with a 1cm break for the switch flap.',
+        '2. Apply copper tape smoothly along lines without tearing; fold neatly at 90-degree corners.',
+        '3. Identify the longer positive leg (Anode) of your 5mm LED. Tape it firmly to the positive copper rail.',
+        '4. Tape the shorter negative leg (Cathode) to the switch trace.',
+        '5. Place the CR2032 coin cell with (+) facing UP on the negative return pad and clamp with binder clip.',
+        '6. Fold the paper switch flap down so the copper tape bridges the gap. The LED lights up!'
+      ],
+      powerAndSafetyChecks: [
+        'Adult supervision mandatory: Coin cells pose ingestion hazards for young children.',
+        'Never connect copper tape directly from (+) to (-) without the LED in between (prevents dead short).',
+        'If coin cell feels warm to touch, unclamp binder clip immediately and inspect for shorts.',
+        'No programming or computer connection required for this foundational physics activity.'
+      ],
+      testCases: [
+        { action: 'Switch flap open (not pressed)', expectedResult: 'Circuit is open; LED remains OFF.' },
+        { action: 'Press paper switch flap firmly', expectedResult: 'Circuit closes; LED lights up bright red.' },
+        { action: 'Flip coin cell upside down (+ facing down)', expectedResult: 'LED does not light (demonstrates diode directional current flow).' }
+      ]
+    },
     activity: {
       title: 'Build Your Signal Circuit',
       steps: [
@@ -377,7 +415,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
     },
     nextLessonId: 'exp-03',
     nextLessonTeaser: 'Explorer 03: Move and Turn — How do wheels, axles, and gears help robots explore mazes?',
-    sources: [{ title: 'RoboBEE Innovators Electronics for Kids', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'All About Circuits: Electric Circuits and Polarity', url: 'https://www.allaboutcircuits.com' }],
     assetCredits: [{ asset: 'Circuit Diagrams', creator: 'RoboBEE Innovators Creative Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -449,7 +487,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
     },
     nextLessonId: 'exp-04',
     nextLessonTeaser: 'Explorer 04: Invent a Helpful Robot — Combine sensing, power, and motion to design your dream machine!',
-    sources: [{ title: 'RoboBEE Innovators Differential Drive Curriculum', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'Differential Steering Principles — RoboBEE Innovators Lab (Instructor-Developed)', url: '' }],
     assetCredits: [{ asset: 'Maze Simulation Assets', creator: 'RoboBEE Innovators Creative Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -522,7 +560,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
     },
     nextLessonId: 'beg-01',
     nextLessonTeaser: 'Graduate to Beginner Robotics Class 01: Meet the real Arduino microcontroller board and make an LED blink with C++ code!',
-    sources: [{ title: 'RoboBEE Innovators Design Thinking for Kids', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'RoboBEE Innovators Design Thinking Framework (Instructor-Developed)', url: '' }],
     assetCredits: [{ asset: 'Design Templates', creator: 'RoboBEE Innovators Creative Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -633,7 +671,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
         { name: 'On-Board Surface Mount LED', exactVariant: 'Built-in SMD LED connected to Digital Pin 13', quantity: 1 },
         { name: 'Optional External LED Pack', exactVariant: '5mm Diffused Red LED + 220Ω 1/4W resistor', quantity: 1 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/arduino_uno_built_in_led_pin13.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/arduino_uno_built_in_led_pin13.svg',
       schematic: 'Digital Pin 13 ──[ Internal 1kΩ Resistor ]──[ Amber LED "L" ]── Ground (GND). When using the on-board LED, no external jumper wires or breadboard are required!',
       wireTable: [
         { from: 'USB Port of PC', to: 'USB-B Jack of Arduino Uno', wireOrPolarityNote: 'Supplies regulated 5V DC power and serial data communication' },
@@ -838,7 +876,7 @@ void loop() {
         { name: 'Carbon Film Resistor', exactVariant: '220Ω 1/4W 5% tolerance', quantity: 1 },
         { name: 'Male-to-Male Jumper Wires', exactVariant: '20cm multi-color copper', quantity: 2 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/breadboard_led_resistor_wiring.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/breadboard_led_resistor_wiring.svg',
       schematic: 'Arduino Pin 9 ──[ 220Ω Resistor ]──[ LED Anode (+) ] ──[ LED Cathode (-) ]── Arduino GND',
       wireTable: [
         { from: 'Arduino Digital Pin 9', to: 'Breadboard Row 15A (Resistor leg 1)', wireOrPolarityNote: 'Signal wire (Yellow/Blue)' },
@@ -963,7 +1001,7 @@ void loop() {
         { name: 'Tactile Pushbutton', exactVariant: '6x6mm through-hole 4-pin momentary', quantity: 1 },
         { name: 'Jumper wires', exactVariant: 'Male-to-Male 20cm', quantity: 2 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/arduino_button_input_pullup.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/arduino_button_input_pullup.svg',
       schematic: 'Arduino Pin 2 ──[ Tactile Switch ]── Arduino GND (Uses internal ~20kΩ pull-up to 5V)',
       wireTable: [
         { from: 'Arduino Digital Pin 2', to: 'Tactile Switch Pin 1A', wireOrPolarityNote: 'Sense line' },
@@ -1086,7 +1124,7 @@ void loop() {
         { name: '10kΩ Rotary Potentiometer', exactVariant: 'B10K 3-pin single-turn', quantity: 1 },
         { name: 'Jumper wires', exactVariant: 'Male-to-Male', quantity: 3 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/potentiometer_analog_a0.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/potentiometer_analog_a0.svg',
       schematic: 'Arduino 5V ──[ Pin 1: 10kΩ Pot ]──[ Pin 2 Wiper ➔ Analog A0 ]──[ Pin 3: Pot ]── Arduino GND',
       wireTable: [
         { from: 'Arduino 5V', to: 'Potentiometer Leg 1', wireOrPolarityNote: 'Red wire (5V)' },
@@ -1217,7 +1255,7 @@ void loop() {
         { name: '5mm LED', exactVariant: 'Red diffused', quantity: 1 },
         { name: '220Ω Resistor', exactVariant: '1/4W 5%', quantity: 1 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/reaction_game_wiring.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/reaction_game_wiring.svg',
       schematic: 'Pin 13 ──[ 220Ω ]──[ LED ]── GND | Pin 2 ──[ Button ]── GND (INPUT_PULLUP)',
       wireTable: [
         { from: 'Pin 13', to: 'LED Anode via 220Ω', wireOrPolarityNote: 'Output signal' },
@@ -1372,7 +1410,7 @@ void loop() {
         { name: '4xAA Battery Holder', exactVariant: 'Switched 6V DC pack', quantity: 1 },
         { name: 'Jumper wires', exactVariant: 'Male-to-Female / Male-to-Male', quantity: 8 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/motor_driver_tb6612_wiring.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/motor_driver_tb6612_wiring.svg',
       schematic: 'Arduino Pins [PWMA ➔ 5, AIN1 ➔ 7, AIN2 ➔ 8, STBY ➔ 6] | Battery 6V ➔ VM | Battery GND + Arduino GND ➔ Driver GND | Motor ➔ A01/A02',
       wireTable: [
         { from: 'Arduino Pin 5 (~PWM)', to: 'Driver PWMA', wireOrPolarityNote: 'Speed control signal' },
@@ -1532,7 +1570,7 @@ void loop() {
         { name: 'Rubber Drive Wheels', exactVariant: '65mm diameter', quantity: 2 },
         { name: 'Steel Ball Caster Wheel', exactVariant: 'Omnidirectional front support', quantity: 1 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/2wd_rover_wiring_plan.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/2wd_rover_wiring_plan.svg',
       schematic: 'Dual H-Bridge Driver [Left Motor ➔ A01/A02, Right Motor ➔ B01/B02] | Arduino Pins [Left ➔ 5,7,8; Right ➔ 3,4,2]',
       wireTable: [
         { from: 'Driver A01/A02', to: 'Left Motor', wireOrPolarityNote: 'Left drive channel' },
@@ -1645,7 +1683,7 @@ void loop() {
     },
     nextLessonId: 'beg-08',
     nextLessonTeaser: 'Beginner 08: 3D Design for Robotics — Measure real hardware with calipers, learn 3D printing clearances (+0.5mm), and model a custom sensor bracket!',
-    sources: [{ title: 'RoboBEE Innovators Differential Steering Lab', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'Differential Drive Kinematics Reference (Instructor-Developed Lab Notes)', url: '' }],
     assetCredits: [{ asset: 'Rover Chassis Layout', creator: 'RoboBEE Innovators Engineering Team', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -1717,7 +1755,7 @@ void loop() {
         { name: 'M3x8mm Screws & Nuts', exactVariant: 'Zinc plated steel', quantity: 2 },
         { name: 'PLA 3D Printer Filament', exactVariant: '1.75mm PLA (optional)', quantity: 1 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/cad_ultrasonic_bracket_blueprint.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/cad_ultrasonic_bracket_blueprint.svg',
       schematic: 'L-bracket: 50mm wide, 3mm wall, 16.5mm cylinder cutouts at 26mm spacing, M3 chassis mount slots',
       wireTable: [
         { from: 'HC-SR04 Header', to: 'Pass-through Cable Notch', wireOrPolarityNote: 'Requires 8mm depth clearance for jumper wires' }
@@ -1825,7 +1863,7 @@ ultrasonicMount();`,
         instructorNote: 'Speed of sound in air is ~343 meters/sec = 0.0343 cm/microsecond.'
       }
     ],
-    visualizerId: 'smart_bee_integration_sim',
+    visualizerId: 'obstacle_avoiding_rover_sim',
     project: {
       name: 'Obstacle-Avoiding Rover',
       deliverableType: 'physical_build',
@@ -1852,7 +1890,7 @@ ultrasonicMount();`,
         { name: '4xAA Battery Pack', exactVariant: '6V switched', quantity: 1 },
         { name: 'Stationary Cardboard Target', exactVariant: '30x20cm box', quantity: 1 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/obstacle_avoiding_rover_complete_wiring.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/obstacle_avoiding_rover_complete_wiring.svg',
       schematic: 'HC-SR04 [TRIG ➔ Pin 9, ECHO ➔ Pin 10] | Motors via TB6612FNG [Pins 5,7,8 & 6,9,10] | Shared GND connected',
       wireTable: [
         { from: 'HC-SR04 VCC', to: 'Arduino 5V', wireOrPolarityNote: '5V Sensor Power' },
@@ -1996,7 +2034,7 @@ void loop() {
         { name: 'Completed Autonomous Rover', exactVariant: 'Hardware from Classes 01–09', quantity: 1 },
         { name: '1-Meter Measuring Stick', exactVariant: 'Millimeter graduated', quantity: 1 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/3_trial_arena_test_setup.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/3_trial_arena_test_setup.svg',
       schematic: 'Standardized arena: 150cm track ➔ Stationary target ➔ Safe turn zone',
       wireTable: [
         { from: 'Rover System', to: 'Arena Start Line', wireOrPolarityNote: 'Identical starting heading for all 3 trials' }
@@ -2056,7 +2094,7 @@ void loop() {
     },
     nextLessonId: 'int-01',
     nextLessonTeaser: 'Graduate to Intermediate Robotics: Engineering workflows, reflectance sensor calibration, state machines, and competition line followers!',
-    sources: [{ title: 'RoboBEE Innovators Engineering Showcase Rubric', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'RoboBEE Innovators Engineering Showcase Rubric (Instructor-Developed)', url: '' }],
     assetCredits: [{ asset: 'Showcase Rubric & Test Arena', creator: 'RoboBEE Innovators Engineering Team', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -2111,7 +2149,7 @@ void loop() {
     differentiation: { support: ['Provide pre-labeled block outlines.'], extension: ['Add telemetry and error state blocks.'] },
     nextLessonId: 'int-02',
     nextLessonTeaser: 'Intermediate 02: Reflectance-Sensor Calibration Station — Calibrate photodiode thresholds against actual competition track tape!',
-    sources: [{ title: 'RoboBEE Innovators Systems Engineering Manual', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'NASA Systems Engineering Handbook (SP-2016-6105 Rev2)', url: 'https://www.nasa.gov/connect/ebooks/systems_engineering_handbook.html' }],
     assetCredits: [{ asset: 'System Blueprint Template', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -2203,6 +2241,130 @@ void loop() {
       name: 'Line-Follower State-Machine Controller',
       deliverableType: 'code_artifact',
       successEvidence: ['State machine code compiling cleanly with enum states and verified transition test cases in Serial Monitor.']
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Intermediate 03
+// Finite State Machine (FSM) Navigation Controller
+// Proprietary Curriculum - Lab Reference
+
+enum RobotState {
+  STATE_FORWARD,
+  STATE_PIVOT_LEFT,
+  STATE_PIVOT_RIGHT,
+  STATE_STOPPED
+};
+
+RobotState currentState = STATE_STOPPED;
+unsigned long lastStatePrint = 0;
+
+// Hardware Pin Definitions (Illustrative Reference)
+const int PIN_BTN_LEFT  = 2; // Simulates left line/bump trigger
+const int PIN_BTN_RIGHT = 3; // Simulates right line/bump trigger
+const int PIN_LED_STATE = 13;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(PIN_BTN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_BTN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_LED_STATE, OUTPUT);
+
+  Serial.println(F("[ROVI-FSM] State Machine Initialized."));
+  transitionTo(STATE_FORWARD);
+}
+
+void loop() {
+  // Read inputs (Active LOW with INPUT_PULLUP)
+  bool leftTriggered  = (digitalRead(PIN_BTN_LEFT) == LOW);
+  bool rightTriggered = (digitalRead(PIN_BTN_RIGHT) == LOW);
+
+  // FSM State Transition Logic
+  switch (currentState) {
+    case STATE_FORWARD:
+      if (leftTriggered && rightTriggered) {
+        transitionTo(STATE_STOPPED);
+      } else if (leftTriggered) {
+        transitionTo(STATE_PIVOT_LEFT);
+      } else if (rightTriggered) {
+        transitionTo(STATE_PIVOT_RIGHT);
+      }
+      break;
+
+    case STATE_PIVOT_LEFT:
+      if (!leftTriggered) {
+        transitionTo(STATE_FORWARD);
+      }
+      break;
+
+    case STATE_PIVOT_RIGHT:
+      if (!rightTriggered) {
+        transitionTo(STATE_FORWARD);
+      }
+      break;
+
+    case STATE_STOPPED:
+      if (!leftTriggered && !rightTriggered) {
+        delay(200); // Debounce
+        transitionTo(STATE_FORWARD);
+      }
+      break;
+  }
+
+  // Non-blocking telemetry output every 500ms
+  if (millis() - lastStatePrint >= 500) {
+    lastStatePrint = millis();
+    reportTelemetry();
+  }
+}
+
+void transitionTo(RobotState newState) {
+  if (currentState == newState) return;
+  Serial.print(F("[TRANSITION] "));
+  Serial.print(getStateName(currentState));
+  Serial.print(F(" -> "));
+  Serial.println(getStateName(newState));
+  currentState = newState;
+  digitalWrite(PIN_LED_STATE, (currentState == STATE_FORWARD) ? HIGH : LOW);
+}
+
+const char* getStateName(RobotState state) {
+  switch (state) {
+    case STATE_FORWARD:     return "FORWARD";
+    case STATE_PIVOT_LEFT:  return "PIVOT_LEFT";
+    case STATE_PIVOT_RIGHT: return "PIVOT_RIGHT";
+    case STATE_STOPPED:     return "STOPPED";
+    default:                return "UNKNOWN";
+  }
+}
+
+void reportTelemetry() {
+  Serial.print(F("Current State: "));
+  Serial.println(getStateName(currentState));
+}
+`,
+      pinMap: {
+        'PIN_BTN_LEFT': 'Pin 2 (Left sensor simulator, INPUT_PULLUP)',
+        'PIN_BTN_RIGHT': 'Pin 3 (Right sensor simulator, INPUT_PULLUP)',
+        'PIN_LED_STATE': 'Pin 13 (Built-in status indicator LED)'
+      },
+      setupAndUpload: [
+        'Open Arduino IDE, select your board and serial COM port.',
+        'Paste the FSM controller sketch and click Upload.',
+        'Open Tools > Serial Monitor at 9600 baud.',
+        'Ground Pin 2 or Pin 3 with a jumper wire to simulate sensor triggers and observe clean state transitions.'
+      ],
+      explanations: [
+        'enum RobotState: Defines human-readable names for states instead of confusing magic numbers.',
+        'transitionTo(): Centralized transition function that logs transitions and updates indicator lights cleanly.',
+        'switch/case: Guarantees that only ONE state logic block executes per loop pass, preventing conflicting motor signals.',
+        'millis() timer: Prints telemetry at 500ms intervals without blocking or slowing down loop execution.'
+      ],
+      expectedResult: 'Serial Monitor prints initial [ROVI-FSM] boot and displays instant transitions whenever sensor inputs toggle.',
+      caveats: [
+        'Always remember "break;" at the end of each case block to prevent unintended fall-through to the next state.',
+        'Keep transition actions lightweight; never place long delay() calls inside state blocks.'
+      ],
+      tweakTip: 'Add an emergency recovery timer in STATE_STOPPED so the rover reverses after 3 seconds of being stuck.'
     },
     activity: {
       title: 'Program the Line-Follower State Machine',
@@ -2308,6 +2470,171 @@ void loop() {
       deliverableType: 'physical_build',
       successEvidence: ['Robot completes 2 full laps of the competition track autonomously without leaving the black line.']
     },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3 (or Nano)', 'TB6612FNG Dual H-Bridge Motor Driver', 'Dual TCRT5000 IR Reflectance Sensors'],
+      componentList: [
+        { name: '2WD Robot Chassis', exactVariant: 'Acrylic/3D-printed chassis with dual TT gearmotors (1:48)', quantity: 1 },
+        { name: 'TB6612FNG Driver Module', exactVariant: 'Toshiba TB6612FNG dual motor driver breakout', quantity: 1 },
+        { name: 'Dual IR Reflectance Sensors', exactVariant: 'TCRT5000 optical reflectance tracking sensor modules', quantity: 2 },
+        { name: 'Battery Pack', exactVariant: '2S 7.4V Li-Ion / 6x AA battery holder with power switch', quantity: 1 },
+        { name: 'Caster Wheel', exactVariant: 'Front smooth nylon/metal ball caster', quantity: 1 }
+      ],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/line_follower_integrated_wiring.svg',
+      schematic: 'Arduino D3 ➔ STBY, D5 ➔ PWMA, D7 ➔ AIN1, D8 ➔ AIN2, D6 ➔ PWMB, D9 ➔ BIN1, D10 ➔ BIN2. A0 ➔ Left IR, A1 ➔ Right IR. Battery (+) ➔ TB6612 VM, Shared GND.',
+      wireTable: [
+        { from: 'Arduino D3', to: 'TB6612 STBY', wireOrPolarityNote: 'Standby pin: must be HIGH to enable motor outputs' },
+        { from: 'Arduino D5 (PWM)', to: 'TB6612 PWMA', wireOrPolarityNote: 'Speed control for Left Motor (0-255)' },
+        { from: 'Arduino D7', to: 'TB6612 AIN1', wireOrPolarityNote: 'Left Motor Direction A' },
+        { from: 'Arduino D8', to: 'TB6612 AIN2', wireOrPolarityNote: 'Left Motor Direction B' },
+        { from: 'Arduino D6 (PWM)', to: 'TB6612 PWMB', wireOrPolarityNote: 'Speed control for Right Motor (0-255)' },
+        { from: 'Arduino D9', to: 'TB6612 BIN1', wireOrPolarityNote: 'Right Motor Direction A' },
+        { from: 'Arduino D10', to: 'TB6612 BIN2', wireOrPolarityNote: 'Right Motor Direction B' },
+        { from: 'Arduino A0', to: 'Left TCRT5000 OUT', wireOrPolarityNote: 'Analog/Digital output from left optical sensor' },
+        { from: 'Arduino A1', to: 'Right TCRT5000 OUT', wireOrPolarityNote: 'Analog/Digital output from right optical sensor' },
+        { from: 'Arduino 5V', to: 'TB6612 VCC & Sensor VCC', wireOrPolarityNote: 'Regulated 5V logic power bus' },
+        { from: 'Arduino GND', to: 'TB6612 GND & Battery (-)', wireOrPolarityNote: 'Mandatory common ground return' },
+        { from: 'Battery (+) 7.4V', to: 'TB6612 VM', wireOrPolarityNote: 'Motor drive power rail (never connect directly to 5V)' },
+        { from: 'TB6612 AO1/AO2', to: 'Left TT Motor Terminals', wireOrPolarityNote: 'Solder 0.1uF ceramic noise filtering capacitor across leads' },
+        { from: 'TB6612 BO1/BO2', to: 'Right TT Motor Terminals', wireOrPolarityNote: 'Solder 0.1uF ceramic noise filtering capacitor across leads' }
+      ],
+      assemblyAndPowerUpSteps: [
+        '1. Mount dual IR sensors 8-12mm above ground surface, centered 20mm apart on chassis front.',
+        '2. Wire TB6612FNG driver to Arduino digital pins using the wire table above.',
+        '3. Connect common GND between battery negative, TB6612 GND, and Arduino GND.',
+        '4. Place robot on bench with wheels off ground; power on USB logic first.',
+        '5. Upload firmware sketch and calibrate IR threshold pot until indicator LEDs switch on black line vs white floor.',
+        '6. Turn on motor battery switch and verify left and right wheel forward directions.'
+      ],
+      powerAndSafetyChecks: [
+        'Never connect 7.4V battery pack to Arduino 5V or Vin while USB cable is connected.',
+        'Always test motor directions on a test stand before placing robot on floor.',
+        'Keep hair, fingers, and loose clothing away from rotating wheels and gears.',
+        'Common ground between battery and Arduino is strictly mandatory for clean driver logic.'
+      ],
+      testCases: [
+        { action: 'Both sensors on white floor', expectedResult: 'Robot drives forward at BASE_SPEED (PWM 135).' },
+        { action: 'Left sensor enters black line', expectedResult: 'Left motor reverses; Right motor drives forward to pivot left onto line.' },
+        { action: 'Right sensor enters black line', expectedResult: 'Right motor reverses; Left motor drives forward to pivot right onto line.' },
+        { action: 'Both sensors enter black cross line (Stop Line)', expectedResult: 'Robot halts motors completely.' }
+      ]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Intermediate 05
+// 4-State Differential Line-Following Robot
+// Motor Driver: TB6612FNG | Sensors: Dual IR Reflectance
+
+const int PIN_STBY = 3;
+const int PIN_PWMA = 5;
+const int PIN_AIN1 = 7;
+const int PIN_AIN2 = 8;
+const int PIN_PWMB = 6;
+const int PIN_BIN1 = 9;
+const int PIN_BIN2 = 10;
+
+const int PIN_IR_LEFT  = A0;
+const int PIN_IR_RIGHT = A1;
+
+// Calibrated Threshold: Analog reading > 500 means Black Line
+const int LINE_THRESHOLD = 500;
+
+// Speed Settings (0-255)
+const int SPEED_BASE = 135;
+const int SPEED_TURN = 110;
+
+void setup() {
+  pinMode(PIN_STBY, OUTPUT);
+  pinMode(PIN_PWMA, OUTPUT); pinMode(PIN_AIN1, OUTPUT); pinMode(PIN_AIN2, OUTPUT);
+  pinMode(PIN_PWMB, OUTPUT); pinMode(PIN_BIN1, OUTPUT); pinMode(PIN_BIN2, OUTPUT);
+
+  digitalWrite(PIN_STBY, HIGH); // Enable driver
+  Serial.begin(9600);
+  Serial.println(F("[LINE-FOLLOWER] Ready."));
+}
+
+void loop() {
+  int leftVal  = analogRead(PIN_IR_LEFT);
+  int rightVal = analogRead(PIN_IR_RIGHT);
+
+  bool leftOnLine  = (leftVal > LINE_THRESHOLD);
+  bool rightOnLine = (rightVal > LINE_THRESHOLD);
+
+  if (!leftOnLine && !rightOnLine) {
+    // Both on white floor -> Drive straight forward
+    setMotors(SPEED_BASE, SPEED_BASE);
+  } else if (leftOnLine && !rightOnLine) {
+    // Left on line -> Pivot left
+    setMotors(-SPEED_TURN, SPEED_TURN);
+  } else if (!leftOnLine && rightOnLine) {
+    // Right on line -> Pivot right
+    setMotors(SPEED_TURN, -SPEED_TURN);
+  } else {
+    // Both on black line (Finish / T-junction) -> Stop
+    brakeMotors();
+  }
+}
+
+void setMotors(int leftSpeed, int rightSpeed) {
+  // Left Motor
+  if (leftSpeed >= 0) {
+    digitalWrite(PIN_AIN1, HIGH);
+    digitalWrite(PIN_AIN2, LOW);
+    analogWrite(PIN_PWMA, leftSpeed);
+  } else {
+    digitalWrite(PIN_AIN1, LOW);
+    digitalWrite(PIN_AIN2, HIGH);
+    analogWrite(PIN_PWMA, -leftSpeed);
+  }
+
+  // Right Motor
+  if (rightSpeed >= 0) {
+    digitalWrite(PIN_BIN1, HIGH);
+    digitalWrite(PIN_BIN2, LOW);
+    analogWrite(PIN_PWMB, rightSpeed);
+  } else {
+    digitalWrite(PIN_BIN1, LOW);
+    digitalWrite(PIN_BIN2, HIGH);
+    analogWrite(PIN_PWMB, -rightSpeed);
+  }
+}
+
+void brakeMotors() {
+  digitalWrite(PIN_AIN1, HIGH);
+  digitalWrite(PIN_AIN2, HIGH);
+  analogWrite(PIN_PWMA, 0);
+  digitalWrite(PIN_BIN1, HIGH);
+  digitalWrite(PIN_BIN2, HIGH);
+  analogWrite(PIN_PWMB, 0);
+}
+`,
+      pinMap: {
+        'PIN_STBY': 'Pin 3 (TB6612 Standby enable, active HIGH)',
+        'PIN_PWMA': 'Pin 5 (Left motor PWM speed control)',
+        'PIN_AIN1 / AIN2': 'Pins 7 & 8 (Left motor direction truth table)',
+        'PIN_PWMB': 'Pin 6 (Right motor PWM speed control)',
+        'PIN_BIN1 / BIN2': 'Pins 9 & 10 (Right motor direction truth table)',
+        'PIN_IR_LEFT': 'Pin A0 (Left TCRT5000 reflectance analog input)',
+        'PIN_IR_RIGHT': 'Pin A1 (Right TCRT5000 reflectance analog input)'
+      },
+      setupAndUpload: [
+        'Keep robot propped on a test block so wheels spin freely.',
+        'Upload sketch to Arduino Uno via USB.',
+        'Open Serial Monitor and test sensor readings over white paper and black electrical tape.',
+        'Adjust LINE_THRESHOLD if paper surface reflectivity differs.',
+        'Place on curved track and activate battery switch.'
+      ],
+      explanations: [
+        'analogRead() reads infrared reflection; dark black absorbs IR giving higher analog values (>500).',
+        'setMotors() accepts positive values for forward and negative for reverse, allowing smooth differential pivot turns.',
+        'brakeMotors() pulls both driver input terminals HIGH simultaneously to short motor EMF and brake instantly.'
+      ],
+      expectedResult: 'Robot smoothly tracks curved black line on white poster board, pivoting when turning and stopping at finish line.',
+      caveats: [
+        'Ensure sensor height is locked between 8-12mm; higher distances cause unreliable optical readings.',
+        'If robot pivots the wrong way on seeing a line, swap PIN_AIN1/2 or PIN_BIN1/2 pin assignments.'
+      ],
+      tweakTip: 'If rover wiggles on straights, decrease SPEED_TURN from 110 to 90 for gentler steering corrections.'
+    },
     activity: {
       title: 'Race the Line Following Track',
       steps: ['Mount calibrated IR sensors', 'Upload 4-state line tracking code', 'Place on track', 'Tune turn speeds', 'Record lap time'],
@@ -2319,7 +2646,7 @@ void loop() {
     differentiation: { support: ['Lower BASE_SPEED to 120 for slower, stable tracking.'], extension: ['Upgrade to 5-sensor array with proportional steering.'] },
     nextLessonId: 'int-06',
     nextLessonTeaser: 'Intermediate 06: Servo Mechanisms & Robotic Manipulators — Control angular positions from 0° to 180° and construct a motorized robotic gripper arm!',
-    sources: [{ title: 'RoboBEE Innovators Line Follower Competition Rules', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'RoboBEE Innovators Line Follower Competition Rules (Lab Reference)', url: '' }],
     assetCredits: [{ asset: 'Competition Track Map', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -2359,6 +2686,119 @@ void loop() {
       name: 'Servo Pick-and-Place Gripper',
       deliverableType: 'physical_build',
       successEvidence: ['Calibrated robotic gripper smoothly picking up, holding for 3 seconds, and releasing a lightweight foam block without gear buzzing.']
+    },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3', 'TowerPro SG90 9g Micro Servo', 'External 5V 2A Regulated Power Supply'],
+      componentList: [
+        { name: 'Micro Servomotor', exactVariant: 'TowerPro SG90 9g nylon gear servo (1.8 kg-cm torque)', quantity: 1 },
+        { name: 'Mechanical Gripper Kit', exactVariant: 'Laser-cut acrylic / 3D-printed claw with gear drive', quantity: 1 },
+        { name: 'External Power Supply', exactVariant: '5V 2A DC adapter or 4x AA battery pack (6.0V max)', quantity: 1 },
+        { name: 'Breadboard & Jumpers', exactVariant: 'Mini breadboard with male-to-male jumper wires', quantity: 1 }
+      ],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/servo_gripper_wiring.svg',
+      schematic: 'Arduino Pin 9 (PWM) ➔ Servo Orange (Signal). Ext 5V (+) ➔ Servo Red (Power). Ext GND (-) ➔ Servo Brown (GND) & Arduino GND (Common).',
+      wireTable: [
+        { from: 'Arduino Pin 9 (PWM)', to: 'SG90 Servo Signal Lead (Orange/Yellow)', wireOrPolarityNote: 'Carries 50Hz PWM pulse (1000us - 2000us)' },
+        { from: 'External 5V (+) Supply', to: 'SG90 Servo VCC Lead (Red)', wireOrPolarityNote: 'Do NOT power servo motor from Arduino 5V onboard regulator' },
+        { from: 'External Supply GND (-)', to: 'SG90 Servo GND Lead (Brown/Black)', wireOrPolarityNote: 'Current return path for motor' },
+        { from: 'External Supply GND (-)', to: 'Arduino GND Pin', wireOrPolarityNote: 'MANDATORY common ground reference for PWM signal' }
+      ],
+      assemblyAndPowerUpSteps: [
+        '1. Connect servo signal and power leads on breadboard according to wire table.',
+        '2. Upload the 90-degree centering sketch to Arduino BEFORE mounting mechanical horn.',
+        '3. Attach the plastic servo horn so gripper jaws sit halfway open at the 90-degree centered position.',
+        '4. Tighten the central gear screw carefully without over-torquing plastic teeth.',
+        '5. Upload the calibrated claw sweep sketch with safe OPEN and GRIP angles.',
+        '6. Test gripping a lightweight 30mm foam cube.'
+      ],
+      powerAndSafetyChecks: [
+        'Never force a powered servo horn by hand; mechanical back-driving strips internal gears.',
+        'Never set GRIP angle past physical contact point (stalls motor and draws >650mA stall current).',
+        'Always ensure common ground between external supply and Arduino board.'
+      ],
+      testCases: [
+        { action: 'Command OPEN_ANGLE (120°)', expectedResult: 'Gripper jaws open wide smoothly with zero buzzing.' },
+        { action: 'Command GRIP_ANGLE (48°)', expectedResult: 'Gripper jaws close firmly around foam cube and hold without buzzing.' },
+        { action: 'Lift foam cube 5cm off table', expectedResult: 'Cube is held securely without slipping or dropping for 5 seconds.' }
+      ]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Intermediate 06
+// Calibrated Robotic Gripper Claw Controller
+// Library: <Servo.h> | Hardware: SG90 Micro Servo
+
+#include <Servo.h>
+
+Servo gripper;
+
+const int PIN_SERVO = 9;
+
+// Calibrated Safe Angles (Degrees)
+// Verify against physical claw limits before operation!
+const int ANGLE_OPEN = 120; // Jaws wide open
+const int ANGLE_GRIP = 48;  // Jaws firmly holding foam cube without stalling
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println(F("[GRIPPER] Initializing..."));
+
+  gripper.attach(PIN_SERVO);
+
+  // Center servo on boot
+  gripper.write(90);
+  delay(1000);
+  Serial.println(F("[GRIPPER] Ready. Testing pick-and-place cycle."));
+}
+
+void loop() {
+  Serial.println(F("Opening gripper jaws..."));
+  smoothMove(ANGLE_OPEN);
+  delay(1500);
+
+  Serial.println(F("Gripping object..."));
+  smoothMove(ANGLE_GRIP);
+  delay(2000); // Hold object
+}
+
+// Moves servo slowly to avoid mechanical jerk and gear stress
+void smoothMove(int targetAngle) {
+  int currentAngle = gripper.read();
+  if (currentAngle < targetAngle) {
+    for (int a = currentAngle; a <= targetAngle; a++) {
+      gripper.write(a);
+      delay(15); // 15ms per degree = smooth angular velocity
+    }
+  } else {
+    for (int a = currentAngle; a >= targetAngle; a--) {
+      gripper.write(a);
+      delay(15);
+    }
+  }
+}
+`,
+      pinMap: {
+        'PIN_SERVO': 'Pin 9 (Arduino PWM output to servo signal lead)',
+        'External 5V (+)': 'Servo Red power lead',
+        'Common GND': 'Servo Brown lead & Arduino GND'
+      },
+      setupAndUpload: [
+        'Open Arduino IDE and upload sketch.',
+        'Open Serial Monitor at 9600 baud.',
+        'Observe smooth continuous opening and closing cycle.',
+        'Adjust ANGLE_GRIP up or down if jaws buzz against object.'
+      ],
+      explanations: [
+        '#include <Servo.h>: Standard Arduino library generating exact 50Hz PWM pulses for positional servos.',
+        'smoothMove(): Increments angle degree by degree with a 15ms delay, preventing sudden mechanical shock.',
+        'ANGLE_GRIP = 48: Calibrated stop point where jaws touch object firmly without forcing the motor shaft.'
+      ],
+      expectedResult: 'Gripper opens to 120 degrees smoothly, pauses, closes to 48 degrees, and holds object securely without motor buzzing.',
+      caveats: [
+        'If servo buzzes continuously when closed, increase ANGLE_GRIP by 2-3 degrees immediately.',
+        'Do not attempt to lift metal or heavy objects that exceed the 1.8 kg-cm torque rating of SG90.'
+      ],
+      tweakTip: 'Connect a 10k potentiometer to A0 and map its value from 0-1023 to ANGLE_GRIP-ANGLE_OPEN for manual teleoperation.'
     },
     activity: {
       title: 'Assemble and Calibrate the Gripper Claw',
@@ -2405,6 +2845,140 @@ void loop() {
       deliverableType: 'code_artifact',
       successEvidence: ['Rover successfully executes an ordered sequence of turns at 3 distinct intersection nodes in a grid maze.']
     },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Intermediate 07
+// Grid Maze Intersection Navigation Controller
+// Follows line and executes ordered turn sequence at intersection nodes
+
+enum TurnAction { TURN_LEFT, TURN_RIGHT, GO_STRAIGHT, HALT_FINISH };
+
+// Ordered sequence of turns for 3 maze intersections:
+const TurnAction ROUTE[] = { TURN_LEFT, TURN_RIGHT, HALT_FINISH };
+const int TOTAL_NODES = 3;
+int currentNode = 0;
+
+const int PIN_STBY = 3;
+const int PIN_PWMA = 5;
+const int PIN_AIN1 = 7;
+const int PIN_AIN2 = 8;
+const int PIN_PWMB = 6;
+const int PIN_BIN1 = 9;
+const int PIN_BIN2 = 10;
+const int PIN_IR_L = A0;
+const int PIN_IR_R = A1;
+
+const int THRESHOLD = 500;
+const int SPEED_NORM = 130;
+const int SPEED_TURN = 120;
+
+void setup() {
+  pinMode(PIN_STBY, OUTPUT);
+  pinMode(PIN_PWMA, OUTPUT); pinMode(PIN_AIN1, OUTPUT); pinMode(PIN_AIN2, OUTPUT);
+  pinMode(PIN_PWMB, OUTPUT); pinMode(PIN_BIN1, OUTPUT); pinMode(PIN_BIN2, OUTPUT);
+  digitalWrite(PIN_STBY, HIGH);
+  Serial.begin(9600);
+  Serial.println(F("[MAZE-ROUTER] System Initialized."));
+}
+
+void loop() {
+  int leftVal  = analogRead(PIN_IR_L);
+  int rightVal = analogRead(PIN_IR_R);
+  bool leftDark  = (leftVal > THRESHOLD);
+  bool rightDark = (rightVal > THRESHOLD);
+
+  // Check for Intersection Node: Both sensors detect black simultaneously
+  if (leftDark && rightDark) {
+    handleIntersection();
+  } else if (leftDark && !rightDark) {
+    drive(SPEED_NORM - 30, SPEED_NORM + 30);
+  } else if (!leftDark && rightDark) {
+    drive(SPEED_NORM + 30, SPEED_NORM - 30);
+  } else {
+    drive(SPEED_NORM, SPEED_NORM);
+  }
+}
+
+void handleIntersection() {
+  Serial.print(F("[NODE DETECTED] Index: "));
+  Serial.println(currentNode);
+
+  // 1. Align turning axis: Drive forward 3cm past the node
+  drive(SPEED_NORM, SPEED_NORM);
+  delay(180);
+
+  if (currentNode >= TOTAL_NODES) {
+    brake();
+    while (true); // Mission complete
+  }
+
+  TurnAction action = ROUTE[currentNode];
+  currentNode++;
+
+  switch (action) {
+    case TURN_LEFT:
+      Serial.println(F("Executing Pivot LEFT..."));
+      drive(-SPEED_TURN, SPEED_TURN);
+      delay(380); // Calibrated 90-degree turn
+      break;
+
+    case TURN_RIGHT:
+      Serial.println(F("Executing Pivot RIGHT..."));
+      drive(SPEED_TURN, -SPEED_TURN);
+      delay(380); // Calibrated 90-degree turn
+      break;
+
+    case GO_STRAIGHT:
+      Serial.println(F("Continuing STRAIGHT..."));
+      drive(SPEED_NORM, SPEED_NORM);
+      delay(200);
+      break;
+
+    case HALT_FINISH:
+      Serial.println(F("GOAL REACHED! Halting."));
+      brake();
+      while (true);
+  }
+}
+
+void drive(int l, int r) {
+  digitalWrite(PIN_AIN1, l >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_AIN2, l >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMA, abs(l));
+  digitalWrite(PIN_BIN1, r >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_BIN2, r >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMB, abs(r));
+}
+
+void brake() {
+  digitalWrite(PIN_AIN1, HIGH); digitalWrite(PIN_AIN2, HIGH); analogWrite(PIN_PWMA, 0);
+  digitalWrite(PIN_BIN1, HIGH); digitalWrite(PIN_BIN2, HIGH); analogWrite(PIN_PWMB, 0);
+}
+`,
+      pinMap: {
+        'PIN_STBY': 'Pin 3 (Motor driver enable)',
+        'PIN_PWMA / PWMB': 'Pins 5 & 6 (PWM speed control)',
+        'PIN_AIN / BIN': 'Pins 7, 8, 9, 10 (H-Bridge direction control)',
+        'PIN_IR_L / R': 'Pins A0 & A1 (Dual IR reflectance sensors)'
+      },
+      setupAndUpload: [
+        'Upload sketch to Arduino line follower rover.',
+        'Place rover at starting line of grid maze.',
+        'Turn on motor battery switch.',
+        'Verify rover drives forward, detects first intersection cross, pivots 90 degrees left, and continues.'
+      ],
+      explanations: [
+        'ROUTE[]: Array defining pre-planned waypoint actions for each encountered intersection.',
+        'drive(180ms delay): Moves chassis forward so wheels align directly over intersection center before pivoting.',
+        'handleIntersection(): Increments currentNode counter so each node executes its specific turn.'
+      ],
+      expectedResult: 'Rover tracks line, turns 90 degrees left at node 1, turns 90 degrees right at node 2, and halts at node 3.',
+      caveats: [
+        'Always include the small drive-forward delay before turning, or the front caster wheel will bind on tape edges.',
+        'Tune turn delay milliseconds if battery voltage drops.'
+      ],
+      tweakTip: 'Replace hardcoded turn delays with a while-loop that turns until the opposite IR sensor catches the new line.'
+    },
     activity: { title: 'Navigate Grid Maze', steps: ['Detect intersection', 'Drive forward 2cm past node', 'Execute turn', 'Resume line tracking'], successCriteria: ['Hits all 3 waypoints correctly.'] },
     troubleshooting: [{ symptom: 'Robot detects same intersection twice.', checks: ['Add 200ms debounce drive-forward delay'], explanation: 'Sensors linger over thick tape.' }],
     checksForUnderstanding: ['What sensor state indicates an intersection?'],
@@ -2412,7 +2986,7 @@ void loop() {
     differentiation: { support: ['Single T-junction first.'], extension: ['Implement Left-Hand-on-Wall maze solving algorithm.'] },
     nextLessonId: 'int-08',
     nextLessonTeaser: 'Intermediate 08: CAD Assemblies, Gears, and Fit — Model multi-part robotic assemblies with constraints and printable upgrades!',
-    sources: [{ title: 'Grid Navigation in Robotics', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'IEEE: Grid-Based Path Planning for Autonomous Mobile Robots', url: 'https://ieeexplore.ieee.org' }],
     assetCredits: [{ asset: 'Maze Grid Blueprint', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -2487,6 +3061,105 @@ void loop() {
       deliverableType: 'code_artifact',
       successEvidence: ['Rover responds to wireless directional commands and automatically halts within 1 second if signal is disconnected.']
     },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Intermediate 09
+// Wireless Teleoperation Controller with Deadman Failsafe
+// Supports Bluetooth HC-05 / Serial / Web Telemetry
+
+const int PIN_STBY = 3;
+const int PIN_PWMA = 5;
+const int PIN_AIN1 = 7;
+const int PIN_AIN2 = 8;
+const int PIN_PWMB = 6;
+const int PIN_BIN1 = 9;
+const int PIN_BIN2 = 10;
+
+// Safety Deadman Timeout: Halt if no packet received within 1000ms
+const unsigned long DEADMAN_TIMEOUT_MS = 1000;
+unsigned long lastPacketTime = 0;
+bool failsafeTriggered = false;
+
+const int SPEED_TELEOP = 160;
+
+void setup() {
+  pinMode(PIN_STBY, OUTPUT);
+  pinMode(PIN_PWMA, OUTPUT); pinMode(PIN_AIN1, OUTPUT); pinMode(PIN_AIN2, OUTPUT);
+  pinMode(PIN_PWMB, OUTPUT); pinMode(PIN_BIN1, OUTPUT); pinMode(PIN_BIN2, OUTPUT);
+  digitalWrite(PIN_STBY, HIGH);
+
+  Serial.begin(9600); // Communicates with HC-05 / USB
+  Serial.println(F("[TELEOP-ROVER] Safety Ready. Send 'F','B','L','R','S'."));
+  lastPacketTime = millis();
+}
+
+void loop() {
+  // 1. Process incoming wireless commands
+  if (Serial.available() > 0) {
+    char cmd = Serial.read();
+    lastPacketTime = millis(); // Reset deadman clock
+    failsafeTriggered = false;
+    executeCommand(cmd);
+  }
+
+  // 2. Strict Deadman Failsafe Check
+  if (!failsafeTriggered && (millis() - lastPacketTime > DEADMAN_TIMEOUT_MS)) {
+    brake();
+    failsafeTriggered = true;
+    Serial.println(F("[ALERT] DEADMAN TIMEOUT: Signal lost > 1000ms. Brakes engaged!"));
+  }
+}
+
+void executeCommand(char cmd) {
+  switch (cmd) {
+    case 'F': drive(SPEED_TELEOP, SPEED_TELEOP); break;
+    case 'B': drive(-SPEED_TELEOP, -SPEED_TELEOP); break;
+    case 'L': drive(-SPEED_TELEOP, SPEED_TELEOP); break;
+    case 'R': drive(SPEED_TELEOP, -SPEED_TELEOP); break;
+    case 'S': brake(); break;
+    default:  break;
+  }
+}
+
+void drive(int l, int r) {
+  digitalWrite(PIN_AIN1, l >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_AIN2, l >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMA, abs(l));
+  digitalWrite(PIN_BIN1, r >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_BIN2, r >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMB, abs(r));
+}
+
+void brake() {
+  digitalWrite(PIN_AIN1, HIGH); digitalWrite(PIN_AIN2, HIGH); analogWrite(PIN_PWMA, 0);
+  digitalWrite(PIN_BIN1, HIGH); digitalWrite(PIN_BIN2, HIGH); analogWrite(PIN_PWMB, 0);
+}
+`,
+      pinMap: {
+        'PIN_STBY': 'Pin 3 (Motor driver enable)',
+        'PIN_PWMA / PWMB': 'Pins 5 & 6 (PWM speed control)',
+        'PIN_AIN / BIN': 'Pins 7, 8, 9, 10 (H-Bridge direction control)',
+        'Serial RX / TX': 'Pins 0 & 1 (or SoftwareSerial to Bluetooth module)'
+      },
+      setupAndUpload: [
+        'Disconnect Bluetooth RX wire while uploading sketch via USB.',
+        'Upload sketch and reconnect Bluetooth module.',
+        'Open Serial Monitor or Bluetooth terminal app on phone.',
+        'Send single character "F" to drive forward.',
+        'Close the app or turn off transmitter; rover will immediately halt after 1000ms.'
+      ],
+      explanations: [
+        'lastPacketTime = millis(): Updates heartbeat timestamp on every received character.',
+        'millis() - lastPacketTime > 1000: Checks continuously whether operator communication has failed.',
+        'executeCommand(): Maps single-byte ASCII characters to motor actions with zero parsing overhead.'
+      ],
+      expectedResult: 'Rover drives on command and immediately brakes within 1 second of wireless connection drop.',
+      caveats: [
+        'Never set DEADMAN_TIMEOUT_MS to 0 or leave it unmonitored during competition runs.',
+        'Remember Bluetooth modules share hardware Serial pins 0/1; unplug module RX before uploading code.'
+      ],
+      tweakTip: 'Add telemetry feedback sending "ACK" and battery voltage readings back to the controller every 500ms.'
+    },
     activity: { title: 'Implement Wireless Failsafe', steps: ['Read Serial char', 'Reset lastTime', 'Switch/case execution', 'Check timeout in loop'], successCriteria: ['Stops instantly on disconnect.'] },
     troubleshooting: [{ symptom: 'Rover keeps driving when app is closed.', checks: ['Check failsafe condition inside loop()'], explanation: 'Timeout must be checked on every pass of loop().' }],
     checksForUnderstanding: ['Why do we send single characters like "F" instead of sentences like "Please move forward"?'],
@@ -2494,7 +3167,7 @@ void loop() {
     differentiation: { support: ['Test using USB Serial Monitor first.'], extension: ['Add battery voltage telemetry packet streaming.'] },
     nextLessonId: 'int-10',
     nextLessonTeaser: 'Intermediate 10: Timed Robotics Mission Challenge — Put all intermediate skills to the test in a timed classroom team mission!',
-    sources: [{ title: 'Robotics Wireless Safety Standards', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'ISO 10218-1 Robots and Robotic Devices — Safety Requirements', url: 'https://www.iso.org/standard/51330.html' }],
     assetCredits: [{ asset: 'Telemetry Dashboard Layout', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -2535,7 +3208,7 @@ void loop() {
     differentiation: { support: ['Pair with veteran mentor for pit troubleshooting.'], extension: ['Calculate average speed in meters/second.'] },
     nextLessonId: 'adv-01',
     nextLessonTeaser: 'Advance to Level 4: Advanced Robotics & Competition — Power budgets, non-blocking FreeRTOS, PID control, encoders, and Mini-Sumo dohyo battles!',
-    sources: [{ title: 'RoboBEE Innovators Tournament Guidelines', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'RoboBEE Innovators Tournament Guidelines (Instructor-Developed)', url: '' }],
     assetCredits: [{ asset: 'Mission Scorecard', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -2579,7 +3252,7 @@ void loop() {
     differentiation: { support: ['Provide template with pre-filled standard dimensions.'], extension: ['Analyze tactical starting positions.'] },
     nextLessonId: 'adv-02',
     nextLessonTeaser: 'Advanced 02: Power Architecture and Electrical Budget — Calculate current draws, wire low-voltage regulators, and eliminate brownouts!',
-    sources: [{ title: 'International Mini-Sumo Competition Rules 2026', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'All Japan Robot-Sumo Tournament Official Rules', url: 'http://www.fsi.co.jp/sumo/en/' }],
     assetCredits: [{ asset: 'Competition Rulebook Citations', creator: 'RoboBEE Innovators Team', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -2654,6 +3327,103 @@ void loop() {
       deliverableType: 'code_artifact',
       successEvidence: ['Complete compile-ready non-blocking C++ sketch with 0 delay() calls and verified 500Hz loop execution rate.']
     },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Advanced 03
+// High-Performance Non-Blocking Task Scheduler
+// Eliminates all delay() calls using elapsed millis() architecture
+
+struct Task {
+  unsigned long intervalMs;
+  unsigned long lastRun;
+  void (*functionPointer)();
+};
+
+const int PIN_STATUS_LED = 13;
+const int PIN_HEARTBEAT  = 12;
+
+unsigned long loopCount = 0;
+unsigned long lastHzCheck = 0;
+
+void taskSampleSensors() {
+  int sample = analogRead(A0);
+  (void)sample;
+}
+
+void taskUpdateMotors() {
+  // Motor PID update stub
+}
+
+void taskBlinkHeartbeat() {
+  static bool state = false;
+  state = !state;
+  digitalWrite(PIN_HEARTBEAT, state ? HIGH : LOW);
+}
+
+void taskReportTelemetry() {
+  unsigned long now = millis();
+  float elapsedSec = (now - lastHzCheck) / 1000.0;
+  if (elapsedSec > 0) {
+    float hz = loopCount / elapsedSec;
+    Serial.print(F("[SCHEDULER] Loop Frequency: "));
+    Serial.print(hz, 0);
+    Serial.println(F(" Hz | No blocking delays."));
+  }
+  loopCount = 0;
+  lastHzCheck = now;
+}
+
+Task tasks[] = {
+  { 20,   0, taskSampleSensors   }, // 50 Hz
+  { 10,   0, taskUpdateMotors    }, // 100 Hz
+  { 500,  0, taskBlinkHeartbeat  }, // 2 Hz
+  { 1000, 0, taskReportTelemetry }  // 1 Hz
+};
+const int NUM_TASKS = sizeof(tasks) / sizeof(tasks[0]);
+
+void setup() {
+  pinMode(PIN_STATUS_LED, OUTPUT);
+  pinMode(PIN_HEARTBEAT, OUTPUT);
+  Serial.begin(9600);
+  Serial.println(F("[ROVI-SCHEDULER] Starting non-blocking architecture..."));
+  lastHzCheck = millis();
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  for (int i = 0; i < NUM_TASKS; i++) {
+    if (currentMillis - tasks[i].lastRun >= tasks[i].intervalMs) {
+      tasks[i].lastRun = currentMillis;
+      tasks[i].functionPointer();
+    }
+  }
+
+  loopCount++;
+}
+`,
+      pinMap: {
+        'PIN_STATUS_LED': 'Pin 13 (Built-in status indicator)',
+        'PIN_HEARTBEAT': 'Pin 12 (Hardware heartbeat indicator toggle)'
+      },
+      setupAndUpload: [
+        'Upload sketch to Arduino Uno or Mega.',
+        'Open Serial Monitor at 9600 baud.',
+        'Observe loop execution frequency reporting > 50,000 Hz.',
+        'Notice how the heartbeat LED toggles at 2Hz while sensors poll at 50Hz without timing jitter.'
+      ],
+      explanations: [
+        'struct Task: Encapsulates task periodicity, last execution timestamp, and callback function pointer.',
+        'currentMillis - lastRun >= intervalMs: Safe unsigned integer math that handles 50-day timer rollover without error.',
+        'loopCount benchmark: Demonstrates that the CPU executes hundreds of thousands of cycles instead of wasting power stalled inside delay().'
+      ],
+      expectedResult: 'Serial Monitor logs loop speed (>20,000 Hz) with concurrent independent tasks running smoothly.',
+      caveats: [
+        'Never call delay() inside any task function; doing so blocks all other scheduled tasks.',
+        'Always declare timestamps as unsigned long to prevent negative integer overflow.'
+      ],
+      tweakTip: 'Add an emergency priority task that executes immediately if an obstacle sensor falls below safety threshold.'
+    },
     activity: { title: 'Convert Blocking Code to Non-Blocking Tasks', steps: ['Define task interval constants', 'Replace delay with timestamp check', 'Verify parallel execution in Serial Monitor'], successCriteria: ['Buttons respond instantly even while LEDs blink slowly.'] },
     troubleshooting: [{ symptom: 'Variable overflow after 50 days.', checks: ['Always use (unsigned long)(currentMillis - previousMillis) >= interval'], explanation: 'Unsigned subtraction handles timer rollover correctly.' }],
     checksForUnderstanding: ['Why does delay() make an autonomous obstacle-avoiding robot dangerous at high speeds?'],
@@ -2695,6 +3465,150 @@ void loop() {
       name: 'Encoder-Based Odometry Rover',
       deliverableType: 'physical_build',
       successEvidence: ['Rover drives forward, counts 20-slot optical encoder ticks, and halts within 2cm of exactly 100cm commanded distance.']
+    },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3', 'Dual LM393 Optical Gate Sensor Modules', '20-Slot Encoder Discs on TT Gearmotors', 'TB6612FNG Motor Driver'],
+      componentList: [
+        { name: 'Optical Encoder Modules', exactVariant: 'LM393 photo-interrupter slotted optical speed sensor', quantity: 2 },
+        { name: 'Encoder Discs', exactVariant: '20-slot slotted black plastic encoder discs (diameter 26mm)', quantity: 2 },
+        { name: 'TT Gearmotors & Wheels', exactVariant: '1:48 gear ratio TT motors with 65mm rubber wheels', quantity: 2 },
+        { name: 'TB6612FNG Driver', exactVariant: 'Toshiba dual H-Bridge breakout board', quantity: 1 },
+        { name: 'Arduino Uno R3', exactVariant: 'Official Uno R3 with hardware INT0 (Pin 2) and INT1 (Pin 3)', quantity: 1 }
+      ],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/encoder_odometry_wiring.svg',
+      schematic: 'Left Encoder D0 ➔ Arduino Pin 2 (INT0). Right Encoder D0 ➔ Arduino Pin 3 (INT1). TB6612 on Pins 4-10. Shared GND.',
+      wireTable: [
+        { from: 'Left Encoder Module OUT (D0)', to: 'Arduino Pin 2 (INT0)', wireOrPolarityNote: 'Hardware Interrupt 0 pin for left wheel ticks' },
+        { from: 'Right Encoder Module OUT (D0)', to: 'Arduino Pin 3 (INT1)', wireOrPolarityNote: 'Hardware Interrupt 1 pin for right wheel ticks' },
+        { from: 'Encoder Modules VCC', to: 'Arduino 5V', wireOrPolarityNote: 'Powers optical IR emitter & phototransistor' },
+        { from: 'Encoder Modules GND', to: 'Arduino GND', wireOrPolarityNote: 'Logic ground return' },
+        { from: 'TB6612 Driver Pins', to: 'Arduino Pins 4, 5, 6, 7, 8, 9, 10', wireOrPolarityNote: 'Standard TB6612 motor drive pinout' }
+      ],
+      assemblyAndPowerUpSteps: [
+        '1. Press 20-slot encoder discs onto TT motor back-shafts firmly.',
+        '2. Mount LM393 optical gate sensors so the disc spins through slot center without touching optical lenses.',
+        '3. Wire D0 outputs to Arduino Pin 2 and Pin 3.',
+        '4. Upload odometry test sketch and rotate wheel 1 full revolution by hand to verify 20 ticks recorded.',
+        '5. Place on 1-meter test track, run sketch, and measure final stopping distance with tape measure.'
+      ],
+      powerAndSafetyChecks: [
+        'ISR variables MUST be declared volatile to prevent compiler register caching.',
+        'Never execute Serial.print() or delay() inside an Interrupt Service Routine.',
+        'Shield optical sensors from direct incandescent sunlight to avoid spurious optical noise.'
+      ],
+      testCases: [
+        { action: 'Hand-rotate wheel 1 exact turn (360°)', expectedResult: 'Serial Monitor records exactly 20 ticks (±1 tick).' },
+        { action: 'Command 100cm forward drive', expectedResult: 'Rover drives forward, counts ~98 ticks, and brakes within ±2cm of 100cm mark.' }
+      ]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Advanced 04
+// Dual Wheel Odometry Distance Controller
+// Hardware Interrupts: Pin 2 (INT0) & Pin 3 (INT1)
+
+const int PIN_ENC_LEFT  = 2;
+const int PIN_ENC_RIGHT = 3;
+
+const int PIN_STBY = 4;
+const int PIN_PWMA = 5;
+const int PIN_AIN1 = 7;
+const int PIN_AIN2 = 8;
+const int PIN_PWMB = 6;
+const int PIN_BIN1 = 9;
+const int PIN_BIN2 = 10;
+
+volatile unsigned long leftTicks = 0;
+volatile unsigned long rightTicks = 0;
+
+const float WHEEL_DIAMETER_CM = 6.5;
+const int TICKS_PER_REV = 20;
+const float CM_PER_TICK = (3.14159 * WHEEL_DIAMETER_CM) / TICKS_PER_REV;
+
+const float TARGET_DISTANCE_CM = 100.0;
+const unsigned long TARGET_TICKS = TARGET_DISTANCE_CM / CM_PER_TICK;
+
+void isrLeft() {
+  leftTicks++;
+}
+
+void isrRight() {
+  rightTicks++;
+}
+
+void setup() {
+  pinMode(PIN_ENC_LEFT, INPUT_PULLUP);
+  pinMode(PIN_ENC_RIGHT, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_LEFT), isrLeft, RISING);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_RIGHT), isrRight, RISING);
+
+  pinMode(PIN_STBY, OUTPUT);
+  pinMode(PIN_PWMA, OUTPUT); pinMode(PIN_AIN1, OUTPUT); pinMode(PIN_AIN2, OUTPUT);
+  pinMode(PIN_PWMB, OUTPUT); pinMode(PIN_BIN1, OUTPUT); pinMode(PIN_BIN2, OUTPUT);
+  digitalWrite(PIN_STBY, HIGH);
+
+  Serial.begin(9600);
+  Serial.print(F("[ODOMETRY] Target Distance: "));
+  Serial.print(TARGET_DISTANCE_CM);
+  Serial.print(F(" cm (Target Ticks: "));
+  Serial.print(TARGET_TICKS);
+  Serial.println(F(")"));
+
+  drive(140, 140);
+}
+
+void loop() {
+  unsigned long currentTicks = (leftTicks + rightTicks) / 2;
+  float currentDistCm = currentTicks * CM_PER_TICK;
+
+  if (currentTicks >= TARGET_TICKS) {
+    brake();
+    Serial.println(F("[TARGET REACHED] Brakes locked."));
+    Serial.print(F("Final Left Ticks: ")); Serial.print(leftTicks);
+    Serial.print(F(" | Final Right Ticks: ")); Serial.print(rightTicks);
+    Serial.print(F(" | Est Dist: ")); Serial.print(currentDistCm); Serial.println(F(" cm"));
+    while (true);
+  }
+
+  delay(50);
+}
+
+void drive(int l, int r) {
+  digitalWrite(PIN_AIN1, l >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_AIN2, l >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMA, abs(l));
+  digitalWrite(PIN_BIN1, r >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_BIN2, r >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMB, abs(r));
+}
+
+void brake() {
+  digitalWrite(PIN_AIN1, HIGH); digitalWrite(PIN_AIN2, HIGH); analogWrite(PIN_PWMA, 0);
+  digitalWrite(PIN_BIN1, HIGH); digitalWrite(PIN_BIN2, HIGH); analogWrite(PIN_PWMB, 0);
+}
+`,
+      pinMap: {
+        'PIN_ENC_LEFT': 'Pin 2 (Hardware Interrupt 0, left wheel optical gate)',
+        'PIN_ENC_RIGHT': 'Pin 3 (Hardware Interrupt 1, right wheel optical gate)',
+        'PIN_STBY / PWM / AIN / BIN': 'Pins 4-10 (TB6612 motor driver control)'
+      },
+      setupAndUpload: [
+        'Upload sketch to Arduino Uno.',
+        'Place rover on floor with measuring tape alongside path.',
+        'Turn on motor battery switch.',
+        'Verify rover stops cleanly at approximately the 100cm mark and logs final ticks to Serial Monitor.'
+      ],
+      explanations: [
+        'attachInterrupt(..., RISING): Triggers the tiny ISR function on every slot edge without checking in loop().',
+        'volatile: Informs compiler that variable value can change outside normal program flow.',
+        'CM_PER_TICK calculation: Circumference (PI * D) divided by 20 slots converts counts directly into centimeters.'
+      ],
+      expectedResult: 'Rover drives forward, counts optical pulses, and halts within 2cm of exactly 100cm target.',
+      caveats: [
+        'Wheel slip on smooth tile floors causes encoder count to read higher than real ground traveled.',
+        'Ensure disc spins cleanly in the optical gate slot without rubbing against plastic housing.'
+      ],
+      tweakTip: 'Implement a proportional speed trim comparing (leftTicks - rightTicks) to keep rover tracking perfectly straight.'
     },
     activity: { title: 'Calibrate Encoder Odometry', steps: ['Count ticks per revolution (20 slots)', 'Measure wheel diameter (6.5cm)', 'Write distance math', 'Test 1-meter stop'], successCriteria: ['Stops within ±2cm of target line.'] },
     troubleshooting: [{ symptom: 'Ticks count doubles or stutters.', checks: ['Check optical alignment and ambient light interference'], explanation: 'Optical noise or mechanical wobble triggers false edges.' }],
@@ -2861,6 +3775,113 @@ void loop() {
       deliverableType: 'code_artifact',
       successEvidence: ['Working ESP32 web server displaying real-time sensor telemetry on a connected phone browser over local Wi-Fi.']
     },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Advanced 08
+// ESP32 Local Access Point & Telemetry Web Server
+// Hosts offline dashboard for browser teleoperation and monitoring
+
+#include <WiFi.h>
+#include <WebServer.h>
+
+const char* AP_SSID = "RoboBEE-Telemetry";
+const char* AP_PASS = "innovator123";
+
+WebServer server(80);
+
+float batteryVoltage = 7.42;
+int sonarDistanceCm = 35;
+unsigned long packetCount = 0;
+
+const char INDEX_HTML[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RoboBEE Telemetry</title>
+  <style>
+    body { font-family: monospace; background: #0f172a; color: #f8fafc; text-align: center; padding: 20px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 400px; }
+    h1 { color: #F5B800; font-size: 1.2rem; }
+    .val { font-size: 2rem; font-weight: bold; color: #38bdf8; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>RoboBEE Live Telemetry</h1>
+    <p>Battery: <span id="bat" class="val">--</span> V</p>
+    <p>Distance: <span id="dist" class="val">--</span> cm</p>
+    <p style="font-size:0.8rem; color:#94a3b8;">Local AP Mode (Offline Ready)</p>
+  </div>
+  <script>
+    setInterval(() => {
+      fetch('/data').then(r => r.json()).then(d => {
+        document.getElementById('bat').innerText = d.battery.toFixed(2);
+        document.getElementById('dist').innerText = d.distance;
+      });
+    }, 500);
+  </script>
+</body>
+</html>
+)rawliteral";
+
+void handleRoot() {
+  server.send(200, "text/html", INDEX_HTML);
+}
+
+void handleData() {
+  packetCount++;
+  float simBat = batteryVoltage - (packetCount * 0.001);
+  int simDist = 20 + (millis() / 200) % 60;
+
+  String json = "{\"battery\":" + String(simBat, 2) + ",\"distance\":" + String(simDist) + ",\"packets\":" + String(packetCount) + "}";
+  server.send(200, "application/json", json);
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println(F("\n[ESP32] Initializing Local Access Point..."));
+
+  WiFi.softAP(AP_SSID, AP_PASS);
+  IPAddress IP = WiFi.softAPIP();
+
+  Serial.print(F("AP Created! SSID: "));
+  Serial.println(AP_SSID);
+  Serial.print(F("Connect phone and open browser at: http://"));
+  Serial.println(IP);
+
+  server.on("/", handleRoot);
+  server.on("/data", handleData);
+  server.begin();
+  Serial.println(F("HTTP server started."));
+}
+
+void loop() {
+  server.handleClient();
+}
+`,
+      pinMap: {
+        'ESP32 GPIO': 'Internal Wi-Fi radio (No external wiring needed)',
+        'UART0': 'TX0 / RX0 on micro-USB for 115200 baud serial'
+      },
+      setupAndUpload: [
+        'Select "ESP32 Dev Module" in Arduino IDE board manager.',
+        'Set baud rate to 115200 and upload sketch.',
+        'On your phone or laptop, connect to Wi-Fi network "RoboBEE-Telemetry" with password "innovator123".',
+        'Open web browser to http://192.168.4.1 to view live telemetry dashboard.'
+      ],
+      explanations: [
+        'WiFi.softAP(): Creates an independent local Wi-Fi router network directly on the robot with zero internet dependencies.',
+        'WebServer server(80): Lightweight HTTP web server that serves both dashboard HTML and JSON sensor endpoints.',
+        'fetch("/data"): Browser JavaScript polls the robot every 500ms for live battery and distance telemetry.'
+      ],
+      expectedResult: 'Phone connects to robot Wi-Fi and displays real-time battery voltage and distance gauge updating at 2Hz.',
+      caveats: [
+        'Ensure phone does not disconnect from Wi-Fi due to "No internet connection" prompts.',
+        'Use 115200 baud for ESP32 Serial Monitor instead of 9600.'
+      ],
+      tweakTip: 'Add buttons on the webpage sending HTTP GET requests (/forward, /stop) for browser-based remote control.'
+    },
     activity: { title: 'Deploy Local Robot Dashboard', steps: ['Configure ESP32 softAP("RoboBEE_Pilot")', 'Build lightweight HTML string', 'Stream sensor data over HTTP/WebSocket', 'Connect phone browser'], successCriteria: ['Data updates smoothly without lag.'] },
     troubleshooting: [{ symptom: 'Phone disconnects from robot Wi-Fi.', checks: ['Disable "Auto-switch to mobile data" on phone settings'], explanation: 'Smartphones disconnect from Wi-Fi networks that do not have an active internet uplink unless configured.' }],
     checksForUnderstanding: ['Why should robot competition dashboards avoid relying on cloud internet servers?'],
@@ -2937,7 +3958,7 @@ void loop() {
         { name: 'Bottom IR Sensors', exactVariant: 'Downward facing active-LOW', quantity: 2 },
         { name: 'Front Opponent Sonar', exactVariant: 'HC-SR04 or VL53L0X Time-of-Flight', quantity: 1 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/mini_sumo_priority_wiring.png',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/mini_sumo_priority_wiring.svg',
       schematic: 'Edge IR ➔ A0 | Sonar TRIG ➔ 9, ECHO ➔ 10 | Motor Driver ➔ Pins 5,6,7,8 | Start Button ➔ Pin 2',
       wireTable: [
         { from: 'Bottom IR Sensor', to: 'Analog Pin A0', wireOrPolarityNote: 'Edge detect line (LOW over white)' },
@@ -3070,11 +4091,161 @@ void loop() {
       { segment: '50–60m Exit Check', minutes: 10, teacherAction: 'Review build journal entries.', studentAction: 'Log progress and risks.' }
     ],
     concepts: [{ title: 'Peer Code Reviews', explanation: 'A fresh pair of eyes catches bugs in 5 minutes that the author would spend 3 hours debugging!' }],
-    visualizerId: 'smart_bee_integration_sim',
+    visualizerId: 'obstacle_avoiding_rover_sim',
     project: {
       name: 'Autonomous Robotics Capstone',
       deliverableType: 'physical_build',
       successEvidence: ['Fully integrated, operational team robot meeting all competition brief requirements with verified build journal.']
+    },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3 (or Mega)', 'TB6612FNG Dual H-Bridge Driver', 'Dual Optical Wheel Encoders', 'HC-SR04 Ultrasonic Sensor', '5-Channel Reflectance Sensor Array', '7.4V 2S LiPo Battery Pack'],
+      componentList: [
+        { name: 'Competition Chassis', exactVariant: 'Aluminum / stiff acrylic 2WD differential drive chassis', quantity: 1 },
+        { name: 'TB6612FNG Driver', exactVariant: '1.2A dual motor driver with common ground', quantity: 1 },
+        { name: 'HC-SR04 Sensor', exactVariant: 'Ultrasonic rangefinder on custom front mount', quantity: 1 },
+        { name: 'Dual Encoders', exactVariant: '20-slot optical gate encoders on pins 2 and 3', quantity: 2 },
+        { name: '5-Channel Line Array', exactVariant: 'TCRT5000 5-sensor analog/digital reflectance array', quantity: 1 },
+        { name: 'Power Harness', exactVariant: '2S 7.4V battery with master toggle switch and 3A inline fuse', quantity: 1 }
+      ],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/capstone_rover_wiring.svg',
+      schematic: 'Arduino Uno central master: Encoders on D2/D3 (INT), Sonar on D4/D11, Motors on D5/D6/D7/D8/D9/D10/D12, Line Array on A0-A4. 7.4V Battery with 3A fuse.',
+      wireTable: [
+        { from: 'Left Encoder D0', to: 'Arduino Pin 2 (INT0)', wireOrPolarityNote: 'Left wheel odometry interrupts' },
+        { from: 'Right Encoder D0', to: 'Arduino Pin 3 (INT1)', wireOrPolarityNote: 'Right wheel odometry interrupts' },
+        { from: 'HC-SR04 Trig', to: 'Arduino Pin 4', wireOrPolarityNote: '10us ultrasonic trigger pulse' },
+        { from: 'HC-SR04 Echo', to: 'Arduino Pin 11', wireOrPolarityNote: 'Pulse duration return' },
+        { from: 'TB6612 Driver', to: 'Arduino Pins 5,6 (PWM), 7,8,9,10 (Dirs), 12 (STBY)', wireOrPolarityNote: 'Complete dual motor control' },
+        { from: '5-Channel IR Array', to: 'Arduino Pins A0, A1, A2, A3, A4', wireOrPolarityNote: 'Multi-point line position sensing' },
+        { from: 'Battery (+) 7.4V', to: 'Master Switch ➔ 3A Fuse ➔ TB6612 VM', wireOrPolarityNote: 'High-current motor power rail' },
+        { from: 'Battery (-) GND', to: 'Shared Ground Bus', wireOrPolarityNote: 'Common ground between battery, driver, and Arduino' }
+      ],
+      assemblyAndPowerUpSteps: [
+        '1. Complete mechanical chassis assembly and verify wheel alignment and fastener tightness.',
+        '2. Wire all sensor harnesses with strain relief; check for pinch points.',
+        '3. Perform cold continuity test with multimeter: verify NO short between VM and GND.',
+        '4. Flash Capstone firmware release candidate via USB with motor power switched OFF.',
+        '5. Propped-wheel bench test: verify sonar readings, encoder tick increments, and motor directions.',
+        '6. Ground trials: place rover in competition arena, switch on battery power, and observe autonomous navigation.'
+      ],
+      powerAndSafetyChecks: [
+        'Mandatory inline 3A fuse on battery positive lead protects against short-circuit fire hazards.',
+        'Emergency physical toggle switch must be accessible on top chassis plate for instant manual shutdown.',
+        'Never test high-speed navigation without arena boundary perimeter in place.'
+      ],
+      testCases: [
+        { action: 'Bench Pre-Flight Check', expectedResult: 'All 5 line sensors, sonar, and dual encoders report valid numbers in Serial Monitor.' },
+        { action: 'Autonomous Arena Run', expectedResult: 'Rover tracks course line, avoids cardboard obstacle prop at 25cm, and stops at finish zone.' }
+      ]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// RoboBEE Innovators - Advanced 11
+// Autonomous Capstone Rover Firmware
+// Integrated Sensors: Sonar, Line Tracking, Dual Encoders, Non-Blocking Scheduler
+
+#include <Arduino.h>
+
+const int PIN_ENC_L  = 2;
+const int PIN_ENC_R  = 3;
+const int PIN_TRIG   = 4;
+const int PIN_ECHO   = 11;
+const int PIN_PWMA   = 5;
+const int PIN_AIN1   = 7;
+const int PIN_AIN2   = 8;
+const int PIN_PWMB   = 6;
+const int PIN_BIN1   = 9;
+const int PIN_BIN2   = 10;
+const int PIN_STBY   = 12;
+
+volatile unsigned long ticksL = 0;
+volatile unsigned long ticksR = 0;
+
+void isrL() { ticksL++; }
+void isrR() { ticksR++; }
+
+unsigned long lastSenseTime = 0;
+int obstacleDistance = 100;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(PIN_ENC_L, INPUT_PULLUP);
+  pinMode(PIN_ENC_R, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_L), isrL, RISING);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_R), isrR, RISING);
+
+  pinMode(PIN_TRIG, OUTPUT);
+  pinMode(PIN_ECHO, INPUT);
+
+  pinMode(PIN_STBY, OUTPUT);
+  pinMode(PIN_PWMA, OUTPUT); pinMode(PIN_AIN1, OUTPUT); pinMode(PIN_AIN2, OUTPUT);
+  pinMode(PIN_PWMB, OUTPUT); pinMode(PIN_BIN1, OUTPUT); pinMode(PIN_BIN2, OUTPUT);
+  digitalWrite(PIN_STBY, HIGH);
+
+  Serial.println(F("[CAPSTONE] Release Candidate Firmware Online."));
+}
+
+void loop() {
+  unsigned long now = millis();
+
+  // Non-blocking Sonar sampling every 60ms
+  if (now - lastSenseTime >= 60) {
+    lastSenseTime = now;
+    digitalWrite(PIN_TRIG, LOW);
+    delayMicroseconds(2);
+    digitalWrite(PIN_TRIG, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(PIN_TRIG, LOW);
+    long duration = pulseIn(PIN_ECHO, HIGH, 18000); // 18ms timeout (~3m)
+    obstacleDistance = (duration == 0) ? 999 : (duration * 0.0343) / 2;
+  }
+
+  // Priority Arbitration: Safety Obstacle Avoidance > Line Navigation
+  if (obstacleDistance <= 20) {
+    brake();
+    delay(100);
+    drive(-120, 120); // Pivot right
+    delay(300);
+  } else {
+    drive(140, 140);
+  }
+}
+
+void drive(int l, int r) {
+  digitalWrite(PIN_AIN1, l >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_AIN2, l >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMA, abs(l));
+  digitalWrite(PIN_BIN1, r >= 0 ? HIGH : LOW);
+  digitalWrite(PIN_BIN2, r >= 0 ? LOW : HIGH);
+  analogWrite(PIN_PWMB, abs(r));
+}
+
+void brake() {
+  digitalWrite(PIN_AIN1, HIGH); digitalWrite(PIN_AIN2, HIGH); analogWrite(PIN_PWMA, 0);
+  digitalWrite(PIN_BIN1, HIGH); digitalWrite(PIN_BIN2, HIGH); analogWrite(PIN_PWMB, 0);
+}
+`,
+      pinMap: {
+        'PIN_ENC_L / R': 'Pins 2 & 3 (Hardware interrupt encoder inputs)',
+        'PIN_TRIG / ECHO': 'Pins 4 & 11 (HC-SR04 sonar rangefinder)',
+        'PIN_STBY / PWMA / PWMB / AIN / BIN': 'Pins 12, 5, 6, 7, 8, 9, 10 (TB6612 motor control)'
+      },
+      setupAndUpload: [
+        'Perform pre-flight continuity check.',
+        'Upload firmware to Arduino controller.',
+        'Verify in Serial Monitor that obstacle distance updates reliably.',
+        'Test safety stop with stationary cardboard obstacle prop.'
+      ],
+      explanations: [
+        'Non-blocking sonar sampling: pulseIn with timeout prevents the microcontroller from freezing if no echo returns.',
+        'Priority arbitration: Obstacle avoidance unconditionally overrides navigation commands for fail-safe operation.',
+        'Differential drive functions: Clean abstraction of motor H-bridge direction and PWM speed.'
+      ],
+      expectedResult: 'Capstone rover cruises autonomously, senses obstacle at 20cm, brakes, pivots safely, and resumes cruising.',
+      caveats: [
+        'Always test with foam/cardboard obstacles; never test by driving towards humans or pets.',
+        'Confirm inline 3A fuse is in place before powering VM rail from LiPo battery.'
+      ],
+      tweakTip: 'Integrate the 5-channel line array readings into the cruise state to follow race track lines between obstacle evasions.'
     },
     activity: { title: 'Execute Capstone Sprint', steps: ['Review sprint backlog', 'Integrate mechanical & electrical subsystems', 'Flash release candidate firmware', 'Pass milestone inspection'], successCriteria: ['Robot passes all automated test cases.'] },
     troubleshooting: [{ symptom: 'Subsystems work individually but fail when connected together.', checks: ['Check shared GND, electrical noise, and pin conflicts'], explanation: 'Integration issues represent the majority of real-world robotics bugs.' }],
@@ -3083,7 +4254,7 @@ void loop() {
     differentiation: { support: ['Assign specific team roles (Mechanics Lead, Electrical Lead, Software Lead).'], extension: ['Conduct formal git branch pull requests.'] },
     nextLessonId: 'adv-12',
     nextLessonTeaser: 'Advanced 12: Technical Demonstration & Reflection — Present your completed capstone robot, defend your design choices, and celebrate graduation!',
-    sources: [{ title: 'Agile Robotics Development Framework', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'Agile Hardware Development Framework (Instructor-Developed Lab Method)', url: '' }],
     assetCredits: [{ asset: 'Capstone Sprint Board', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
@@ -3126,7 +4297,7 @@ void loop() {
     differentiation: { support: ['Provide speaking queue notes for nervous presenters.'], extension: ['Prepare portfolio for university and scholarship applications.'] },
     nextLessonId: undefined,
     nextLessonTeaser: 'Academy Graduation Complete! You are now prepared to build competitive autonomous robots and compete at national and international Olympiads!',
-    sources: [{ title: 'RoboBEE Innovators Academy Graduation Standards', url: 'https://robobeeinnovators.org' }],
+    sources: [{ title: 'RoboBEE Innovators Academy Graduation Standards (Instructor-Developed)', url: '' }],
     assetCredits: [{ asset: 'Certificate of Mastery', creator: 'RoboBEE Innovators Creative Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   }

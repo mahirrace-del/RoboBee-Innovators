@@ -644,6 +644,32 @@ export default function MemberCurriculumPage() {
                 <div>
                   {activeLesson.physicalBuildPack ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {/* Connection Diagram / Wiring Illustration */}
+                      <div className={styles.buildPackCard}>
+                        <div className={styles.buildPackTitle}>
+                          <Info size={16} />
+                          <span>Connection Diagram</span>
+                        </div>
+                        {activeLesson.physicalBuildPack.connectionPhotoOrClearlyLabeledIllustration ? (
+                          <div>
+                            <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+                              ⚠ Reference wiring illustration — verify against your exact board/module before applying power.
+                              Instructor-developed. Proprietary — RoboBEE Innovators.
+                            </div>
+                            <img
+                              src={activeLesson.physicalBuildPack.connectionPhotoOrClearlyLabeledIllustration}
+                              alt={`Connection diagram for ${activeLesson.title}`}
+                              style={{ width: '100%', maxWidth: '600px', borderRadius: '8px', border: '1px solid #1e293b', background: '#090e18', display: 'block' }}
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ padding: '1rem', background: '#090e18', borderRadius: '8px', color: '#64748b', fontSize: '0.85rem' }}>
+                            No connection diagram available for this class. Use the wire table below.
+                          </div>
+                        )}
+                      </div>
+
                       {/* Hardware BOM & Schematic */}
                       <div className={styles.buildPackGrid}>
                         {/* Component BOM */}

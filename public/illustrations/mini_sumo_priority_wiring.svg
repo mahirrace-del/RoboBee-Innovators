@@ -1,0 +1,70 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" width="600" height="380" role="img" aria-label="Reference wiring illustration: Mini-Sumo robot priority wiring with Arduino, motor driver, IR opponent sensors, and line sensors.">
+  <rect width="600" height="380" fill="#0f172a" rx="12"/>
+  <text x="300" y="26" font-family="monospace" font-size="12" fill="#F5B800" text-anchor="middle" font-weight="bold">ADVANCED 09 â€” Mini-Sumo Robot Reference Wiring</text>
+  <text x="300" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference wiring illustration â€” confirm all hardware variants with instructor before wiring. Safe arena use only.</text>
+  <!-- Arduino -->
+  <rect x="20" y="65" width="130" height="260" rx="8" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="2"/>
+  <text x="85" y="84" font-family="monospace" font-size="10" fill="#86efac" text-anchor="middle" font-weight="bold">Arduino Uno</text>
+  <text x="85" y="97" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">or Nano</text>
+  <rect x="148" y="105" width="12" height="8" rx="2" fill="#38bdf8"/>
+  <text x="143" y="111" font-family="monospace" font-size="7" fill="#38bdf8" text-anchor="end">A0â†’IR Front-L</text>
+  <rect x="148" y="117" width="12" height="8" rx="2" fill="#38bdf8"/>
+  <text x="143" y="123" font-family="monospace" font-size="7" fill="#38bdf8" text-anchor="end">A1â†’IR Front-R</text>
+  <rect x="148" y="129" width="12" height="8" rx="2" fill="#fbbf24"/>
+  <text x="143" y="135" font-family="monospace" font-size="7" fill="#fbbf24" text-anchor="end">A2â†’Line-L</text>
+  <rect x="148" y="141" width="12" height="8" rx="2" fill="#fbbf24"/>
+  <text x="143" y="147" font-family="monospace" font-size="7" fill="#fbbf24" text-anchor="end">A3â†’Line-R</text>
+  <rect x="148" y="157" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="143" y="163" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">3â†’PWMA</text>
+  <rect x="148" y="169" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="143" y="175" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">4â†’AIN1</text>
+  <rect x="148" y="181" width="12" height="8" rx="2" fill="#F5B800"/>
+  <text x="143" y="187" font-family="monospace" font-size="7" fill="#F5B800" text-anchor="end">5â†’AIN2</text>
+  <rect x="148" y="193" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="143" y="199" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">6â†’STBY</text>
+  <rect x="148" y="205" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="143" y="211" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">7â†’BIN1</text>
+  <rect x="148" y="217" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="143" y="223" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">8â†’BIN2</text>
+  <rect x="148" y="229" width="12" height="8" rx="2" fill="#a78bfa"/>
+  <text x="143" y="235" font-family="monospace" font-size="7" fill="#a78bfa" text-anchor="end">9â†’PWMB</text>
+  <rect x="148" y="245" width="12" height="8" rx="2" fill="#94a3b8"/>
+  <text x="143" y="251" font-family="monospace" font-size="7" fill="#94a3b8" text-anchor="end">GND</text>
+  <!-- Sensors -->
+  <rect x="220" y="65" width="130" height="55" rx="6" fill="#0c1821" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="285" y="83" font-family="monospace" font-size="9" fill="#38bdf8" text-anchor="middle" font-weight="bold">IR Opponent Sensors</text>
+  <text x="285" y="97" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Front-Left (A0) + Front-Right (A1)</text>
+  <text x="285" y="112" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">GP2Y0A21 / Sharp or equiv. (confirm variant)</text>
+  <rect x="220" y="135" width="130" height="50" rx="6" fill="#1c1404" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="285" y="153" font-family="monospace" font-size="9" fill="#fbbf24" text-anchor="middle" font-weight="bold">Line/Edge Sensors</text>
+  <text x="285" y="167" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Reflectance: Line-L (A2) + Line-R (A3)</text>
+  <text x="285" y="180" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">White line = edge of dohyo</text>
+  <!-- Motor driver -->
+  <rect x="220" y="205" width="130" height="80" rx="6" fill="#1e1b4b" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="285" y="225" font-family="monospace" font-size="9" fill="#a78bfa" text-anchor="middle" font-weight="bold">TB6612FNG Driver</text>
+  <text x="285" y="240" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">Motor A (Left) + Motor B (Right)</text>
+  <text x="285" y="255" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">VM â†’ Regulated Battery+</text>
+  <text x="285" y="270" font-family="monospace" font-size="7.5" fill="#94a3b8" text-anchor="middle">GND â†’ Common GND</text>
+  <!-- Wires connecting arduino to devices -->
+  <line x1="160" y1="109" x2="220" y2="88" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="160" y1="121" x2="220" y2="98" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="160" y1="133" x2="220" y2="155" stroke="#fbbf24" stroke-width="1.2"/>
+  <line x1="160" y1="145" x2="220" y2="167" stroke="#fbbf24" stroke-width="1.2"/>
+  <line x1="160" y1="161" x2="220" y2="228" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="160" y1="173" x2="220" y2="240" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="160" y1="185" x2="220" y2="252" stroke="#F5B800" stroke-width="1.2"/>
+  <line x1="160" y1="197" x2="220" y2="258" stroke="#a78bfa" stroke-width="1.2"/>
+  <!-- Motors -->
+  <rect x="415" y="205" width="80" height="40" rx="4" fill="#292524" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="455" y="228" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="middle">Motor L</text>
+  <line x1="350" y1="225" x2="415" y2="225" stroke="#fbbf24" stroke-width="1.5"/>
+  <rect x="415" y="255" width="80" height="40" rx="4" fill="#292524" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="455" y="278" font-family="monospace" font-size="8" fill="#a78bfa" text-anchor="middle">Motor R</text>
+  <line x1="350" y1="265" x2="415" y2="270" stroke="#c4b5fd" stroke-width="1.5"/>
+  <!-- Safety box -->
+  <rect x="220" y="310" width="360" height="55" rx="8" fill="rgba(107,15,36,0.25)" stroke="#6B0F24" stroke-width="1.5"/>
+  <text x="400" y="328" font-family="monospace" font-size="9" fill="#fca5a5" text-anchor="middle" font-weight="bold">âš  Sumo Safety Rules</text>
+  <text x="400" y="343" font-family="monospace" font-size="8" fill="#cbd5e1" text-anchor="middle">Use only approved Dohyo ring. No sharp edges on robot.</text>
+  <text x="400" y="357" font-family="monospace" font-size="8" fill="#cbd5e1" text-anchor="middle">Robot must NOT target or approach people. All behaviour within safe arena only.</text>
+  <text x="300" y="375" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration â€” RoboBEE Innovators Â© Proprietary</text>
+</svg>

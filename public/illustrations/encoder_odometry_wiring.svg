@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 360" width="580" height="360" role="img" aria-label="Reference wiring illustration: Advanced 04 Encoders and Odometry Rover with Dual Optical Slotted Encoders on Hardware Interrupt Pins 2 and 3.">
+  <rect width="580" height="360" fill="#0f172a" rx="12"/>
+  <text x="290" y="26" font-family="monospace" font-size="13" fill="#F5B800" text-anchor="middle" font-weight="bold">ADVANCED 04 — Dual Optical Encoder Odometry Wiring</text>
+  <text x="290" y="44" font-family="monospace" font-size="9.5" fill="#94a3b8" text-anchor="middle">Hardware Interrupt Pins: Pin 2 (INT0) and Pin 3 (INT1) for microsecond tick captures.</text>
+
+  <!-- Arduino Board (Left) -->
+  <rect x="30" y="70" width="180" height="200" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+  <text x="120" y="95" font-family="monospace" font-size="11" fill="#60a5fa" text-anchor="middle" font-weight="bold">Arduino Uno R3</text>
+  <rect x="40" y="115" width="160" height="26" rx="3" fill="#6B0F24" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="120" y="132" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle" font-weight="bold">Pin 2 (INT0) ➔ Left Encoder D0</text>
+  <rect x="40" y="150" width="160" height="26" rx="3" fill="#6B0F24" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="120" y="167" font-family="monospace" font-size="9" fill="#F5B800" text-anchor="middle" font-weight="bold">Pin 3 (INT1) ➔ Right Encoder D0</text>
+  <text x="120" y="200" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">5V ➔ Sensor VCC</text>
+  <text x="120" y="220" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">GND ➔ Sensor GND</text>
+  <text x="120" y="250" font-family="monospace" font-size="8.5" fill="#38bdf8" text-anchor="middle">attachInterrupt(..., RISING);</text>
+
+  <!-- Left Encoder Module LM393 (Top Right) -->
+  <rect x="320" y="70" width="220" height="90" rx="8" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="430" y="92" font-family="monospace" font-size="10.5" fill="#86efac" text-anchor="middle" font-weight="bold">Left Wheel LM393 Optical Gate</text>
+  <text x="335" y="112" font-family="monospace" font-size="9" fill="#bbf7d0">VCC ➔ 5V | GND ➔ GND</text>
+  <text x="335" y="130" font-family="monospace" font-size="9" fill="#facc15" font-weight="bold">OUT (D0) ➔ Arduino Pin 2 (INT0)</text>
+  <text x="335" y="148" font-family="monospace" font-size="8" fill="#86efac">20-slot optical disc spins through slot</text>
+
+  <!-- Right Encoder Module LM393 (Bottom Right) -->
+  <rect x="320" y="180" width="220" height="90" rx="8" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="430" y="202" font-family="monospace" font-size="10.5" fill="#86efac" text-anchor="middle" font-weight="bold">Right Wheel LM393 Optical Gate</text>
+  <text x="335" y="222" font-family="monospace" font-size="9" fill="#bbf7d0">VCC ➔ 5V | GND ➔ GND</text>
+  <text x="335" y="240" font-family="monospace" font-size="9" fill="#facc15" font-weight="bold">OUT (D0) ➔ Arduino Pin 3 (INT1)</text>
+  <text x="335" y="258" font-family="monospace" font-size="8" fill="#86efac">Counts interrupts without blocking loop</text>
+
+  <!-- Math & Safety Banner -->
+  <rect x="30" y="285" width="510" height="60" rx="6" fill="#090e18" stroke="#1e293b" stroke-width="1"/>
+  <text x="285" y="304" font-family="monospace" font-size="9.5" fill="#38bdf8" text-anchor="middle" font-weight="bold">Odometry Math: Distance (cm) = (ticks / 20.0) * (PI * wheelDiameter)</text>
+  <text x="285" y="322" font-family="monospace" font-size="8.5" fill="#fca5a5" text-anchor="middle">⚠ ISR Rule: Variables modified inside ISR (leftTicks, rightTicks) MUST be declared volatile.</text>
+  <text x="285" y="336" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration — RoboBEE Innovators © Proprietary</text>
+</svg>

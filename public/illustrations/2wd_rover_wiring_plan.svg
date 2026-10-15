@@ -1,0 +1,42 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" width="600" height="360" role="img" aria-label="Reference wiring illustration: 2WD rover chassis with Arduino, TB6612FNG driver, and two TT gear motors.">
+  <rect width="600" height="360" fill="#0f172a" rx="12"/>
+  <text x="300" y="26" font-family="monospace" font-size="12" fill="#F5B800" text-anchor="middle" font-weight="bold">BEGINNER 07 â€” Two-Wheel Differential-Drive Rover (Top View)</text>
+  <text x="300" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">Reference wiring illustration â€” verify against your exact kit before power.</text>
+  <!-- Chassis outline -->
+  <rect x="180" y="70" width="240" height="200" rx="16" fill="#1e293b" stroke="#F5B800" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="300" y="160" font-family="monospace" font-size="11" fill="#64748b" text-anchor="middle">Rover Chassis</text>
+  <!-- Left motor -->
+  <rect x="140" y="120" width="50" height="80" rx="6" fill="#292524" stroke="#F5B800" stroke-width="1.5"/>
+  <text x="165" y="158" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="middle" transform="rotate(-90,165,158)">Motor L</text>
+  <!-- Right motor -->
+  <rect x="410" y="120" width="50" height="80" rx="6" fill="#292524" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="435" y="160" font-family="monospace" font-size="8" fill="#a78bfa" text-anchor="middle" transform="rotate(90,435,160)">Motor R</text>
+  <!-- Arduino box on chassis -->
+  <rect x="205" y="90" width="90" height="70" rx="6" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="1.5"/>
+  <text x="250" y="130" font-family="monospace" font-size="9" fill="#86efac" text-anchor="middle">Arduino</text>
+  <!-- TB6612 box on chassis -->
+  <rect x="305" y="90" width="90" height="70" rx="6" fill="#1e1b4b" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="350" y="120" font-family="monospace" font-size="9" fill="#a78bfa" text-anchor="middle">TB6612</text>
+  <text x="350" y="135" font-family="monospace" font-size="8" fill="#7c3aed" text-anchor="middle">Driver</text>
+  <!-- Wires between Arduino and TB6612 -->
+  <line x1="295" y1="125" x2="305" y2="125" stroke="#F5B800" stroke-width="1.5"/>
+  <!-- Left motor wire -->
+  <line x1="190" y1="155" x2="305" y2="145" stroke="#fbbf24" stroke-width="1.5"/>
+  <!-- Right motor wire -->
+  <line x1="410" y1="155" x2="395" y2="145" stroke="#c4b5fd" stroke-width="1.5"/>
+  <!-- Battery pack -->
+  <rect x="220" y="195" width="160" height="40" rx="6" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="300" y="218" font-family="monospace" font-size="9" fill="#fca5a5" text-anchor="middle">Battery Pack (4Ã—AA / 6V)</text>
+  <!-- Castors -->
+  <circle cx="220" cy="260" r="14" fill="#334155" stroke="#475569" stroke-width="1.5"/>
+  <text x="220" y="264" font-family="monospace" font-size="7" fill="#94a3b8" text-anchor="middle">Caster</text>
+  <circle cx="380" cy="260" r="14" fill="#334155" stroke="#475569" stroke-width="1.5"/>
+  <text x="380" y="264" font-family="monospace" font-size="7" fill="#94a3b8" text-anchor="middle">Caster</text>
+  <!-- Wheel labels -->
+  <text x="165" y="220" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="middle">Left Wheel</text>
+  <text x="435" y="220" font-family="monospace" font-size="8" fill="#a78bfa" text-anchor="middle">Right Wheel</text>
+  <!-- Notes -->
+  <text x="300" y="298" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">PWM pins â†’ speed  |  Direction pins â†’ forward/reverse  |  STBY HIGH â†’ enabled</text>
+  <text x="300" y="315" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">Common GND: Arduino GND + Battery GND + TB6612FNG GND all connected</text>
+  <text x="300" y="348" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">Instructor-developed illustration â€” RoboBEE Innovators Â© Proprietary</text>
+</svg>
