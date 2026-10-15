@@ -149,6 +149,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/dashboard" className={isAct("/dashboard")} onClick={closeSidebar}>
           Dashboard Overview
         </Link>
+        <Link href="/dashboard/curriculum" className={isAct("/dashboard/curriculum")} onClick={closeSidebar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>Robotics Curriculum</span>
+          <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.15rem 0.45rem', borderRadius: '10px', fontWeight: 800 }}>
+            14 Classes
+          </span>
+        </Link>
         <Link href="/dashboard/profile" className={isAct("/dashboard/profile")} onClick={closeSidebar}>
           My Profile
         </Link>
@@ -195,6 +201,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div style={{ marginTop: '1.5rem', color: '#ff5555', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
               ADMIN CONTROLS
             </div>
+            <Link href="/dashboard/admin/curriculum" className={isAct("/dashboard/admin/curriculum")} onClick={closeSidebar} style={{ color: '#f59e0b', fontWeight: 700 }}>
+              Curriculum & Classroom
+            </Link>
             <Link href="/dashboard/members" className={isAct("/dashboard/members")} onClick={closeSidebar}>
               Manage Members
             </Link>
@@ -216,11 +225,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </>
         ) : (
           /* Delegated Staff / Specialized Role Controls */
-          (canManage("manage_store") || canManage("manage_achievements") || canManage("manage_competitions") || canManage("manage_finance") || canManage("manage_attendance") || canManage("manage_members")) && (
+          (canManage("manage_curriculum") || canManage("manage_store") || canManage("manage_achievements") || canManage("manage_competitions") || canManage("manage_finance") || canManage("manage_attendance") || canManage("manage_members")) && (
             <>
               <div style={{ marginTop: '1.5rem', color: '#a855f7', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
                 STAFF CONTROLS
               </div>
+              {canManage("manage_curriculum") && (
+                <Link href="/dashboard/admin/curriculum" className={isAct("/dashboard/admin/curriculum")} onClick={closeSidebar} style={{ color: '#f59e0b', fontWeight: 700 }}>
+                  Curriculum & Classroom
+                </Link>
+              )}
               {canManage("manage_members") && (
                 <Link href="/dashboard/members" className={isAct("/dashboard/members")} onClick={closeSidebar}>
                   Manage Members

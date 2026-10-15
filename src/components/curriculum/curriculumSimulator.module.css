@@ -1,0 +1,288 @@
+.simContainer {
+  background: #0d1322;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  padding: 1.5rem;
+  color: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.simHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.simTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #f59e0b;
+}
+
+.simBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  background: rgba(6, 182, 212, 0.15);
+  color: #06b6d4;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.canvasBox {
+  background: #080c14;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  position: relative;
+  overflow: hidden;
+}
+
+.controlGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.controlCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+.controlLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider {
+  width: 100%;
+  accent-color: #f59e0b;
+  cursor: pointer;
+}
+
+.btnGroup {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.simBtn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.simBtn:hover:not(:disabled) {
+  background: #f59e0b;
+  color: #0b0f19;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}
+
+.simBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.simBtnCyan {
+  background: rgba(6, 182, 212, 0.15);
+  color: #06b6d4;
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+.simBtnCyan:hover:not(:disabled) {
+  background: #06b6d4;
+  color: #0b0f19;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+}
+
+.simBtnGreen {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.simBtnGreen:hover:not(:disabled) {
+  background: #10b981;
+  color: #0b0f19;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.simBtnRed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.simBtnRed:hover:not(:disabled) {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.statusBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  border: 1px solid;
+}
+
+.statusNormal {
+  background: rgba(6, 182, 212, 0.1);
+  border-color: rgba(6, 182, 212, 0.25);
+  color: #38bdf8;
+}
+
+.statusSuccess {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.statusWarning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.statusDanger {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+/* Specific Sim Styling */
+.serialMonitor {
+  background: #030712;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  height: 180px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  color: #10b981;
+  width: 100%;
+}
+
+.serialLine {
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.wheelSpinner {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 6px dashed #f59e0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: #f59e0b;
+  position: relative;
+  background: #111827;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+.pulseLine {
+  height: 3px;
+  background: linear-gradient(90deg, #06b6d4, #f59e0b, #10b981);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pulseDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px #ffffff;
+  position: absolute;
+  top: -4.5px;
+  animation: moveDot 2s infinite linear;
+}
+
+@keyframes moveDot {
+  0% { left: 0%; }
+  100% { left: 95%; }
+}
+
+.gridFloor {
+  display: grid;
+  grid-template-columns: repeat(8, 38px);
+  grid-template-rows: repeat(6, 38px);
+  gap: 2px;
+  background: #0f172a;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.gridCell {
+  width: 38px;
+  height: 38px;
+  background: #1e293b;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  position: relative;
+}
+
+.dohyoRing {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: #020617;
+  border: 10px solid #ffffff;
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}

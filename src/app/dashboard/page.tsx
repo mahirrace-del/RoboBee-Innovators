@@ -123,6 +123,16 @@ export default function DashboardOverview() {
         <span>Quick Launchpad</span>
       </div>
       <div className={styles.quickGrid}>
+        <Link href="/dashboard/curriculum" className={styles.quickCard} style={{ border: '1px solid rgba(245, 158, 11, 0.35)', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(17, 24, 39, 0.9))' }}>
+          <div className={styles.quickIconBox} style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b' }}>
+            <Zap size={22} />
+          </div>
+          <div className={styles.quickInfo}>
+            <h4 style={{ color: '#f59e0b' }}>Robotics LMS</h4>
+            <p>14 Interactive classes</p>
+          </div>
+        </Link>
+
         <Link href="/dashboard/inventory" className={styles.quickCard}>
           <div className={styles.quickIconBox}>
             <Package size={22} />

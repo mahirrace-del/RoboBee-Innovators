@@ -4,7 +4,8 @@ export type PermissionKey =
   | "manage_competitions"
   | "manage_finance"
   | "manage_attendance"
-  | "manage_members";
+  | "manage_members"
+  | "manage_curriculum";
 
 export interface PermissionDefinition {
   key: PermissionKey;
@@ -13,6 +14,11 @@ export interface PermissionDefinition {
 }
 
 export const PERMISSION_LIST: PermissionDefinition[] = [
+  {
+    key: "manage_curriculum",
+    label: "Curriculum & Classroom",
+    description: "Manage 14 robotics classes, launch projector mode, lock/publish lessons, and review exit checks."
+  },
   {
     key: "manage_store",
     label: "Store & Inventory",
@@ -54,6 +60,12 @@ export interface RolePreset {
 
 export const ROLE_PRESETS: RolePreset[] = [
   {
+    id: "curriculum_instructor",
+    name: "Robotics Instructor",
+    description: "Full access to curriculum command center, projector mode, and exit checks.",
+    permissions: ["manage_curriculum", "manage_attendance"]
+  },
+  {
     id: "store_manager",
     name: "Store Manager",
     description: "Full access to inventory, parts catalog, and parts requests.",
@@ -88,6 +100,7 @@ export const ROLE_PRESETS: RolePreset[] = [
     name: "Full Administrator",
     description: "Unrestricted access to all club systems and controls.",
     permissions: [
+      "manage_curriculum",
       "manage_store",
       "manage_achievements",
       "manage_competitions",
