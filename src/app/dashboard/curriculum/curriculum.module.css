@@ -438,3 +438,118 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
 }
+
+/* Course Space Tier Tabs */
+.tierNav {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.tierTab {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tierTab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+.tierTabActive {
+  background: #6B0F24;
+  border-color: #F5B800;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(107, 15, 36, 0.5);
+}
+
+/* Space Overview Card */
+.spaceOverviewCard {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.spaceBadge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  background: rgba(245, 184, 0, 0.15);
+  color: #F5B800;
+  border: 1px solid rgba(245, 184, 0, 0.3);
+  text-transform: uppercase;
+}
+
+/* Physical Build Pack */
+.buildPackGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .buildPackGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.buildPackCard {
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.buildPackTitle {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #F5B800;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 0.5rem;
+}
+
+.dataTable th {
+  background: #090e18;
+  color: #94a3b8;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+  font-weight: 700;
+}
+
+.dataTable td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+}
+

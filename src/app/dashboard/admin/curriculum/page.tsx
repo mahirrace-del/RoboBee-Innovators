@@ -2,38 +2,40 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./adminCurriculum.module.css";
-import { CURRICULUM_CLASSES, CURRICULUM_STATS, ClassModule, ClassStatus } from "@/lib/curriculumData";
+import { 
+  ALL_ROBOTICS_LESSONS, 
+  COURSE_SPACES, 
+  RoboticsLesson, 
+  CourseTier, 
+  ClassStatus, 
+  getLessonsByTier 
+} from "@/lib/curriculumData";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc, query, orderBy, limit } from "firebase/firestore";
 import { 
   Tv, Lock, Unlock, Eye, CheckCircle, Clock, 
-  Layers, Users, Award, AlertTriangle, ArrowRight, Radio
+  Layers, Users, Award, AlertTriangle, ArrowRight, Radio, Sparkles
 } from "lucide-react";
 
 export default function AdminCurriculumPage() {
   const { role, canManage } = useAuth();
   const [activeTab, setActiveTab] = useState<'classes' | 'submissions'>('classes');
+  const [selectedTier, setSelectedTier] = useState<CourseTier | 'all'>('all');
+
   const [classStatuses, setClassStatuses] = useState<{ [id: string]: ClassStatus }>({
-    'class-01': 'published',
-    'class-02': 'published',
-    'class-03': 'locked',
-    'class-04': 'locked',
-    'class-05': 'locked',
-    'class-06': 'locked',
-    'class-07': 'locked',
-    'class-08': 'locked',
-    'class-09': 'locked',
-    'class-10': 'locked',
-    'class-11': 'locked',
-    'class-12': 'locked',
-    'class-13': 'locked',
-    'class-14': 'locked',
+    'exp-01': 'published',
+    'exp-02': 'published',
+    'exp-03': 'published',
+    'exp-04': 'published',
+    'beg-01': 'published',
+    'beg-02': 'published',
+    'beg-03': 'published',
   });
 
   // Projector modal
-  const [projectorClass, setProjectorClass] = useState<ClassModule | null>(null);
+  const [projectorClass, setProjectorClass] = useState<RoboticsLesson | null>(null);
 
   // Submissions list from Firestore
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -52,7 +54,7 @@ export default function AdminCurriculumPage() {
         });
         setClassStatuses(prev => ({ ...prev, ...updates }));
       }, (err) => {
-        console.warn("Firestore curriculum_status offline, using local state:", err);
+        console.warn("Firestore curriculum_status offline, using fallback state:", err);
       });
       return () => unsub();
     } catch (e) {
@@ -94,11 +96,16 @@ export default function AdminCurriculumPage() {
     }
   };
 
-  // Quick action: Publish all
-  const publishAll = async () => {
-    if (!confirm("Are you sure you want to publish all 14 classes to all members immediately?")) return;
-    const newStatuses: { [id: string]: ClassStatus } = {};
-    for (const c of CURRICULUM_CLASSES) {
+  // Quick action: Publish tier
+  const publishTier = async (tier: CourseTier | 'all') => {
+    const targetLessons = tier === 'all' 
+      ? ALL_ROBOTICS_LESSONS 
+      : getLessonsByTier(tier);
+
+    if (!confirm(`Publish all ${targetLessons.length} classes to members?`)) return;
+
+    const newStatuses: { [id: string]: ClassStatus } = { ...classStatuses };
+    for (const c of targetLessons) {
       newStatuses[c.id] = 'published';
       try {
         await setDoc(doc(db, "curriculum_status", c.id), {
@@ -112,7 +119,6 @@ export default function AdminCurriculumPage() {
 
   const publishedCount = Object.values(classStatuses).filter(s => s === 'published').length;
   const liveCount = Object.values(classStatuses).filter(s => s === 'live_in_class').length;
-  const lockedCount = Object.values(classStatuses).filter(s => s === 'locked').length;
 
   return (
     <div className={styles.pageContainer}>
@@ -120,19 +126,23 @@ export default function AdminCurriculumPage() {
       <div className={styles.headerRow}>
         <div className={styles.titleArea}>
           <h1>
-            <Radio size={28} color="#f59e0b" />
-            Curriculum & Classroom Manager
+            <Radio size={28} color="#F5B800" />
+            Curriculum &amp; Classroom Command Center
           </h1>
           <p>
-            Master 14-Class Robotics Academy command center: launch projector slide decks, 
-            publish interactive lessons to members, and review exit check scores.
+            RoboBEE Innovators Academy Master Portal: Launch full-screen live projector slides,
+            publish physical build packs &amp; code labs to members, and evaluate student exit tickets.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button onClick={publishAll} className={styles.statusBtn} style={{ padding: '0.65rem 1rem', fontSize: '0.85rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => publishTier(selectedTier)} 
+            className={styles.statusBtn} 
+            style={{ padding: '0.65rem 1rem', fontSize: '0.85rem', background: '#6B0F24', color: '#fff', borderColor: '#F5B800' }}
+          >
             <Unlock size={14} style={{ marginRight: '6px' }} />
-            Publish All Classes
+            Publish Active Track
           </button>
         </div>
       </div>
@@ -140,24 +150,24 @@ export default function AdminCurriculumPage() {
       {/* Stats Bar */}
       <div className={styles.statsBar}>
         <div className={styles.statCard}>
-          <span className={styles.statLabel}>Total Academy Classes</span>
-          <span className={styles.statValue}>14 Classes</span>
-          <span className={styles.statSub}>3 Progressive Skill Levels</span>
+          <span className={styles.statLabel}>Total Academy Scope</span>
+          <span className={styles.statValue}>{ALL_ROBOTICS_LESSONS.length} Classes</span>
+          <span className={styles.statSub}>4 Tiered Engineering Tracks</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>Published to Members</span>
           <span className={styles.statValue} style={{ color: '#10b981' }}>{publishedCount} Unlocked</span>
-          <span className={styles.statSub}>{((publishedCount / 14) * 100).toFixed(0)}% available online</span>
+          <span className={styles.statSub}>{((publishedCount / ALL_ROBOTICS_LESSONS.length) * 100).toFixed(0)}% available online</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statLabel}>Live In Classroom</span>
+          <span className={styles.statLabel}>Active Live Sessions</span>
           <span className={styles.statValue} style={{ color: '#06b6d4' }}>{liveCount} Live</span>
-          <span className={styles.statSub}>Active session mode</span>
+          <span className={styles.statSub}>Projector in lab</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>Exit Check Submissions</span>
-          <span className={styles.statValue} style={{ color: '#a855f7' }}>{submissions.length}</span>
-          <span className={styles.statSub}>Student quizzes completed</span>
+          <span className={styles.statValue} style={{ color: '#F5B800' }}>{submissions.length}</span>
+          <span className={styles.statSub}>Knowledge reflections evaluated</span>
         </div>
       </div>
 
@@ -167,7 +177,7 @@ export default function AdminCurriculumPage() {
           onClick={() => setActiveTab('classes')}
           className={`${styles.tabBtn} ${activeTab === 'classes' ? styles.tabBtnActive : ''}`}
         >
-          Curriculum Classes (14)
+          Curriculum Classes ({ALL_ROBOTICS_LESSONS.length})
         </button>
         <button
           onClick={() => setActiveTab('submissions')}
@@ -180,21 +190,60 @@ export default function AdminCurriculumPage() {
       {/* TAB 1: CURRICULUM CLASSES */}
       {activeTab === 'classes' && (
         <>
-          {CURRICULUM_STATS.levels.map((lvl) => {
-            const levelClasses = CURRICULUM_CLASSES.filter(c => c.level === lvl.name);
+          {/* Tier Filter Buttons */}
+          <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+            <button
+              onClick={() => setSelectedTier('all')}
+              style={{
+                background: selectedTier === 'all' ? '#6B0F24' : '#111827',
+                border: '1px solid',
+                borderColor: selectedTier === 'all' ? '#F5B800' : '#1e293b',
+                color: '#fff',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer'
+              }}
+            >
+              All 36 Classes
+            </button>
+            {COURSE_SPACES.map(cs => (
+              <button
+                key={cs.id}
+                onClick={() => setSelectedTier(cs.id)}
+                style={{
+                  background: selectedTier === cs.id ? '#6B0F24' : '#111827',
+                  border: '1px solid',
+                  borderColor: selectedTier === cs.id ? '#F5B800' : '#1e293b',
+                  color: selectedTier === cs.id ? '#fff' : '#94a3b8',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {cs.title} ({cs.totalClasses})
+              </button>
+            ))}
+          </div>
+
+          {COURSE_SPACES.filter(cs => selectedTier === 'all' || selectedTier === cs.id).map((cs) => {
+            const levelClasses = ALL_ROBOTICS_LESSONS.filter(c => c.courseId === cs.id);
 
             return (
-              <section key={lvl.name} className={styles.levelSection}>
+              <section key={cs.id} className={styles.levelSection}>
                 <div className={styles.levelHeader}>
-                  <div className={styles.levelDot} style={{ background: lvl.color }} />
-                  <h2 className={styles.levelTitle}>{lvl.name}</h2>
-                  <span className={styles.levelSubtitle}>• {lvl.description}</span>
+                  <div className={styles.levelDot} style={{ background: cs.accentColor }} />
+                  <h2 className={styles.levelTitle}>{cs.title}</h2>
+                  <span className={styles.levelSubtitle}>• {cs.proposedBand} • {cs.description}</span>
                 </div>
 
                 <div className={styles.cardsGrid}>
                   {levelClasses.map((cls) => {
                     const status = classStatuses[cls.id] || cls.status;
-                    const completionCount = submissions.filter(s => s.classNumber === cls.classNumber).length;
+                    const completionCount = submissions.filter(s => s.classId === cls.id).length;
 
                     return (
                       <div key={cls.id} className={styles.classCard}>
@@ -213,11 +262,11 @@ export default function AdminCurriculumPage() {
                           </div>
 
                           <h3 className={styles.cardTitle}>{cls.title}</h3>
-                          <p className={styles.cardSubtitle}>{cls.subtitle}</p>
+                          <p className={styles.cardSubtitle}>{cls.promise}</p>
 
                           <div className={styles.cardMetaRow}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                              <Clock size={14} color="#f59e0b" />
+                              <Clock size={14} color="#F5B800" />
                               <span>{cls.durationMinutes} Mins</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -238,31 +287,34 @@ export default function AdminCurriculumPage() {
                             className={styles.projectorBtn}
                           >
                             <Tv size={16} />
-                            <span>Launch Classroom Projector Mode</span>
+                            <span>Launch Live Projector</span>
                           </button>
 
-                          {/* Visibility Controls */}
-                          <div className={styles.statusBtnsRow}>
+                          {/* Status Toggle Buttons */}
+                          <div className={styles.statusGroup}>
                             <button
                               onClick={() => updateStatus(cls.id, 'published')}
-                              className={`${styles.statusBtn} ${status === 'published' ? styles.statusBtnActivePublish : ''}`}
-                              title="Members can view interactive lesson, copy C++ code, and take exit check"
+                              className={`${styles.statusBtn} ${status === 'published' ? styles.statusBtnActive : ''}`}
+                              title="Make available to all logged-in students"
                             >
-                              Publish
+                              <Unlock size={14} />
+                              <span>Unlock</span>
                             </button>
                             <button
                               onClick={() => updateStatus(cls.id, 'live_in_class')}
-                              className={`${styles.statusBtn} ${status === 'live_in_class' ? styles.statusBtnActiveLive : ''}`}
-                              title="Mark as current class running right now in physical lab"
+                              className={`${styles.statusBtn} ${status === 'live_in_class' ? styles.statusBtnLive : ''}`}
+                              title="Mark as currently active in physical lab"
                             >
-                              Live In Lab
+                              <Radio size={14} />
+                              <span>Live</span>
                             </button>
                             <button
                               onClick={() => updateStatus(cls.id, 'locked')}
-                              className={`${styles.statusBtn} ${status === 'locked' ? styles.statusBtnActiveLock : ''}`}
-                              title="Lock lesson from students until class is taught"
+                              className={`${styles.statusBtn} ${status === 'locked' ? styles.statusBtnLocked : ''}`}
+                              title="Lock class until students reach this milestone"
                             >
-                              Lock
+                              <Lock size={14} />
+                              <span>Lock</span>
                             </button>
                           </div>
                         </div>
@@ -276,68 +328,58 @@ export default function AdminCurriculumPage() {
         </>
       )}
 
-      {/* TAB 2: EXIT CHECK SUBMISSIONS */}
+      {/* TAB 2: SUBMISSIONS LOG */}
       {activeTab === 'submissions' && (
-        <div className={styles.tableContainer}>
-          {submissions.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>
-              <Award size={36} color="#f59e0b" style={{ margin: '0 auto 1rem auto', display: 'block' }} />
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>No Exit Check Submissions Yet</div>
-              <p style={{ marginTop: '0.35rem', fontSize: '0.9rem' }}>
-                When students complete the 3-question review at the end of a published class, 
-                their answers and RoboXP rewards will appear here in real-time.
-              </p>
+        <div className={styles.submissionsCard}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '1rem' }}>
+            Recent Exit Ticket Knowledge Reflections
+          </h2>
+
+          {loadingSubs ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Loading submissions...</div>
+          ) : submissions.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+              No student exit tickets submitted yet. When students complete a class quiz, their responses will appear here in real time!
             </div>
           ) : (
-            <table className={styles.submissionsTable}>
-              <thead>
-                <tr>
-                  <th>Student Email</th>
-                  <th>Class</th>
-                  <th>RoboXP Awarded</th>
-                  <th>Date & Time</th>
-                  <th>Responses</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((sub) => (
-                  <tr key={sub.id}>
-                    <td style={{ fontWeight: 700, color: '#f8fafc' }}>
-                      {sub.userEmail || 'Anonymous Student'}
-                    </td>
-                    <td>
-                      <span className={styles.codeTag} style={{ fontSize: '0.7rem' }}>
-                        CLASS {sub.classNumber?.toString().padStart(2, '0') || '01'}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ color: '#10b981', fontWeight: 800 }}>+{sub.xpAwarded || 100} XP</span>
-                    </td>
-                    <td style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
-                      {sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Just now'}
-                    </td>
-                    <td style={{ fontSize: '0.8rem', color: '#cbd5e1', maxWidth: '350px' }}>
-                      {sub.answers ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                          {Object.entries(sub.answers).map(([qid, ans]: [string, any], i) => (
-                            <div key={qid}>
-                              <strong style={{ color: '#f59e0b' }}>Q{i + 1}:</strong> {String(ans)}
-                            </div>
-                          ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {submissions.map((sub) => (
+                <div key={sub.id} style={{ background: '#0b0f19', border: '1px solid #1e293b', borderRadius: '10px', padding: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#F5B800' }}>{sub.classCode || sub.classId}</span>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: '#f1f5f9', marginLeft: '0.5rem' }}>{sub.classTitle}</span>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                      {new Date(sub.submittedAt).toLocaleDateString()} at {new Date(sub.submittedAt).toLocaleTimeString()}
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '0.85rem', color: '#38bdf8', marginBottom: '0.75rem' }}>
+                    Student: <strong>{sub.userEmail}</strong> • Awarded: <strong>+{sub.xpAwarded} RoboXP</strong>
+                  </div>
+
+                  <div style={{ background: '#111827', padding: '0.85rem', borderRadius: '8px', fontSize: '0.85rem' }}>
+                    <div style={{ color: '#94a3b8', marginBottom: '0.4rem', fontWeight: 600 }}>Answers Submitted:</div>
+                    {sub.answers && typeof sub.answers === 'object' ? (
+                      Object.entries(sub.answers).map(([qKey, ans]) => (
+                        <div key={qKey} style={{ marginTop: '0.35rem' }}>
+                          <span style={{ color: '#F5B800' }}>Q{Number(qKey) + 1}: </span>
+                          <span style={{ color: '#cbd5e1' }}>{String(ans)}</span>
                         </div>
-                      ) : (
-                        <span>3 of 3 answers verified</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      ))
+                    ) : (
+                      <span style={{ color: '#64748b' }}>No answer payload</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
 
-      {/* Classroom Projector Mode Modal */}
+      {/* Full-Screen Projector Slide Deck */}
       {projectorClass && (
         <ProjectorView
           lesson={projectorClass}

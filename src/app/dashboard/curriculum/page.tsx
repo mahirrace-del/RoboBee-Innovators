@@ -2,57 +2,60 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./curriculum.module.css";
-import { CURRICULUM_CLASSES, CURRICULUM_STATS, ClassModule, ClassStatus } from "@/lib/curriculumData";
+import { 
+  ALL_ROBOTICS_LESSONS, 
+  COURSE_SPACES, 
+  RoboticsLesson, 
+  CourseTier, 
+  ClassStatus, 
+  getLessonsByTier 
+} from "@/lib/curriculumData";
 import { CurriculumSimulator } from "@/components/curriculum/CurriculumSimulator";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, doc, setDoc, getDoc, updateDoc, increment } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, updateDoc, increment } from "firebase/firestore";
 import { 
   Award, Lock, Unlock, CheckCircle, Clock, Copy, Check, Download, 
-  HelpCircle, Eye, Zap, BookOpen, Layers, X, Tv, Shield, Radio, Sparkles, Code
+  HelpCircle, Eye, Zap, BookOpen, Layers, X, Tv, Shield, Radio, Sparkles, Code,
+  Wrench, AlertTriangle, FileText, Activity, CheckSquare, Info
 } from "lucide-react";
 
 export default function MemberCurriculumPage() {
   const { user, userData } = useAuth();
+
+  // Tier filter: 'all' or one of the 4 CourseTiers
+  const [selectedTier, setSelectedTier] = useState<CourseTier | 'all'>('all');
+
+  // Class status tracking (defaulting first 3 beginner and all 4 explorer classes to published for seamless exploration)
   const [classStatuses, setClassStatuses] = useState<{ [id: string]: ClassStatus }>({
-    'class-01': 'published',
-    'class-02': 'published',
-    'class-03': 'locked',
-    'class-04': 'locked',
-    'class-05': 'locked',
-    'class-06': 'locked',
-    'class-07': 'locked',
-    'class-08': 'locked',
-    'class-09': 'locked',
-    'class-10': 'locked',
-    'class-11': 'locked',
-    'class-12': 'locked',
-    'class-13': 'locked',
-    'class-14': 'locked',
+    'exp-01': 'published',
+    'exp-02': 'published',
+    'exp-03': 'published',
+    'exp-04': 'published',
+    'beg-01': 'published',
+    'beg-02': 'published',
+    'beg-03': 'published',
   });
 
   // Selected lesson modal
-  const [activeLesson, setActiveLesson] = useState<ClassModule | null>(null);
-  const [activeTab, setActiveTab] = useState<'brief' | 'concept' | 'code' | 'build' | 'sim' | 'quiz'>('brief');
+  const [activeLesson, setActiveLesson] = useState<RoboticsLesson | null>(null);
+  const [activeTab, setActiveTab] = useState<'brief' | 'concept' | 'code' | 'buildpack' | 'sim' | 'troubleshoot'>('brief');
 
   // Completed classes tracking
-  const [completedClasses, setCompletedClasses] = useState<{ [classNumber: number]: boolean }>({});
+  const [completedClasses, setCompletedClasses] = useState<{ [classId: string]: boolean }>({});
   const [userXp, setUserXp] = useState<number>(userData?.xp || 200);
 
   // Code copy feedback
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Checkbox state for 4 build steps
-  const [buildStepsCompleted, setBuildStepsCompleted] = useState<{ [key: string]: boolean }>({});
-
-  // Quiz state
-  const [quizAnswers, setQuizAnswers] = useState<{ [key: string]: string }>({});
-  const [quizHints, setQuizHints] = useState<{ [key: string]: boolean }>({});
+  // Exit ticket submission state
+  const [quizAnswers, setQuizAnswers] = useState<{ [key: number]: string }>({});
+  const [revealedModelAnswers, setRevealedModelAnswers] = useState<{ [key: number]: boolean }>({});
   const [submittingQuiz, setSubmittingQuiz] = useState<boolean>(false);
   const [quizSuccess, setQuizSuccess] = useState<boolean>(false);
 
-  // Projector preview for student/instructor
+  // Projector preview
   const [projectorMode, setProjectorMode] = useState<boolean>(false);
 
   // Listen to Firestore class status updates
@@ -68,7 +71,7 @@ export default function MemberCurriculumPage() {
         });
         setClassStatuses(prev => ({ ...prev, ...updates }));
       }, (err) => {
-        console.warn("Firestore curriculum_status offline, using local state:", err);
+        console.warn("Firestore curriculum_status offline, using fallback state:", err);
       });
       return () => unsub();
     } catch (e) {
@@ -81,11 +84,11 @@ export default function MemberCurriculumPage() {
     if (!user) return;
     try {
       const unsub = onSnapshot(collection(db, "curriculum_submissions"), (snapshot) => {
-        const completed: { [classNum: number]: boolean } = {};
+        const completed: { [classId: string]: boolean } = {};
         snapshot.forEach((doc) => {
           const data = doc.data();
-          if (data && data.userId === user.uid && data.classNumber) {
-            completed[data.classNumber] = true;
+          if (data && data.userId === user.uid && data.classId) {
+            completed[data.classId] = true;
           }
         });
         setCompletedClasses(completed);
@@ -104,7 +107,8 @@ export default function MemberCurriculumPage() {
   };
 
   // Download .ino file
-  const handleDownloadIno = (lesson: ClassModule) => {
+  const handleDownloadIno = (lesson: RoboticsLesson) => {
+    if (!lesson.codeLab) return;
     const filename = `RoboBEE_${lesson.code.replace(' ', '_')}.ino`;
     const blob = new Blob([lesson.codeLab.code], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -123,11 +127,11 @@ export default function MemberCurriculumPage() {
     setSubmittingQuiz(true);
 
     try {
-      const subId = `${user?.uid || 'anon'}_class_${activeLesson.classNumber}_${Date.now()}`;
+      const subId = `${user?.uid || 'anon'}_${activeLesson.id}_${Date.now()}`;
       await setDoc(doc(db, "curriculum_submissions", subId), {
         userId: user?.uid || 'anonymous',
         userEmail: user?.email || 'Student Pilot',
-        classNumber: activeLesson.classNumber,
+        classId: activeLesson.id,
         classCode: activeLesson.code,
         classTitle: activeLesson.title,
         answers: quizAnswers,
@@ -144,16 +148,14 @@ export default function MemberCurriculumPage() {
         } catch (e) {}
       }
 
-      setCompletedClasses(prev => ({ ...prev, [activeLesson.classNumber]: true }));
+      setCompletedClasses(prev => ({ ...prev, [activeLesson.id]: true }));
       setUserXp(prev => prev + 100);
       setQuizSuccess(true);
-      setTimeout(() => {
-        setQuizSuccess(false);
-      }, 5000);
+      setTimeout(() => setQuizSuccess(false), 4000);
     } catch (err) {
       console.error("Error submitting quiz:", err);
       // Fallback local award
-      setCompletedClasses(prev => ({ ...prev, [activeLesson.classNumber]: true }));
+      setCompletedClasses(prev => ({ ...prev, [activeLesson.id]: true }));
       setUserXp(prev => prev + 100);
       setQuizSuccess(true);
     } finally {
@@ -161,79 +163,120 @@ export default function MemberCurriculumPage() {
     }
   };
 
-  const unlockedCount = Object.values(classStatuses).filter(s => s === 'published' || s === 'live_in_class').length;
+  // Filter lessons based on active tier
+  const visibleLessons = selectedTier === 'all'
+    ? ALL_ROBOTICS_LESSONS
+    : getLessonsByTier(selectedTier);
+
   const completedCount = Object.keys(completedClasses).length;
 
   return (
     <div className={styles.pageContainer}>
-      {/* Hero Banner */}
+      {/* Hero Header */}
       <div className={styles.heroHeader}>
         <div className={styles.heroTopRow}>
           <div className={styles.heroBadge}>
             <Sparkles size={14} />
-            <span>ROVI Robotics Academy</span>
+            <span>RoboBEE Innovators Academy</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', background: 'rgba(255, 255, 255, 0.05)', padding: '0.4rem 1rem', borderRadius: '30px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-            <Award size={18} color="#f59e0b" />
-            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f59e0b' }}>{userXp} RoboXP</span>
+            <Award size={18} color="#F5B800" />
+            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#F5B800' }}>{userXp} RoboXP</span>
           </div>
         </div>
 
-        <h1 className={styles.heroTitle}>My Robotics Journey & Interactive LMS</h1>
+        <h1 className={styles.heroTitle}>Robotics Academy &amp; Interactive Learning Journey</h1>
         <p className={styles.heroSubtitle}>
-          Progress from foundational circuit physics and C++ code logic to building autonomous 
-          obstacle-avoiding Smart Bees, high-speed line followers, robotic arms, and tournament Mini-Sumo robots!
+          <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em><br />
+          Explore a 4-tier sequenced engineering progression: from your very first LED blink on the Arduino Uno
+          to building obstacle-avoiding rovers, high-speed line followers, robotic pick-and-place grippers,
+          and tournament-grade Mini-Sumo robots!
         </p>
 
         <div className={styles.heroStats}>
           <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue}>{unlockedCount} / 14</span>
-            <span className={styles.heroStatLabel}>Classes Unlocked</span>
+            <span className={styles.heroStatValue}>{ALL_ROBOTICS_LESSONS.length} Classes</span>
+            <span className={styles.heroStatLabel}>Total Academy Scope</span>
           </div>
           <div className={styles.heroStatItem}>
             <span className={styles.heroStatValue} style={{ color: '#10b981' }}>{completedCount}</span>
-            <span className={styles.heroStatLabel}>Quizzes Completed</span>
+            <span className={styles.heroStatLabel}>Completed Badges</span>
           </div>
           <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue} style={{ color: '#06b6d4' }}>{completedCount * 60} Mins</span>
-            <span className={styles.heroStatLabel}>Lab Time Mastered</span>
+            <span className={styles.heroStatValue} style={{ color: '#38bdf8' }}>4 Tracks</span>
+            <span className={styles.heroStatLabel}>Explorer ➔ Advanced</span>
           </div>
           <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue} style={{ color: '#c084fc' }}>Level {completedCount < 4 ? '1 (Foundations)' : completedCount < 8 ? '2 (Motion & CAD)' : '3 (Advanced)'}</span>
-            <span className={styles.heroStatLabel}>Engineering Rank</span>
+            <span className={styles.heroStatValue} style={{ color: '#F5B800' }}>Hardware + Sim</span>
+            <span className={styles.heroStatLabel}>Zero-Lag Lab Mode</span>
           </div>
         </div>
       </div>
 
-      {/* Gamified Roadmap by Levels */}
-      {CURRICULUM_STATS.levels.map((lvl) => {
-        const levelClasses = CURRICULUM_CLASSES.filter(c => c.level === lvl.name);
+      {/* Course Tier Selector Navigation */}
+      <div className={styles.tierNav}>
+        <button
+          onClick={() => setSelectedTier('all')}
+          className={`${styles.tierTab} ${selectedTier === 'all' ? styles.tierTabActive : ''}`}
+        >
+          <span>All 36 Classes</span>
+        </button>
+        {COURSE_SPACES.map(cs => (
+          <button
+            key={cs.id}
+            onClick={() => setSelectedTier(cs.id)}
+            className={`${styles.tierTab} ${selectedTier === cs.id ? styles.tierTabActive : ''}`}
+          >
+            <span>{cs.title} ({cs.totalClasses})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Render Course Spaces */}
+      {COURSE_SPACES.filter(cs => selectedTier === 'all' || selectedTier === cs.id).map(cs => {
+        const spaceLessons = ALL_ROBOTICS_LESSONS.filter(l => l.courseId === cs.id);
 
         return (
-          <section key={lvl.name} className={styles.roadmapSection}>
-            <div className={styles.roadmapHeader}>
-              <div className={styles.roadmapTitle}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: lvl.color }} />
-                <span>{lvl.name}</span>
+          <section key={cs.id} className={styles.roadmapSection}>
+            {/* Space Overview Card */}
+            <div className={styles.spaceOverviewCard}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.4rem' }}>
+                  <span className={styles.spaceBadge}>{cs.badge}</span>
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{cs.proposedBand}</span>
+                </div>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f1f5f9' }}>
+                  {cs.title}
+                </h2>
+                <p style={{ fontSize: '0.88rem', color: '#cbd5e1', maxWidth: '750px', marginTop: '0.35rem', lineHeight: '1.5' }}>
+                  {cs.description}
+                </p>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.4rem' }}>
+                  Hardware: <strong>{cs.recommendedHardware}</strong>
+                </div>
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                {lvl.description}
+
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '0.72rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                  {cs.statusNotice}
+                </span>
               </div>
             </div>
 
+            {/* Grid of Lessons */}
             <div className={styles.roadmapGrid}>
-              {levelClasses.map((cls) => {
-                const status = classStatuses[cls.id] || cls.status;
+              {spaceLessons.map(lesson => {
+                const status = classStatuses[lesson.id] || lesson.status;
                 const isUnlocked = status === 'published' || status === 'live_in_class';
-                const isCompleted = !!completedClasses[cls.classNumber];
+                const isCompleted = !!completedClasses[lesson.id];
                 const isLive = status === 'live_in_class';
 
                 return (
                   <div
-                    key={cls.id}
+                    key={lesson.id}
                     onClick={() => {
                       if (isUnlocked) {
-                        setActiveLesson(cls);
+                        setActiveLesson(lesson);
                         setActiveTab('brief');
                       }
                     }}
@@ -243,24 +286,29 @@ export default function MemberCurriculumPage() {
                   >
                     <div>
                       <div className={styles.cardHeader}>
-                        <span className={styles.cardClassCode}>{cls.code}</span>
+                        <span className={styles.cardClassCode}>{lesson.code}</span>
                         <span className={`${styles.cardStatusPill} ${
                           isLive ? styles.pillLive : isUnlocked ? styles.pillPublished : styles.pillLocked
                         }`}>
                           {isLive && <><Radio size={12} /> Live Now</>}
-                          {!isLive && isUnlocked && <><Unlock size={12} /> Unlocked</>}
-                          {!isUnlocked && <><Lock size={12} /> Locked</>}
+                          {!isLive && isUnlocked && <><Unlock size={12} /> Available</>}
+                          {!isUnlocked && <><Lock size={12} /> Supervised</>}
                         </span>
                       </div>
 
-                      <h3 className={styles.cardTitle}>{cls.title}</h3>
-                      <p className={styles.cardSubtitle}>{cls.subtitle}</p>
+                      <h3 className={styles.cardTitle}>{lesson.title}</h3>
+                      <p className={styles.cardSubtitle}>{lesson.promise}</p>
+
+                      <div style={{ marginTop: '0.75rem', background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', fontSize: '0.78rem' }}>
+                        <span style={{ color: '#F5B800', fontWeight: 700 }}>Project: </span>
+                        <span style={{ color: '#cbd5e1' }}>{lesson.project.name}</span>
+                      </div>
                     </div>
 
                     <div className={styles.cardFooter}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Clock size={13} color="#f59e0b" />
-                        <span>{cls.durationMinutes} min</span>
+                        <Clock size={13} color="#F5B800" />
+                        <span>{lesson.durationMinutes} min</span>
                       </div>
                       <div>
                         {isCompleted ? (
@@ -268,9 +316,9 @@ export default function MemberCurriculumPage() {
                             <CheckCircle size={14} /> Completed
                           </span>
                         ) : isUnlocked ? (
-                          <span style={{ color: '#06b6d4', fontWeight: 700 }}>Open Lesson ➔</span>
+                          <span style={{ color: '#38bdf8', fontWeight: 700 }}>Explore Lab ➔</span>
                         ) : (
-                          <span style={{ color: '#64748b' }}>Complete Class {cls.classNumber - 1}</span>
+                          <span style={{ color: '#64748b' }}>Instructor Supervised</span>
                         )}
                       </div>
                     </div>
@@ -282,11 +330,11 @@ export default function MemberCurriculumPage() {
         );
       })}
 
-      {/* Interactive Lesson View Modal */}
+      {/* Interactive Lesson Modal */}
       {activeLesson && (
         <div className={styles.lessonModalOverlay} onClick={() => setActiveLesson(null)}>
           <div className={styles.lessonModal} onClick={(e) => e.stopPropagation()}>
-            {/* Modal Header */}
+            {/* Header */}
             <div className={styles.lessonModalHeader}>
               <div className={styles.lessonModalTitleGroup}>
                 <span className={styles.cardClassCode} style={{ fontSize: '0.9rem' }}>
@@ -301,10 +349,10 @@ export default function MemberCurriculumPage() {
                 <button
                   onClick={() => setProjectorMode(true)}
                   className={styles.codeBtn}
-                  style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderColor: '#f59e0b' }}
+                  style={{ background: '#6B0F24', color: '#ffffff', borderColor: '#F5B800' }}
                 >
                   <Tv size={14} />
-                  <span>Projector Mode</span>
+                  <span>Launch Live Projector</span>
                 </button>
                 <button
                   onClick={() => setActiveLesson(null)}
@@ -315,35 +363,35 @@ export default function MemberCurriculumPage() {
               </div>
             </div>
 
-            {/* Modal Navigation Tabs (6 Sections) */}
+            {/* Modal Tabs */}
             <div className={styles.lessonNavTabs}>
               <button
                 onClick={() => setActiveTab('brief')}
                 className={`${styles.lessonTabBtn} ${activeTab === 'brief' ? styles.lessonTabBtnActive : ''}`}
               >
                 <BookOpen size={15} />
-                <span>1. Mission Brief & Rhythm</span>
+                <span>1. Overview &amp; Rhythm</span>
               </button>
               <button
                 onClick={() => setActiveTab('concept')}
                 className={`${styles.lessonTabBtn} ${activeTab === 'concept' ? styles.lessonTabBtnActive : ''}`}
               >
                 <Layers size={15} />
-                <span>2. Concept & Golden Rule</span>
+                <span>2. Concepts &amp; Safety</span>
               </button>
               <button
                 onClick={() => setActiveTab('code')}
                 className={`${styles.lessonTabBtn} ${activeTab === 'code' ? styles.lessonTabBtnActive : ''}`}
               >
                 <Code size={15} />
-                <span>3. Arduino C++ Code Lab</span>
+                <span>3. Code Lab</span>
               </button>
               <button
-                onClick={() => setActiveTab('build')}
-                className={`${styles.lessonTabBtn} ${activeTab === 'build' ? styles.lessonTabBtnActive : ''}`}
+                onClick={() => setActiveTab('buildpack')}
+                className={`${styles.lessonTabBtn} ${activeTab === 'buildpack' ? styles.lessonTabBtnActive : ''}`}
               >
-                <CheckCircle size={15} />
-                <span>4. Hands-On Build Steps</span>
+                <Wrench size={15} />
+                <span>4. Physical Build Pack</span>
               </button>
               <button
                 onClick={() => setActiveTab('sim')}
@@ -353,324 +401,447 @@ export default function MemberCurriculumPage() {
                 <span>5. Interactive Simulator</span>
               </button>
               <button
-                onClick={() => setActiveTab('quiz')}
-                className={`${styles.lessonTabBtn} ${activeTab === 'quiz' ? styles.lessonTabBtnActive : ''}`}
+                onClick={() => setActiveTab('troubleshoot')}
+                className={`${styles.lessonTabBtn} ${activeTab === 'troubleshoot' ? styles.lessonTabBtnActive : ''}`}
               >
                 <Award size={15} />
-                <span>6. Exit Check Quiz (+100 XP)</span>
+                <span>6. Debug &amp; Exit Ticket</span>
               </button>
             </div>
 
-            {/* Modal Body */}
+            {/* Modal Tab Body */}
             <div className={styles.lessonTabBody}>
-              {/* TAB 1: MISSION BRIEF */}
+              {/* TAB 1: OVERVIEW & RHYTHM */}
               {activeTab === 'brief' && (
                 <div>
-                  <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.5rem' }}>
-                    Mission Brief: {activeLesson.title}
+                  <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#F5B800', marginBottom: '0.4rem' }}>
+                    {activeLesson.title}
                   </h3>
-                  <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '1.05rem', marginBottom: '1.75rem' }}>
-                    {activeLesson.subtitle}
+                  <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
+                    {activeLesson.promise}
                   </p>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
-                    {/* Objectives */}
-                    <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid #1e293b' }}>
-                      <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1rem', marginBottom: '1rem' }}>
-                        🎯 What You Will Master:
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    {/* Measurable Outcomes */}
+                    <div style={{ background: '#111827', padding: '1.25rem', borderRadius: '12px', border: '1px solid #1e293b' }}>
+                      <div style={{ fontWeight: 800, color: '#10b981', fontSize: '0.95rem', marginBottom: '0.75rem' }}>
+                        🎯 Measurable Student Outcomes:
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                        {activeLesson.learningObjectives.map((obj, i) => (
-                          <div key={i} style={{ display: 'flex', gap: '0.65rem' }}>
-                            <CheckCircle size={18} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
-                            <span style={{ fontSize: '0.95rem', color: '#f1f5f9' }}>{obj}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                        {activeLesson.outcomes.map((out, i) => (
+                          <div key={i} style={{ display: 'flex', gap: '0.6rem' }}>
+                            <CheckCircle size={16} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <span style={{ fontSize: '0.88rem', color: '#f1f5f9' }}>{out}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     {/* Class Rhythm */}
-                    <div style={{ background: '#111827', padding: '1.5rem', borderRadius: '12px', border: '1px solid #1e293b' }}>
-                      <div style={{ fontWeight: 800, color: '#06b6d4', fontSize: '1rem', marginBottom: '1rem' }}>
-                        ⏱ 60-Minute Class Rhythm:
+                    <div style={{ background: '#111827', padding: '1.25rem', borderRadius: '12px', border: '1px solid #1e293b' }}>
+                      <div style={{ fontWeight: 800, color: '#38bdf8', fontSize: '0.95rem', marginBottom: '0.75rem' }}>
+                        ⏱ Time-Boxed Rhythm ({activeLesson.durationMinutes}m):
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem' }}>
-                        <div style={{ background: '#0b0f19', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
-                          <strong style={{ color: '#f59e0b' }}>00-05m:</strong> {activeLesson.classRhythm.hook}
-                        </div>
-                        <div style={{ background: '#0b0f19', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
-                          <strong style={{ color: '#06b6d4' }}>05-15m:</strong> {activeLesson.classRhythm.concept}
-                        </div>
-                        <div style={{ background: '#0b0f19', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
-                          <strong style={{ color: '#10b981' }}>15-30m:</strong> {activeLesson.classRhythm.demo}
-                        </div>
-                        <div style={{ background: '#0b0f19', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
-                          <strong style={{ color: '#f43f5e' }}>30-55m:</strong> {activeLesson.classRhythm.buildTest}
-                        </div>
-                        <div style={{ background: '#0b0f19', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
-                          <strong style={{ color: '#a855f7' }}>55-60m:</strong> {activeLesson.classRhythm.exitCheck}
-                        </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '250px', overflowY: 'auto' }}>
+                        {activeLesson.classRhythm.map((seg, i) => (
+                          <div key={i} style={{ background: '#090e18', padding: '0.5rem 0.75rem', borderRadius: '6px', fontSize: '0.82rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#F5B800', fontWeight: 700 }}>
+                              <span>{seg.segment}</span>
+                              <span style={{ color: '#38bdf8' }}>{seg.minutes}m</span>
+                            </div>
+                            <div style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '2px' }}>
+                              Teacher: {seg.teacherAction}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Vocabulary Table */}
+                  <div style={{ background: '#111827', padding: '1.25rem', borderRadius: '12px', border: '1px solid #1e293b' }}>
+                    <div style={{ fontWeight: 800, color: '#F5B800', fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                      📖 Key Technical Vocabulary:
+                    </div>
+                    <table className={styles.dataTable}>
+                      <thead>
+                        <tr>
+                          <th>Term</th>
+                          <th>Plain Language Meaning</th>
+                          <th>Correct Technical Definition</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activeLesson.vocabulary.map((v, i) => (
+                          <tr key={i}>
+                            <td style={{ fontWeight: 700, color: '#F5B800' }}>{v.term}</td>
+                            <td style={{ color: '#cbd5e1' }}>{v.plainMeaning}</td>
+                            <td style={{ color: '#38bdf8' }}>{v.technicalMeaning}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
-              {/* TAB 2: CONCEPT & GOLDEN RULE */}
+              {/* TAB 2: CONCEPTS & SAFETY */}
               {activeTab === 'concept' && (
                 <div>
-                  <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '0.5rem' }}>
-                    {activeLesson.coreConcept.headline}
+                  <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '1rem' }}>
+                    Core Engineering Concepts
                   </h3>
-                  <p style={{ color: '#94a3b8', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-                    {activeLesson.coreConcept.summary}
-                  </p>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
-                    {activeLesson.coreConcept.flowSteps.map((st, i) => (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                    {activeLesson.concepts.map((concept, i) => (
                       <div key={i} style={{ background: '#111827', border: '1px solid #1e293b', borderRadius: '12px', padding: '1.25rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: i === 0 ? '#38bdf8' : i === 1 ? '#f59e0b' : '#34d399', textTransform: 'uppercase' }}>
-                          {st.label}
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase' }}>
+                          Concept {i + 1}
                         </div>
                         <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f1f5f9', margin: '0.35rem 0 0.5rem 0' }}>
-                          {st.title}
+                          {concept.title}
                         </div>
-                        <p style={{ fontSize: '0.9rem', color: '#94a3b8', lineHeight: '1.5' }}>
-                          {st.description}
+                        <p style={{ fontSize: '0.9rem', color: '#94a3b8', lineHeight: '1.6' }}>
+                          {concept.explanation}
                         </p>
+                        {concept.instructorNote && (
+                          <div style={{ marginTop: '0.75rem', background: 'rgba(245, 184, 0, 0.08)', padding: '0.6rem', borderRadius: '6px', fontSize: '0.8rem', color: '#F5B800' }}>
+                            💡 <strong>Instructor Note:</strong> {concept.instructorNote}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
 
-                  <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)', borderLeft: '5px solid #f59e0b', padding: '1.25rem', borderRadius: '10px' }}>
-                    <div style={{ color: '#f59e0b', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      ⚡ Golden Engineering Rule:
+                  <div style={{ background: 'rgba(107, 15, 36, 0.25)', border: '1px solid #6B0F24', padding: '1.25rem', borderRadius: '12px' }}>
+                    <div style={{ color: '#fca5a5', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Shield size={16} />
+                      <span>Lab Safety Checklist:</span>
                     </div>
-                    <div style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fef3c7', marginTop: '0.35rem' }}>
-                      &ldquo;{activeLesson.coreConcept.safetyOrGoldenRule}&rdquo;
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 3: ARDUINO C++ CODE LAB */}
-              {activeTab === 'code' && (
-                <div>
-                  <div className={styles.codeHeaderRow}>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f59e0b' }}>
-                      {activeLesson.codeLab.title}
-                    </h3>
-                    <div className={styles.codeButtonsGroup}>
-                      <button
-                        onClick={() => handleCopyCode(activeLesson.codeLab.code)}
-                        className={styles.codeBtn}
-                      >
-                        {copied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
-                        <span>{copied ? 'Copied to Clipboard!' : 'Copy Arduino Code'}</span>
-                      </button>
-                      <button
-                        onClick={() => handleDownloadIno(activeLesson)}
-                        className={styles.codeBtn}
-                      >
-                        <Download size={14} />
-                        <span>Download .ino Sketch</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <pre className={styles.codeEditorBox}>
-                    <code>{activeLesson.codeLab.code}</code>
-                  </pre>
-
-                  {/* Line-by-Line X-Ray */}
-                  <div className={styles.xrayCard}>
-                    <div className={styles.xrayTitle}>
-                      <Eye size={16} />
-                      <span>Line-by-Line X-Ray &amp; Watch Notes:</span>
-                    </div>
-                    <ul style={{ paddingLeft: '1.2rem', color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                      {activeLesson.codeLab.watchForNotes.map((note, idx) => (
-                        <li key={idx} style={{ marginBottom: '0.35rem' }}>{note}</li>
+                    <ul style={{ paddingLeft: '1.2rem', color: '#cbd5e1', fontSize: '0.9rem', marginTop: '0.5rem', lineHeight: '1.6' }}>
+                      {activeLesson.safetyNotes.map((note, i) => (
+                        <li key={i}>{note}</li>
                       ))}
                     </ul>
                   </div>
-
-                  {/* Tweak Tip */}
-                  <div style={{ background: 'rgba(6, 182, 212, 0.08)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '1rem', borderRadius: '10px', marginTop: '1rem' }}>
-                    <div style={{ color: '#06b6d4', fontWeight: 800, fontSize: '0.85rem', marginBottom: '0.25rem' }}>
-                      💡 What Happens If? (Tweak Challenge):
-                    </div>
-                    <div style={{ color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                      {activeLesson.codeLab.tweakTip}
-                    </div>
-                  </div>
                 </div>
               )}
 
-              {/* TAB 4: HANDS-ON BUILD STEPS */}
-              {activeTab === 'build' && (
+              {/* TAB 3: CODE LAB */}
+              {activeTab === 'code' && (
                 <div>
-                  <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '0.35rem' }}>
-                    {activeLesson.handsOnActivity.title}
-                  </h3>
-                  <p style={{ color: '#94a3b8', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-                    {activeLesson.handsOnActivity.subtitle}
-                  </p>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
-                    {/* Interactive 4 Steps */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                      {activeLesson.handsOnActivity.steps.map((st, i) => {
-                        const stepKey = `${activeLesson.id}_step_${i}`;
-                        const isDone = !!buildStepsCompleted[stepKey];
-
-                        return (
-                          <div
-                            key={i}
-                            onClick={() => setBuildStepsCompleted(prev => ({ ...prev, [stepKey]: !prev[stepKey] }))}
-                            style={{
-                              background: isDone ? 'rgba(16, 185, 129, 0.12)' : '#111827',
-                              border: `1px solid ${isDone ? '#10b981' : '#1e293b'}`,
-                              borderRadius: '10px',
-                              padding: '1rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.85rem',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease'
-                            }}
-                          >
-                            <div style={{
-                              width: '26px',
-                              height: '26px',
-                              borderRadius: '50%',
-                              background: isDone ? '#10b981' : '#1e293b',
-                              border: `2px solid ${isDone ? '#10b981' : '#475569'}`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: isDone ? '#0b0f19' : '#94a3b8',
-                              fontWeight: 800,
-                              fontSize: '0.8rem',
-                              flexShrink: 0
-                            }}>
-                              {isDone ? '✓' : i + 1}
-                            </div>
-                            <span style={{ fontSize: '0.95rem', color: isDone ? '#34d399' : '#f1f5f9', lineHeight: '1.4' }}>
-                              {st}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Success Criteria & Pro Challenge */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <div style={{ background: '#111827', border: '1px solid #1e293b', borderRadius: '12px', padding: '1.25rem' }}>
-                        <div style={{ color: '#10b981', fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                          ✅ Success Looks Like:
+                  {activeLesson.codeLab ? (
+                    <>
+                      <div className={styles.codeHeaderRow}>
+                        <div>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase' }}>
+                            {activeLesson.codeLab.language.toUpperCase()} Code Artifact
+                          </span>
+                          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#F5B800', marginTop: '2px' }}>
+                            {activeLesson.project.name}
+                          </h3>
                         </div>
-                        <ul style={{ paddingLeft: '1.2rem', color: '#cbd5e1', fontSize: '0.85rem', lineHeight: '1.6' }}>
-                          {activeLesson.handsOnActivity.successCriteria.map((sc, i) => (
-                            <li key={i}>{sc}</li>
+                        <div className={styles.codeButtonsGroup}>
+                          <button
+                            onClick={() => handleCopyCode(activeLesson.codeLab!.code)}
+                            className={styles.codeBtn}
+                          >
+                            {copied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                            <span>{copied ? 'Copied!' : 'Copy Code'}</span>
+                          </button>
+                          <button
+                            onClick={() => handleDownloadIno(activeLesson)}
+                            className={styles.codeBtn}
+                          >
+                            <Download size={14} />
+                            <span>Download .ino Sketch</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <pre className={styles.codeEditorBox}>
+                        <code>{activeLesson.codeLab.code}</code>
+                      </pre>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                        {/* Pin Map */}
+                        <div className={styles.buildPackCard}>
+                          <div className={styles.buildPackTitle}>
+                            <Activity size={16} />
+                            <span>Microcontroller Pin Map</span>
+                          </div>
+                          <table className={styles.dataTable}>
+                            <thead>
+                              <tr>
+                                <th>Pin</th>
+                                <th>Connected Hardware</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Object.entries(activeLesson.codeLab.pinMap).map(([pin, dev]) => (
+                                <tr key={pin}>
+                                  <td style={{ fontWeight: 800, color: '#F5B800' }}>{pin}</td>
+                                  <td style={{ color: '#cbd5e1' }}>{dev}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Setup & Upload Instructions */}
+                        <div className={styles.buildPackCard}>
+                          <div className={styles.buildPackTitle}>
+                            <CheckSquare size={16} />
+                            <span>Upload &amp; Verification Steps</span>
+                          </div>
+                          <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                            {activeLesson.codeLab.setupAndUpload.map((step, idx) => (
+                              <li key={idx}>{step}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      </div>
+
+                      {/* Code Explanations */}
+                      <div className={styles.xrayCard}>
+                        <div className={styles.xrayTitle}>
+                          <Eye size={16} />
+                          <span>Line-by-Line Code Explanations:</span>
+                        </div>
+                        <ul style={{ paddingLeft: '1.2rem', color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.6' }}>
+                          {activeLesson.codeLab.explanations.map((exp, idx) => (
+                            <li key={idx} style={{ marginBottom: '0.35rem' }}>{exp}</li>
                           ))}
                         </ul>
                       </div>
 
-                      <div style={{ background: 'rgba(168, 85, 247, 0.08)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '12px', padding: '1.25rem' }}>
-                        <div style={{ color: '#c084fc', fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.35rem' }}>
-                          🚀 Pro Level Challenge (Try Next):
+                      {activeLesson.codeLab.tweakTip && (
+                        <div style={{ background: 'rgba(6, 182, 212, 0.08)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '1rem', borderRadius: '10px', marginTop: '1rem' }}>
+                          <div style={{ color: '#06b6d4', fontWeight: 800, fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                            💡 Student Tweak to Predict &amp; Test:
+                          </div>
+                          <p style={{ color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5' }}>
+                            {activeLesson.codeLab.tweakTip}
+                          </p>
                         </div>
-                        <p style={{ color: '#cbd5e1', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                          {activeLesson.handsOnActivity.tryNextAdvanced}
-                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                      <Wrench size={36} color="#F5B800" style={{ marginBottom: '0.5rem' }} />
+                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9' }}>Design &amp; Systems Session</div>
+                      <p style={{ color: '#94a3b8', maxWidth: '500px', margin: '0.5rem auto' }}>
+                        This class focuses on mechanical design, CAD modeling, or simulation logic.
+                        Check the Physical Build Pack and Simulator tabs for full deliverables!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 4: PHYSICAL BUILD PACK */}
+              {activeTab === 'buildpack' && (
+                <div>
+                  {activeLesson.physicalBuildPack ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {/* Hardware BOM & Schematic */}
+                      <div className={styles.buildPackGrid}>
+                        {/* Component BOM */}
+                        <div className={styles.buildPackCard}>
+                          <div className={styles.buildPackTitle}>
+                            <Wrench size={16} />
+                            <span>Bill of Materials (Exact Hardware Variants)</span>
+                          </div>
+                          <table className={styles.dataTable}>
+                            <thead>
+                              <tr>
+                                <th>Component</th>
+                                <th>Exact Variant</th>
+                                <th>Qty</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {activeLesson.physicalBuildPack.componentList.map((comp, idx) => (
+                                <tr key={idx}>
+                                  <td style={{ fontWeight: 700, color: '#f1f5f9' }}>{comp.name}</td>
+                                  <td style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{comp.exactVariant}</td>
+                                  <td style={{ color: '#F5B800', fontWeight: 800 }}>{comp.quantity}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Schematic & Wiring Note */}
+                        <div className={styles.buildPackCard}>
+                          <div className={styles.buildPackTitle}>
+                            <Activity size={16} />
+                            <span>Circuit Schematic &amp; Layout</span>
+                          </div>
+                          <div style={{ background: '#090e18', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.85rem', fontSize: '0.82rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                            <strong>Schematic Description:</strong><br />
+                            {activeLesson.physicalBuildPack.schematic}
+                          </div>
+                          <div style={{ marginTop: '0.85rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+                            <strong>Reference Board:</strong> {activeLesson.physicalBuildPack.verifiedBoardAndModules.join(', ')}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Wire-by-Wire Connection Table */}
+                      <div className={styles.buildPackCard}>
+                        <div className={styles.buildPackTitle}>
+                          <Activity size={16} />
+                          <span>Pin-by-Pin &amp; Wire-by-Wire Connection Table</span>
+                        </div>
+                        <table className={styles.dataTable}>
+                          <thead>
+                            <tr>
+                              <th>From (Source Pin)</th>
+                              <th>To (Target Hardware)</th>
+                              <th>Wire Color / Polarity Rule</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeLesson.physicalBuildPack.wireTable.map((wire, idx) => (
+                              <tr key={idx}>
+                                <td style={{ fontWeight: 800, color: '#F5B800' }}>{wire.from}</td>
+                                <td style={{ color: '#38bdf8' }}>{wire.to}</td>
+                                <td style={{ color: '#cbd5e1' }}>{wire.wireOrPolarityNote || 'Standard Jumper Wire'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Assembly, Safety, and Test Cases */}
+                      <div className={styles.buildPackGrid}>
+                        {/* Assembly Checklist */}
+                        <div className={styles.buildPackCard}>
+                          <div className={styles.buildPackTitle}>
+                            <CheckSquare size={16} />
+                            <span>Numbered Assembly &amp; Power-Up Steps</span>
+                          </div>
+                          <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                            {activeLesson.physicalBuildPack.assemblyAndPowerUpSteps.map((step, idx) => (
+                              <li key={idx}>{step}</li>
+                            ))}
+                          </ol>
+                        </div>
+
+                        {/* Test Cases */}
+                        <div className={styles.buildPackCard}>
+                          <div className={styles.buildPackTitle}>
+                            <Zap size={16} />
+                            <span>Required Test Cases &amp; Expected Results</span>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                            {activeLesson.physicalBuildPack.testCases.map((tc, idx) => (
+                              <div key={idx} style={{ background: '#090e18', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.75rem', fontSize: '0.82rem' }}>
+                                <div style={{ color: '#F5B800', fontWeight: 700 }}>Test Case {idx + 1}: {tc.action}</div>
+                                <div style={{ color: '#10b981', marginTop: '2px' }}>➔ Expected: {tc.expectedResult}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                      <FileText size={36} color="#38bdf8" style={{ marginBottom: '0.5rem' }} />
+                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9' }}>Design &amp; Code-Only Module</div>
+                      <p style={{ color: '#94a3b8', maxWidth: '500px', margin: '0.5rem auto' }}>
+                        This class produces a digital model, CAD drawing, or simulation artifact rather than a physical circuit build.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* TAB 5: INTERACTIVE SIMULATOR */}
               {activeTab === 'sim' && (
                 <div>
-                  <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.35rem' }}>
-                    Virtual Circuit &amp; Logic Simulation
-                  </h3>
-                  <p style={{ color: '#94a3b8', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-                    Interact with virtual pins, sliders, and signal flows before assembling the physical robot.
-                  </p>
-                  <CurriculumSimulator type={activeLesson.interactiveVisualType} classNumber={activeLesson.classNumber} />
+                  <CurriculumSimulator type={activeLesson.visualizerId} classNumber={activeLesson.sequence} />
                 </div>
               )}
 
-              {/* TAB 6: EXIT CHECK QUIZ */}
-              {activeTab === 'quiz' && (
+              {/* TAB 6: TROUBLESHOOTING & EXIT TICKET */}
+              {activeTab === 'troubleshoot' && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <div>
-                      <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f1f5f9' }}>
-                        Class {activeLesson.classNumber} Exit Check (3 Questions)
-                      </h3>
-                      <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
-                        Answer the 3 review questions in your own words to verify your skills and claim +100 RoboXP!
-                      </p>
-                    </div>
-                    {completedClasses[activeLesson.classNumber] && (
-                      <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid #10b981', padding: '0.35rem 0.85rem', borderRadius: '20px', fontWeight: 800, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <CheckCircle size={16} /> Completed (+100 XP Claimed)
-                      </span>
-                    )}
+                  {/* Troubleshooting Guide */}
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f87171', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <AlertTriangle size={18} />
+                    <span>Calm Engineering Troubleshooting Guide</span>
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '2rem' }}>
+                    {activeLesson.troubleshooting.map((tb, idx) => (
+                      <div key={idx} style={{ background: '#111827', border: '1px solid #1e293b', borderRadius: '10px', padding: '1rem' }}>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fca5a5' }}>
+                          Symptom: {tb.symptom}
+                        </div>
+                        <div style={{ marginTop: '0.35rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                          <strong>Checks in safe order:</strong> {tb.checks.join(' ➔ ')}
+                        </div>
+                        <div style={{ marginTop: '0.35rem', fontSize: '0.82rem', color: '#94a3b8' }}>
+                          <strong>Root Cause Explanation:</strong> {tb.explanation}
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
-                  {quizSuccess && (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', borderRadius: '10px', padding: '1rem', color: '#34d399', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Sparkles size={20} />
-                      <span>Congratulations! +100 RoboXP has been awarded to your account!</span>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    {activeLesson.exitCheckQuestions.map((q, idx) => (
-                      <div key={q.id} className={styles.exitCheckItem}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: '1rem' }}>
-                            <span style={{ color: '#f59e0b', marginRight: '0.5rem' }}>Question {idx + 1}:</span>
-                            {q.question}
+                  {/* Exit Ticket Review Quiz */}
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#F5B800', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Award size={18} />
+                    <span>Exit Ticket &amp; Knowledge Reflection (+100 RoboXP)</span>
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {activeLesson.exitTicket.map((ticket, idx) => (
+                      <div key={idx} className={styles.exitCheckItem}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#f1f5f9' }}>
+                            <span style={{ color: '#F5B800', marginRight: '0.5rem' }}>Question {idx + 1}:</span>
+                            {ticket.question}
                           </div>
                           <button
-                            onClick={() => setQuizHints(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
-                            style={{ background: 'transparent', border: 'none', color: '#06b6d4', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                            onClick={() => setRevealedModelAnswers(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                            className={styles.codeBtn}
                           >
                             <HelpCircle size={14} />
-                            <span>{quizHints[q.id] ? 'Hide Hint' : 'Hint'}</span>
+                            <span>{revealedModelAnswers[idx] ? 'Hide Rubric' : 'Reveal Model Reasoning'}</span>
                           </button>
                         </div>
 
-                        {quizHints[q.id] && (
-                          <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: 'rgba(6, 182, 212, 0.1)', borderLeft: '3px solid #06b6d4', borderRadius: '4px', fontSize: '0.85rem', color: '#38bdf8' }}>
-                            💡 {q.hint}
-                          </div>
-                        )}
-
-                        <textarea
-                          rows={2}
-                          placeholder="Type your explanation in your own words..."
-                          value={quizAnswers[q.id] || ''}
-                          onChange={(e) => setQuizAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                        <input
+                          type="text"
+                          placeholder="Type your explanation or observation here..."
+                          value={quizAnswers[idx] || ''}
+                          onChange={(e) => setQuizAnswers({ ...quizAnswers, [idx]: e.target.value })}
                           className={styles.quizInput}
                         />
+
+                        {revealedModelAnswers[idx] && (
+                          <div style={{ marginTop: '0.75rem', padding: '0.65rem 0.85rem', background: 'rgba(16, 185, 129, 0.1)', borderLeft: '3px solid #10b981', borderRadius: '4px', fontSize: '0.85rem', color: '#34d399' }}>
+                            🎯 <strong>Model Reasoning:</strong> {ticket.rubricOrSampleReasoning}
+                          </div>
+                        )}
                       </div>
                     ))}
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
                       <button
                         onClick={handleQuizSubmit}
                         disabled={submittingQuiz}
                         className={styles.submitQuizBtn}
                       >
                         <Award size={18} />
-                        <span>{submittingQuiz ? 'Submitting...' : 'Submit Exit Check & Claim +100 RoboXP'}</span>
+                        <span>{submittingQuiz ? 'Submitting to Lab...' : 'Submit Exit Ticket (+100 RoboXP)'}</span>
                       </button>
+
+                      {quizSuccess && (
+                        <span style={{ color: '#10b981', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <CheckCircle size={18} /> +100 RoboXP Awarded!
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -680,7 +851,7 @@ export default function MemberCurriculumPage() {
         </div>
       )}
 
-      {/* Classroom Projector Mode Modal */}
+      {/* Full-Screen Projector View */}
       {projectorMode && activeLesson && (
         <ProjectorView
           lesson={activeLesson}
