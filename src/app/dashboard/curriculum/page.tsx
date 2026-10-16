@@ -444,7 +444,7 @@ export default function MemberCurriculumPage() {
                     {activeLesson.promise}
                   </p>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                  <div className={styles.twoColGrid}>
                     {/* Measurable Outcomes */}
                     <div style={{ background: '#111827', padding: '1.25rem', borderRadius: '12px', border: '1px solid #1e293b' }}>
                       <div style={{ fontWeight: 800, color: '#10b981', fontSize: '0.95rem', marginBottom: '0.75rem' }}>
@@ -486,24 +486,26 @@ export default function MemberCurriculumPage() {
                     <div style={{ fontWeight: 800, color: '#F5B800', fontSize: '0.95rem', marginBottom: '0.5rem' }}>
                       📖 Key Technical Vocabulary:
                     </div>
-                    <table className={styles.dataTable}>
-                      <thead>
-                        <tr>
-                          <th>Term</th>
-                          <th>Plain Language Meaning</th>
-                          <th>Correct Technical Definition</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {activeLesson.vocabulary.map((v, i) => (
-                          <tr key={i}>
-                            <td style={{ fontWeight: 700, color: '#F5B800' }}>{v.term}</td>
-                            <td style={{ color: '#cbd5e1' }}>{v.plainMeaning}</td>
-                            <td style={{ color: '#38bdf8' }}>{v.technicalMeaning}</td>
+                    <div className={styles.tableWrapper}>
+                      <table className={styles.dataTable}>
+                        <thead>
+                          <tr>
+                            <th>Term</th>
+                            <th>Plain Language Meaning</th>
+                            <th>Correct Technical Definition</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {activeLesson.vocabulary.map((v, i) => (
+                            <tr key={i}>
+                              <td style={{ fontWeight: 700, color: '#F5B800' }}>{v.term}</td>
+                              <td style={{ color: '#cbd5e1' }}>{v.plainMeaning}</td>
+                              <td style={{ color: '#38bdf8' }}>{v.technicalMeaning}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
 
                   {/* FIELD GUIDE REFERENCE LINKS */}
@@ -664,29 +666,31 @@ export default function MemberCurriculumPage() {
                         <code>{activeLesson.codeLab.code}</code>
                       </pre>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                      <div className={styles.twoColGridEqual}>
                         {/* Pin Map */}
                         <div className={styles.buildPackCard}>
                           <div className={styles.buildPackTitle}>
                             <Activity size={16} />
                             <span>Microcontroller Pin Map</span>
                           </div>
-                          <table className={styles.dataTable}>
-                            <thead>
-                              <tr>
-                                <th>Pin</th>
-                                <th>Connected Hardware</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Object.entries(activeLesson.codeLab.pinMap).map(([pin, dev]) => (
-                                <tr key={pin}>
-                                  <td style={{ fontWeight: 800, color: '#F5B800' }}>{pin}</td>
-                                  <td style={{ color: '#cbd5e1' }}>{dev}</td>
+                          <div className={styles.tableWrapper}>
+                            <table className={styles.dataTable}>
+                              <thead>
+                                <tr>
+                                  <th>Pin</th>
+                                  <th>Connected Hardware</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {Object.entries(activeLesson.codeLab.pinMap).map(([pin, dev]) => (
+                                  <tr key={pin}>
+                                    <td style={{ fontWeight: 800, color: '#F5B800' }}>{pin}</td>
+                                    <td style={{ color: '#cbd5e1' }}>{dev}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
 
                         {/* Setup & Upload Instructions */}
@@ -779,24 +783,26 @@ export default function MemberCurriculumPage() {
                             <Wrench size={16} />
                             <span>Bill of Materials (Exact Hardware Variants)</span>
                           </div>
-                          <table className={styles.dataTable}>
-                            <thead>
-                              <tr>
-                                <th>Component</th>
-                                <th>Exact Variant</th>
-                                <th>Qty</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {activeLesson.physicalBuildPack.componentList.map((comp, idx) => (
-                                <tr key={idx}>
-                                  <td style={{ fontWeight: 700, color: '#f1f5f9' }}>{comp.name}</td>
-                                  <td style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{comp.exactVariant}</td>
-                                  <td style={{ color: '#F5B800', fontWeight: 800 }}>{comp.quantity}</td>
+                          <div className={styles.tableWrapper}>
+                            <table className={styles.dataTable}>
+                              <thead>
+                                <tr>
+                                  <th>Component</th>
+                                  <th>Exact Variant</th>
+                                  <th>Qty</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {activeLesson.physicalBuildPack.componentList.map((comp, idx) => (
+                                  <tr key={idx}>
+                                    <td style={{ fontWeight: 700, color: '#f1f5f9' }}>{comp.name}</td>
+                                    <td style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{comp.exactVariant}</td>
+                                    <td style={{ color: '#F5B800', fontWeight: 800 }}>{comp.quantity}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
 
                         {/* Schematic & Wiring Note */}
@@ -821,24 +827,26 @@ export default function MemberCurriculumPage() {
                           <Activity size={16} />
                           <span>Pin-by-Pin &amp; Wire-by-Wire Connection Table</span>
                         </div>
-                        <table className={styles.dataTable}>
-                          <thead>
-                            <tr>
-                              <th>From (Source Pin)</th>
-                              <th>To (Target Hardware)</th>
-                              <th>Wire Color / Polarity Rule</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {activeLesson.physicalBuildPack.wireTable.map((wire, idx) => (
-                              <tr key={idx}>
-                                <td style={{ fontWeight: 800, color: '#F5B800' }}>{wire.from}</td>
-                                <td style={{ color: '#38bdf8' }}>{wire.to}</td>
-                                <td style={{ color: '#cbd5e1' }}>{wire.wireOrPolarityNote || 'Standard Jumper Wire'}</td>
+                        <div className={styles.tableWrapper}>
+                          <table className={styles.dataTable}>
+                            <thead>
+                              <tr>
+                                <th>From (Source Pin)</th>
+                                <th>To (Target Hardware)</th>
+                                <th>Wire Color / Polarity Rule</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {activeLesson.physicalBuildPack.wireTable.map((wire, idx) => (
+                                <tr key={idx}>
+                                  <td style={{ fontWeight: 800, color: '#F5B800' }}>{wire.from}</td>
+                                  <td style={{ color: '#38bdf8' }}>{wire.to}</td>
+                                  <td style={{ color: '#cbd5e1' }}>{wire.wireOrPolarityNote || 'Standard Jumper Wire'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
 
                       {/* Assembly, Safety, and Test Cases */}

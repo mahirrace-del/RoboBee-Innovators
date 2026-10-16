@@ -438,6 +438,114 @@
   border-left: 3px solid #cbd5e1;
 }
 
+/* Mobile-First & Responsive Media Queries */
+@media (max-width: 768px) {
+  .container {
+    padding: 0.75rem 0.65rem 3rem 0.65rem;
+    gap: 1.25rem;
+  }
+
+  .hero {
+    padding: 1.35rem 1rem;
+    border-radius: 12px;
+  }
+
+  .heroTitle {
+    font-size: 1.45rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .searchFilterBar {
+    padding: 0.85rem;
+    border-radius: 10px;
+    gap: 0.75rem;
+  }
+
+  .searchRow {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .searchBox {
+    min-width: 100%;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .levelFilter {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .sectionTabs {
+    gap: 0.35rem;
+    padding-bottom: 0.35rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sectionTab {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+  }
+
+  .entryCard {
+    padding: 1.15rem 0.85rem;
+    border-radius: 10px;
+  }
+
+  .entryTitle {
+    font-size: 1.15rem;
+  }
+
+  .entryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .quickVersionBox {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.88rem;
+  }
+
+  .fullText {
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .workedExampleBox {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.82rem;
+  }
+
+  .mistakesBox {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .glossaryGrid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem;
+  }
+
+  .cheatSheetCard {
+    padding: 1.15rem 0.85rem;
+  }
+
+  .entryFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .tryItBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Print Media Query */
 @media print {
   .hero, .searchFilterBar, .sectionTabs, .printBtn {
@@ -453,3 +561,4 @@
     page-break-inside: avoid;
   }
 }
+

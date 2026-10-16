@@ -161,24 +161,24 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
           {lesson.compactDurationMinutes && (
             <button 
               onClick={handleToggleCompact}
-              className={styles.actionBtn}
+              className={`${styles.actionBtn} ${styles.compactToggleBtn}`}
               style={{ background: isCompactMode ? '#6B0F24' : 'rgba(255,255,255,0.08)', color: '#fff' }}
               title="Toggle between 90-minute full and 60-minute compact rhythm"
             >
-              <span>{isCompactMode ? '60m Compact' : '90m Full'}</span>
+              <span>{isCompactMode ? '60m' : '90m'}</span>
             </button>
           )}
         </div>
 
         {/* Projector Controls */}
         <div className={styles.controlsGroup}>
-          <button onClick={toggleFullScreen} className={styles.actionBtn} title="Full Screen (F)">
+          <button onClick={toggleFullScreen} className={`${styles.actionBtn} ${styles.fullscreenBtn}`} title="Full Screen (F)">
             <Maximize size={15} />
             <span>Full Screen</span>
           </button>
           <button onClick={onClose} className={`${styles.actionBtn} ${styles.closeBtn}`} title="Exit (Esc)">
             <X size={16} />
-            <span>Exit Projector</span>
+            <span className={styles.exitBtnText}>Exit</span>
           </button>
         </div>
       </header>
@@ -257,7 +257,7 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
                 </div>
 
                 {/* Lab Safety & Mission Hook */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '1.25rem', marginTop: '1rem' }}>
+                <div className={styles.twoColGrid}>
                   <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                       Academy Motto
@@ -294,7 +294,7 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
               </div>
 
               <div className={styles.slideBody}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+                <div className={styles.twoColGrid} style={{ alignItems: 'start' }}>
                   {/* Left: Project Deliverable & Outcomes */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ background: 'rgba(245, 184, 0, 0.08)', border: '1px solid rgba(245, 184, 0, 0.3)', borderRadius: '14px', padding: '1.25rem' }}>
@@ -537,7 +537,7 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
               <div className={styles.slideBody}>
                 {lesson.codeLab ? (
                   codeLabTab === 'code' ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
+                    <div className={styles.twoColGrid}>
                       <pre className={styles.codeWalkthroughBox}>
                         <code>{lesson.codeLab.code}</code>
                       </pre>
@@ -567,7 +567,7 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                    <div className={styles.threeColGrid}>
                       {/* Mission 1 */}
                       <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.25rem' }}>
                         <div style={{ color: '#ec4899', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
@@ -666,7 +666,7 @@ delay(50); // Rapid blink`}
                       />
                     </div>
                   )}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
+                  <div className={styles.twoColGrid}>
                     {/* Steps */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                       {lesson.activity.steps.map((st, i) => (
@@ -785,7 +785,7 @@ delay(50); // Rapid blink`}
                 <p className={styles.slideSubtitle}>Remember to store your parts safely in your kit box before dismissal.</p>
               </div>
               <div className={styles.slideBody}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem', alignItems: 'center' }}>
+                <div className={styles.twoColGrid} style={{ alignItems: 'center' }}>
                   <div style={{ background: 'rgba(245, 184, 0, 0.08)', border: '1px solid rgba(245, 184, 0, 0.3)', padding: '2rem', borderRadius: '16px' }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', letterSpacing: '1px' }}>
                       UP NEXT IN THE ACADEMY
@@ -832,7 +832,7 @@ delay(50); // Rapid blink`}
               <span>Previous</span>
             </button>
 
-            {/* Slide Dots */}
+            {/* Slide Dots for Desktop */}
             <div className={styles.dotsContainer}>
               {Array.from({ length: totalSlides }).map((_, idx) => (
                 <div
@@ -842,6 +842,11 @@ delay(50); // Rapid blink`}
                   title={`Slide ${idx + 1}`}
                 />
               ))}
+            </div>
+
+            {/* Mobile Slide Indicator */}
+            <div className={styles.mobileSlideIndicator}>
+              Slide {currentSlide + 1} of {totalSlides}
             </div>
 
             <button
