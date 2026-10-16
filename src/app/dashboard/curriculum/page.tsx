@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import styles from "./curriculum.module.css";
 import { 
@@ -11,6 +11,10 @@ import {
   ClassStatus, 
   getLessonsByTier 
 } from "@/lib/curriculumData";
+import { 
+  ScheduledClassSession, 
+  calculateScheduleProgression 
+} from "@/lib/scheduleAttendance";
 import { CurriculumSimulator } from "@/components/curriculum/CurriculumSimulator";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
 import { useAuth } from "@/context/AuthContext";
@@ -19,7 +23,7 @@ import { collection, onSnapshot, doc, setDoc, updateDoc, increment } from "fireb
 import { 
   Award, Lock, Unlock, CheckCircle, Clock, Copy, Check, Download, 
   HelpCircle, Eye, Zap, BookOpen, Layers, X, Tv, Shield, Radio, Sparkles, Code,
-  Wrench, AlertTriangle, FileText, Activity, CheckSquare, Info, ArrowRight, ExternalLink
+  Wrench, AlertTriangle, FileText, Activity, CheckSquare, Info, ArrowRight, ExternalLink, Calendar
 } from "lucide-react";
 
 export default function MemberCurriculumPage() {
@@ -99,6 +103,23 @@ export default function MemberCurriculumPage() {
       return () => unsub();
     } catch (e) {}
   }, [user]);
+
+  // Listen to scheduled sessions to sync with Class Schedule & Attendance
+  const [scheduledSessions, setScheduledSessions] = useState<ScheduledClassSession[]>([]);
+  useEffect(() => {
+    try {
+      const unsub = onSnapshot(collection(db, "sessions"), (snapshot) => {
+        const list: ScheduledClassSession[] = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        } as ScheduledClassSession));
+        setScheduledSessions(list);
+      });
+      return () => unsub();
+    } catch (e) {}
+  }, []);
+
+  const progression = useMemo(() => calculateScheduleProgression(scheduledSessions), [scheduledSessions]);
 
   // Copy code handler
   const handleCopyCode = (code: string) => {
@@ -236,6 +257,68 @@ export default function MemberCurriculumPage() {
         </div>
       </div>
 
+      {/* Schedule Progression Live Banner */}
+      {(progression.activeSession || progression.nextSession) && (
+        <div style={{
+          background: progression.activeSession 
+            ? 'linear-gradient(135deg, rgba(107, 15, 36, 0.55), rgba(22, 27, 38, 0.95))' 
+            : 'rgba(22, 27, 38, 0.85)',
+          border: '1px solid',
+          borderColor: progression.activeSession ? '#F5B800' : 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '14px',
+          padding: '1.15rem 1.5rem',
+          marginBottom: '2.25rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.35)'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+              {progression.activeSession ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.4)', padding: '0.25rem 0.65rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800 }}>
+                  <Radio size={12} /> Class Currently in Session
+                </span>
+              ) : (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(245, 184, 0, 0.15)', color: '#F5B800', border: '1px solid rgba(245, 184, 0, 0.3)', padding: '0.25rem 0.65rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800 }}>
+                  <Calendar size={12} /> Next Scheduled Class
+                </span>
+              )}
+              <span style={{ fontSize: '0.82rem', color: '#cbd5e1' }}>
+                📅 {(progression.activeSession || progression.nextSession)?.date} &bull; {(progression.activeSession || progression.nextSession)?.time || '15:30'}
+              </span>
+            </div>
+            <div style={{ fontWeight: 800, fontSize: '1.15rem', color: '#ffffff' }}>
+              {(progression.activeSession || progression.nextSession)?.lessonCode}: {(progression.activeSession || progression.nextSession)?.title}
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+              📍 {(progression.activeSession || progression.nextSession)?.location || 'RoboBEE Lab'}
+            </div>
+          </div>
+
+          <Link
+            href="/dashboard/attendance"
+            style={{
+              background: '#F5B800',
+              color: '#161B26',
+              padding: '0.65rem 1.25rem',
+              borderRadius: '8px',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              textDecoration: 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            {progression.activeSession ? "Check In to Active Class ➔" : "View Schedule & Attendance ➔"}
+          </Link>
+        </div>
+      )}
+
       {/* Course Tier Selector Navigation */}
       <div className={styles.tierNav}>
         <button
@@ -294,6 +377,12 @@ export default function MemberCurriculumPage() {
                 const isCompleted = !!completedClasses[lesson.id];
                 const isLive = status === 'live_in_class';
 
+                const sessionForLesson = scheduledSessions.find(s => s.lessonId === lesson.id);
+                const hasAttendedSession = sessionForLesson && user && (sessionForLesson.attendees || []).some(
+                  a => a === user.uid || (user.email && a.toLowerCase() === user.email.toLowerCase())
+                );
+                const isScheduledNext = progression.nextSession?.lessonId === lesson.id;
+
                 return (
                   <div
                     key={lesson.id}
@@ -310,13 +399,25 @@ export default function MemberCurriculumPage() {
                     <div>
                       <div className={styles.cardHeader}>
                         <span className={styles.cardClassCode}>{lesson.code}</span>
-                        <span className={`${styles.cardStatusPill} ${
-                          isLive ? styles.pillLive : isUnlocked ? styles.pillPublished : styles.pillLocked
-                        }`}>
-                          {isLive && <><Radio size={12} /> Live Now</>}
-                          {!isLive && isUnlocked && <><Unlock size={12} /> Available</>}
-                          {!isUnlocked && <><Lock size={12} /> Supervised</>}
-                        </span>
+                        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                          {hasAttendedSession && (
+                            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '0.15rem 0.45rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <CheckCircle size={10} /> Attended ✓
+                            </span>
+                          )}
+                          {!hasAttendedSession && isScheduledNext && (
+                            <span style={{ background: 'rgba(245, 184, 0, 0.15)', color: '#F5B800', border: '1px solid rgba(245, 184, 0, 0.35)', padding: '0.15rem 0.45rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <Calendar size={10} /> Next Up
+                            </span>
+                          )}
+                          <span className={`${styles.cardStatusPill} ${
+                            isLive ? styles.pillLive : isUnlocked ? styles.pillPublished : styles.pillLocked
+                          }`}>
+                            {isLive && <><Radio size={12} /> Live Now</>}
+                            {!isLive && isUnlocked && <><Unlock size={12} /> Available</>}
+                            {!isUnlocked && <><Lock size={12} /> Supervised</>}
+                          </span>
+                        </div>
                       </div>
 
                       <h3 className={styles.cardTitle}>{lesson.title}</h3>

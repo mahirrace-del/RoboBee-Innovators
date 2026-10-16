@@ -129,7 +129,7 @@ export default function DashboardOverview() {
           </div>
           <div className={styles.quickInfo}>
             <h4 style={{ color: '#f59e0b' }}>Robotics LMS</h4>
-            <p>14 Interactive classes</p>
+            <p>36 Classes across 4 Tracks</p>
           </div>
         </Link>
 

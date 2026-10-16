@@ -17,7 +17,7 @@ import { db } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc, query, orderBy, limit } from "firebase/firestore";
 import { 
   Tv, Lock, Unlock, Eye, CheckCircle, Clock, 
-  Layers, Users, Award, AlertTriangle, ArrowRight, Radio, Sparkles, BookOpen
+  Layers, Users, Award, AlertTriangle, ArrowRight, Radio, Sparkles, BookOpen, Calendar
 } from "lucide-react";
 
 export default function AdminCurriculumPage() {
@@ -137,6 +137,14 @@ export default function AdminCurriculumPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link
+            href="/dashboard/admin/attendance"
+            className={styles.statusBtn}
+            style={{ padding: '0.65rem 1rem', fontSize: '0.85rem', background: '#111827', color: '#10b981', borderColor: '#10b981', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+          >
+            <Calendar size={14} style={{ marginRight: '6px' }} />
+            Class Schedule &amp; Attendance
+          </Link>
           <Link
             href="/dashboard/curriculum/reference"
             className={styles.statusBtn}

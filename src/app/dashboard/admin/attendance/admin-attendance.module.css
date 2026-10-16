@@ -1,24 +1,156 @@
 .container {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem 1.5rem;
+  color: #f1f5f9;
 }
 
 .header {
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1.25rem;
 }
 
 .title {
   font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .subtitle {
-  color: var(--text-secondary);
+  color: #94a3b8;
   font-size: 0.95rem;
+  max-width: 750px;
+  line-height: 1.5;
 }
 
+/* Tabs Bar */
+.tabsBar {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.75rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabBtnActive {
+  background: #6B0F24 !important;
+  color: #ffffff !important;
+  border-color: #F5B800 !important;
+  box-shadow: 0 4px 12px rgba(107, 15, 36, 0.4);
+}
+
+/* Progression Spotlight Row */
+.spotlightRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.spotlightCard {
+  background: rgba(22, 27, 38, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.spotlightActive {
+  border-color: #F5B800;
+  background: linear-gradient(135deg, rgba(107, 15, 36, 0.55), rgba(22, 27, 38, 0.95));
+}
+
+.spotlightActive::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #F5B800;
+}
+
+.badgeLive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.livePulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+.badgeUpcoming {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(245, 184, 0, 0.15);
+  color: #F5B800;
+  border: 1px solid rgba(245, 184, 0, 0.35);
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* Grids */
 .layoutGrid {
   display: grid;
   grid-template-columns: 1fr;
@@ -27,101 +159,297 @@
 
 .layoutGridSplit {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.1fr;
   gap: 2rem;
   align-items: start;
 }
 
+/* Schedule Card */
 .sessionCard {
-  padding: 1rem;
-  border-radius: 8px;
+  background: rgba(22, 27, 38, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   transition: all 0.2s ease;
+}
+
+.sessionCard:hover {
+  border-color: rgba(245, 184, 0, 0.3);
+  background: rgba(22, 27, 38, 0.9);
+}
+
+.sessionActive {
+  border-color: #F5B800 !important;
+  background: rgba(107, 15, 36, 0.35) !important;
+}
+
+.lessonTag {
+  background: rgba(245, 184, 0, 0.15);
+  color: #F5B800;
+  border: 1px solid rgba(245, 184, 0, 0.3);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: inline-block;
+  margin-bottom: 0.35rem;
+}
+
+.sessionTitle {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #ffffff;
+}
+
+.sessionDate {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .sessionActions {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
+/* Buttons */
 .takeBtn {
-  background: var(--accent-primary);
-  color: #000;
+  background: #F5B800;
+  color: #161B26;
   border: none;
-  padding: 0.45rem 0.9rem;
-  border-radius: 4px;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+}
+
+.takeBtn:hover {
+  background: #ffd043;
+  transform: translateY(-1px);
+}
+
+.projectorBtn {
+  background: rgba(107, 15, 36, 0.4);
+  color: #ffffff;
+  border: 1px solid #6B0F24;
+  padding: 0.55rem 0.9rem;
+  border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+}
+
+.projectorBtn:hover {
+  background: #6B0F24;
+  border-color: #F5B800;
+}
+
+.statusToggleBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  padding: 0.55rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.statusToggleBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 
 .delBtn {
-  background: rgba(255, 85, 85, 0.2);
-  border: none;
-  color: #ff5555;
-  padding: 0.45rem 0.8rem;
-  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
   font-size: 0.85rem;
   cursor: pointer;
-  touch-action: manipulation;
 }
 
+.delBtn:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* Roster Panel */
 .rosterPanel {
+  background: rgba(22, 27, 38, 0.9);
+  border: 1px solid rgba(245, 184, 0, 0.3);
+  border-radius: 14px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 150px);
+  max-height: calc(100vh - 120px);
+  position: sticky;
+  top: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.rosterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
 }
 
 .memberRow {
-  padding: 0.85rem 1rem;
-  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
   transition: all 0.15s ease;
-  touch-action: manipulation;
+  user-select: none;
 }
 
-.memberRow:active {
-  transform: scale(0.98);
+.memberRow:hover {
+  transform: translateX(2px);
+}
+
+.memberRowPresent {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.memberRowAbsent {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Attendance Matrix Table */
+.matrixTableWrapper {
+  overflow-x: auto;
+  background: rgba(22, 27, 38, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.matrixTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.matrixTable th, .matrixTable td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.matrixTable th {
+  background: rgba(11, 15, 25, 0.8);
+  color: #F5B800;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.matrixHeaderSticky {
+  position: sticky;
+  left: 0;
+  background: #161B26;
+  z-index: 2;
+}
+
+/* Form Styles */
+.formCard {
+  background: rgba(22, 27, 38, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.inputGroup {
+  margin-bottom: 1rem;
+}
+
+.inputLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: rgba(11, 15, 25, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #F5B800;
 }
 
 /* Mobile Media Query */
 @media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .title {
     font-size: 1.6rem;
   }
 
+  .spotlightRow {
+    grid-template-columns: 1fr;
+  }
+
   .layoutGridSplit {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
   }
 
   .sessionCard {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.85rem;
+    gap: 1rem;
   }
 
   .sessionActions {
     width: 100%;
-    justify-content: flex-end;
-  }
-
-  .takeBtn, .delBtn {
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
+    justify-content: flex-start;
   }
 
   .rosterPanel {
+    position: static;
     max-height: none;
-    order: -1; /* Display active roster at the very top on mobile for instant access */
+    order: -1;
   }
 }
