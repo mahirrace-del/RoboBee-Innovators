@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 320" width="560" height="320" role="img" aria-label="Reference wiring illustration: Arduino Uno connected to referee start button on Pin 2 and countdown buzzer on Pin 8.">
+  <rect width="560" height="320" fill="#0f172a" rx="12"/>
+  <text x="280" y="26" font-family="monospace" font-size="13" fill="#F5B800" text-anchor="middle" font-weight="bold">ADVANCED 01 — Mandatory 5.0-Second Autonomous Start Safety Controller</text>
+  <text x="280" y="44" font-family="monospace" font-size="10" fill="#64748b" text-anchor="middle">All Japan Robot-Sumo Standards: Pin 2 (INPUT_PULLUP Start Button), Pin 8 (Piezo Buzzer).</text>
+  <!-- Arduino -->
+  <rect x="30" y="60" width="140" height="220" rx="8" fill="#1e3a1e" stroke="#2d5a2d" stroke-width="2"/>
+  <text x="100" y="79" font-family="monospace" font-size="10" fill="#86efac" text-anchor="middle" font-weight="bold">Arduino Uno</text>
+  <rect x="158" y="105" width="14" height="10" rx="2" fill="#38bdf8"/>
+  <text x="153" y="102" font-family="monospace" font-size="8" fill="#38bdf8" text-anchor="end">Pin 2 (Start)</text>
+  <rect x="158" y="135" width="14" height="10" rx="2" fill="#F5B800"/>
+  <text x="153" y="132" font-family="monospace" font-size="8" fill="#F5B800" text-anchor="end">Pin 8 (Buzzer)</text>
+  <rect x="158" y="165" width="14" height="10" rx="2" fill="#ef4444"/>
+  <text x="153" y="162" font-family="monospace" font-size="8" fill="#ef4444" text-anchor="end">Pin 13 (LED)</text>
+  <rect x="158" y="195" width="14" height="10" rx="2" fill="#64748b"/>
+  <text x="153" y="192" font-family="monospace" font-size="8" fill="#64748b" text-anchor="end">GND</text>
+  <!-- Start Button -->
+  <rect x="240" y="95" width="80" height="35" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="280" y="117" font-family="monospace" font-size="9" fill="#38bdf8" text-anchor="middle">START BUTTON</text>
+  <line x1="172" y1="110" x2="240" y2="110" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="280" y1="130" x2="280" y2="240" stroke="#64748b" stroke-width="2"/>
+  <!-- Piezo Buzzer -->
+  <circle cx="280" cy="165" r="22" fill="#831843" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="280" y="169" font-family="monospace" font-size="8" fill="#fecdd3" text-anchor="middle">BUZZER</text>
+  <line x1="172" y1="140" x2="260" y2="155" stroke="#F5B800" stroke-width="2"/>
+  <line x1="280" y1="187" x2="280" y2="240" stroke="#64748b" stroke-width="2"/>
+  <!-- Ground Bus -->
+  <line x1="172" y1="200" x2="210" y2="200" stroke="#64748b" stroke-width="2"/>
+  <line x1="210" y1="200" x2="210" y2="240" stroke="#64748b" stroke-width="2"/>
+  <line x1="210" y1="240" x2="280" y2="240" stroke="#64748b" stroke-width="2"/>
+  <!-- Info Card -->
+  <rect x="370" y="80" width="165" height="175" rx="6" fill="#090e18" stroke="#1e293b" stroke-width="1"/>
+  <text x="452" y="104" font-family="monospace" font-size="10" fill="#F5B800" text-anchor="middle" font-weight="bold">SCRUTINEERING SPECS</text>
+  <text x="385" y="127" font-family="monospace" font-size="8" fill="#94a3b8">• Footprint: ≤10.0cm</text>
+  <text x="385" y="145" font-family="monospace" font-size="8" fill="#94a3b8">• Mass: ≤500.0g</text>
+  <text x="385" y="163" font-family="monospace" font-size="8" fill="#94a3b8">• 5.0s Start Countdown</text>
+  <text x="385" y="181" font-family="monospace" font-size="8" fill="#94a3b8">• Non-Stick Tire Test</text>
+  <text x="385" y="199" font-family="monospace" font-size="8" fill="#86efac">• 1kHz Audible Chirps</text>
+  <text x="385" y="217" font-family="monospace" font-size="8" fill="#86efac">• 2.5kHz GO Whistle</text>
+</svg>

@@ -27,6 +27,8 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
   const [showRhythmTable, setShowRhythmTable] = useState<boolean>(false);
   // Code Lab view tab: 'code' or 'missions'
   const [codeLabTab, setCodeLabTab] = useState<'code' | 'missions'>('code');
+  // Slide 1 Intro sub-tabs
+  const [introTab, setIntroTab] = useState<'pillars' | 'applications' | 'microcontrollers' | 'motors' | 'careers'>('pillars');
 
   // Rhythm duration mode: 90m vs 60m
   const defaultDuration = lesson.durationMinutes || 60;
@@ -208,78 +210,320 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
               </div>
 
               <div className={styles.slideBody}>
-                {/* 4 Pillars of Robotics */}
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
-                    🤖 The Four Foundational Pillars of Every Robot:
-                  </div>
-                  <div className={styles.pillarGrid}>
-                    <div className={styles.pillarCard}>
-                      <div className={styles.pillarIconRow}>
-                        <Wrench size={20} color="#F5B800" />
-                        <span className={styles.pillarTitle}>1. Mechanical Body</span>
-                      </div>
-                      <p className={styles.pillarDesc}>
-                        The physical chassis, wheels, gears, linkages, and frames that give the robot structural strength and movement.
-                      </p>
-                    </div>
-
-                    <div className={styles.pillarCard}>
-                      <div className={styles.pillarIconRow}>
-                        <Zap size={20} color="#eab308" />
-                        <span className={styles.pillarTitle}>2. Electrical Nerves</span>
-                      </div>
-                      <p className={styles.pillarDesc}>
-                        Batteries, voltage regulators, and ground return loops delivering safe 5V power to every component.
-                      </p>
-                    </div>
-
-                    <div className={styles.pillarCard}>
-                      <div className={styles.pillarIconRow}>
-                        <Eye size={20} color="#06b6d4" />
-                        <span className={styles.pillarTitle}>3. Sensory Perception</span>
-                      </div>
-                      <p className={styles.pillarDesc}>
-                        Ultrasonic sonar eyes, infrared line sensors, and touch detectors that observe physical changes in the world.
-                      </p>
-                    </div>
-
-                    <div className={styles.pillarCard}>
-                      <div className={styles.pillarIconRow}>
-                        <Cpu size={20} color="#a855f7" />
-                        <span className={styles.pillarTitle}>4. Silicon Brain</span>
-                      </div>
-                      <p className={styles.pillarDesc}>
-                        The Arduino microcontroller executing code instructions in real time at 16 million clock cycles per second!
-                      </p>
-                    </div>
-                  </div>
+                {/* Slide 1 Navigation Tabs */}
+                <div className={styles.conceptTabsBar} style={{ marginBottom: '1rem' }}>
+                  <button
+                    onClick={() => setIntroTab('pillars')}
+                    className={`${styles.conceptTabPill} ${introTab === 'pillars' ? styles.conceptTabPillActive : ''}`}
+                  >
+                    <span>🏛 4 Subsystem Pillars</span>
+                  </button>
+                  <button
+                    onClick={() => setIntroTab('applications')}
+                    className={`${styles.conceptTabPill} ${introTab === 'applications' ? styles.conceptTabPillActive : ''}`}
+                  >
+                    <span>🌍 Real-World Applications</span>
+                  </button>
+                  <button
+                    onClick={() => setIntroTab('microcontrollers')}
+                    className={`${styles.conceptTabPill} ${introTab === 'microcontrollers' ? styles.conceptTabPillActive : ''}`}
+                  >
+                    <span>⚡ Microcontroller Spectrum</span>
+                  </button>
+                  <button
+                    onClick={() => setIntroTab('motors')}
+                    className={`${styles.conceptTabPill} ${introTab === 'motors' ? styles.conceptTabPillActive : ''}`}
+                  >
+                    <span>⚙ Motors &amp; Drivers</span>
+                  </button>
+                  <button
+                    onClick={() => setIntroTab('careers')}
+                    className={`${styles.conceptTabPill} ${introTab === 'careers' ? styles.conceptTabPillActive : ''}`}
+                  >
+                    <span>🚀 Robotics Careers</span>
+                  </button>
                 </div>
 
-                {/* Lab Safety & Mission Hook */}
-                <div className={styles.twoColGrid}>
-                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                      Academy Motto
-                    </div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>
-                      &ldquo;Dream. Invent. Experiment. Inspire.&rdquo;
-                    </div>
-                    <p style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '0.35rem', lineHeight: '1.5' }}>
-                      Today you transition from someone who only uses technology to an engineer who creates, codes, and controls intelligent physical machines!
-                    </p>
-                  </div>
+                {/* TAB 1: 4 PILLARS & ACADEMY HOOK */}
+                {introTab === 'pillars' && (
+                  <>
+                    <div style={{ marginBottom: '1.25rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+                        🤖 The Four Universal Subsystems of Every Autonomous Robot:
+                      </div>
+                      <div className={styles.pillarGrid}>
+                        <div className={styles.pillarCard}>
+                          <div className={styles.pillarIconRow}>
+                            <Wrench size={20} color="#F5B800" />
+                            <span className={styles.pillarTitle}>1. Mechanical Structure</span>
+                          </div>
+                          <p className={styles.pillarDesc}>
+                            Chassis, wheels, linkages, gears, and brackets that give the robot physical form, payload capacity, and degrees of freedom.
+                          </p>
+                        </div>
 
-                  <div style={{ background: 'rgba(107, 15, 36, 0.25)', border: '1px solid #6B0F24', borderRadius: '12px', padding: '1rem 1.25rem' }}>
-                    <div style={{ color: '#fca5a5', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
-                      <Shield size={16} />
-                      <span>Golden Lab Safety Rule</span>
+                        <div className={styles.pillarCard}>
+                          <div className={styles.pillarIconRow}>
+                            <Zap size={20} color="#eab308" />
+                            <span className={styles.pillarTitle}>2. Electrical Power</span>
+                          </div>
+                          <p className={styles.pillarDesc}>
+                            Batteries, voltage regulators, and ground return loops delivering isolated, stable 5V logic power and motor current.
+                          </p>
+                        </div>
+
+                        <div className={styles.pillarCard}>
+                          <div className={styles.pillarIconRow}>
+                            <Eye size={20} color="#06b6d4" />
+                            <span className={styles.pillarTitle}>3. Sensory Perception</span>
+                          </div>
+                          <p className={styles.pillarDesc}>
+                            Ultrasonic sonars, infrared line sensors, gyroscopes, and encoders that convert physical world phenomena into electrical signals.
+                          </p>
+                        </div>
+
+                        <div className={styles.pillarCard}>
+                          <div className={styles.pillarIconRow}>
+                            <Cpu size={20} color="#a855f7" />
+                            <span className={styles.pillarTitle}>4. Silicon Brain</span>
+                          </div>
+                          <p className={styles.pillarDesc}>
+                            The microcontroller executing program code at 16,000,000 instructions per second in an infinite Sense-Decide-Act loop.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <p style={{ color: '#ffffff', fontSize: '0.92rem', fontWeight: 600, lineHeight: '1.5' }}>
-                      &ldquo;{lesson.safetyNotes[0] || 'Never connect or modify wires while USB or battery power is plugged in!'}&rdquo;
-                    </p>
+
+                    {/* Lab Safety & Mission Hook */}
+                    <div className={styles.twoColGrid}>
+                      <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                          Academy Motto
+                        </div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>
+                          &ldquo;Dream. Invent. Experiment. Inspire.&rdquo;
+                        </div>
+                        <p style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '0.35rem', lineHeight: '1.5' }}>
+                          You transition from someone who merely consumes consumer tech into an engineer who designs, codes, and controls intelligent physical machines!
+                        </p>
+                      </div>
+
+                      <div style={{ background: 'rgba(107, 15, 36, 0.25)', border: '1px solid #6B0F24', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+                        <div style={{ color: '#fca5a5', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                          <Shield size={16} />
+                          <span>Golden Lab Safety Rule</span>
+                        </div>
+                        <p style={{ color: '#ffffff', fontSize: '0.92rem', fontWeight: 600, lineHeight: '1.5' }}>
+                          &ldquo;{lesson.safetyNotes[0] || 'Never connect or modify wires while USB or battery power is plugged in!'}&rdquo;
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* TAB 2: REAL-WORLD APPLICATIONS */}
+                {introTab === 'applications' && (
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+                      🌍 Where Robotics Powers Our World Today:
+                    </div>
+                    <div className={styles.pillarGrid}>
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🏭</span>
+                          <span className={styles.pillarTitle}>Industrial Manufacturing</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          Articulated 6-axis arms (KUKA, ABB, Fanuc) weld car chassis, paint body panels, and place tiny microchips with 0.02mm repeatability in Tesla and BMW factories.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🏥</span>
+                          <span className={styles.pillarTitle}>Surgical Nanorobotics</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          The da Vinci surgical system scales down doctor hand motions into microscopic internal wrist tools, canceling tremors and enabling minimally invasive heart and prostate surgeries.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🪐</span>
+                          <span className={styles.pillarTitle}>Space Exploration</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          NASA&apos;s Perseverance rover navigates Mars autonomously using stereo machine vision and obstacle avoidance algorithms, operating under a 20-minute signal delay from Earth.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>📦</span>
+                          <span className={styles.pillarTitle}>Autonomous Warehouses</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          Amazon Robotics fleets (Kiva AMRs) navigate grid matrices via floor optical sensors, autonomously lifting 1,000kg inventory pods and dispatching orders in seconds.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* TAB 3: THE MICROCONTROLLER SPECTRUM */}
+                {introTab === 'microcontrollers' && (
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+                      ⚡ The Global Silicon Brain Landscape — Why Arduino &amp; What Comes Next:
+                    </div>
+                    <div className={styles.pillarGrid}>
+                      <div className={styles.pillarCard} style={{ border: '2px solid #F5B800' }}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🟢</span>
+                          <span className={styles.pillarTitle}>Arduino Uno R3 (ATmega328P)</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          <strong>16 MHz • 5V Logic • 32KB Flash • 2KB SRAM</strong><br />
+                          <strong>Why We Start Here:</strong> Indestructible DIP socket, 5V noise immunity, and pure deterministic real-time hardware execution without OS lag.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🔵</span>
+                          <span className={styles.pillarTitle}>ESP32 (Espressif IoT)</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          <strong>240 MHz Dual-Core • 3.3V • 520KB SRAM • WiFi &amp; BLE</strong><br />
+                          <strong>When to Use:</strong> Remote telemetry, web dashboards, drone command links, and cloud robotics over MQTT and WebSockets.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🟣</span>
+                          <span className={styles.pillarTitle}>Raspberry Pi Pico (RP2040)</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          <strong>133 MHz Dual Cortex-M0+ • 3.3V • 264KB SRAM</strong><br />
+                          <strong>When to Use:</strong> Programmable I/O (PIO) state machines that generate custom communication protocols without bogging down the main CPU.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🟡</span>
+                          <span className={styles.pillarTitle}>Single-Board Computers (Pi 5 / Jetson)</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          <strong>2.4 GHz Quad 64-bit • Linux OS • 8GB RAM</strong><br />
+                          <strong>When to Use:</strong> Full ROS 2, SLAM LiDAR mapping, and real-time YOLO neural network vision sending high-level commands to Arduino motor boards.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: MOTORS & MOTOR DRIVERS */}
+                {introTab === 'motors' && (
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ec4899', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+                      ⚙ Actuators, Motor Drivers &amp; The Universal Electrical Bridge:
+                    </div>
+                    <div className={styles.pillarGrid}>
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🔄</span>
+                          <span className={styles.pillarTitle}>DC Gearmotors</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          High-RPM motors equipped with spur gearboxes to multiply torque. Continuous rotation for rover wheels. Draws 150mA running, up to 1,500mA–3,000mA at stall!
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>📐</span>
+                          <span className={styles.pillarTitle}>Servomotors (SG90 / MG996R)</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          DC motor + internal reduction gears + feedback potentiometer. Precision angular control between 0° and 180° driven by 50Hz PWM pulses (1ms–2ms).
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>📏</span>
+                          <span className={styles.pillarTitle}>Stepper Motors (NEMA 17)</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          Electromagnetic coils rotate rotor in discrete steps (1.8° = 200 steps/rev). Delivers precise positioning without encoders for 3D printers and CNC arms.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard} style={{ background: 'rgba(107, 15, 36, 0.3)', border: '1px solid #6B0F24' }}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🛡</span>
+                          <span className={styles.pillarTitle}>The H-Bridge Rule (TB6612FNG)</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          <strong>NEVER connect a motor directly to Arduino!</strong> Arduino pins output max 20mA. Motors pull 1000mA+. The H-Bridge acts as an electrical dam, routing battery power safely!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 5: ROBOTICS CAREERS */}
+                {introTab === 'careers' && (
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+                      🚀 Future Engineering Careers Unlocked by Robotics:
+                    </div>
+                    <div className={styles.pillarGrid}>
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>💻</span>
+                          <span className={styles.pillarTitle}>Embedded Firmware Engineer</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          Writes low-level real-time C++ and Rust drivers controlling hardware registers, interrupts, and communication buses (I2C/SPI/CAN) for electric vehicles and rockets.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🦾</span>
+                          <span className={styles.pillarTitle}>Mechatronics Systems Architect</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          Integrates 3D CAD mechanical kinematics, stress analysis, motor torque calculations, and electrical schematics into physical autonomous products.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>🗺</span>
+                          <span className={styles.pillarTitle}>Autonomous Navigation (ROS) Engineer</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          Builds 2D/3D SLAM maps, obstacle costmaps, and pathfinding algorithms (A*, Dijkstra) for self-driving cars, delivery rovers, and planetary probes.
+                        </p>
+                      </div>
+
+                      <div className={styles.pillarCard}>
+                        <div className={styles.pillarIconRow}>
+                          <span style={{ fontSize: '1.3rem' }}>👁</span>
+                          <span className={styles.pillarTitle}>Computer Vision &amp; AI Specialist</span>
+                        </div>
+                        <p className={styles.pillarDesc}>
+                          Trains neural networks for real-time camera perception, robotic arm object picking, depth estimation, and human-robot collaborative safety zones.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
