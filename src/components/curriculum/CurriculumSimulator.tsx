@@ -7,7 +7,7 @@ import {
   Eye, Cpu, Zap, Radio, Sliders, Play, RotateCcw, 
   CheckCircle, AlertTriangle, Battery, Shield, Target,
   Compass, CheckSquare, RefreshCw, Volume2, ShieldAlert,
-  Info, Activity
+  Info, Activity, Layers, SlidersHorizontal, Box, HelpCircle
 } from "lucide-react";
 
 interface SimulatorProps {
@@ -293,11 +293,35 @@ export function CurriculumSimulator({ type: propType, visualizerId, classNumber 
   // 15. FLAGSHIP: arduino_board_tour_sim (Beginner Class 01)
   // -----------------------------------------------------------------
   type PinCategory = 'all' | 'digital' | 'analog' | 'power' | 'mcu';
+  type FlagshipClass1Tool = 'board_tour' | 'blink_sync' | 'robot_or_not' | 'sense_decide_act' | 'parts_gallery';
+  const [c1ActiveTool, setC1ActiveTool] = useState<FlagshipClass1Tool>('board_tour');
   const [boardFilter, setBoardFilter] = useState<PinCategory>('all');
   const [selectedPin, setSelectedPin] = useState<string>('d13');
   const [boardBlinkDelay, setBoardBlinkDelay] = useState<number>(500);
   const [boardLedOn, setBoardLedOn] = useState<boolean>(true);
   const [showPinoutTable, setShowPinoutTable] = useState<boolean>(false);
+
+  // Synchronized Blink Stepper State
+  const [c1CircuitMode, setC1CircuitMode] = useState<'builtin' | 'breadboard'>('builtin');
+  const [c1HighMs, setC1HighMs] = useState<number>(1000);
+  const [c1LowMs, setC1LowMs] = useState<number>(1000);
+  const [c1SyncLine, setC1SyncLine] = useState<number>(2);
+  const [c1SyncLedOn, setC1SyncLedOn] = useState<boolean>(true);
+  const [c1BlinkPattern, setC1BlinkPattern] = useState<'standard' | 'heartbeat' | 'sos' | 'strobe'>('standard');
+
+  // Sense Decide Act Domain State
+  type SdaDomain = 'agri' | 'health' | 'warehouse' | 'space' | 'city';
+  const [c1SdaDomain, setC1SdaDomain] = useState<SdaDomain>('agri');
+  const [c1SdaValue, setC1SdaValue] = useState<number>(25);
+
+  // Robot or Not State
+  const [c1RonSelected, setC1RonSelected] = useState<string>('rover');
+  const [c1RonAnswers, setC1RonAnswers] = useState<Record<string, 'robot' | 'automated' | 'tool'>>({});
+
+  // Parts Gallery State
+  type PartsCategory = 'all' | 'brain' | 'sense' | 'act' | 'power' | 'structure';
+  const [c1PartsFilter, setC1PartsFilter] = useState<PartsCategory>('all');
+  const [c1SelectedPart, setC1SelectedPart] = useState<string>('uno');
 
   useEffect(() => {
     if (type !== 'arduino_board_tour_sim') return;
@@ -306,6 +330,62 @@ export function CurriculumSimulator({ type: propType, visualizerId, classNumber 
     }, boardBlinkDelay);
     return () => clearInterval(interval);
   }, [type, boardBlinkDelay]);
+
+  useEffect(() => {
+    if (type !== 'arduino_board_tour_sim' || c1ActiveTool !== 'blink_sync') return;
+    let timer: NodeJS.Timeout;
+    if (c1BlinkPattern === 'heartbeat') {
+      const hbSeq = [
+        { on: true, dur: 120, line: 2 },
+        { on: false, dur: 120, line: 4 },
+        { on: true, dur: 120, line: 2 },
+        { on: false, dur: 700, line: 4 }
+      ];
+      let stepIdx = 0;
+      const runHb = () => {
+        const step = hbSeq[stepIdx % hbSeq.length];
+        setC1SyncLedOn(step.on);
+        setC1SyncLine(step.line);
+        stepIdx++;
+        timer = setTimeout(runHb, step.dur);
+      };
+      runHb();
+      return () => clearTimeout(timer);
+    } else if (c1BlinkPattern === 'sos') {
+      const sosSeq = [
+        { on: true, dur: 150 }, { on: false, dur: 150 },
+        { on: true, dur: 150 }, { on: false, dur: 150 },
+        { on: true, dur: 150 }, { on: false, dur: 400 },
+        { on: true, dur: 500 }, { on: false, dur: 200 },
+        { on: true, dur: 500 }, { on: false, dur: 200 },
+        { on: true, dur: 500 }, { on: false, dur: 400 },
+        { on: true, dur: 150 }, { on: false, dur: 150 },
+        { on: true, dur: 150 }, { on: false, dur: 150 },
+        { on: true, dur: 150 }, { on: false, dur: 1200 }
+      ];
+      let sIdx = 0;
+      const runSos = () => {
+        const s = sosSeq[sIdx % sosSeq.length];
+        setC1SyncLedOn(s.on);
+        setC1SyncLine(s.on ? 2 : 4);
+        sIdx++;
+        timer = setTimeout(runSos, s.dur);
+      };
+      runSos();
+      return () => clearTimeout(timer);
+    } else {
+      let isHigh = true;
+      const cycle = () => {
+        setC1SyncLedOn(isHigh);
+        setC1SyncLine(isHigh ? 2 : 4);
+        const curDelay = isHigh ? c1HighMs : c1LowMs;
+        isHigh = !isHigh;
+        timer = setTimeout(cycle, curDelay);
+      };
+      cycle();
+      return () => clearTimeout(timer);
+    }
+  }, [type, c1ActiveTool, c1BlinkPattern, c1HighMs, c1LowMs]);
 
   const BOARD_PINS: Record<string, { name: string; type: string; category: PinCategory; desc: string; voltage: string; code: string; caution: string }> = {
     d13: {
@@ -435,6 +515,297 @@ export function CurriculumSimulator({ type: propType, visualizerId, classNumber 
       caution: "Use a verified data cable. Cables sold only for phone charging cannot upload sketches."
     }
   };
+
+  // -----------------------------------------------------------------
+  // FLAGSHIP CLASS 1 DATA: Robot or Not, Domains, Parts
+  // -----------------------------------------------------------------
+  interface RonItem {
+    id: string;
+    name: string;
+    icon: string;
+    category: 'robot' | 'automated' | 'tool';
+    verdict: string;
+    reason: string;
+  }
+  const CLASS_1_ROBOT_OR_NOT_ITEMS: RonItem[] = [
+    {
+      id: 'rover',
+      name: 'Mars Curiosity Rover',
+      icon: '🪐',
+      category: 'robot',
+      verdict: 'TRUE AUTONOMOUS ROBOT',
+      reason: 'Uses stereo hazard cameras and laser rangefinders (SENSE), an onboard computer with path-planning algorithms (DECIDE), and motorized rocker-bogie wheels (ACT) to navigate Martian terrain autonomously without real-time human joystick steering.'
+    },
+    {
+      id: 'line_follower',
+      name: 'Line-Following Arena Bot',
+      icon: '🏎️',
+      category: 'robot',
+      verdict: 'TRUE AUTONOMOUS ROBOT',
+      reason: 'Uses dual infrared reflectance sensors to detect the track (SENSE), an Arduino microcontroller to calculate steering error (DECIDE), and a TB6612FNG driver to steer left/right wheels (ACT) in an unbroken feedback loop.'
+    },
+    {
+      id: 'drone',
+      name: 'Autonomous Delivery Drone',
+      icon: '🚁',
+      category: 'robot',
+      verdict: 'TRUE AUTONOMOUS ROBOT',
+      reason: 'Uses IMU gyroscopes, barometric altitude sensors, and GPS (SENSE), a flight controller running PID stabilization algorithms (DECIDE), and four brushless motors (ACT) to stay level and navigate to drop-off coordinates.'
+    },
+    {
+      id: 'surgical_arm',
+      name: 'Da Vinci Surgical Robot Arm',
+      icon: '🦾',
+      category: 'robot',
+      verdict: 'TRUE TELE-ROBOTIC SYSTEM',
+      reason: 'Uses high-resolution joint optical encoders (SENSE), an advanced kinematic processor that filters out hand tremors and scales motions (DECIDE), and precision multi-axis micro-actuators (ACT) to perform surgery.'
+    },
+    {
+      id: 'toaster',
+      name: 'Electric Kitchen Toaster',
+      icon: '🍞',
+      category: 'automated',
+      verdict: 'AUTOMATED APPLIANCE (NOT A ROBOT)',
+      reason: 'Follows an open-loop mechanical spring latch and bimetallic strip or fixed capacitor timer. It cannot sense if bread is burning, cannot adjust heating duration autonomously, and has no closed-loop sensors.'
+    },
+    {
+      id: 'washing_machine',
+      name: 'Domestic Clothes Washer',
+      icon: '🌀',
+      category: 'automated',
+      verdict: 'AUTOMATED APPLIANCE (NOT A ROBOT)',
+      reason: 'Cycles through pre-programmed timer sequences (Fill ➔ Agitate ➔ Spin ➔ Drain). Unless fitted with turbidity and load-balancing sensors with closed-loop adjustment, it cannot adapt its behavior.'
+    },
+    {
+      id: 'traffic_light',
+      name: 'Fixed Traffic Light Timer',
+      icon: '🚦',
+      category: 'automated',
+      verdict: 'AUTOMATED CLOCK DEVICE (NOT A ROBOT)',
+      reason: 'Switches green-yellow-red on a dumb, rigid clock timer without knowing whether cars or pedestrians are waiting (unless upgraded with computer vision or inductive road loop sensors).'
+    },
+    {
+      id: 'screwdriver',
+      name: 'Manual Hand Screwdriver',
+      icon: '🪛',
+      category: 'tool',
+      verdict: 'MANUAL HAND TOOL (NOT A ROBOT)',
+      reason: 'Zero electronics, zero sensors, zero computation, and zero autonomy. Requires 100% human muscle power to turn and operate.'
+    }
+  ];
+
+  interface SdaDomainItem {
+    id: SdaDomain;
+    title: string;
+    icon: string;
+    sensorName: string;
+    sensorType: string;
+    sensorReading: string;
+    brainName: string;
+    brainRule: string;
+    decisionState: string;
+    actuatorName: string;
+    actuatorAction: string;
+    minVal: number;
+    maxVal: number;
+    unit: string;
+    threshold: number;
+    isTriggered: (val: number) => boolean;
+  }
+  const SDA_DOMAINS: SdaDomainItem[] = [
+    {
+      id: 'agri',
+      title: 'Precision Agriculture (Smart Irrigation)',
+      icon: '🌱',
+      sensorName: 'Capacitive Soil Moisture Probe',
+      sensorType: 'Analog In (A0)',
+      sensorReading: `${c1SdaValue}% Soil Moisture`,
+      brainName: 'Arduino Uno (ATmega328P)',
+      brainRule: 'if (moisture < 30%) { openValve(); }',
+      decisionState: c1SdaValue < 30 ? 'SOIL PARCHED: ACTIVATE' : 'SOIL OPTIMAL: STANDBY',
+      actuatorName: '12V Solenoid Water Valve',
+      actuatorAction: c1SdaValue < 30 ? 'Pumping Water to Crops' : 'Valve Closed (Conserving Water)',
+      minVal: 5,
+      maxVal: 80,
+      unit: '% Moisture',
+      threshold: 30,
+      isTriggered: (v) => v < 30
+    },
+    {
+      id: 'health',
+      title: 'Critical Healthcare (Patient Monitor)',
+      icon: '❤️',
+      sensorName: 'Optical Pulse Oximeter (PPG)',
+      sensorType: 'I2C Digital (A4/A5)',
+      sensorReading: `${c1SdaValue} BPM Heart Rate`,
+      brainName: 'Medical Microcontroller',
+      brainRule: 'if (bpm > 120 || bpm < 45) { triggerAlarm(); }',
+      decisionState: (c1SdaValue > 120 || c1SdaValue < 45) ? 'ARRHYTHMIA ALERT' : 'STABLE VITAL SIGNS',
+      actuatorName: 'Piezo Alarm & Nurse Station Beacon',
+      actuatorAction: (c1SdaValue > 120 || c1SdaValue < 45) ? 'Loud Alarm Sounding (Audio Alert)' : 'Silent Normal Operation',
+      minVal: 35,
+      maxVal: 160,
+      unit: 'BPM',
+      threshold: 120,
+      isTriggered: (v) => v > 120 || v < 45
+    },
+    {
+      id: 'warehouse',
+      title: 'Warehouse Logistics (Autonomous Rover)',
+      icon: '📦',
+      sensorName: 'HC-SR04 Ultrasonic Sonar',
+      sensorType: 'Digital Trig/Echo (Pins 11/12)',
+      sensorReading: `${c1SdaValue} cm Obstacle Distance`,
+      brainName: 'Arduino Uno Navigation Loop',
+      brainRule: 'if (dist < 20) { reverse(); pivotRight(); }',
+      decisionState: c1SdaValue < 20 ? 'OBSTACLE DETECTED (< 20cm)' : 'PATH CLEAR (>= 20cm)',
+      actuatorName: 'Dual TT DC Motors via TB6612FNG',
+      actuatorAction: c1SdaValue < 20 ? 'Brake & Pivot Right 90°' : 'Driving Forward Full Speed',
+      minVal: 5,
+      maxVal: 80,
+      unit: 'cm Distance',
+      threshold: 20,
+      isTriggered: (v) => v < 20
+    },
+    {
+      id: 'space',
+      title: 'Space Exploration (Mars Rover Hazard)',
+      icon: '🚀',
+      sensorName: 'Hazcam Stereo Optical Cameras',
+      sensorType: 'Stereo Vision Ranging',
+      sensorReading: `${c1SdaValue}° Terrain Incline`,
+      brainName: 'Rover Autonomous Navigation Matrix',
+      brainRule: 'if (slope > 18) { haltDrive(); routeReplan(); }',
+      decisionState: c1SdaValue > 18 ? 'CRITICAL ROLLOVER RISK (>18°)' : 'STABLE SLOPE (<=18°)',
+      actuatorName: '6-Wheel Rocker-Bogie Suspension Drive',
+      actuatorAction: c1SdaValue > 18 ? 'Wheels Locked • Autonomous Re-Plan' : 'Climbing Crater Gradient Safely',
+      minVal: 0,
+      maxVal: 35,
+      unit: 'Degrees Incline',
+      threshold: 18,
+      isTriggered: (v) => v > 18
+    },
+    {
+      id: 'city',
+      title: 'Smart City Infrastructure (Eco Lighting)',
+      icon: '💡',
+      sensorName: 'PIR Motion & LDR Light Sensor',
+      sensorType: 'Digital Pin 2 & Analog A0',
+      sensorReading: `${c1SdaValue} Lux Ambient Light`,
+      brainName: 'Low-Power Energy Controller',
+      brainRule: 'if (lux < 50) { dimTo(100%); } else { dimTo(0%); }',
+      decisionState: c1SdaValue < 50 ? 'NIGHTTIME DETECTED' : 'DAYLIGHT DETECTED',
+      actuatorName: 'High-Output LED Matrix Array',
+      actuatorAction: c1SdaValue < 50 ? 'Illuminating Streetway (Full Output)' : 'Off (Conserving Grid Electricity)',
+      minVal: 10,
+      maxVal: 150,
+      unit: 'Lux Ambient',
+      threshold: 50,
+      isTriggered: (v) => v < 50
+    }
+  ];
+
+  interface PartCard {
+    id: string;
+    name: string;
+    role: string;
+    category: PartsCategory;
+    specs: string;
+    desc: string;
+    safetyTip: string;
+  }
+  const ROBOTICS_PARTS_GALLERY: PartCard[] = [
+    {
+      id: 'uno',
+      name: 'Arduino Uno R3 Board',
+      role: 'Brain (Microcontroller)',
+      category: 'brain',
+      specs: 'Microchip ATmega328P, 16 MHz, 14 Digital I/O, 6 Analog Inputs, 5.0V Logic',
+      desc: 'The central computational brain of the robot. Executes your compiled C++ program in bare-metal real-time at 16 million clock cycles per second.',
+      safetyTip: 'Never power while rewiring. Always unplug USB before making header pin adjustments.'
+    },
+    {
+      id: 'breadboard',
+      name: 'Half-Size Solderless Breadboard',
+      role: 'Prototyping Platform',
+      category: 'structure',
+      specs: '400 Tie-Points, 2 Continuous Power Rails (+ / -), 0.1" Standard Pin Spacing',
+      desc: 'Enables rapid, solderless prototyping. Internal spring clips connect rows of 5 tie-points and vertical power buses.',
+      safetyTip: 'Do not force thick gauge wires into tie-points; bent internal clips can cause intermittent open-circuit faults.'
+    },
+    {
+      id: 'led',
+      name: '5mm Diffused Red LED',
+      role: 'Visual Actuator (Output)',
+      category: 'act',
+      specs: 'Forward Voltage ~2.0V, Max Continuous Current 20mA, Electroluminescent Diode',
+      desc: 'A solid-state semiconductor diode that emits visible light when forward-biased. Has polarity: Long leg = Anode (+), Short leg = Cathode (-).',
+      safetyTip: 'NEVER connect directly across 5V and GND without a 220Ω series resistor (prevents thermal burnout).'
+    },
+    {
+      id: 'resistor',
+      name: '220Ω Current-Limiting Resistor',
+      role: 'Silicon Bodyguard (Protection)',
+      category: 'power',
+      specs: '220 Ohms (Ω), 1/4 Watt, 5% Carbon Film (Color Bands: Red-Red-Brown-Gold)',
+      desc: 'Wired in series with the LED to limit electron flow and keep current below 15mA, protecting both the LED and the ATmega328P GPIO pin.',
+      safetyTip: 'Resistors have no polarity—they can be inserted in either orientation without affecting circuit performance.'
+    },
+    {
+      id: 'sonar',
+      name: 'HC-SR04 Ultrasonic Sonar',
+      role: 'Sense (Distance Perception)',
+      category: 'sense',
+      specs: '40 kHz Acoustic Pulses, 2cm to 400cm Detection Range, 5V DC, Trigger/Echo Pins',
+      desc: 'Emits ultrasonic acoustic chirps and measures echo reflection time to calculate physical distance using the speed of sound.',
+      safetyTip: 'Operates at 5V. Soft absorbent materials (like cloth or fur) may attenuate ultrasonic echoes.'
+    },
+    {
+      id: 'motors',
+      name: 'Dual TT DC Gearmotors',
+      role: 'Act (Differential Drive)',
+      category: 'act',
+      specs: '3V–6V DC Nominal, 1:48 Internal Gear Reduction, ~200 RPM @ 6V with Rubber Tires',
+      desc: 'Permanent-magnet DC motors paired with gearboxes to trade high rotational speed for strong wheel torque capable of driving rover chassis.',
+      safetyTip: 'Never connect DC motor leads directly to Arduino pins! Motors draw inductive current spikes that will reset the CPU.'
+    },
+    {
+      id: 'driver',
+      name: 'TB6612FNG Dual H-Bridge Driver',
+      role: 'Power & Logic Intermediary',
+      category: 'power',
+      specs: 'Dual MOSFET H-Bridge, 1.2A Continuous (3.2A Peak), High Efficiency, PWM Speed',
+      desc: 'Translates 5V logic pulses from Arduino into high-current power for DC motors with forward, reverse, brake, and coast modes.',
+      safetyTip: 'Connect VMOT to external battery pack and VCC to Arduino 5V. Keep system ground (GND) common!'
+    },
+    {
+      id: 'servo',
+      name: 'SG90 Micro Servo Motor',
+      role: 'Act (Angular Positioning)',
+      category: 'act',
+      specs: '180° Travel Range, 1.8 kg-cm Torque @ 4.8V, 50Hz PWM Signal (1.0ms–2.0ms Pulses)',
+      desc: 'Closed-loop positional actuator with internal motor, potentiometer feedback, and control logic for sensor pan brackets or grippers.',
+      safetyTip: 'Servos can draw up to 500mA stall current. When testing multiple servos, power them from an external 5V rail.'
+    },
+    {
+      id: 'chassis',
+      name: '2WD Acrylic Rover Chassis Plate',
+      role: 'Structure (Mechanical Body)',
+      category: 'structure',
+      specs: 'Laser-Cut High-Impact Acrylic, Pre-Drilled M3 Grid, Omnidirectional Ball Caster',
+      desc: 'The mechanical foundation of the two-wheel differential drive rover, supporting motors, battery holder, Uno board, and sensors.',
+      safetyTip: 'Do not overtighten M3 acrylic mounting screws to avoid cracking the chassis plate.'
+    },
+    {
+      id: 'wires',
+      name: 'Male-to-Male Dupont Jumper Wires',
+      role: 'Electrical Nervous System',
+      category: 'power',
+      specs: '24 AWG Multi-Strand Flexible Copper, Molded Dupont Pins, Color-Coded Insulation',
+      desc: 'Flexible cables that route power, ground, and sensor/actuator logic signals between the Arduino headers and breadboard tie-points.',
+      safetyTip: 'Color-code your wiring habits: Red for +5V power, Black for Ground (0V GND), and Yellow/Green for signals.'
+    }
+  ];
 
   // -----------------------------------------------------------------
   // 16. ROBOT DETECTIVE SIM (Free Explorer Class 01)
@@ -1642,337 +2013,1230 @@ export function CurriculumSimulator({ type: propType, visualizerId, classNumber 
         </>
       )}
 
-      {/* 15. FLAGSHIP: ARDUINO BOARD TOUR SIM */}
+      {/* 15. FLAGSHIP: ARDUINO BOARD TOUR SIM & CLASS 1 WORKBENCH */}
       {type === 'arduino_board_tour_sim' && (
         <>
-          {/* Filter Bar */}
-          <div className={styles.boardFilterRow}>
+          {/* Flagship Class 1 Multi-Tool Navigation Bar */}
+          <div style={{
+            display: 'flex',
+            gap: '0.4rem',
+            flexWrap: 'wrap',
+            marginBottom: '1.25rem',
+            background: 'rgba(255, 255, 255, 0.04)',
+            padding: '0.4rem',
+            borderRadius: '10px',
+            border: '1px solid rgba(255, 255, 255, 0.08)'
+          }}>
             <button
-              onClick={() => setBoardFilter('all')}
-              className={`${styles.boardFilterBtn} ${boardFilter === 'all' ? styles.boardFilterBtnActive : ''}`}
+              onClick={() => setC1ActiveTool('board_tour')}
+              style={{
+                background: c1ActiveTool === 'board_tour' ? '#6B0F24' : 'transparent',
+                color: c1ActiveTool === 'board_tour' ? '#ffffff' : '#cbd5e1',
+                border: c1ActiveTool === 'board_tour' ? '1px solid #8b1832' : '1px solid transparent',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '6px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.15s ease'
+              }}
             >
-              All Components
+              <Cpu size={15} color="#F5B800" />
+              1. Board Tour & Pinout
             </button>
+
             <button
-              onClick={() => setBoardFilter('digital')}
-              className={`${styles.boardFilterBtn} ${boardFilter === 'digital' ? styles.boardFilterBtnActive : ''}`}
+              onClick={() => setC1ActiveTool('blink_sync')}
+              style={{
+                background: c1ActiveTool === 'blink_sync' ? '#6B0F24' : 'transparent',
+                color: c1ActiveTool === 'blink_sync' ? '#ffffff' : '#cbd5e1',
+                border: c1ActiveTool === 'blink_sync' ? '1px solid #8b1832' : '1px solid transparent',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '6px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.15s ease'
+              }}
             >
-              Digital & PWM (Pins 0–13)
+              <Zap size={15} color="#F5B800" />
+              2. Synchronized Blink Lab
             </button>
+
             <button
-              onClick={() => setBoardFilter('analog')}
-              className={`${styles.boardFilterBtn} ${boardFilter === 'analog' ? styles.boardFilterBtnActive : ''}`}
+              onClick={() => setC1ActiveTool('robot_or_not')}
+              style={{
+                background: c1ActiveTool === 'robot_or_not' ? '#6B0F24' : 'transparent',
+                color: c1ActiveTool === 'robot_or_not' ? '#ffffff' : '#cbd5e1',
+                border: c1ActiveTool === 'robot_or_not' ? '1px solid #8b1832' : '1px solid transparent',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '6px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.15s ease'
+              }}
             >
-              Analog Inputs (A0–A5)
+              <HelpCircle size={15} color="#F5B800" />
+              3. Robot or Not? Challenge
             </button>
+
             <button
-              onClick={() => setBoardFilter('power')}
-              className={`${styles.boardFilterBtn} ${boardFilter === 'power' ? styles.boardFilterBtnActive : ''}`}
+              onClick={() => setC1ActiveTool('sense_decide_act')}
+              style={{
+                background: c1ActiveTool === 'sense_decide_act' ? '#6B0F24' : 'transparent',
+                color: c1ActiveTool === 'sense_decide_act' ? '#ffffff' : '#cbd5e1',
+                border: c1ActiveTool === 'sense_decide_act' ? '1px solid #8b1832' : '1px solid transparent',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '6px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.15s ease'
+              }}
             >
-              Power & GND Rails
+              <Activity size={15} color="#F5B800" />
+              4. Sense-Decide-Act Explorer
             </button>
+
             <button
-              onClick={() => setBoardFilter('mcu')}
-              className={`${styles.boardFilterBtn} ${boardFilter === 'mcu' ? styles.boardFilterBtnActive : ''}`}
+              onClick={() => setC1ActiveTool('parts_gallery')}
+              style={{
+                background: c1ActiveTool === 'parts_gallery' ? '#6B0F24' : 'transparent',
+                color: c1ActiveTool === 'parts_gallery' ? '#ffffff' : '#cbd5e1',
+                border: c1ActiveTool === 'parts_gallery' ? '1px solid #8b1832' : '1px solid transparent',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '6px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.15s ease'
+              }}
             >
-              MCU Brain & USB
-            </button>
-            <button
-              onClick={() => setShowPinoutTable(prev => !prev)}
-              className={styles.boardFilterBtn}
-              style={{ marginLeft: 'auto', background: showPinoutTable ? '#6B0F24' : 'rgba(255,255,255,0.06)', color: '#fff' }}
-            >
-              {showPinoutTable ? 'Hide Pinout Table' : 'Show Full Pinout Table'}
+              <Box size={15} color="#F5B800" />
+              5. Robotics Hardware Gallery
             </button>
           </div>
 
-          {/* Main Board View & Inspector */}
-          <div className={styles.boardContainer}>
-            {/* SVG Visual Board */}
-            <div className={styles.boardSvgWrap}>
-              <svg viewBox="0 0 540 380" style={{ width: '100%', maxWidth: '520px', height: 'auto' }}>
-                {/* Board PCB Base */}
-                <rect x="20" y="20" width="500" height="340" rx="16" fill="#006677" stroke="#004d5a" strokeWidth="4" />
-                <rect x="25" y="25" width="490" height="330" rx="14" fill="#0a5361" />
-
-                {/* Silk Screen Branding */}
-                <text x="180" y="70" fill="#ffffff" fontSize="18" fontWeight="900" fontFamily="sans-serif" letterSpacing="1">ARDUINO UNO R3</text>
-                <text x="180" y="90" fill="#F5B800" fontSize="11" fontWeight="700" fontFamily="sans-serif">ROBOBEE INNOVATORS ACADEMY</text>
-                <text x="180" y="105" fill="#a5f3fc" fontSize="9" fontFamily="sans-serif">Illustrative Uno R3 Reference Model</text>
-
-                {/* USB Connector */}
-                <rect 
-                  x="10" y="75" width="65" height="60" rx="4" 
-                  fill="#94a3b8" stroke="#475569" strokeWidth="2" 
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedPin('usb')}
-                />
-                <rect x="18" y="85" width="48" height="40" fill="#334155" />
-                <text x="22" y="110" fill="#f8fafc" fontSize="10" fontWeight="bold">USB-B</text>
-
-                {/* DC Barrel Jack */}
-                <rect 
-                  x="10" y="240" width="75" height="70" rx="6" 
-                  fill="#0f172a" stroke="#334155" strokeWidth="3" 
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedPin('vin')}
-                />
-                <circle cx="45" cy="275" r="14" fill="#475569" />
-                <circle cx="45" cy="275" r="6" fill="#020617" />
-                <text x="20" y="325" fill="#cbd5e1" fontSize="9">7-12V DC</text>
-
-                {/* Reset Button */}
-                <rect 
-                  x="90" y="40" width="30" height="30" rx="4" 
-                  fill="#334155" stroke="#475569" strokeWidth="1" 
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedPin('reset')}
-                />
-                <circle cx="105" cy="55" r="9" fill="#ef4444" />
-                <text x="86" y="82" fill="#f87171" fontSize="8" fontWeight="bold">RESET</text>
-
-                {/* ATmega328P Microcontroller DIP-28 */}
-                <rect 
-                  x="200" y="180" width="220" height="50" rx="3" 
-                  fill="#111827" stroke="#374151" strokeWidth="2" 
-                  style={{ cursor: 'pointer', filter: selectedPin === 'mcu' ? 'drop-shadow(0 0 10px #F5B800)' : 'none' }}
-                  onClick={() => setSelectedPin('mcu')}
-                />
-                <circle cx="210" cy="205" r="4" fill="#374151" />
-                <text x="235" y="210" fill="#e2e8f0" fontSize="12" fontWeight="800" fontFamily="monospace">ATMEGA328P-PU</text>
-                <text x="270" y="224" fill="#94a3b8" fontSize="9" fontFamily="monospace">16MHz 32KB FLASH</text>
-
-                {/* 16 MHz Quartz Crystal */}
-                <rect x="135" y="160" width="18" height="40" rx="4" fill="#cbd5e1" stroke="#64748b" strokeWidth="1" />
-                <text x="132" y="212" fill="#cbd5e1" fontSize="8">16 MHz</text>
-
-                {/* Onboard LED 'L' (Pin 13) */}
-                <rect 
-                  x="145" y="105" width="16" height="20" rx="2" 
-                  fill={boardLedOn ? '#F5B800' : '#1e293b'} 
-                  stroke="#334155" strokeWidth="1"
-                  style={{ 
-                    cursor: 'pointer',
-                    filter: boardLedOn ? 'drop-shadow(0 0 12px #F5B800)' : 'none',
-                    transition: 'fill 0.1s, filter 0.1s'
-                  }}
-                  onClick={() => setSelectedPin('d13')}
-                />
-                <text x="148" y="136" fill="#F5B800" fontSize="9" fontWeight="900">L</text>
-                <text x="135" y="98" fill="#94a3b8" fontSize="8">Pin 13 LED</text>
-
-                {/* TX and RX LEDs */}
-                <rect x="170" y="115" width="8" height="12" rx="1" fill="#10b981" />
-                <text x="168" y="136" fill="#6ee7b7" fontSize="8">TX</text>
-                <rect x="182" y="115" width="8" height="12" rx="1" fill="#10b981" />
-                <text x="180" y="136" fill="#6ee7b7" fontSize="8">RX</text>
-
-                {/* TOP HEADER: DIGITAL PINS (0 to 13, GND, AREF) */}
-                <rect x="180" y="25" width="310" height="22" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="1" />
-                
-                {/* Digital Hotspots */}
-                {[
-                  { id: 'd13', label: '13', x: 275 },
-                  { id: 'd12', label: '12', x: 295 },
-                  { id: 'd11', label: '~11', x: 315 },
-                  { id: 'd10', label: '~10', x: 335 },
-                  { id: 'd9', label: '~9', x: 355 },
-                  { id: 'd3', label: '~3', x: 425 },
-                  { id: 'd2', label: '2', x: 445 },
-                  { id: 'd1', label: 'TX', x: 465 },
-                  { id: 'd0', label: 'RX', x: 485 }
-                ].map((pin) => (
-                  <g key={pin.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedPin(pin.id)}>
-                    <circle 
-                      cx={pin.x} cy="36" r="6" 
-                      fill={selectedPin === pin.id ? '#F5B800' : '#030712'} 
-                      stroke={selectedPin === pin.id ? '#ffffff' : '#64748b'} 
-                      strokeWidth="1.5"
-                    />
-                    <text x={pin.x - 5} y="55" fill={selectedPin === pin.id ? '#F5B800' : '#cbd5e1'} fontSize="8" fontWeight="bold">
-                      {pin.label}
-                    </text>
-                  </g>
-                ))}
-
-                {/* BOTTOM LEFT: POWER HEADER (IOREF, RESET, 3.3V, 5V, GND, GND, VIN) */}
-                <rect x="180" y="325" width="140" height="22" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="1" />
-                <text x="185" y="318" fill="#f87171" fontSize="9" fontWeight="bold">POWER</text>
-                {[
-                  { id: 'v33', label: '3.3V', x: 220 },
-                  { id: 'v5', label: '5V', x: 240 },
-                  { id: 'gnd', label: 'GND', x: 260 },
-                  { id: 'vin', label: 'Vin', x: 300 }
-                ].map((p) => (
-                  <g key={p.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedPin(p.id)}>
-                    <circle 
-                      cx={p.x} cy="336" r="6" 
-                      fill={selectedPin === p.id ? '#F5B800' : '#030712'} 
-                      stroke={selectedPin === p.id ? '#ffffff' : '#ef4444'} 
-                      strokeWidth="1.5"
-                    />
-                    <text x={p.x - 8} y="360" fill={selectedPin === p.id ? '#F5B800' : '#cbd5e1'} fontSize="7.5" fontWeight="bold">
-                      {p.label}
-                    </text>
-                  </g>
-                ))}
-
-                {/* BOTTOM RIGHT: ANALOG HEADER (A0 to A5) */}
-                <rect x="340" y="325" width="130" height="22" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="1" />
-                <text x="345" y="318" fill="#38bdf8" fontSize="9" fontWeight="bold">ANALOG IN</text>
-                {[
-                  { id: 'a0', label: 'A0', x: 355 },
-                  { id: 'a1', label: 'A1', x: 375 },
-                  { id: 'a2', label: 'A2', x: 395 },
-                  { id: 'a3', label: 'A3', x: 415 },
-                  { id: 'a4', label: 'A4', x: 435 }
-                ].map((p) => (
-                  <g key={p.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedPin(p.id)}>
-                    <circle 
-                      cx={p.x} cy="336" r="6" 
-                      fill={selectedPin === p.id ? '#F5B800' : '#030712'} 
-                      stroke={selectedPin === p.id ? '#ffffff' : '#38bdf8'} 
-                      strokeWidth="1.5"
-                    />
-                    <text x={p.x - 6} y="360" fill={selectedPin === p.id ? '#F5B800' : '#cbd5e1'} fontSize="8" fontWeight="bold">
-                      {p.label}
-                    </text>
-                  </g>
-                ))}
-              </svg>
-              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem', textAlign: 'center' }}>
-                💡 <em>Click any component, header pin, or the ATmega328P chip to inspect its engineering specifications.</em>
+          {/* SUB-VIEW 1: BOARD TOUR & PINOUT */}
+          {c1ActiveTool === 'board_tour' && (
+            <>
+              {/* Filter Bar */}
+              <div className={styles.boardFilterRow}>
+                <button
+                  onClick={() => setBoardFilter('all')}
+                  className={`${styles.boardFilterBtn} ${boardFilter === 'all' ? styles.boardFilterBtnActive : ''}`}
+                >
+                  All Components
+                </button>
+                <button
+                  onClick={() => setBoardFilter('digital')}
+                  className={`${styles.boardFilterBtn} ${boardFilter === 'digital' ? styles.boardFilterBtnActive : ''}`}
+                >
+                  Digital & PWM (Pins 0–13)
+                </button>
+                <button
+                  onClick={() => setBoardFilter('analog')}
+                  className={`${styles.boardFilterBtn} ${boardFilter === 'analog' ? styles.boardFilterBtnActive : ''}`}
+                >
+                  Analog Inputs (A0–A5)
+                </button>
+                <button
+                  onClick={() => setBoardFilter('power')}
+                  className={`${styles.boardFilterBtn} ${boardFilter === 'power' ? styles.boardFilterBtnActive : ''}`}
+                >
+                  Power & GND Rails
+                </button>
+                <button
+                  onClick={() => setBoardFilter('mcu')}
+                  className={`${styles.boardFilterBtn} ${boardFilter === 'mcu' ? styles.boardFilterBtnActive : ''}`}
+                >
+                  MCU Brain & USB
+                </button>
+                <button
+                  onClick={() => setShowPinoutTable(prev => !prev)}
+                  className={styles.boardFilterBtn}
+                  style={{ marginLeft: 'auto', background: showPinoutTable ? '#6B0F24' : 'rgba(255,255,255,0.06)', color: '#fff' }}
+                >
+                  {showPinoutTable ? 'Hide Pinout Table' : 'Show Full Pinout Table'}
+                </button>
               </div>
-            </div>
 
-            {/* Inspector Drawer */}
-            <div className={styles.pinDrawer}>
-              {BOARD_PINS[selectedPin] ? (
-                <>
-                  <div className={styles.pinDrawerHeader}>
-                    <div>
-                      <div className={styles.pinDrawerTitle}>{BOARD_PINS[selectedPin].name}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{BOARD_PINS[selectedPin].type}</div>
-                    </div>
-                    <span className={styles.pinDrawerTag}>{BOARD_PINS[selectedPin].category.toUpperCase()}</span>
+              {/* Main Board View & Inspector */}
+              <div className={styles.boardContainer}>
+                {/* SVG Visual Board */}
+                <div className={styles.boardSvgWrap}>
+                  <svg viewBox="0 0 540 380" style={{ width: '100%', maxWidth: '520px', height: 'auto' }}>
+                    {/* Board PCB Base */}
+                    <rect x="20" y="20" width="500" height="340" rx="16" fill="#006677" stroke="#004d5a" strokeWidth="4" />
+                    <rect x="25" y="25" width="490" height="330" rx="14" fill="#0a5361" />
+
+                    {/* Silk Screen Branding */}
+                    <text x="180" y="70" fill="#ffffff" fontSize="18" fontWeight="900" fontFamily="sans-serif" letterSpacing="1">ARDUINO UNO R3</text>
+                    <text x="180" y="90" fill="#F5B800" fontSize="11" fontWeight="700" fontFamily="sans-serif">ROBOBEE INNOVATORS ACADEMY</text>
+                    <text x="180" y="105" fill="#a5f3fc" fontSize="9" fontFamily="sans-serif">Illustrative Uno R3 Reference Model</text>
+
+                    {/* USB Connector */}
+                    <rect 
+                      x="10" y="75" width="65" height="60" rx="4" 
+                      fill="#94a3b8" stroke="#475569" strokeWidth="2" 
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => setSelectedPin('usb')}
+                    />
+                    <rect x="18" y="85" width="48" height="40" fill="#334155" />
+                    <text x="22" y="110" fill="#f8fafc" fontSize="10" fontWeight="bold">USB-B</text>
+
+                    {/* DC Barrel Jack */}
+                    <rect 
+                      x="10" y="240" width="75" height="70" rx="6" 
+                      fill="#0f172a" stroke="#334155" strokeWidth="3" 
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => setSelectedPin('vin')}
+                    />
+                    <circle cx="45" cy="275" r="14" fill="#475569" />
+                    <circle cx="45" cy="275" r="6" fill="#020617" />
+                    <text x="20" y="325" fill="#cbd5e1" fontSize="9">7-12V DC</text>
+
+                    {/* Reset Button */}
+                    <rect 
+                      x="90" y="40" width="30" height="30" rx="4" 
+                      fill="#334155" stroke="#475569" strokeWidth="1" 
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => setSelectedPin('reset')}
+                    />
+                    <circle cx="105" cy="55" r="9" fill="#ef4444" />
+                    <text x="86" y="82" fill="#f87171" fontSize="8" fontWeight="bold">RESET</text>
+
+                    {/* ATmega328P Microcontroller DIP-28 */}
+                    <rect 
+                      x="200" y="180" width="220" height="50" rx="3" 
+                      fill="#111827" stroke="#374151" strokeWidth="2" 
+                      style={{ cursor: 'pointer', filter: selectedPin === 'mcu' ? 'drop-shadow(0 0 10px #F5B800)' : 'none' }}
+                      onClick={() => setSelectedPin('mcu')}
+                    />
+                    <circle cx="210" cy="205" r="4" fill="#374151" />
+                    <text x="235" y="210" fill="#e2e8f0" fontSize="12" fontWeight="800" fontFamily="monospace">ATMEGA328P-PU</text>
+                    <text x="270" y="224" fill="#94a3b8" fontSize="9" fontFamily="monospace">16MHz 32KB FLASH</text>
+
+                    {/* 16 MHz Quartz Crystal */}
+                    <rect x="135" y="160" width="18" height="40" rx="4" fill="#cbd5e1" stroke="#64748b" strokeWidth="1" />
+                    <text x="132" y="212" fill="#cbd5e1" fontSize="8">16 MHz</text>
+
+                    {/* Onboard LED 'L' (Pin 13) */}
+                    <rect 
+                      x="145" y="105" width="16" height="20" rx="2" 
+                      fill={boardLedOn ? '#F5B800' : '#1e293b'} 
+                      stroke="#334155" strokeWidth="1"
+                      style={{ 
+                        cursor: 'pointer',
+                        filter: boardLedOn ? 'drop-shadow(0 0 12px #F5B800)' : 'none',
+                        transition: 'fill 0.1s, filter 0.1s'
+                      }}
+                      onClick={() => setSelectedPin('d13')}
+                    />
+                    <text x="148" y="136" fill="#F5B800" fontSize="9" fontWeight="900">L</text>
+                    <text x="135" y="98" fill="#94a3b8" fontSize="8">Pin 13 LED</text>
+
+                    {/* TX and RX LEDs */}
+                    <rect x="170" y="115" width="8" height="12" rx="1" fill="#10b981" />
+                    <text x="168" y="136" fill="#6ee7b7" fontSize="8">TX</text>
+                    <rect x="182" y="115" width="8" height="12" rx="1" fill="#10b981" />
+                    <text x="180" y="136" fill="#6ee7b7" fontSize="8">RX</text>
+
+                    {/* TOP HEADER: DIGITAL PINS (0 to 13, GND, AREF) */}
+                    <rect x="180" y="25" width="310" height="22" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="1" />
+                    
+                    {/* Digital Hotspots */}
+                    {[
+                      { id: 'd13', label: '13', x: 275 },
+                      { id: 'd12', label: '12', x: 295 },
+                      { id: 'd11', label: '~11', x: 315 },
+                      { id: 'd10', label: '~10', x: 335 },
+                      { id: 'd9', label: '~9', x: 355 },
+                      { id: 'd3', label: '~3', x: 425 },
+                      { id: 'd2', label: '2', x: 445 },
+                      { id: 'd1', label: 'TX', x: 465 },
+                      { id: 'd0', label: 'RX', x: 485 }
+                    ].map((pin) => (
+                      <g key={pin.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedPin(pin.id)}>
+                        <circle 
+                          cx={pin.x} cy="36" r="6" 
+                          fill={selectedPin === pin.id ? '#F5B800' : '#030712'} 
+                          stroke={selectedPin === pin.id ? '#ffffff' : '#64748b'} 
+                          strokeWidth="1.5"
+                        />
+                        <text x={pin.x - 5} y="55" fill={selectedPin === pin.id ? '#F5B800' : '#cbd5e1'} fontSize="8" fontWeight="bold">
+                          {pin.label}
+                        </text>
+                      </g>
+                    ))}
+
+                    {/* BOTTOM LEFT: POWER HEADER */}
+                    <rect x="180" y="325" width="140" height="22" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="1" />
+                    <text x="185" y="318" fill="#f87171" fontSize="9" fontWeight="bold">POWER</text>
+                    {[
+                      { id: 'v33', label: '3.3V', x: 220 },
+                      { id: 'v5', label: '5V', x: 240 },
+                      { id: 'gnd', label: 'GND', x: 260 },
+                      { id: 'vin', label: 'Vin', x: 300 }
+                    ].map((p) => (
+                      <g key={p.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedPin(p.id)}>
+                        <circle 
+                          cx={p.x} cy="336" r="6" 
+                          fill={selectedPin === p.id ? '#F5B800' : '#030712'} 
+                          stroke={selectedPin === p.id ? '#ffffff' : '#ef4444'} 
+                          strokeWidth="1.5"
+                        />
+                        <text x={p.x - 8} y="360" fill={selectedPin === p.id ? '#F5B800' : '#cbd5e1'} fontSize="7.5" fontWeight="bold">
+                          {p.label}
+                        </text>
+                      </g>
+                    ))}
+
+                    {/* BOTTOM RIGHT: ANALOG HEADER (A0 to A5) */}
+                    <rect x="340" y="325" width="130" height="22" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="1" />
+                    <text x="345" y="318" fill="#38bdf8" fontSize="9" fontWeight="bold">ANALOG IN</text>
+                    {[
+                      { id: 'a0', label: 'A0', x: 355 },
+                      { id: 'a1', label: 'A1', x: 375 },
+                      { id: 'a2', label: 'A2', x: 395 },
+                      { id: 'a3', label: 'A3', x: 415 },
+                      { id: 'a4', label: 'A4', x: 435 }
+                    ].map((p) => (
+                      <g key={p.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedPin(p.id)}>
+                        <circle 
+                          cx={p.x} cy="336" r="6" 
+                          fill={selectedPin === p.id ? '#F5B800' : '#030712'} 
+                          stroke={selectedPin === p.id ? '#ffffff' : '#38bdf8'} 
+                          strokeWidth="1.5"
+                        />
+                        <text x={p.x - 6} y="360" fill={selectedPin === p.id ? '#F5B800' : '#cbd5e1'} fontSize="8" fontWeight="bold">
+                          {p.label}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem', textAlign: 'center' }}>
+                    💡 <em>Click any component, header pin, or the ATmega328P chip to inspect its engineering specifications.</em>
                   </div>
+                </div>
 
-                  <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: '1.6' }}>
-                    {BOARD_PINS[selectedPin].desc}
-                  </p>
+                {/* Inspector Drawer */}
+                <div className={styles.pinDrawer}>
+                  {BOARD_PINS[selectedPin] ? (
+                    <>
+                      <div className={styles.pinDrawerHeader}>
+                        <div>
+                          <div className={styles.pinDrawerTitle}>{BOARD_PINS[selectedPin].name}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{BOARD_PINS[selectedPin].type}</div>
+                        </div>
+                        <span className={styles.pinDrawerTag}>{BOARD_PINS[selectedPin].category.toUpperCase()}</span>
+                      </div>
 
-                  <div className={styles.pinPropRow}>
-                    <span className={styles.pinPropLabel}>Logic & Voltage:</span>
-                    <span className={styles.pinPropVal}>{BOARD_PINS[selectedPin].voltage}</span>
-                  </div>
+                      <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                        {BOARD_PINS[selectedPin].desc}
+                      </p>
 
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F5B800', marginBottom: '0.35rem' }}>
-                      C++ Code Example:
+                      <div className={styles.pinPropRow}>
+                        <span className={styles.pinPropLabel}>Logic & Voltage:</span>
+                        <span className={styles.pinPropVal}>{BOARD_PINS[selectedPin].voltage}</span>
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F5B800', marginBottom: '0.35rem' }}>
+                          C++ Code Example:
+                        </div>
+                        <pre className={styles.pinCodeSnippet}>
+                          <code>{BOARD_PINS[selectedPin].code}</code>
+                        </pre>
+                      </div>
+
+                      <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '0.65rem 0.85rem' }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <AlertTriangle size={14} />
+                          <span>SAFETY RULE:</span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#fca5a5', marginTop: '0.25rem', lineHeight: '1.4' }}>
+                          {BOARD_PINS[selectedPin].caution}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem 1rem' }}>
+                      Select any pin on the Uno board above to inspect its properties.
                     </div>
-                    <pre className={styles.pinCodeSnippet}>
-                      <code>{BOARD_PINS[selectedPin].code}</code>
-                    </pre>
-                  </div>
+                  )}
+                </div>
+              </div>
 
-                  <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '0.65rem 0.85rem' }}>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <AlertTriangle size={14} />
-                      <span>SAFETY RULE:</span>
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: '#fca5a5', marginTop: '0.25rem', lineHeight: '1.4' }}>
-                      {BOARD_PINS[selectedPin].caution}
-                    </div>
+              {/* Accessible Pinout Table Toggle */}
+              {showPinoutTable && (
+                <div style={{ marginTop: '1.25rem', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '1rem', overflowX: 'auto' }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#F5B800', marginBottom: '0.75rem' }}>
+                    📋 Complete Arduino Uno R3 Pinout & Electrical Reference Table
                   </div>
-                </>
-              ) : (
-                <div style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem 1rem' }}>
-                  Select any pin on the Uno board above to inspect its properties.
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #334155', color: '#94a3b8' }}>
+                        <th style={{ padding: '0.5rem' }}>Pin / Component</th>
+                        <th style={{ padding: '0.5rem' }}>Category</th>
+                        <th style={{ padding: '0.5rem' }}>Voltage / Limits</th>
+                        <th style={{ padding: '0.5rem' }}>Robotics Classroom Usage</th>
+                        <th style={{ padding: '0.5rem' }}>Typical C++ Code</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(BOARD_PINS).map(([key, p]) => (
+                        <tr key={key} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#f1f5f9' }}>
+                          <td style={{ padding: '0.5rem', fontWeight: 700, color: '#F5B800' }}>{p.name}</td>
+                          <td style={{ padding: '0.5rem', textTransform: 'capitalize' }}>{p.category}</td>
+                          <td style={{ padding: '0.5rem', color: '#38bdf8', fontFamily: 'monospace' }}>{p.voltage}</td>
+                          <td style={{ padding: '0.5rem' }}>{p.desc}</td>
+                          <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#a5f3fc' }}>{p.code.split('\n')[0]}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
-            </div>
-          </div>
+            </>
+          )}
 
-          {/* Hands-On Timing Control Panel for Class 01 Blink */}
-          <div className={styles.controlGrid}>
-            <div className={styles.controlCard}>
-              <div className={styles.controlLabel}>
-                <span>Change Blink Delay: delay({boardBlinkDelay})</span>
-                <span style={{ color: '#F5B800', fontWeight: 800 }}>{boardBlinkDelay} ms</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="1500"
-                step="50"
-                value={boardBlinkDelay}
-                onChange={(e) => setBoardBlinkDelay(Number(e.target.value))}
-                className={styles.slider}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', marginTop: '0.35rem' }}>
-                <span>⚡ Hyper Flash (50ms)</span>
-                <span>Standard (500ms)</span>
-                <span>🐢 Slow Pulse (1500ms)</span>
-              </div>
-            </div>
-
-            <div className={styles.controlCard}>
-              <div className={styles.controlLabel}>
-                <span>Live Sketch Tracing (Arduino Uno)</span>
-                <span style={{ color: boardLedOn ? '#F5B800' : '#64748b', fontWeight: 700 }}>
-                  LED State: {boardLedOn ? 'HIGH (5V)' : 'LOW (0V)'}
-                </span>
-              </div>
-              <div style={{ background: '#030712', border: '1px solid #1f2937', borderRadius: '6px', padding: '0.5rem 0.75rem', fontFamily: 'monospace', fontSize: '0.78rem' }}>
-                <div style={{ color: '#64748b' }}>void loop() &#123;</div>
-                <div style={{ color: boardLedOn ? '#F5B800' : '#475569', fontWeight: boardLedOn ? 800 : 400, background: boardLedOn ? 'rgba(245, 184, 0, 0.15)' : 'transparent', padding: '2px 4px', borderRadius: '4px' }}>
-                  &nbsp;&nbsp;digitalWrite(LED_BUILTIN, HIGH); // 5V ON
+          {/* SUB-VIEW 2: SYNCHRONIZED BLINK CODE STEPPER & CIRCUIT LAB */}
+          {c1ActiveTool === 'blink_sync' && (
+            <div>
+              {/* Circuit Mode & Preset Switchers */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    onClick={() => setC1CircuitMode('builtin')}
+                    style={{
+                      background: c1CircuitMode === 'builtin' ? '#6B0F24' : 'rgba(255,255,255,0.06)',
+                      color: '#ffffff',
+                      border: c1CircuitMode === 'builtin' ? '1px solid #8b1832' : '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Stage A: Built-in LED (Pin 13)
+                  </button>
+                  <button
+                    onClick={() => setC1CircuitMode('breadboard')}
+                    style={{
+                      background: c1CircuitMode === 'breadboard' ? '#6B0F24' : 'rgba(255,255,255,0.06)',
+                      color: '#ffffff',
+                      border: c1CircuitMode === 'breadboard' ? '1px solid #8b1832' : '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Stage B: External Breadboard Circuit (+220Ω Resistor)
+                  </button>
                 </div>
-                <div style={{ color: '#64748b' }}>&nbsp;&nbsp;delay({boardBlinkDelay});</div>
-                <div style={{ color: !boardLedOn ? '#38bdf8' : '#475569', fontWeight: !boardLedOn ? 800 : 400, background: !boardLedOn ? 'rgba(56, 189, 248, 0.15)' : 'transparent', padding: '2px 4px', borderRadius: '4px' }}>
-                  &nbsp;&nbsp;digitalWrite(LED_BUILTIN, LOW);  // 0V OFF
-                </div>
-                <div style={{ color: '#64748b' }}>&nbsp;&nbsp;delay({boardBlinkDelay});</div>
-                <div style={{ color: '#64748b' }}>&#125;</div>
-              </div>
-            </div>
-          </div>
 
-          {/* Accessible Pinout Table Toggle */}
-          {showPinoutTable && (
-            <div style={{ marginTop: '1.25rem', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '1rem', overflowX: 'auto' }}>
-              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#F5B800', marginBottom: '0.75rem' }}>
-                📋 Complete Arduino Uno R3 Pinout & Electrical Reference Table
+                {/* Pattern Presets */}
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => { setC1BlinkPattern('standard'); setC1HighMs(1000); setC1LowMs(1000); }}
+                    style={{
+                      background: c1BlinkPattern === 'standard' ? 'rgba(245,184,0,0.2)' : 'rgba(255,255,255,0.04)',
+                      color: c1BlinkPattern === 'standard' ? '#F5B800' : '#cbd5e1',
+                      border: c1BlinkPattern === 'standard' ? '1px solid #F5B800' : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Standard 1s / 1s
+                  </button>
+                  <button
+                    onClick={() => { setC1BlinkPattern('heartbeat'); }}
+                    style={{
+                      background: c1BlinkPattern === 'heartbeat' ? 'rgba(245,184,0,0.2)' : 'rgba(255,255,255,0.04)',
+                      color: c1BlinkPattern === 'heartbeat' ? '#F5B800' : '#cbd5e1',
+                      border: c1BlinkPattern === 'heartbeat' ? '1px solid #F5B800' : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Heartbeat (lub-dub)
+                  </button>
+                  <button
+                    onClick={() => { setC1BlinkPattern('sos'); }}
+                    style={{
+                      background: c1BlinkPattern === 'sos' ? 'rgba(245,184,0,0.2)' : 'rgba(255,255,255,0.04)',
+                      color: c1BlinkPattern === 'sos' ? '#F5B800' : '#cbd5e1',
+                      border: c1BlinkPattern === 'sos' ? '1px solid #F5B800' : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    SOS Maritime (··· --- ···)
+                  </button>
+                  <button
+                    onClick={() => { setC1BlinkPattern('strobe'); setC1HighMs(100); setC1LowMs(100); }}
+                    style={{
+                      background: c1BlinkPattern === 'strobe' ? 'rgba(245,184,0,0.2)' : 'rgba(255,255,255,0.04)',
+                      color: c1BlinkPattern === 'strobe' ? '#F5B800' : '#cbd5e1',
+                      border: c1BlinkPattern === 'strobe' ? '1px solid #F5B800' : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Fast Strobe (100ms)
+                  </button>
+                </div>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #334155', color: '#94a3b8' }}>
-                    <th style={{ padding: '0.5rem' }}>Pin / Component</th>
-                    <th style={{ padding: '0.5rem' }}>Category</th>
-                    <th style={{ padding: '0.5rem' }}>Voltage / Limits</th>
-                    <th style={{ padding: '0.5rem' }}>Robotics Classroom Usage</th>
-                    <th style={{ padding: '0.5rem' }}>Typical C++ Code</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(BOARD_PINS).map(([key, p]) => (
-                    <tr key={key} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#f1f5f9' }}>
-                      <td style={{ padding: '0.5rem', fontWeight: 700, color: '#F5B800' }}>{p.name}</td>
-                      <td style={{ padding: '0.5rem', textTransform: 'capitalize' }}>{p.category}</td>
-                      <td style={{ padding: '0.5rem', color: '#38bdf8', fontFamily: 'monospace' }}>{p.voltage}</td>
-                      <td style={{ padding: '0.5rem' }}>{p.desc}</td>
-                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#a5f3fc' }}>{p.code.split('\n')[0]}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+              {/* Grid: Live Visualizer (Left) + Synchronized Code (Right) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                {/* Visual Circuit Simulation Canvas */}
+                <div style={{
+                  background: '#080c14',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '280px',
+                  position: 'relative'
+                }}>
+                  {/* Status Badges */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '1rem' }}>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      background: c1SyncLedOn ? 'rgba(245,184,0,0.15)' : 'rgba(100,116,139,0.15)',
+                      color: c1SyncLedOn ? '#F5B800' : '#94a3b8',
+                      border: c1SyncLedOn ? '1px solid #F5B800' : '1px solid #64748b',
+                      borderRadius: '20px',
+                      padding: '0.2rem 0.65rem'
+                    }}>
+                      {c1SyncLedOn ? '⚡ PIN 13: 5.0V HIGH (ON)' : '💤 PIN 13: 0.0V LOW (OFF)'}
+                    </span>
+
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      {c1CircuitMode === 'builtin' ? 'Onboard SMD LED "L"' : 'Series Breadboard Circuit'}
+                    </span>
+                  </div>
+
+                  {c1CircuitMode === 'builtin' ? (
+                    /* Built-in LED Visual Graphic */
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '14px',
+                        background: c1SyncLedOn ? 'radial-gradient(circle, #F5B800 20%, #d97706 70%, #78350f 100%)' : '#1e293b',
+                        border: '3px solid #334155',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: c1SyncLedOn ? '0 0 40px #F5B800, inset 0 0 15px #fff' : 'none',
+                        transition: 'all 0.1s ease',
+                        position: 'relative'
+                      }}>
+                        <span style={{ fontSize: '1.5rem', fontWeight: 900, color: c1SyncLedOn ? '#0f172a' : '#475569' }}>L</span>
+                        {c1SyncLedOn && (
+                          <div style={{
+                            position: 'absolute',
+                            width: '120px',
+                            height: '120px',
+                            borderRadius: '50%',
+                            background: 'rgba(245, 184, 0, 0.15)',
+                            pointerEvents: 'none',
+                            animation: 'pulse 1s infinite'
+                          }} />
+                        )}
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9' }}>Onboard SMD LED & Resistor Path</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Wired internally between Pin 13 and Ground via PCB trace. Zero external wires needed!</div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Breadboard External LED + Resistor Graphic */
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', width: '100%' }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        maxWidth: '380px',
+                        padding: '1rem',
+                        background: '#0f172a',
+                        border: '1px solid #334155',
+                        borderRadius: '10px',
+                        gap: '0.5rem'
+                      }}>
+                        {/* Pin 13 Terminal */}
+                        <div style={{ textAlign: 'center', flex: 1 }}>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Arduino</div>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#F5B800' }}>PIN 13</div>
+                          <div style={{ fontSize: '0.65rem', color: c1SyncLedOn ? '#10b981' : '#64748b' }}>
+                            {c1SyncLedOn ? '+5.0V DC' : '0.0V'}
+                          </div>
+                        </div>
+
+                        {/* Yellow Jumper */}
+                        <div style={{
+                          height: '4px',
+                          flex: 0.8,
+                          background: c1SyncLedOn ? '#F5B800' : '#334155',
+                          boxShadow: c1SyncLedOn ? '0 0 8px #F5B800' : 'none'
+                        }} />
+
+                        {/* 220 Ohm Resistor */}
+                        <div style={{ textAlign: 'center', flex: 1.2, background: 'rgba(255,255,255,0.03)', padding: '0.35rem', borderRadius: '6px', border: '1px solid #475569' }}>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Resistor</div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#f87171' }}>220 Ω</div>
+                          <div style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>Drops 3.0V</div>
+                        </div>
+
+                        {/* Red Wire */}
+                        <div style={{
+                          height: '4px',
+                          flex: 0.8,
+                          background: c1SyncLedOn ? '#ef4444' : '#334155',
+                          boxShadow: c1SyncLedOn ? '0 0 8px #ef4444' : 'none'
+                        }} />
+
+                        {/* 5mm LED */}
+                        <div style={{ textAlign: 'center', flex: 1 }}>
+                          <div style={{
+                            width: '32px',
+                            height: '32px',
+                            margin: '0 auto 0.25rem',
+                            borderRadius: '50%',
+                            background: c1SyncLedOn ? '#ef4444' : '#334155',
+                            boxShadow: c1SyncLedOn ? '0 0 20px #ef4444, inset 0 0 6px #fff' : 'none',
+                            transition: 'all 0.1s ease'
+                          }} />
+                          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#f1f5f9' }}>5mm LED</div>
+                          <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>13.6 mA</div>
+                        </div>
+
+                        {/* Black Return Wire */}
+                        <div style={{
+                          height: '4px',
+                          flex: 0.8,
+                          background: c1SyncLedOn ? '#38bdf8' : '#334155'
+                        }} />
+
+                        {/* GND Terminal */}
+                        <div style={{ textAlign: 'center', flex: 1 }}>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Arduino</div>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#38bdf8' }}>GND</div>
+                          <div style={{ fontSize: '0.65rem', color: '#64748b' }}>0.0V Ref</div>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>
+                        Ohm’s Law Verification: (5.0V − 2.0V LED drop) ÷ 220Ω = <strong>13.6 mA</strong> safe forward current.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dual Timing Sliders (when in standard/custom mode) */}
+                  <div style={{ width: '100%', marginTop: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+                        <span>ON (HIGH) Time</span>
+                        <strong style={{ color: '#F5B800' }}>{c1HighMs} ms</strong>
+                      </div>
+                      <input
+                        type="range"
+                        min="50"
+                        max="2000"
+                        step="50"
+                        value={c1HighMs}
+                        onChange={(e) => { setC1HighMs(Number(e.target.value)); setC1BlinkPattern('standard'); }}
+                        style={{ width: '100%', accentColor: '#F5B800', cursor: 'pointer' }}
+                      />
+                    </div>
+
+                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+                        <span>OFF (LOW) Time</span>
+                        <strong style={{ color: '#38bdf8' }}>{c1LowMs} ms</strong>
+                      </div>
+                      <input
+                        type="range"
+                        min="50"
+                        max="2000"
+                        step="50"
+                        value={c1LowMs}
+                        onChange={(e) => { setC1LowMs(Number(e.target.value)); setC1BlinkPattern('standard'); }}
+                        style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Synchronized C++ Code Stepper View */}
+                <div style={{
+                  background: '#0d1322',
+                  border: '1px solid #1e293b',
+                  borderRadius: '12px',
+                  padding: '1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Zap size={16} color="#F5B800" /> Live Synchronized Execution
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>Blink.ino</span>
+                  </div>
+
+                  <div style={{ fontFamily: 'monospace', fontSize: '0.82rem', lineHeight: '1.7', flex: 1 }}>
+                    <div style={{ color: '#64748b' }}>// 1. Hardware Initialization (Runs once)</div>
+                    <div style={{ color: '#94a3b8' }}>void setup() &#123;</div>
+                    <div style={{ color: '#a5f3fc', paddingLeft: '1rem' }}>
+                      pinMode(LED_BUILTIN, OUTPUT);
+                    </div>
+                    <div style={{ color: '#94a3b8' }}>&#125;</div>
+                    <br />
+                    <div style={{ color: '#64748b' }}>// 2. Main Logic Loop (Repeats forever)</div>
+                    <div style={{ color: '#94a3b8' }}>void loop() &#123;</div>
+
+                    {/* Line: HIGH */}
+                    <div style={{
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: c1SyncLedOn ? 'rgba(245, 184, 0, 0.2)' : 'transparent',
+                      color: c1SyncLedOn ? '#F5B800' : '#e2e8f0',
+                      fontWeight: c1SyncLedOn ? 800 : 400,
+                      borderLeft: c1SyncLedOn ? '3px solid #F5B800' : '3px solid transparent',
+                      transition: 'all 0.1s ease'
+                    }}>
+                      &nbsp;&nbsp;digitalWrite(LED_BUILTIN, HIGH); <span style={{ color: '#64748b', fontSize: '0.75rem' }}>// 5V ON</span>
+                    </div>
+
+                    {/* Line: Delay HIGH */}
+                    <div style={{
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      color: c1SyncLedOn ? '#F5B800' : '#64748b',
+                      fontSize: '0.82rem'
+                    }}>
+                      &nbsp;&nbsp;delay({c1BlinkPattern === 'heartbeat' ? '120' : c1BlinkPattern === 'sos' ? '150/500' : c1HighMs}); <span style={{ color: '#64748b', fontSize: '0.75rem' }}>// Wait</span>
+                    </div>
+
+                    {/* Line: LOW */}
+                    <div style={{
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: !c1SyncLedOn ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                      color: !c1SyncLedOn ? '#38bdf8' : '#e2e8f0',
+                      fontWeight: !c1SyncLedOn ? 800 : 400,
+                      borderLeft: !c1SyncLedOn ? '3px solid #38bdf8' : '3px solid transparent',
+                      transition: 'all 0.1s ease'
+                    }}>
+                      &nbsp;&nbsp;digitalWrite(LED_BUILTIN, LOW);  <span style={{ color: '#64748b', fontSize: '0.75rem' }}>// 0V OFF</span>
+                    </div>
+
+                    {/* Line: Delay LOW */}
+                    <div style={{
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      color: !c1SyncLedOn ? '#38bdf8' : '#64748b',
+                      fontSize: '0.82rem'
+                    }}>
+                      &nbsp;&nbsp;delay({c1BlinkPattern === 'heartbeat' ? '700' : c1BlinkPattern === 'sos' ? '150/1200' : c1LowMs}); <span style={{ color: '#64748b', fontSize: '0.75rem' }}>// Wait</span>
+                    </div>
+
+                    <div style={{ color: '#94a3b8' }}>&#125;</div>
+                  </div>
+
+                  {/* Predict Modify Test Challenge Card */}
+                  <div style={{
+                    marginTop: '1rem',
+                    background: 'rgba(245, 184, 0, 0.08)',
+                    border: '1px solid rgba(245, 184, 0, 0.25)',
+                    borderRadius: '8px',
+                    padding: '0.65rem 0.85rem'
+                  }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#F5B800', marginBottom: '0.25rem' }}>
+                      🎯 Predict → Modify → Test Protocol:
+                    </div>
+                    <div style={{ fontSize: '0.76rem', color: '#fef3c7', lineHeight: '1.4' }}>
+                      1. <strong>Predict:</strong> If you change <code>delay(1000)</code> to <code>delay(100)</code>, will the light flash 10 times faster or 10 times slower?<br />
+                      2. <strong>Modify:</strong> Adjust the sliders or choose a pattern above.<br />
+                      3. <strong>Test:</strong> Observe how asymmetric ON/OFF timings create realistic airport or lighthouse warning beacons!
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          <div className={`${styles.statusBanner} ${styles.statusNormal}`}>
+          {/* SUB-VIEW 3: "ROBOT OR NOT?" CHALLENGE */}
+          {c1ActiveTool === 'robot_or_not' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#f1f5f9' }}>
+                    🤖 "Robot or Not?" Engineering Sorting Challenge
+                  </h4>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                    Does automatic behavior make something a true robot? Evaluate each machine against the Sense → Decide → Act closed feedback loop.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    background: 'rgba(245,184,0,0.15)',
+                    color: '#F5B800',
+                    border: '1px solid rgba(245,184,0,0.3)',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '20px'
+                  }}>
+                    Classified: {Object.keys(c1RonAnswers).length} / {CLASS_1_ROBOT_OR_NOT_ITEMS.length}
+                  </span>
+                  <button
+                    onClick={() => setC1RonAnswers({})}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#cbd5e1',
+                      borderRadius: '6px',
+                      padding: '0.25rem 0.65rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Reset Challenge
+                  </button>
+                </div>
+              </div>
+
+              {/* Items Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                {CLASS_1_ROBOT_OR_NOT_ITEMS.map((item) => {
+                  const userAnswer = c1RonAnswers[item.id];
+                  const isAnswered = userAnswer !== undefined;
+                  const isCorrect = isAnswered && userAnswer === item.category;
+
+                  return (
+                    <div key={item.id} style={{
+                      background: '#0d1322',
+                      border: isAnswered 
+                        ? (isCorrect ? '1px solid #10b981' : '1px solid #ef4444')
+                        : '1px solid #1e293b',
+                      borderRadius: '10px',
+                      padding: '1rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.65rem'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <span style={{ fontSize: '1.75rem' }}>{item.icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#f1f5f9' }}>{item.name}</div>
+                          {isAnswered && (
+                            <span style={{
+                              fontSize: '0.7rem',
+                              fontWeight: 800,
+                              color: isCorrect ? '#10b981' : '#f87171'
+                            }}>
+                              {isCorrect ? '✓ Correct Verdict!' : '✗ Engineering Misconception'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Vote Buttons */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.35rem' }}>
+                        <button
+                          onClick={() => setC1RonAnswers(prev => ({ ...prev, [item.id]: 'robot' }))}
+                          style={{
+                            background: userAnswer === 'robot' ? '#10b981' : 'rgba(255,255,255,0.04)',
+                            color: userAnswer === 'robot' ? '#042f2e' : '#cbd5e1',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '6px',
+                            padding: '0.35rem 0.2rem',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🤖 Robot
+                        </button>
+                        <button
+                          onClick={() => setC1RonAnswers(prev => ({ ...prev, [item.id]: 'automated' }))}
+                          style={{
+                            background: userAnswer === 'automated' ? '#f59e0b' : 'rgba(255,255,255,0.04)',
+                            color: userAnswer === 'automated' ? '#451a03' : '#cbd5e1',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '6px',
+                            padding: '0.35rem 0.2rem',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ⚙️ Automated
+                        </button>
+                        <button
+                          onClick={() => setC1RonAnswers(prev => ({ ...prev, [item.id]: 'tool' }))}
+                          style={{
+                            background: userAnswer === 'tool' ? '#38bdf8' : 'rgba(255,255,255,0.04)',
+                            color: userAnswer === 'tool' ? '#082f49' : '#cbd5e1',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '6px',
+                            padding: '0.35rem 0.2rem',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🪛 Tool
+                        </button>
+                      </div>
+
+                      {/* Explanation Reveal */}
+                      {isAnswered && (
+                        <div style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: '6px',
+                          padding: '0.5rem 0.65rem',
+                          fontSize: '0.74rem',
+                          lineHeight: '1.45',
+                          color: '#cbd5e1'
+                        }}>
+                          <div style={{ fontWeight: 800, color: '#F5B800', marginBottom: '0.2rem' }}>
+                            {item.verdict}:
+                          </div>
+                          {item.reason}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* SUB-VIEW 4: SENSE → DECIDE → ACT EXPLORER */}
+          {c1ActiveTool === 'sense_decide_act' && (
+            <div>
+              {/* Domain Switcher */}
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+                {SDA_DOMAINS.map((dom) => (
+                  <button
+                    key={dom.id}
+                    onClick={() => { setC1SdaDomain(dom.id); setC1SdaValue(dom.threshold - 5); }}
+                    style={{
+                      background: c1SdaDomain === dom.id ? '#6B0F24' : 'rgba(255,255,255,0.05)',
+                      color: c1SdaDomain === dom.id ? '#ffffff' : '#cbd5e1',
+                      border: c1SdaDomain === dom.id ? '1px solid #8b1832' : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      padding: '0.45rem 0.85rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <span>{dom.icon}</span>
+                    <span>{dom.title.split('(')[0].trim()}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Active Domain Visualizer */}
+              {(() => {
+                const curDom = SDA_DOMAINS.find(d => d.id === c1SdaDomain) || SDA_DOMAINS[0];
+                const triggered = curDom.isTriggered(c1SdaValue);
+
+                return (
+                  <div>
+                    {/* 3-Stage Diagram: SENSE ➔ DECIDE ➔ ACT */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                      gap: '1rem',
+                      marginBottom: '1.25rem'
+                    }}>
+                      {/* SENSE BLOCK */}
+                      <div style={{
+                        background: '#0d1322',
+                        border: '1px solid #38bdf8',
+                        borderRadius: '12px',
+                        padding: '1.25rem',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ display: 'inline-flex', padding: '0.5rem', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.1)', marginBottom: '0.5rem' }}>
+                          <Eye size={28} color="#38bdf8" />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#38bdf8', letterSpacing: '0.05em' }}>
+                          STEP 1: SENSE
+                        </div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f1f5f9', marginTop: '0.25rem' }}>
+                          {curDom.sensorName}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                          {curDom.sensorType}
+                        </div>
+                        <div style={{
+                          marginTop: '0.75rem',
+                          padding: '0.4rem 0.75rem',
+                          background: 'rgba(56, 189, 248, 0.15)',
+                          borderRadius: '20px',
+                          display: 'inline-block',
+                          fontSize: '0.85rem',
+                          fontWeight: 800,
+                          color: '#38bdf8'
+                        }}>
+                          {c1SdaValue} {curDom.unit}
+                        </div>
+                      </div>
+
+                      {/* DECIDE BLOCK */}
+                      <div style={{
+                        background: '#0d1322',
+                        border: '1px solid #F5B800',
+                        borderRadius: '12px',
+                        padding: '1.25rem',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ display: 'inline-flex', padding: '0.5rem', borderRadius: '50%', background: 'rgba(245, 184, 0, 0.1)', marginBottom: '0.5rem' }}>
+                          <Cpu size={28} color="#F5B800" />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#F5B800', letterSpacing: '0.05em' }}>
+                          STEP 2: DECIDE
+                        </div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f1f5f9', marginTop: '0.25rem' }}>
+                          {curDom.brainName}
+                        </div>
+                        <div style={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.72rem',
+                          color: '#cbd5e1',
+                          background: '#030712',
+                          padding: '0.35rem 0.5rem',
+                          borderRadius: '6px',
+                          marginTop: '0.4rem',
+                          border: '1px solid #334155'
+                        }}>
+                          {curDom.brainRule}
+                        </div>
+                        <div style={{
+                          marginTop: '0.75rem',
+                          padding: '0.4rem 0.75rem',
+                          background: triggered ? 'rgba(245, 184, 0, 0.2)' : 'rgba(100, 116, 139, 0.15)',
+                          borderRadius: '20px',
+                          display: 'inline-block',
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          color: triggered ? '#F5B800' : '#94a3b8'
+                        }}>
+                          {curDom.decisionState}
+                        </div>
+                      </div>
+
+                      {/* ACT BLOCK */}
+                      <div style={{
+                        background: '#0d1322',
+                        border: triggered ? '1px solid #10b981' : '1px solid #64748b',
+                        borderRadius: '12px',
+                        padding: '1.25rem',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ display: 'inline-flex', padding: '0.5rem', borderRadius: '50%', background: triggered ? 'rgba(16, 185, 129, 0.15)' : 'rgba(100, 116, 139, 0.1)', marginBottom: '0.5rem' }}>
+                          <Zap size={28} color={triggered ? '#10b981' : '#64748b'} />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: triggered ? '#10b981' : '#94a3b8', letterSpacing: '0.05em' }}>
+                          STEP 3: ACT
+                        </div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f1f5f9', marginTop: '0.25rem' }}>
+                          {curDom.actuatorName}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                          Physical Electromechanical Response
+                        </div>
+                        <div style={{
+                          marginTop: '0.75rem',
+                          padding: '0.4rem 0.75rem',
+                          background: triggered ? 'rgba(16, 185, 129, 0.2)' : 'rgba(100, 116, 139, 0.15)',
+                          borderRadius: '20px',
+                          display: 'inline-block',
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          color: triggered ? '#10b981' : '#94a3b8'
+                        }}>
+                          {curDom.actuatorAction}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Interactive Input Slider Card */}
+                    <div style={{
+                      background: '#080c14',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '10px',
+                      padding: '1rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, color: '#cbd5e1' }}>
+                        <span>Simulate Environmental Input ({curDom.sensorName}):</span>
+                        <span style={{ color: '#F5B800', fontWeight: 800 }}>{c1SdaValue} {curDom.unit}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={curDom.minVal}
+                        max={curDom.maxVal}
+                        value={c1SdaValue}
+                        onChange={(e) => setC1SdaValue(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: '#F5B800', cursor: 'pointer' }}
+                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b' }}>
+                        <span>Min: {curDom.minVal} {curDom.unit}</span>
+                        <span>Decision Threshold: {curDom.threshold} {curDom.unit}</span>
+                        <span>Max: {curDom.maxVal} {curDom.unit}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* SUB-VIEW 5: ROBOTICS HARDWARE PARTS GALLERY */}
+          {c1ActiveTool === 'parts_gallery' && (
+            <div>
+              {/* Category Filter */}
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+                {(['all', 'brain', 'sense', 'act', 'power', 'structure'] as PartsCategory[]).map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setC1PartsFilter(cat)}
+                    style={{
+                      background: c1PartsFilter === cat ? '#6B0F24' : 'rgba(255,255,255,0.05)',
+                      color: c1PartsFilter === cat ? '#ffffff' : '#cbd5e1',
+                      border: c1PartsFilter === cat ? '1px solid #8b1832' : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '0.4rem 0.8rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textTransform: 'capitalize'
+                    }}
+                  >
+                    {cat === 'all' ? 'All 10 Core Parts' : `${cat} Subsystem`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Parts Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+                {ROBOTICS_PARTS_GALLERY
+                  .filter(p => c1PartsFilter === 'all' || p.category === c1PartsFilter)
+                  .map((part) => (
+                    <div
+                      key={part.id}
+                      onClick={() => setC1SelectedPart(part.id)}
+                      style={{
+                        background: c1SelectedPart === part.id ? 'rgba(107, 15, 36, 0.25)' : '#0d1322',
+                        border: c1SelectedPart === part.id ? '2px solid #F5B800' : '1px solid #1e293b',
+                        borderRadius: '10px',
+                        padding: '1rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 800,
+                          background: 'rgba(245,184,0,0.15)',
+                          color: '#F5B800',
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: '4px',
+                          textTransform: 'uppercase'
+                        }}>
+                          {part.role}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'capitalize' }}>
+                          {part.category}
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#f1f5f9', margin: '0.25rem 0' }}>
+                        {part.name}
+                      </div>
+
+                      <div style={{ fontSize: '0.75rem', color: '#38bdf8', fontFamily: 'monospace', marginBottom: '0.5rem' }}>
+                        {part.specs}
+                      </div>
+
+                      <p style={{ fontSize: '0.78rem', color: '#cbd5e1', lineHeight: '1.45', margin: '0 0 0.5rem' }}>
+                        {part.desc}
+                      </p>
+
+                      <div style={{
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        borderRadius: '6px',
+                        padding: '0.4rem 0.55rem',
+                        fontSize: '0.7rem',
+                        color: '#fca5a5',
+                        lineHeight: '1.35'
+                      }}>
+                        <strong>Lab Safety:</strong> {part.safetyTip}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          <div className={`${styles.statusBanner} ${styles.statusNormal}`} style={{ marginTop: '1.25rem' }}>
             <Info size={18} />
             <span>
-              Simulation Notice: The virtual Arduino Uno above models standard Rev3 behavior. Notice that the built-in LED on Pin 13 blinks without external jumper wires!
+              Class 01 Flagship Workbench: Switch between the 5 interactive tools above to explore the Uno pinout, test the synchronized C++ blink stepper, solve the "Robot or Not?" challenge, explore real-world Sense-Decide-Act systems, and inspect all hardware kit parts!
             </span>
           </div>
         </>

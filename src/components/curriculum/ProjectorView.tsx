@@ -36,6 +36,11 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
   const [timerSeconds, setTimerSeconds] = useState<number>((isCompactMode ? 60 : defaultDuration) * 60);
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
 
+  // Font scaling controls (100%, 125%, 150%)
+  const [fontScale, setFontScale] = useState<number>(100);
+  // Collapsible Instructor Speaker Notes Drawer
+  const [showSpeakerNotes, setShowSpeakerNotes] = useState<boolean>(false);
+
   // Exit Ticket reveal state for instructor
   const [revealedHints, setRevealedHints] = useState<{ [key: number]: boolean }>({});
   const [revealedAnswers, setRevealedAnswers] = useState<{ [key: number]: boolean }>({});
@@ -81,6 +86,10 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
         onClose();
       } else if (e.key.toLowerCase() === "f") {
         toggleFullScreen();
+      } else if (e.key.toLowerCase() === "n") {
+        setShowSpeakerNotes(prev => !prev);
+      } else if (e.key.toLowerCase() === "t") {
+        setTimerRunning(r => !r);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -174,6 +183,69 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
 
         {/* Projector Controls */}
         <div className={styles.controlsGroup}>
+          {/* Font Scaler for Projector Readability */}
+          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', padding: '2px', gap: '2px' }}>
+            <button
+              onClick={() => setFontScale(100)}
+              style={{
+                background: fontScale === 100 ? '#6B0F24' : 'transparent',
+                color: fontScale === 100 ? '#ffffff' : '#cbd5e1',
+                border: 'none',
+                padding: '3px 7px',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Standard Font Size (100%)"
+            >
+              100%
+            </button>
+            <button
+              onClick={() => setFontScale(125)}
+              style={{
+                background: fontScale === 125 ? '#6B0F24' : 'transparent',
+                color: fontScale === 125 ? '#ffffff' : '#cbd5e1',
+                border: 'none',
+                padding: '3px 7px',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Large Font for Classroom Projector (125%)"
+            >
+              125%
+            </button>
+            <button
+              onClick={() => setFontScale(150)}
+              style={{
+                background: fontScale === 150 ? '#6B0F24' : 'transparent',
+                color: fontScale === 150 ? '#ffffff' : '#cbd5e1',
+                border: 'none',
+                padding: '3px 7px',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Extra-Large Font (150%)"
+            >
+              150%
+            </button>
+          </div>
+
+          {/* Speaker Notes Toggle */}
+          <button 
+            onClick={() => setShowSpeakerNotes(prev => !prev)} 
+            className={styles.actionBtn} 
+            style={{ background: showSpeakerNotes ? '#6B0F24' : 'rgba(255,255,255,0.06)', color: '#fff' }}
+            title="Toggle Instructor Speaker Notes (N)"
+          >
+            <BookOpen size={14} />
+            <span>Notes (N)</span>
+          </button>
+
           <button onClick={toggleFullScreen} className={`${styles.actionBtn} ${styles.fullscreenBtn}`} title="Full Screen (F)">
             <Maximize size={15} />
             <span>Full Screen</span>
@@ -187,7 +259,13 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
 
       {/* Main Slide Canvas */}
       <main className={styles.slideCanvas}>
-        <div className={styles.slideCard}>
+        <div 
+          className={styles.slideCard}
+          style={{ 
+            fontSize: fontScale === 100 ? '1rem' : fontScale === 125 ? '1.15rem' : '1.3rem',
+            transition: 'font-size 0.2s ease'
+          }}
+        >
           {/* SLIDE 1: EPIC ROBOTICS MASTERCLASS TITLE */}
           {currentSlide === 0 && (
             <>
@@ -1065,6 +1143,70 @@ delay(50); // Rapid blink`}
             </>
           )}
 
+          {/* Collapsible Instructor Speaker Notes Drawer */}
+          {showSpeakerNotes && (
+            <div style={{
+              background: '#0c121e',
+              border: '1px solid #F5B800',
+              borderRadius: '10px',
+              padding: '0.85rem 1.25rem',
+              margin: '1rem 0 0.5rem',
+              color: '#fef3c7',
+              fontSize: '0.85rem',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <strong style={{ color: '#F5B800', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <BookOpen size={15} /> Instructor Speaker Notes • Slide {currentSlide + 1}
+                </strong>
+                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Press 'N' to toggle</span>
+              </div>
+              <div style={{ lineHeight: '1.5', color: '#e2e8f0' }}>
+                {currentSlide === 0 && (
+                  <div>
+                    <strong>Pacing Goal (0–8m Hook):</strong> Engage students immediately with the "Robot or Not?" debate. Pass around physical parts so they can feel the difference between an unpowered passive tool and an autonomous microcontroller system.
+                  </div>
+                )}
+                {currentSlide === 1 && (
+                  <div>
+                    <strong>Pacing Goal (8–18m Relevance & Agenda):</strong> Review the class schedule. Ensure each student pair has their hardware kit and verified data cable ready. Frame today's achievement: "You will write C++ code that physically turns on light."
+                  </div>
+                )}
+                {currentSlide === 2 && (
+                  <div>
+                    <strong>Pacing Goal (18–30m Concept Teaching):</strong> Teach the Sense → Decide → Act closed feedback loop. Emphasize that the ATmega328P runs bare-metal machine code at 16 MHz with deterministic precision. Address the 220Ω resistor bodyguard concept.
+                  </div>
+                )}
+                {currentSlide === 3 && (
+                  <div>
+                    <strong>Pacing Goal (30–42m Virtual Testbed):</strong> Guide students through the interactive simulator on the smartboard. Let them predict how changing delay parameters changes blink frequencies before touching physical hardware.
+                  </div>
+                )}
+                {currentSlide === 4 && (
+                  <div>
+                    <strong>Pacing Goal (42–68m Code Walkthrough):</strong> Explain <code>void setup()</code> vs <code>void loop()</code>. Remind students: <code>pinMode</code> defines the pin's role once, while <code>digitalWrite</code> physically pushes 5V HIGH or 0V LOW in an infinite loop.
+                  </div>
+                )}
+                {currentSlide === 5 && (
+                  <div>
+                    <strong>Pacing Goal (Hardware & Wiring):</strong> Enforce pre-power checks: NEVER rewire an active circuit while the USB cable is plugged in. Always verify LED polarity (long anode toward pin, short cathode through 220Ω resistor to GND).
+                  </div>
+                )}
+                {currentSlide === 6 && (
+                  <div>
+                    <strong>Pacing Goal (68–78m Guided Build & Test):</strong> Guide students through creative signal challenges: Heartbeat and SOS Morse code. If code won't upload, check Tools ➔ Port and confirm the cable is a data cable, not charge-only!
+                  </div>
+                )}
+                {currentSlide === 7 && (
+                  <div>
+                    <strong>Pacing Goal (86–90m Exit Reflection):</strong> Lead the 4-question mastery exit check. Have each student share one input, one decision, one output, and one safety rule before safely packing their Arduino boards into anti-static bags.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Bottom Slide Navigation Bar */}
           <footer className={styles.bottomBar}>
             <button
@@ -1076,15 +1218,36 @@ delay(50); // Rapid blink`}
               <span>Previous</span>
             </button>
 
-            {/* Slide Dots for Desktop */}
-            <div className={styles.dotsContainer}>
-              {Array.from({ length: totalSlides }).map((_, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`${styles.dot} ${idx === currentSlide ? styles.dotActive : ''}`}
-                  title={`Slide ${idx + 1}`}
-                />
+            {/* Slide Jump Drawer Pills */}
+            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
+              {[
+                { idx: 0, label: '1. Hook' },
+                { idx: 1, label: '2. Agenda' },
+                { idx: 2, label: '3. Concepts' },
+                { idx: 3, label: '4. Simulator' },
+                { idx: 4, label: '5. Code Lab' },
+                { idx: 5, label: '6. Hardware' },
+                { idx: 6, label: '7. Build & Test' },
+                { idx: 7, label: '8. Exit Ticket' }
+              ].map(s => (
+                <button
+                  key={s.idx}
+                  onClick={() => setCurrentSlide(s.idx)}
+                  style={{
+                    background: currentSlide === s.idx ? '#6B0F24' : 'rgba(255,255,255,0.06)',
+                    color: currentSlide === s.idx ? '#ffffff' : '#94a3b8',
+                    border: currentSlide === s.idx ? '1px solid #8b1832' : '1px solid transparent',
+                    borderRadius: '4px',
+                    padding: '0.25rem 0.55rem',
+                    fontSize: '0.72rem',
+                    fontWeight: currentSlide === s.idx ? 800 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title={`Jump to ${s.label}`}
+                >
+                  {s.label}
+                </button>
               ))}
             </div>
 

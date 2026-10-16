@@ -73,10 +73,24 @@ export function ArduinoUnoPinout() {
     <div className={styles.pinoutContainer}>
       <div className={styles.headerBar}>
         <div className={styles.titleGroup}>
-          <h3>
-            <Zap size={22} color="#F5B800" />
-            Arduino Uno Rev3 Interactive Pinout & Specs
-          </h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+            <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Zap size={22} color="#F5B800" />
+              Arduino Uno Rev3 Interactive Pinout & Specs
+            </h3>
+            <span style={{ 
+              fontSize: "0.72rem", 
+              fontWeight: 700, 
+              background: "rgba(107, 15, 36, 0.12)", 
+              color: "#6B0F24", 
+              border: "1px solid rgba(107, 15, 36, 0.3)", 
+              borderRadius: "999px", 
+              padding: "0.2rem 0.65rem",
+              letterSpacing: "0.02em"
+            }}>
+              Illustrative Reference Board (Arduino Uno R3)
+            </span>
+          </div>
           <p className={styles.subtitle}>
             Verified against official Arduino docs and Microchip ATmega328P datasheet. Tap any pin to inspect electrical limits.
           </p>
@@ -171,8 +185,23 @@ export function ArduinoUnoPinout() {
               {/* SMD LEDs */}
               <rect x="250" y="160" width="8" height="12" fill="#22c55e" rx="1" />
               <text x="254" y="185" fill="#86efac" fontSize="9" textAnchor="middle">ON</text>
-              <rect x="250" y="200" width="8" height="12" fill="#eab308" rx="1" />
-              <text x="254" y="225" fill="#fde047" fontSize="9" textAnchor="middle">L (13)</text>
+              <g 
+                onClick={() => setSelectedPinNumber("13")} 
+                style={{ cursor: "pointer" }}
+                role="button"
+                aria-label="Select Built-in LED on Pin 13"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setSelectedPinNumber("13"); }}
+              >
+                <rect 
+                  x="248" y="198" width="12" height="16" 
+                  fill={selectedPinNumber === "13" ? "#F5B800" : "#eab308"} 
+                  stroke={selectedPinNumber === "13" ? "#ffffff" : "#ca8a04"} 
+                  strokeWidth="1.5"
+                  rx="2" 
+                />
+                <text x="254" y="228" fill={selectedPinNumber === "13" ? "#F5B800" : "#fde047"} fontSize="9" fontWeight="800" textAnchor="middle">L (13)</text>
+              </g>
 
               {/* Top Digital Header Strip */}
               <rect x="250" y="35" width="375" height="20" rx="3" fill="#18181b" stroke="#3f3f46" strokeWidth="1" />
@@ -286,6 +315,24 @@ export function ArduinoUnoPinout() {
               </div>
               <p style={{ margin: 0 }}>{selectedPin.caveats}</p>
             </div>
+
+            {selectedPin.pinNumber === "13" && (
+              <div style={{
+                background: "rgba(245, 184, 0, 0.1)",
+                border: "1px solid rgba(245, 184, 0, 0.35)",
+                borderRadius: "8px",
+                padding: "0.75rem",
+                marginTop: "0.75rem",
+                fontSize: "0.82rem",
+                color: "#78350f",
+                lineHeight: "1.5"
+              }}>
+                <strong style={{ color: "#92400e", display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "0.25rem" }}>
+                  <Zap size={14} color="#F5B800" /> Board Portability Note:
+                </strong>
+                <code>LED_BUILTIN</code> is defined by the board profile in the Arduino IDE. On the Arduino Uno R3, it maps to Digital Pin 13. On other microcontrollers (like ESP32, Raspberry Pi Pico RP2040, or Arduino Nano Every), <code>LED_BUILTIN</code> maps to different physical pins (e.g., Pin 2 on many ESP32 dev boards). Never assume Pin 13 across all hardware families!
+              </div>
+            )}
 
             <div className={styles.citationFooter}>
               <strong>Verified Official Source:</strong> {selectedPin.officialCitation}
