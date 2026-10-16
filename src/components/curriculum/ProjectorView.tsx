@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import styles from "./projectorView.module.css";
 import { RoboticsLesson } from "@/lib/curriculumData";
 import { CurriculumSimulator } from "./CurriculumSimulator";
 import { 
   Play, Pause, RotateCcw, Maximize, X, ArrowLeft, ArrowRight,
   Clock, Shield, CheckCircle, Code, Eye, HelpCircle, Phone, MapPin,
-  Cpu, Wrench
+  Cpu, Wrench, Zap, ChevronLeft, ChevronRight, Sparkles, BookOpen, Layers
 } from "lucide-react";
 
 interface ProjectorViewProps {
@@ -16,8 +17,16 @@ interface ProjectorViewProps {
 }
 
 export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const totalSlides = 8;
+
+  // Active concept index for Slide 3
+  const [activeConceptIndex, setActiveConceptIndex] = useState<number>(0);
+  // Rhythm table toggle for Slide 2
+  const [showRhythmTable, setShowRhythmTable] = useState<boolean>(false);
+  // Code Lab view tab: 'code' or 'missions'
+  const [codeLabTab, setCodeLabTab] = useState<'code' | 'missions'>('code');
 
   // Rhythm duration mode: 90m vs 60m
   const defaultDuration = lesson.durationMinutes || 60;
@@ -28,6 +37,15 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
   // Exit Ticket reveal state for instructor
   const [revealedHints, setRevealedHints] = useState<{ [key: number]: boolean }>({});
   const [revealedAnswers, setRevealedAnswers] = useState<{ [key: number]: boolean }>({});
+
+  useEffect(() => {
+    setMounted(true);
+    // Lock background scroll while projector view is active
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   // Slide navigation
   const nextSlide = useCallback(() => {
@@ -116,8 +134,10 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
     return lesson.classRhythm[lesson.classRhythm.length - 1].segment;
   };
 
-  return (
-    <div className={styles.projectorOverlay}>
+  if (!mounted) return null;
+
+  const modalContent = (
+    <div className={styles.projectorOverlay} style={{ background: '#070b14', zIndex: 999999 }}>
       {/* Top Projector Toolbar */}
       <header className={styles.topBar}>
         <div className={styles.brandGroup}>
@@ -166,130 +186,307 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
       {/* Main Slide Canvas */}
       <main className={styles.slideCanvas}>
         <div className={styles.slideCard}>
-          {/* SLIDE 1: TITLE & BANNER */}
+          {/* SLIDE 1: EPIC ROBOTICS MASTERCLASS TITLE */}
           {currentSlide === 0 && (
             <>
               <div className={styles.slideHeader}>
-                <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • SLIDE 1 OF {totalSlides}</div>
-                <h1 className={styles.slideTitle}>{lesson.title}</h1>
-                <p className={styles.slideSubtitle}>{lesson.promise}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                  <div className={styles.slideNumberBadge}>
+                    ROBOBEE INNOVATORS ACADEMY • SLIDE 1 OF {totalSlides}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <span style={{ background: 'rgba(245, 184, 0, 0.15)', color: '#F5B800', border: '1px solid rgba(245, 184, 0, 0.35)', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 800 }}>
+                      {lesson.proposedAudience}
+                    </span>
+                    <span style={{ background: 'rgba(107, 15, 36, 0.3)', color: '#fca5a5', border: '1px solid #6B0F24', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 800 }}>
+                      ⏱ {isCompactMode ? '60m Compact' : `${lesson.durationMinutes}m Full`}
+                    </span>
+                  </div>
+                </div>
+                <h1 className={styles.slideTitle} style={{ color: '#ffffff' }}>{lesson.title}</h1>
+                <p className={styles.slideSubtitle} style={{ color: '#F5B800', fontSize: '1.15rem', fontWeight: 600 }}>{lesson.promise}</p>
               </div>
+
               <div className={styles.slideBody}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem', alignItems: 'center' }}>
-                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '2rem', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      Audience: {lesson.proposedAudience}
+                {/* 4 Pillars of Robotics */}
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+                    🤖 The Four Foundational Pillars of Every Robot:
+                  </div>
+                  <div className={styles.pillarGrid}>
+                    <div className={styles.pillarCard}>
+                      <div className={styles.pillarIconRow}>
+                        <Wrench size={20} color="#F5B800" />
+                        <span className={styles.pillarTitle}>1. Mechanical Body</span>
+                      </div>
+                      <p className={styles.pillarDesc}>
+                        The physical chassis, wheels, gears, linkages, and frames that give the robot structural strength and movement.
+                      </p>
                     </div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f1f5f9', margin: '0.75rem 0 1rem 0' }}>
-                      RoboBEE Innovators Academy
+
+                    <div className={styles.pillarCard}>
+                      <div className={styles.pillarIconRow}>
+                        <Zap size={20} color="#eab308" />
+                        <span className={styles.pillarTitle}>2. Electrical Nerves</span>
+                      </div>
+                      <p className={styles.pillarDesc}>
+                        Batteries, voltage regulators, and ground return loops delivering safe 5V power to every component.
+                      </p>
                     </div>
-                    <p style={{ color: '#94a3b8', lineHeight: '1.7', fontSize: '1.05rem' }}>
-                      Motto: <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em><br />
-                      In this hands-on engineering class, we explore real robotics principles,
-                      test circuits and logic in simulations, and bring code to life on physical hardware!
+
+                    <div className={styles.pillarCard}>
+                      <div className={styles.pillarIconRow}>
+                        <Eye size={20} color="#06b6d4" />
+                        <span className={styles.pillarTitle}>3. Sensory Perception</span>
+                      </div>
+                      <p className={styles.pillarDesc}>
+                        Ultrasonic sonar eyes, infrared line sensors, and touch detectors that observe physical changes in the world.
+                      </p>
+                    </div>
+
+                    <div className={styles.pillarCard}>
+                      <div className={styles.pillarIconRow}>
+                        <Cpu size={20} color="#a855f7" />
+                        <span className={styles.pillarTitle}>4. Silicon Brain</span>
+                      </div>
+                      <p className={styles.pillarDesc}>
+                        The Arduino microcontroller executing code instructions in real time at 16 million clock cycles per second!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lab Safety & Mission Hook */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '1.25rem', marginTop: '1rem' }}>
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                      Academy Motto
+                    </div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>
+                      &ldquo;Dream. Invent. Experiment. Inspire.&rdquo;
+                    </div>
+                    <p style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '0.35rem', lineHeight: '1.5' }}>
+                      Today you transition from someone who only uses technology to an engineer who creates, codes, and controls intelligent physical machines!
                     </p>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ background: 'rgba(245, 184, 0, 0.1)', border: '1px solid rgba(245, 184, 0, 0.3)', padding: '1.25rem', borderRadius: '12px' }}>
-                      <div style={{ color: '#F5B800', fontWeight: 800, fontSize: '0.9rem' }}>⏱ LESSON DURATION</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ffffff' }}>
-                        {isCompactMode ? '60 Minutes (Compact)' : `${lesson.durationMinutes} Minutes (Full)`}
-                      </div>
+                  <div style={{ background: 'rgba(107, 15, 36, 0.25)', border: '1px solid #6B0F24', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+                    <div style={{ color: '#fca5a5', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                      <Shield size={16} />
+                      <span>Golden Lab Safety Rule</span>
                     </div>
-                    <div style={{ background: 'rgba(107, 15, 36, 0.25)', border: '1px solid #6B0F24', padding: '1.25rem', borderRadius: '12px' }}>
-                      <div style={{ color: '#fca5a5', fontWeight: 800, fontSize: '0.9rem' }}>🛡 LAB SAFETY FIRST</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ffffff', marginTop: '0.25rem' }}>
-                        {lesson.safetyNotes[0] || 'Supervised low-voltage classroom activity.'}
-                      </div>
-                    </div>
+                    <p style={{ color: '#ffffff', fontSize: '0.92rem', fontWeight: 600, lineHeight: '1.5' }}>
+                      &ldquo;{lesson.safetyNotes[0] || 'Never connect or modify wires while USB or battery power is plugged in!'}&rdquo;
+                    </p>
                   </div>
                 </div>
               </div>
             </>
           )}
 
-          {/* SLIDE 2: OBJECTIVES & TIME-BOXED RHYTHM */}
+          {/* SLIDE 2: MISSION ROADMAP & UNLOCKED SKILLS */}
           {currentSlide === 1 && (
             <>
               <div className={styles.slideHeader}>
-                <div className={styles.slideNumberBadge}>LEARNING OUTCOMES & RHYTHM • SLIDE 2 OF {totalSlides}</div>
-                <h1 className={styles.slideTitle}>What You Will Achieve & Class Rhythm</h1>
-                <p className={styles.slideSubtitle}>Measurable student outcomes and time-boxed teacher/student actions.</p>
+                <div className={styles.slideNumberBadge}>ENGINEERING FLIGHT PLAN • SLIDE 2 OF {totalSlides}</div>
+                <h1 className={styles.slideTitle}>Today’s Robotics Mission & Flight Plan</h1>
+                <p className={styles.slideSubtitle}>Hands-on project deliverables and measurable engineering superpowers unlocked today.</p>
               </div>
+
               <div className={styles.slideBody}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '2rem' }}>
-                  {/* Outcomes */}
-                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1.75rem', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#F5B800', marginBottom: '1.25rem' }}>
-                      🎯 Measurable Learning Outcomes:
+                <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+                  {/* Left: Project Deliverable & Outcomes */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ background: 'rgba(245, 184, 0, 0.08)', border: '1px solid rgba(245, 184, 0, 0.3)', borderRadius: '14px', padding: '1.25rem' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.35rem' }}>
+                        🛠 TODAY’S HANDS-ON BUILD
+                      </div>
+                      <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff' }}>
+                        {lesson.project.name}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <span style={{ background: '#1e293b', color: '#38bdf8', fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '4px', textTransform: 'uppercase' }}>
+                          Deliverable: {lesson.project.deliverableType.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <div style={{ marginTop: '0.75rem', color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5' }}>
+                        <strong>Proof of Success:</strong> {lesson.project.successEvidence[0]}
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                      {lesson.outcomes.map((obj, i) => (
-                        <div key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                          <CheckCircle size={20} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
-                          <span style={{ fontSize: '1rem', color: '#f1f5f9', lineHeight: '1.5' }}>{obj}</span>
-                        </div>
-                      ))}
+
+                    <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.25rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
+                        🎯 Engineering Skills You Unlock Today:
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '220px', overflowY: 'auto' }}>
+                        {lesson.outcomes.map((outcome, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                            <CheckCircle size={16} color="#10b981" style={{ flexShrink: 0, marginTop: '3px' }} />
+                            <span style={{ fontSize: '0.88rem', color: '#e2e8f0', lineHeight: '1.4' }}>{outcome}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Rhythm Segments */}
-                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1.75rem', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#38bdf8', marginBottom: '1.25rem' }}>
-                      ⏳ Class Rhythm ({isCompactMode ? '60m' : `${lesson.durationMinutes}m`}):
+                  {/* Right: 4-Stage Lab Flight Plan */}
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        🚀 4-Stage Lab Flight Plan:
+                      </div>
+                      <button
+                        onClick={() => setShowRhythmTable(prev => !prev)}
+                        style={{ background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#F5B800', borderRadius: '6px', fontSize: '0.75rem', padding: '0.25rem 0.5rem', cursor: 'pointer', fontWeight: 700 }}
+                      >
+                        {showRhythmTable ? 'Show Overview' : 'View Teacher Timetable'}
+                      </button>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', maxHeight: '360px', overflowY: 'auto' }}>
-                      {lesson.classRhythm.map((seg, i) => (
-                        <div key={i} style={{ background: '#1e293b', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.88rem', color: '#cbd5e1' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                            <strong style={{ color: '#F5B800' }}>{seg.segment}</strong>
-                            <span style={{ color: '#38bdf8', fontWeight: 700 }}>{seg.minutes}m</span>
+
+                    {!showRhythmTable ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <div style={{ background: '#0b101b', border: '1px solid #1e293b', borderRadius: '10px', padding: '0.85rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#F5B800', color: '#161B26', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.85rem' }}>1</div>
+                          <div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ffffff' }}>System Model &amp; Physics Deep Dive</div>
+                            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Explore what makes a robot, the ATmega328P brain, and Ohm’s law.</div>
                           </div>
-                          <div style={{ color: '#94a3b8', fontSize: '0.8rem' }}><strong>Teacher:</strong> {seg.teacherAction}</div>
-                          <div style={{ color: '#f1f5f9', fontSize: '0.8rem', marginTop: '2px' }}><strong>Students:</strong> {seg.studentAction}</div>
                         </div>
-                      ))}
-                    </div>
+
+                        <div style={{ background: '#0b101b', border: '1px solid #1e293b', borderRadius: '10px', padding: '0.85rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#06b6d4', color: '#161B26', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.85rem' }}>2</div>
+                          <div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ffffff' }}>Virtual Simulator Workbench</div>
+                            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Test timing delays and inspect pin voltages on the interactive board simulator.</div>
+                          </div>
+                        </div>
+
+                        <div style={{ background: '#0b101b', border: '1px solid #1e293b', borderRadius: '10px', padding: '0.85rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#10b981', color: '#161B26', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.85rem' }}>3</div>
+                          <div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ffffff' }}>Physical Hardware Inspection &amp; Wiring</div>
+                            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Connect USB, inspect pins, and perform pre-power safety verification.</div>
+                          </div>
+                        </div>
+
+                        <div style={{ background: '#0b101b', border: '1px solid #1e293b', borderRadius: '10px', padding: '0.85rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#a855f7', color: '#ffffff', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.85rem' }}>4</div>
+                          <div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ffffff' }}>Embedded C++ Upload &amp; Creative Missions</div>
+                            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Flash code to chip, customize rhythms, and master Heartbeat and SOS signals.</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto' }}>
+                        {lesson.classRhythm.map((seg, i) => (
+                          <div key={i} style={{ background: '#090e18', border: '1px solid #1e293b', padding: '0.6rem 0.85rem', borderRadius: '8px', fontSize: '0.82rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#F5B800', fontWeight: 700 }}>
+                              <span>{seg.segment}</span>
+                              <span style={{ color: '#38bdf8' }}>{seg.minutes}m</span>
+                            </div>
+                            <div style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '2px' }}><strong>Teacher:</strong> {seg.teacherAction}</div>
+                            <div style={{ color: '#cbd5e1', fontSize: '0.75rem', marginTop: '2px' }}><strong>Students:</strong> {seg.studentAction}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </>
           )}
 
-          {/* SLIDE 3: CORE ROBOTICS CONCEPTS */}
+          {/* SLIDE 3: INTERACTIVE CONCEPT EXPLORER */}
           {currentSlide === 2 && (
             <>
               <div className={styles.slideHeader}>
-                <div className={styles.slideNumberBadge}>CORE ROBOTICS CONCEPTS • SLIDE 3 OF {totalSlides}</div>
-                <h1 className={styles.slideTitle}>{lesson.concepts[0]?.title || lesson.title}</h1>
-                <p className={styles.slideSubtitle}>Fundamental principles of hardware, software, and autonomous systems.</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                  <div className={styles.slideNumberBadge}>
+                    CORE ROBOTICS CONCEPTS • SLIDE 3 OF {totalSlides}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                      Concept {activeConceptIndex + 1} of {lesson.concepts.length}
+                    </span>
+                    <button
+                      onClick={() => setActiveConceptIndex(prev => (prev > 0 ? prev - 1 : lesson.concepts.length - 1))}
+                      className={styles.actionBtn}
+                      style={{ padding: '0.2rem 0.5rem' }}
+                      title="Previous Concept"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <button
+                      onClick={() => setActiveConceptIndex(prev => (prev < lesson.concepts.length - 1 ? prev + 1 : 0))}
+                      className={styles.actionBtn}
+                      style={{ padding: '0.2rem 0.5rem' }}
+                      title="Next Concept"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+                <h1 className={styles.slideTitle}>
+                  {lesson.concepts[activeConceptIndex]?.title || lesson.title}
+                </h1>
+                <p className={styles.slideSubtitle}>
+                  Fundamental engineering principles of hardware, silicon logic, and autonomous machines.
+                </p>
               </div>
+
               <div className={styles.slideBody}>
-                <div className={styles.flowStepGrid}>
+                {/* Horizontal Concept Tabs */}
+                <div className={styles.conceptTabsBar}>
                   {lesson.concepts.map((concept, idx) => (
-                    <div key={idx} className={styles.flowStepCard}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 800, color: idx === 0 ? '#38bdf8' : idx === 1 ? '#F5B800' : '#34d399', textTransform: 'uppercase' }}>
-                        Concept {idx + 1}
-                      </div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', margin: '0.5rem 0' }}>
-                        {concept.title}
-                      </div>
-                      <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                        {concept.explanation}
-                      </p>
-                      {concept.instructorNote && (
-                        <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#F5B800', background: 'rgba(245, 184, 0, 0.08)', padding: '0.5rem', borderRadius: '6px' }}>
-                          💡 <em>Instructor Note:</em> {concept.instructorNote}
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      key={idx}
+                      onClick={() => setActiveConceptIndex(idx)}
+                      className={`${styles.conceptTabPill} ${activeConceptIndex === idx ? styles.conceptTabPillActive : ''}`}
+                    >
+                      <span>{idx + 1}. {concept.title.split(':')[0]}</span>
+                    </button>
                   ))}
                 </div>
 
-                <div className={styles.goldenRuleBox}>
-                  <div className={styles.goldenRuleTitle}>⚡ GOLDEN ENGINEERING SAFETY RULE:</div>
-                  <div className={styles.goldenRuleText}>&ldquo;{lesson.safetyNotes[0] || 'Never modify powered wiring without instructor supervision.'}&rdquo;</div>
+                {/* Concept Detailed Display */}
+                <div className={styles.conceptDetailContainer}>
+                  <div className={styles.conceptHeaderRow}>
+                    <span className={styles.conceptBadge}>
+                      Concept Module {activeConceptIndex + 1}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: '#38bdf8', fontWeight: 700 }}>
+                      RoboBEE Core Engineering Knowledge
+                    </span>
+                  </div>
+
+                  <div className={styles.conceptText}>
+                    {lesson.concepts[activeConceptIndex]?.explanation}
+                  </div>
+
+                  {lesson.concepts[activeConceptIndex]?.instructorNote && (
+                    <div className={styles.conceptSubBox}>
+                      <div className={styles.conceptSubTitle}>💡 Pro Engineering Tip &amp; Instructor Insight</div>
+                      <div style={{ color: '#fef3c7', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                        {lesson.concepts[activeConceptIndex]?.instructorNote}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Safety Rule Footer */}
+                <div className={styles.goldenRuleBox} style={{ marginTop: '1rem', padding: '0.85rem 1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Shield size={18} color="#F5B800" />
+                      <strong style={{ color: '#F5B800', fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                        Hardware Golden Rule:
+                      </strong>
+                    </div>
+                    <span style={{ color: '#fef3c7', fontSize: '0.92rem', fontWeight: 600 }}>
+                      &ldquo;{lesson.safetyNotes[0] || 'Supervised low-voltage classroom activity.'}&rdquo;
+                    </span>
+                  </div>
                 </div>
               </div>
             </>
@@ -300,7 +497,7 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
             <>
               <div className={styles.slideHeader}>
                 <div className={styles.slideNumberBadge}>LIVE CLASSROOM SIMULATION • SLIDE 4 OF {totalSlides}</div>
-                <h1 className={styles.slideTitle}>Interactive Simulation & Virtual Testbed</h1>
+                <h1 className={styles.slideTitle}>Interactive Simulation &amp; Virtual Testbed</h1>
                 <p className={styles.slideSubtitle}>Test parameters live on the classroom smartboard before wiring physical hardware.</p>
               </div>
               <div className={styles.slideBody}>
@@ -309,51 +506,132 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
             </>
           )}
 
-          {/* SLIDE 5: GUIDED CODE LAB WALKTHROUGH */}
+          {/* SLIDE 5: GUIDED CODE LAB & CREATIVE MISSIONS */}
           {currentSlide === 4 && (
             <>
               <div className={styles.slideHeader}>
-                <div className={styles.slideNumberBadge}>CODE LAB WALKTHROUGH • SLIDE 5 OF {totalSlides}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                  <div className={styles.slideNumberBadge}>CODE LAB WALKTHROUGH • SLIDE 5 OF {totalSlides}</div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => setCodeLabTab('code')}
+                      className={`${styles.conceptTabPill} ${codeLabTab === 'code' ? styles.conceptTabPillActive : ''}`}
+                    >
+                      <Code size={13} style={{ display: 'inline', marginRight: '4px' }} />
+                      <span>Standard C++ Sketch</span>
+                    </button>
+                    <button
+                      onClick={() => setCodeLabTab('missions')}
+                      className={`${styles.conceptTabPill} ${codeLabTab === 'missions' ? styles.conceptTabPillActive : ''}`}
+                    >
+                      <Sparkles size={13} style={{ display: 'inline', marginRight: '4px' }} />
+                      <span>Creative Coding Missions</span>
+                    </button>
+                  </div>
+                </div>
                 <h1 className={styles.slideTitle}>
                   {lesson.codeLab ? `${lesson.codeLab.language.toUpperCase()} Code Walkthrough` : 'Engineering Design & Flow'}
                 </h1>
-                <p className={styles.slideSubtitle}>Line-by-line inspection of instructions and pin mappings.</p>
+                <p className={styles.slideSubtitle}>Line-by-line inspection of instructions, hardware registers, and timing.</p>
               </div>
               <div className={styles.slideBody}>
                 {lesson.codeLab ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
-                    <pre className={styles.codeWalkthroughBox}>
-                      <code>{lesson.codeLab.code}</code>
-                    </pre>
+                  codeLabTab === 'code' ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
+                      <pre className={styles.codeWalkthroughBox}>
+                        <code>{lesson.codeLab.code}</code>
+                      </pre>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <div style={{ background: 'rgba(245, 184, 0, 0.08)', border: '1px solid rgba(245, 184, 0, 0.3)', padding: '1.25rem', borderRadius: '12px' }}>
-                        <div style={{ color: '#F5B800', fontWeight: 800, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
-                          🔍 Code Explanations:
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ background: 'rgba(245, 184, 0, 0.08)', border: '1px solid rgba(245, 184, 0, 0.3)', padding: '1.25rem', borderRadius: '12px' }}>
+                          <div style={{ color: '#F5B800', fontWeight: 800, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                            🔍 Code Explanations:
+                          </div>
+                          <ul style={{ paddingLeft: '1.2rem', color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                            {lesson.codeLab.explanations.map((exp, idx) => (
+                              <li key={idx} style={{ marginBottom: '0.35rem' }}>{exp}</li>
+                            ))}
+                          </ul>
                         </div>
-                        <ul style={{ paddingLeft: '1.2rem', color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                          {lesson.codeLab.explanations.map((exp, idx) => (
-                            <li key={idx} style={{ marginBottom: '0.35rem' }}>{exp}</li>
-                          ))}
-                        </ul>
+
+                        {lesson.codeLab.tweakTip && (
+                          <div style={{ background: 'rgba(6, 182, 212, 0.08)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '1.25rem', borderRadius: '12px' }}>
+                            <div style={{ color: '#06b6d4', fontWeight: 800, fontSize: '0.95rem', marginBottom: '0.35rem' }}>
+                              💡 Student Tweak to Try:
+                            </div>
+                            <p style={{ color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                              {lesson.codeLab.tweakTip}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                      {/* Mission 1 */}
+                      <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.25rem' }}>
+                        <div style={{ color: '#ec4899', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                          Mission 1
+                        </div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+                          💓 The Human Heartbeat
+                        </div>
+                        <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '0.75rem' }}>
+                          Program a realistic double-pulse lub-dub rhythm followed by a resting pause!
+                        </p>
+                        <pre style={{ background: '#020617', padding: '0.75rem', borderRadius: '8px', fontSize: '0.8rem', color: '#38bdf8', overflowX: 'auto', lineHeight: '1.4' }}>
+{`digitalWrite(ledPin, HIGH); delay(100);
+digitalWrite(ledPin, LOW);  delay(100);
+digitalWrite(ledPin, HIGH); delay(100);
+digitalWrite(ledPin, LOW);  delay(700);`}
+                        </pre>
                       </div>
 
-                      {lesson.codeLab.tweakTip && (
-                        <div style={{ background: 'rgba(6, 182, 212, 0.08)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '1.25rem', borderRadius: '12px' }}>
-                          <div style={{ color: '#06b6d4', fontWeight: 800, fontSize: '0.95rem', marginBottom: '0.35rem' }}>
-                            💡 Student Tweak to Try:
-                          </div>
-                          <p style={{ color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                            {lesson.codeLab.tweakTip}
-                          </p>
+                      {/* Mission 2 */}
+                      <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.25rem' }}>
+                        <div style={{ color: '#F5B800', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                          Mission 2
                         </div>
-                      )}
+                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+                          🚨 S.O.S. Distress Beacon
+                        </div>
+                        <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '0.75rem' }}>
+                          The maritime Morse code emergency distress signal: 3 short, 3 long, 3 short.
+                        </p>
+                        <pre style={{ background: '#020617', padding: '0.75rem', borderRadius: '8px', fontSize: '0.8rem', color: '#F5B800', overflowX: 'auto', lineHeight: '1.4' }}>
+{`// 3 Short (... )
+flash(150); flash(150); flash(150);
+// 3 Long (---)
+flash(500); flash(500); flash(500);
+// 3 Short (... )
+flash(150); flash(150); flash(150);`}
+                        </pre>
+                      </div>
+
+                      {/* Mission 3 */}
+                      <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '1.25rem' }}>
+                        <div style={{ color: '#06b6d4', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                          Mission 3
+                        </div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+                          ⚡ Strobe &amp; Persistence of Vision
+                        </div>
+                        <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '0.75rem' }}>
+                          Drop delays down to 50ms. Observe where your eyes stop seeing blinks and perceive smooth light!
+                        </p>
+                        <pre style={{ background: '#020617', padding: '0.75rem', borderRadius: '8px', fontSize: '0.8rem', color: '#06b6d4', overflowX: 'auto', lineHeight: '1.4' }}>
+{`digitalWrite(ledPin, HIGH);
+delay(50); // 50ms strobe
+digitalWrite(ledPin, LOW);
+delay(50); // Rapid blink`}
+                        </pre>
+                      </div>
                     </div>
-                  </div>
+                  )
                 ) : (
                   <div style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155', textAlign: 'center' }}>
                     <Wrench size={36} color="#F5B800" style={{ marginBottom: '0.5rem' }} />
-                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9' }}>Design & Simulation Deliverable</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9' }}>Design &amp; Simulation Deliverable</div>
                     <p style={{ color: '#94a3b8', maxWidth: '500px', margin: '0.5rem auto', lineHeight: '1.6' }}>
                       This session focuses on systems architecture, CAD modeling, or simulation logic.
                       Follow the hands-on project steps on the next slide!
@@ -579,4 +857,6 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
       </main>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

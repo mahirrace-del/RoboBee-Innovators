@@ -283,3 +283,186 @@
   overflow-y: auto;
   line-height: 1.6;
 }
+
+/* 4 Pillars of Robotics */
+.pillarGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.pillarCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.pillarCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(245, 184, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.pillarIconRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.pillarTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.pillarDesc {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* Concept Tabs & Carousel */
+.conceptTabsBar {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.conceptTabPill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 0.45rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.conceptTabPill:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.conceptTabPillActive {
+  background: rgba(245, 184, 0, 0.15);
+  border-color: #F5B800;
+  color: #F5B800;
+}
+
+.conceptDetailContainer {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.conceptHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.conceptBadge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #F5B800;
+  background: rgba(245, 184, 0, 0.1);
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid rgba(245, 184, 0, 0.3);
+}
+
+.conceptText {
+  color: #cbd5e1;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+}
+
+.conceptSubBox {
+  background: rgba(11, 15, 25, 0.6);
+  border: 1px solid rgba(245, 184, 0, 0.2);
+  border-left: 4px solid #F5B800;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.conceptSubTitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #F5B800;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+/* Flight Plan / Roadmap */
+.roadmapGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.roadmapStep {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.roadmapNum {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #F5B800;
+  color: #161B26;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
+}
+
+@media (max-width: 1024px) {
+  .pillarGrid, .roadmapGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .slideCanvas {
+    padding: 1rem;
+  }
+  .slideCard {
+    padding: 1.25rem;
+    min-height: auto;
+  }
+  .slideTitle {
+    font-size: 1.5rem;
+  }
+  .pillarGrid, .roadmapGrid {
+    grid-template-columns: 1fr;
+  }
+}
