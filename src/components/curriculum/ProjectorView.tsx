@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import styles from "./projectorView.module.css";
 import { RoboticsLesson } from "@/lib/curriculumData";
 import { CurriculumSimulator } from "./CurriculumSimulator";
+import { Class1WorkshopDeck } from "./Class1WorkshopDeck";
 import { 
   Play, Pause, RotateCcw, Maximize, X, ArrowLeft, ArrowRight,
   Clock, Shield, CheckCircle, Code, Eye, HelpCircle, Phone, MapPin,
@@ -19,7 +20,34 @@ interface ProjectorViewProps {
 export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
   const [mounted, setMounted] = useState<boolean>(false);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
-  const totalSlides = 8;
+  const isClass1 = lesson.id === "beg-01";
+  const totalSlides = isClass1 ? 12 : 8;
+
+  const class1SlideTitles = [
+    "Slide 1: Welcome & Mission",
+    "Slide 2: Real-World Robotics (7 Domains)",
+    "Slide 3: Robot or Not? Class Debate",
+    "Slide 4: Sense ➔ Decide ➔ Act Law",
+    "Slide 5: Inside Your Kit (12 Parts)",
+    "Slide 6: Arduino Uno R3 Board Tour",
+    "Slide 7: Breadboards & Ohm's Law",
+    "Slide 8: Lab A: First Light with LED_BUILTIN",
+    "Slide 9: Lab B: External Breadboard Circuit",
+    "Slide 10: Inside the Code: C++ Line-by-Line",
+    "Slide 11: Timing Simulator & Frequency Lab",
+    "Slide 12: Troubleshooting, Quiz & Exit Ticket"
+  ];
+
+  const standardSlideTitles = [
+    "Slide 1: Hook & Core Question",
+    "Slide 2: Relevance & Agenda",
+    "Slide 3: Concept Teaching",
+    "Slide 4: Virtual Testbed",
+    "Slide 5: Guided Code Lab",
+    "Slide 6: Hardware & Wiring",
+    "Slide 7: Guided Build & Test",
+    "Slide 8: Exit Reflection"
+  ];
 
   // Active concept index for Slide 3
   const [activeConceptIndex, setActiveConceptIndex] = useState<number>(0);
@@ -154,6 +182,29 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
         <div className={styles.brandGroup}>
           <span className={styles.classCodeTag}>{lesson.code}</span>
           <span className={styles.classTitleText}>{lesson.title}</span>
+          {/* Quick Slide Jump Dropdown */}
+          <select
+            value={currentSlide}
+            onChange={(e) => setCurrentSlide(Number(e.target.value))}
+            style={{
+              background: "#0f172a",
+              color: "#F5B800",
+              border: "1px solid rgba(245, 184, 0, 0.4)",
+              borderRadius: "6px",
+              padding: "0.25rem 0.5rem",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              marginLeft: "0.5rem"
+            }}
+            title="Quick Slide Jump"
+          >
+            {(isClass1 ? class1SlideTitles : standardSlideTitles).map((title, idx) => (
+              <option key={idx} value={idx}>
+                {title}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Classroom Rhythm Timer with 90m / 60m Toggle */}
@@ -164,6 +215,9 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
           
           <button onClick={toggleTimer} className={styles.actionBtn} title={timerRunning ? "Pause timer" : "Start timer"}>
             {timerRunning ? <Pause size={14} /> : <Play size={14} />}
+          </button>
+          <button onClick={() => setTimerSeconds(s => s + 60)} className={styles.actionBtn} title="Add 1 minute (+1 Min)">
+            <span>+1m</span>
           </button>
           <button onClick={() => resetTimer()} className={styles.actionBtn} title="Reset timer">
             <RotateCcw size={14} />
@@ -266,8 +320,17 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
             transition: 'font-size 0.2s ease'
           }}
         >
-          {/* SLIDE 1: EPIC ROBOTICS MASTERCLASS TITLE */}
-          {currentSlide === 0 && (
+          {isClass1 ? (
+            <Class1WorkshopDeck
+              lesson={lesson}
+              currentSlide={currentSlide}
+              setCurrentSlide={setCurrentSlide}
+              fontScale={fontScale}
+            />
+          ) : (
+            <>
+              {/* SLIDE 1: EPIC ROBOTICS MASTERCLASS TITLE */}
+              {currentSlide === 0 && (
             <>
               <div className={styles.slideHeader}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
@@ -1142,6 +1205,8 @@ delay(50); // Rapid blink`}
               </div>
             </>
           )}
+        </>
+      )}
 
           {/* Collapsible Instructor Speaker Notes Drawer */}
           {showSpeakerNotes && (
@@ -1158,50 +1223,117 @@ delay(50); // Rapid blink`}
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                 <strong style={{ color: '#F5B800', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <BookOpen size={15} /> Instructor Speaker Notes • Slide {currentSlide + 1}
+                  <BookOpen size={15} /> Instructor Speaker Notes • Slide {currentSlide + 1} of {totalSlides}
                 </strong>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Press 'N' to toggle</span>
+                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Press &apos;N&apos; to toggle</span>
               </div>
               <div style={{ lineHeight: '1.5', color: '#e2e8f0' }}>
-                {currentSlide === 0 && (
-                  <div>
-                    <strong>Pacing Goal (0–8m Hook):</strong> Engage students immediately with the "Robot or Not?" debate. Pass around physical parts so they can feel the difference between an unpowered passive tool and an autonomous microcontroller system.
-                  </div>
-                )}
-                {currentSlide === 1 && (
-                  <div>
-                    <strong>Pacing Goal (8–18m Relevance & Agenda):</strong> Review the class schedule. Ensure each student pair has their hardware kit and verified data cable ready. Frame today's achievement: "You will write C++ code that physically turns on light."
-                  </div>
-                )}
-                {currentSlide === 2 && (
-                  <div>
-                    <strong>Pacing Goal (18–30m Concept Teaching):</strong> Teach the Sense → Decide → Act closed feedback loop. Emphasize that the ATmega328P runs bare-metal machine code at 16 MHz with deterministic precision. Address the 220Ω resistor bodyguard concept.
-                  </div>
-                )}
-                {currentSlide === 3 && (
-                  <div>
-                    <strong>Pacing Goal (30–42m Virtual Testbed):</strong> Guide students through the interactive simulator on the smartboard. Let them predict how changing delay parameters changes blink frequencies before touching physical hardware.
-                  </div>
-                )}
-                {currentSlide === 4 && (
-                  <div>
-                    <strong>Pacing Goal (42–68m Code Walkthrough):</strong> Explain <code>void setup()</code> vs <code>void loop()</code>. Remind students: <code>pinMode</code> defines the pin's role once, while <code>digitalWrite</code> physically pushes 5V HIGH or 0V LOW in an infinite loop.
-                  </div>
-                )}
-                {currentSlide === 5 && (
-                  <div>
-                    <strong>Pacing Goal (Hardware & Wiring):</strong> Enforce pre-power checks: NEVER rewire an active circuit while the USB cable is plugged in. Always verify LED polarity (long anode toward pin, short cathode through 220Ω resistor to GND).
-                  </div>
-                )}
-                {currentSlide === 6 && (
-                  <div>
-                    <strong>Pacing Goal (68–78m Guided Build & Test):</strong> Guide students through creative signal challenges: Heartbeat and SOS Morse code. If code won't upload, check Tools ➔ Port and confirm the cable is a data cable, not charge-only!
-                  </div>
-                )}
-                {currentSlide === 7 && (
-                  <div>
-                    <strong>Pacing Goal (86–90m Exit Reflection):</strong> Lead the 4-question mastery exit check. Have each student share one input, one decision, one output, and one safety rule before safely packing their Arduino boards into anti-static bags.
-                  </div>
+                {isClass1 ? (
+                  <>
+                    {currentSlide === 0 && (
+                      <div>
+                        <strong>Pacing Goal (0–10m Welcome, Safety &amp; Mission):</strong> Welcome students to RoboBEE Innovators. Introduce today&apos;s mission: moving from tech consumers to creators who command physical hardware with code. Review the 5 measurable learning outcomes and establish laboratory safety rules: never wire a circuit while USB is connected, protect semiconductors from ESD, and ensure bench partner checks circuit path before power.
+                      </div>
+                    )}
+                    {currentSlide === 1 && (
+                      <div>
+                        <strong>Pacing Goal (10–18m Real-World Tour):</strong> Walk through the 7 real-world domains on the interactive showcase. Emphasize that robotics is transforming agriculture, surgery, manufacturing, transportation, prosthetics, disaster rescue, and ocean conservation. Have students identify how a medical infusion pump or combine harvester implements the 3 pillars, and connect it to how today&apos;s simple LED output forms the foundation of all visual robotic signaling.
+                      </div>
+                    )}
+                    {currentSlide === 2 && (
+                      <div>
+                        <strong>Pacing Goal (18–25m &ldquo;Robot or Not?&rdquo; Class Debate):</strong> Lead the interactive debate. Poll the classroom on each of the 8 machines before clicking to reveal the engineering verdict. Challenge students on why a microwave with a timer or an RC toy car is NOT a true autonomous robot, while an automatic sliding door or Roomba is. Drill the golden rule: A robot MUST Sense the real world, Decide programmatically, and Act physically!
+                      </div>
+                    )}
+                    {currentSlide === 3 && (
+                      <div>
+                        <strong>Pacing Goal (25–33m Sense ➔ Decide ➔ Act Law):</strong> Project the Sense ➔ Decide ➔ Act engineering diagram. Trace the physical-digital-physical pathway: environmental phenomena (distance, light, pressure) convert into analog voltages or digital bits, the ATmega328P RISC microcontroller computes logic at 16 million clock cycles per second, and output pins drive physical actuators. Explain the closed-loop feedback path where the robot&apos;s action changes the environment and restarts the cycle.
+                      </div>
+                    )}
+                    {currentSlide === 4 && (
+                      <div>
+                        <strong>Pacing Goal (33–40m Kit Inventory &amp; Handling):</strong> Have students open their kit boxes and follow along with the 12-part hardware gallery. Hold up each core component: the Arduino Uno (the brain), solderless breadboard (prototyping platform), jumper wires (signal highways), resistors (protective bodyguards), and LEDs (visual communicators). Emphasize handling chips by their edges to prevent electrostatic damage.
+                      </div>
+                    )}
+                    {currentSlide === 5 && (
+                      <div>
+                        <strong>Pacing Goal (40–48m Arduino Uno Board Tour):</strong> Direct students to the interactive board tour. Point out the USB Type-B port, DC barrel jack, voltage regulators, 16 MHz crystal oscillator, and the 14 digital I/O pins. Highlight the critical secret: the onboard surface-mount orange LED labeled &apos;L&apos; is internally hardwired to Digital Pin 13 through a buffer, allowing us to verify sketch logic before wiring a single breadboard clip!
+                      </div>
+                    )}
+                    {currentSlide === 6 && (
+                      <div>
+                        <strong>Pacing Goal (48–55m Breadboards, LEDs &amp; Ohm&apos;s Law):</strong> Toggle between the surface view and X-ray view of the breadboard. Explain the 5-hole terminal spring clips and why components in the same row are connected. Show the center isolation ravine. Then teach LED polarity: long lead is Anode (+), short lead with flat rim is Cathode (-). Walk through Ohm&apos;s Law (V = IR): 5V supply minus 2V LED drop leaves 3V across the 220Ω resistor, limiting current to a safe 13.6mA to prevent burning out the LED and microcontroller pin.
+                      </div>
+                    )}
+                    {currentSlide === 7 && (
+                      <div>
+                        <strong>Pacing Goal (55–65m Lab Part A: LED_BUILTIN):</strong> Guide students through Lab Part A. Ensure USB cables are plugged into high-speed data ports. Open Arduino IDE, select Board: &apos;Arduino Uno&apos; and the active COM port, open the Blink sketch, and press Upload. Point out the flashing TX and RX LEDs as binary code is written to flash memory. Celebrate the orange &apos;L&apos; LED&apos;s first 1 Hz heartbeat!
+                      </div>
+                    )}
+                    {currentSlide === 8 && (
+                      <div>
+                        <strong>Pacing Goal (65–75m Lab Part B: Breadboard Circuit):</strong> Enforce the mandatory safety rule: UNPLUG USB BEFORE WIRING! Guide teams to wire Pin 13 to Row 10, the 220Ω resistor from Row 10 to Row 15, LED Anode in Row 15, LED Cathode in Row 16, and Row 16 to Arduino GND. Require both bench partners to check off all 4 items on the Pre-Power Safety Checklist before reconnecting USB.
+                      </div>
+                    )}
+                    {currentSlide === 9 && (
+                      <div>
+                        <strong>Pacing Goal (75–80m Code Walkthrough):</strong> Walk through the C++ source code line-by-line. Explain why <code>const int LED_PIN = 13;</code> saves RAM and avoids magic numbers. Contrast <code>void setup()</code>, which runs once to configure pin direction via <code>pinMode(..., OUTPUT)</code>, with <code>void loop()</code>, which runs forever. Explain that <code>digitalWrite(HIGH)</code> applies 5V, <code>digitalWrite(LOW)</code> connects to 0V ground, and <code>delay(1000)</code> pauses the processor for 1,000 milliseconds.
+                      </div>
+                    )}
+                    {currentSlide === 10 && (
+                      <div>
+                        <strong>Pacing Goal (80–85m Live Timing Simulator):</strong> Demonstrate the interactive simulator on the projector. Have student teams run the 4 timing experiments: Fast Strobe (200/200ms), Lighthouse Beacon (100/900ms), Cardiac Heartbeat double-pulse, and the Persistence of Vision (POV) phenomenon where 10ms switching tricks the human eye into seeing continuous illumination. Relate timing to duty cycles and frequency in Hertz.
+                      </div>
+                    )}
+                    {currentSlide === 11 && (
+                      <div>
+                        <strong>Pacing Goal (85–90m Troubleshooting, Quiz &amp; Pack-up):</strong> Consult the Troubleshooting Matrix for any student whose LED failed to light (check reversed LED orientation and loose wires first!). Lead the 5-question interactive class quiz to verify conceptual mastery. Have students complete their 4-part exit reflection, tease Class 2 (Multiple LEDs &amp; Traffic Light Sequencer), and instruct careful component pack-up into anti-static bags.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {currentSlide === 0 && (
+                      <div>
+                        <strong>Pacing Goal (0–8m Hook):</strong> Engage students immediately with the &ldquo;Robot or Not?&rdquo; debate. Pass around physical parts so they can feel the difference between an unpowered passive tool and an autonomous microcontroller system.
+                      </div>
+                    )}
+                    {currentSlide === 1 && (
+                      <div>
+                        <strong>Pacing Goal (8–18m Relevance &amp; Agenda):</strong> Review the class schedule. Ensure each student pair has their hardware kit and verified data cable ready. Frame today&apos;s achievement: &ldquo;You will write C++ code that physically turns on light.&rdquo;
+                      </div>
+                    )}
+                    {currentSlide === 2 && (
+                      <div>
+                        <strong>Pacing Goal (18–30m Concept Teaching):</strong> Teach the Sense ➔ Decide ➔ Act closed feedback loop. Emphasize that the ATmega328P runs bare-metal machine code at 16 MHz with deterministic precision. Address the 220Ω resistor bodyguard concept.
+                      </div>
+                    )}
+                    {currentSlide === 3 && (
+                      <div>
+                        <strong>Pacing Goal (30–42m Virtual Testbed):</strong> Guide students through the interactive simulator on the smartboard. Let them predict how changing delay parameters changes blink frequencies before touching physical hardware.
+                      </div>
+                    )}
+                    {currentSlide === 4 && (
+                      <div>
+                        <strong>Pacing Goal (42–68m Code Walkthrough):</strong> Explain <code>void setup()</code> vs <code>void loop()</code>. Remind students: <code>pinMode</code> defines the pin&apos;s role once, while <code>digitalWrite</code> physically pushes 5V HIGH or 0V LOW in an infinite loop.
+                      </div>
+                    )}
+                    {currentSlide === 5 && (
+                      <div>
+                        <strong>Pacing Goal (Hardware &amp; Wiring):</strong> Enforce pre-power checks: NEVER rewire an active circuit while the USB cable is plugged in. Always verify LED polarity (long anode toward pin, short cathode through 220Ω resistor to GND).
+                      </div>
+                    )}
+                    {currentSlide === 6 && (
+                      <div>
+                        <strong>Pacing Goal (68–78m Guided Build &amp; Test):</strong> Guide students through creative signal challenges: Heartbeat and SOS Morse code. If code won&apos;t upload, check Tools ➔ Port and confirm the cable is a data cable, not charge-only!
+                      </div>
+                    )}
+                    {currentSlide === 7 && (
+                      <div>
+                        <strong>Pacing Goal (86–90m Exit Reflection):</strong> Lead the 4-question mastery exit check. Have each student share one input, one decision, one output, and one safety rule before safely packing their Arduino boards into anti-static bags.
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -1220,7 +1352,20 @@ delay(50); // Rapid blink`}
 
             {/* Slide Jump Drawer Pills */}
             <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
-              {[
+              {(isClass1 ? [
+                { idx: 0, label: '1. Mission' },
+                { idx: 1, label: '2. Real World' },
+                { idx: 2, label: '3. Robot or Not?' },
+                { idx: 3, label: '4. Sense-Decide-Act' },
+                { idx: 4, label: '5. Kit Gallery' },
+                { idx: 5, label: '6. Board Tour' },
+                { idx: 6, label: '7. Breadboard & Ohm' },
+                { idx: 7, label: '8. Lab A: First Light' },
+                { idx: 8, label: '9. Lab B: Wiring' },
+                { idx: 9, label: '10. C++ Code' },
+                { idx: 10, label: '11. Simulator Lab' },
+                { idx: 11, label: '12. Quiz & Exit' }
+              ] : [
                 { idx: 0, label: '1. Hook' },
                 { idx: 1, label: '2. Agenda' },
                 { idx: 2, label: '3. Concepts' },
@@ -1229,7 +1374,7 @@ delay(50); // Rapid blink`}
                 { idx: 5, label: '6. Hardware' },
                 { idx: 6, label: '7. Build & Test' },
                 { idx: 7, label: '8. Exit Ticket' }
-              ].map(s => (
+              ]).map(s => (
                 <button
                   key={s.idx}
                   onClick={() => setCurrentSlide(s.idx)}

@@ -1,0 +1,270 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b101b" />
+      <stop offset="50%" stop-color="#161B26" />
+      <stop offset="100%" stop-color="#080c14" />
+    </linearGradient>
+
+    <!-- Arduino PCB Teal Gradient -->
+    <linearGradient id="unoPcbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00878a" />
+      <stop offset="100%" stop-color="#005c5e" />
+    </linearGradient>
+
+    <linearGradient id="bbPlastic2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="680" rx="16" fill="url(#bgGrad4)" stroke="#1e293b" stroke-width="2" />
+
+  <!-- Top Title Banner -->
+  <rect x="30" y="20" width="670" height="34" rx="17" fill="rgba(245, 184, 0, 0.12)" stroke="#F5B800" stroke-width="1.2" />
+  <text x="45" y="43" font-family="'Segoe UI', system-ui, sans-serif" font-size="13.5" font-weight="800" fill="#F5B800" letter-spacing="1">
+    CLASS 1 LAB PART B: EXTERNAL BREADBOARD LED CIRCUIT WIRING DIAGRAM
+  </text>
+
+  <!-- Mandatory Reference Badge -->
+  <g transform="translate(730, 20)">
+    <rect width="440" height="34" rx="8" fill="#6B0F24" stroke="#F5B800" stroke-width="1.2" />
+    <text x="220" y="22" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">
+      ⚠ RoboBEE Reference Illustration — Verify Hardware Before Powering
+    </text>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- LEFT: ARDUINO UNO R3 BOARD -->
+  <!-- ========================================================== -->
+  <g transform="translate(40, 80)">
+    <!-- Board PCB Outline -->
+    <rect width="420" height="420" rx="14" fill="url(#unoPcbGrad)" stroke="#00b4b8" stroke-width="2" />
+
+    <!-- Board Silkscreen Labels -->
+    <text x="210" y="45" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">
+      ARDUINO UNO R3
+    </text>
+    <text x="210" y="65" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#fef08a" text-anchor="middle">
+      REFERENCE MICROCONTROLLER BOARD
+    </text>
+
+    <!-- USB Port -->
+    <rect x="-15" y="45" width="65" height="55" rx="4" fill="#94a3b8" stroke="#cbd5e1" stroke-width="1.5" />
+    <text x="18" y="77" font-family="'Segoe UI', sans-serif" font-size="9" font-weight="800" fill="#090e18" text-anchor="middle">USB-B</text>
+
+    <!-- DC Barrel Jack -->
+    <rect x="-15" y="270" width="75" height="70" rx="6" fill="#1e293b" stroke="#090e18" stroke-width="2" />
+    <circle cx="22" cy="305" r="10" fill="#090e18" stroke="#475569" stroke-width="2" />
+
+    <!-- ATmega328P DIP Chip -->
+    <g transform="translate(140, 160)">
+      <rect width="210" height="60" rx="5" fill="#090e18" stroke="#334155" stroke-width="1.5" />
+      <circle cx="15" cy="30" r="4" fill="#475569" />
+      <text x="105" y="35" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="800" fill="#ffffff" text-anchor="middle">
+        ATmega328P-PU
+      </text>
+    </g>
+
+    <!-- Reset Button -->
+    <circle cx="85" cy="72" r="10" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
+    <text x="85" y="96" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="800" fill="#ffffff" text-anchor="middle">RESET</text>
+
+    <!-- TOP DIGITAL HEADER (D0 - D13 + GND + AREF) -->
+    <g transform="translate(100, 15)">
+      <rect width="300" height="24" rx="3" fill="#0f172a" stroke="#334155" stroke-width="1" />
+      
+      <!-- Highlighted Pin 13 -->
+      <rect x="235" y="0" width="18" height="24" rx="2" fill="#ef4444" stroke="#F5B800" stroke-width="1.5" />
+      <!-- Highlighted GND pin -->
+      <rect x="255" y="0" width="18" height="24" rx="2" fill="#1e293b" stroke="#38BDF8" stroke-width="1.5" />
+
+      <!-- Pin Holes -->
+      <circle cx="244" cy="12" r="4" fill="#ffffff" stroke="#ef4444" stroke-width="1.5" />
+      <circle cx="264" cy="12" r="4" fill="#ffffff" stroke="#38BDF8" stroke-width="1.5" />
+
+      <!-- Pin Labels -->
+      <text x="244" y="-6" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="900" fill="#F5B800" text-anchor="middle">13</text>
+      <text x="264" y="-6" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="900" fill="#38BDF8" text-anchor="middle">GND</text>
+      <text x="150" y="-6" font-family="'Segoe UI', sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">DIGITAL (PWM ~)</text>
+    </g>
+
+    <!-- Built-in L LED Indicator -->
+    <g transform="translate(240, 95)">
+      <circle cx="15" cy="15" r="7" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
+      <text x="32" y="20" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="900" fill="#ffffff">L (Pin 13)</text>
+      <text x="15" y="36" font-family="'Segoe UI', sans-serif" font-size="8.5" fill="#fef08a" text-anchor="middle">Blinks in sync!</text>
+    </g>
+
+    <!-- BOTTOM POWER HEADER -->
+    <g transform="translate(100, 380)">
+      <rect width="180" height="24" rx="3" fill="#0f172a" stroke="#334155" stroke-width="1" />
+      <text x="90" y="38" font-family="'Segoe UI', sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">POWER (5V &bull; 3.3V &bull; GND)</text>
+      <text x="135" y="16" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#38BDF8">GND</text>
+    </g>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- RIGHT: 400-POINT BREADBOARD WITH WIRED CIRCUIT -->
+  <!-- ========================================================== -->
+  <g transform="translate(680, 80)">
+    <rect width="480" height="420" rx="12" fill="url(#bbPlastic2)" stroke="#94a3b8" stroke-width="2" />
+
+    <!-- Center Ravine -->
+    <rect x="230" y="20" width="20" height="380" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1" />
+
+    <!-- Left & Right Power Rails -->
+    <line x1="25" y1="20" x2="25" y2="400" stroke="#ef4444" stroke-width="2.5" />
+    <line x1="45" y1="20" x2="45" y2="400" stroke="#3b82f6" stroke-width="2.5" />
+    <line x1="435" y1="20" x2="435" y2="400" stroke="#ef4444" stroke-width="2.5" />
+    <line x1="455" y1="20" x2="455" y2="400" stroke="#3b82f6" stroke-width="2.5" />
+
+    <!-- Breadboard Coordinate Headers -->
+    <g font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#64748b" text-anchor="middle">
+      <text x="80" y="22">a</text><text x="110" y="22">b</text><text x="140" y="22">c</text><text x="170" y="22">d</text><text x="200" y="22">e</text>
+      <text x="280" y="22">f</text><text x="310" y="22">g</text><text x="340" y="22">h</text><text x="370" y="22">i</text><text x="400" y="22">j</text>
+    </g>
+
+    <!-- ROW 10: Receives Red Wire in 10a & Resistor Lead in 10c -->
+    <g transform="translate(0, 90)">
+      <rect x="68" y="0" width="144" height="24" rx="4" fill="rgba(245, 184, 0, 0.25)" stroke="#F5B800" stroke-width="1.2" />
+      <text x="60" y="16" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="900" fill="#F5B800" text-anchor="end">10</text>
+      <!-- Tie point holes -->
+      <circle cx="80" cy="12" r="4.5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" /><!-- 10a -->
+      <circle cx="110" cy="12" r="3" fill="#334155" /><!-- 10b -->
+      <circle cx="140" cy="12" r="4.5" fill="#d97706" stroke="#ffffff" stroke-width="1.5" /><!-- 10c Resistor in -->
+      <circle cx="170" cy="12" r="3" fill="#334155" /><!-- 10d -->
+      <circle cx="200" cy="12" r="3" fill="#334155" /><!-- 10e -->
+      <text x="215" y="16" font-family="'Segoe UI', sans-serif" font-size="9" font-weight="800" fill="#161B26">Row 10 Connection Strip</text>
+    </g>
+
+    <!-- ROW 15: Receives Resistor Lead in 15c & LED Anode (+) in 15e -->
+    <g transform="translate(0, 190)">
+      <rect x="68" y="0" width="144" height="24" rx="4" fill="rgba(245, 184, 0, 0.25)" stroke="#F5B800" stroke-width="1.2" />
+      <text x="60" y="16" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="900" fill="#F5B800" text-anchor="end">15</text>
+      <!-- Tie point holes -->
+      <circle cx="80" cy="12" r="3" fill="#334155" /><!-- 15a -->
+      <circle cx="110" cy="12" r="3" fill="#334155" /><!-- 15b -->
+      <circle cx="140" cy="12" r="4.5" fill="#d97706" stroke="#ffffff" stroke-width="1.5" /><!-- 15c Resistor out -->
+      <circle cx="170" cy="12" r="3" fill="#334155" /><!-- 15d -->
+      <circle cx="200" cy="12" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.5" /><!-- 15e LED Anode -->
+      <text x="215" y="16" font-family="'Segoe UI', sans-serif" font-size="9" font-weight="800" fill="#161B26">Row 15 Connection Strip</text>
+    </g>
+
+    <!-- ROW 16: Receives LED Cathode (-) in 16e & Black Wire in 16a -->
+    <g transform="translate(0, 240)">
+      <rect x="68" y="0" width="144" height="24" rx="4" fill="rgba(56, 189, 248, 0.25)" stroke="#38BDF8" stroke-width="1.2" />
+      <text x="60" y="16" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="900" fill="#38BDF8" text-anchor="end">16</text>
+      <!-- Tie point holes -->
+      <circle cx="80" cy="12" r="4.5" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" /><!-- 16a Black wire -->
+      <circle cx="110" cy="12" r="3" fill="#334155" /><!-- 16b -->
+      <circle cx="140" cy="12" r="3" fill="#334155" /><!-- 16c -->
+      <circle cx="170" cy="12" r="3" fill="#334155" /><!-- 16d -->
+      <circle cx="200" cy="12" r="4.5" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5" /><!-- 16e LED Cathode -->
+      <text x="215" y="16" font-family="'Segoe UI', sans-serif" font-size="9" font-weight="800" fill="#161B26">Row 16 Connection Strip</text>
+    </g>
+
+    <!-- COMPONENT: 220 Ohm Resistor Spanning Row 10c to Row 15c -->
+    <g transform="translate(140, 102)">
+      <line x1="0" y1="0" x2="0" y2="100" stroke="#78350f" stroke-width="4" stroke-linecap="round" />
+      <rect x="-8" y="30" width="16" height="40" rx="6" fill="#eed9b3" stroke="#a1824a" stroke-width="1.5" />
+      <!-- Resistor stripes (Red, Red, Brown, Gold) -->
+      <rect x="-8" y="38" width="16" height="4" fill="#dc2626" />
+      <rect x="-8" y="46" width="16" height="4" fill="#dc2626" />
+      <rect x="-8" y="54" width="16" height="4" fill="#78350f" />
+      <rect x="-8" y="62" width="16" height="3" fill="#fbbf24" />
+      <text x="-15" y="55" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="900" fill="#161B26" text-anchor="end">220 &Omega;</text>
+    </g>
+
+    <!-- COMPONENT: 5mm Red LED Spanning Row 15e to Row 16e -->
+    <g transform="translate(200, 202)">
+      <!-- LED Anode Leg into 15e -->
+      <line x1="0" y1="0" x2="0" y2="50" stroke="#cbd5e1" stroke-width="3" />
+      <!-- LED Dome glowing -->
+      <circle cx="25" cy="25" r="16" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+      <!-- Glow rays -->
+      <line x1="45" y1="15" x2="58" y2="8" stroke="#F5B800" stroke-width="2" />
+      <line x1="48" y1="25" x2="62" y2="25" stroke="#F5B800" stroke-width="2" />
+      <line x1="45" y1="35" x2="58" y2="42" stroke="#F5B800" stroke-width="2" />
+      <text x="32" y="60" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="900" fill="#161B26">RED LED</text>
+      <text x="70" y="28" font-family="'Segoe UI', sans-serif" font-size="9" font-weight="800" fill="#dc2626">Blinks!</text>
+    </g>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- PHYSICAL JUMPER WIRES BETWEEN ARDUINO AND BREADBOARD -->
+  <!-- ========================================================== -->
+  <!-- WIRE 1: RED JUMPER (Arduino Pin 13 -> Breadboard Row 10a) -->
+  <g>
+    <!-- Pin 13 is at (384, 107). Breadboard 10a is at (760, 182). -->
+    <path d="M 384,107 C 480,50 640,110 760,182" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round" />
+    <circle cx="384" cy="107" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+    <circle cx="760" cy="182" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+    <rect x="520" y="70" width="130" height="26" rx="5" fill="#111827" stroke="#ef4444" stroke-width="1.5" />
+    <text x="585" y="87" font-family="'Segoe UI', sans-serif" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="middle">
+      RED: Pin 13 &rarr; 10a
+    </text>
+  </g>
+
+  <!-- WIRE 2: BLACK JUMPER (Breadboard Row 16a -> Arduino GND) -->
+  <g>
+    <!-- Breadboard 16a is at (760, 332). Arduino GND is at (404, 107). -->
+    <path d="M 760,332 C 600,420 450,220 404,107" fill="none" stroke="#0284c7" stroke-width="5" stroke-linecap="round" />
+    <circle cx="760" cy="332" r="5" fill="#0284c7" stroke="#ffffff" stroke-width="2" />
+    <circle cx="404" cy="107" r="5" fill="#0284c7" stroke="#ffffff" stroke-width="2" />
+    <rect x="520" y="320" width="130" height="26" rx="5" fill="#111827" stroke="#0284c7" stroke-width="1.5" />
+    <text x="585" y="337" font-family="'Segoe UI', sans-serif" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="middle">
+      BLACK: 16a &rarr; GND
+    </text>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- BOTTOM PANEL: SCHEMATIC INSET & WIRE TABLE SUMMARY -->
+  <!-- ========================================================== -->
+  <g transform="translate(40, 520)">
+    <rect width="1120" height="135" rx="12" fill="#111827" stroke="#334155" stroke-width="2" />
+
+    <!-- Schematic Inset Left -->
+    <g transform="translate(20, 18)">
+      <text x="0" y="16" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#F5B800">
+        CIRCUIT SCHEMATIC INSET:
+      </text>
+
+      <g transform="translate(20, 45)">
+        <!-- [Pin 13] -->
+        <rect x="0" y="-12" width="65" height="24" rx="4" fill="#090e18" stroke="#ef4444" stroke-width="1.2" />
+        <text x="32" y="4" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">Pin 13</text>
+        <line x1="65" y1="0" x2="105" y2="0" stroke="#ef4444" stroke-width="2.5" />
+
+        <!-- [220 Ohm] -->
+        <rect x="105" y="-10" width="55" height="20" rx="3" fill="#090e18" stroke="#F5B800" stroke-width="1.5" />
+        <text x="132" y="4" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#F5B800" text-anchor="middle">220&Omega;</text>
+        <line x1="160" y1="0" x2="200" y2="0" stroke="#ffffff" stroke-width="2.5" />
+
+        <!-- LED Diode -->
+        <polygon points="200,-10 200,10 220,0" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
+        <line x1="220" y1="-10" x2="220" y2="10" stroke="#ffffff" stroke-width="2" />
+        <line x1="220" y1="0" x2="260" y2="0" stroke="#0284c7" stroke-width="2.5" />
+
+        <!-- [GND] -->
+        <rect x="260" y="-12" width="55" height="24" rx="4" fill="#090e18" stroke="#0284c7" stroke-width="1.2" />
+        <text x="287" y="4" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="800" fill="#38BDF8" text-anchor="middle">GND</text>
+      </g>
+    </g>
+
+    <!-- Quick Table Summary Right -->
+    <g transform="translate(420, 18)">
+      <text x="0" y="16" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#38BDF8">
+        RAPID CONNECTION SUMMARY:
+      </text>
+
+      <g transform="translate(0, 32)" font-family="'Segoe UI', sans-serif" font-size="11" fill="#cbd5e1">
+        <text x="0" y="15">&bull; <strong style="fill:#ef4444;">Red Wire:</strong> Arduino Digital Pin 13 &rarr; Breadboard Hole 10a</text>
+        <text x="0" y="35">&bull; <strong style="fill:#F5B800;">220 &Omega; Resistor:</strong> Spans Hole 10c &rarr; Hole 15c (Limits current to 13.6 mA)</text>
+        <text x="0" y="55">&bull; <strong style="fill:#ffffff;">5mm Red LED:</strong> Long Leg (Anode +) in Hole 15e &bull; Short Leg (Cathode -) in Hole 16e</text>
+        <text x="0" y="75">&bull; <strong style="fill:#38BDF8;">Black Wire:</strong> Breadboard Hole 16a &rarr; Arduino GND (Completes return loop)</text>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -122,6 +122,22 @@ export interface RoboticsLesson {
     extension: string[];
     offlineOption?: string[];
   };
+  robotOrNotChallenge?: {
+    item: string;
+    senses: string;
+    decides: string;
+    acts: string;
+    verdict: string;
+    isRobot: boolean;
+  }[];
+  realWorldDomains?: {
+    title: string;
+    domain: string;
+    sense: string;
+    decide: string;
+    act: string;
+    description: string;
+  }[];
   nextLessonId?: string;
   nextLessonTeaser: string;
   sources: { title: string; url: string; accessedOrVersioned?: string }[];
@@ -904,150 +920,274 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
   {
     id: 'beg-01',
     fieldGuideLinks: {
-      readBeforeClass: ["fg-foundations-what-is-robot","fg-arduino-microcontroller-vs-computer"],
-      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-prog-program-structure"],
-      goDeeper: ["fg-arduino-ide-workflow","fg-safety-lab-code"]
+      readBeforeClass: ["fg-foundations-what-is-robot", "fg-arduino-microcontroller-vs-computer"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy", "fg-prog-program-structure"],
+      goDeeper: ["fg-arduino-ide-workflow", "fg-safety-lab-code"]
     },
     courseId: 'beginner',
     sequence: 1,
     code: 'BEGINNER 01',
-    title: 'Welcome to Robotics: What is a Robot & Your First Physical Circuit',
-    promise: 'By the end of this masterclass, you will understand the four universal subsystems of any autonomous robot, explore how a microcontroller processes logic at 16 million cycles per second, and write your first embedded C++ code to control physical electricity!',
+    title: 'Welcome to Robotics: Meet Arduino, Then Make an LED Blink',
+    subtitle: 'Discover how real robots Sense, Decide, and Act, tour the Arduino microcontroller brain, and build your first programmable hardware circuit.',
+    promise: 'Discover how real robots Sense, Decide, and Act, tour the Arduino microcontroller brain, and build your first programmable hardware circuit.',
     status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14, Editable)',
+    proposedAudience: 'Proposed Pathway for Classes 5–8 (Ages 10–14) — Subject to Cohort & Kit Confirmation',
     durationMinutes: 90,
     compactDurationMinutes: 60,
-    prerequisites: ['None! Zero prior electronics or coding experience required. Just curiosity and an eagerness to invent.'],
+    prerequisites: ['None — Designed for complete beginners with zero prior electronics or coding experience.'],
     outcomes: [
-      'Define what separates an autonomous robot from a simple automated appliance or remote-controlled toy using the Sense → Decide → Act triad.',
-      'Identify the four universal subsystems of every robot: Mechanical Body, Electrical Nervous System, Sensor Perception, and Microcontroller Brain.',
-      'Explain how a microcontroller (ATmega328P) differs from a personal computer, executing deterministic machine code in an infinite loop at 16 MHz.',
-      'Understand the physics of electricity (Voltage, Current, Resistance) and calculate why an LED requires a 220Ω resistor using Ohm’s Law.',
-      'Navigate the physical Arduino Uno board: locate the USB serial port, 5V/3.3V power rails, GND sink, digital pins 0–13, and built-in LED on Pin 13.',
-      'Write, compile, and upload an embedded C++ program, modifying timing parameters to engineer custom distress and heartbeat light signals.',
-      'Master essential low-voltage lab safety habits and hardware diagnostic workflows.'
+      'Define a True Robot vs. a Machine: Explain using real-world evidence that a robot is a system that Senses its environment (inputs), Decides using a programmed controller (processing), and Acts on the physical world (outputs).',
+      'Identify Core Robotics Hardware: Locate and state the function of the USB port, power pins (5V, 3.3V, GND), digital I/O pins (D0–D13), analog input pins (A0–A5), microcontroller chip (ATmega328P), and onboard LED (LED_BUILTIN) on an Arduino Uno R3 reference board.',
+      'Construct a Safe Current-Limited LED Circuit: Build an external breadboard circuit connecting an Arduino digital output pin, a 220 Ω – 330 Ω series resistor, and a 5mm LED with correct anode (+) and cathode (-) polarity returning to GND.',
+      'Read, Upload & Explain Embedded C++ Structure: Upload a complete Arduino sketch and explain the exact role of const int, void setup(), void loop(), pinMode(), digitalWrite(), HIGH, LOW, and delay().',
+      'Conduct a Timing Experiment: Modify millisecond parameters inside delay(), predict how changing ON and OFF durations changes blink frequency and duty cycle, and record observations in an engineering trial log.'
     ],
     vocabulary: [
       {
-        term: 'Autonomous Robot',
-        plainMeaning: 'A machine with senses, a computer brain, and motorized parts that navigates and makes its own decisions in the physical world without human remote control.',
-        technicalMeaning: 'An electromechanical system capable of sensing environmental parameters, processing real-time feedback through deterministic logic, and executing physical actions via actuators autonomously.'
+        term: 'Robot',
+        plainMeaning: 'A programmable machine that can gather information from the world around it, make choices using code, and move or signal in response.',
+        technicalMeaning: 'An autonomous or semi-autonomous electromechanical system integrating sensors (transducers), a programmable processing unit (microcontroller/computer), and actuators operating in a Sense–Decide–Act control loop.'
+      },
+      {
+        term: 'Sense → Decide → Act Loop',
+        plainMeaning: 'The 3-step thinking cycle every robot repeats: Sense what is happening, Decide what to do next, and Act by turning on lights, motors, or speakers.',
+        technicalMeaning: 'The fundamental cybernetic control paradigm where input signals from sensors are sampled by a processor, evaluated against algorithmic rules, and converted into electrical drive signals for output actuators.'
       },
       {
         term: 'Microcontroller (MCU)',
-        plainMeaning: 'A complete tiny computer built inside a single black silicon chip that runs one dedicated program over and over with lightning speed.',
-        technicalMeaning: 'A compact integrated circuit containing a processor core, program Flash memory, SRAM, clock oscillator, and programmable input/output (GPIO) peripherals designed for embedded machine control.'
+        plainMeaning: 'A tiny, single-chip computer on the Arduino board that stores and runs one dedicated control program over and over.',
+        technicalMeaning: 'An integrated circuit (such as the 8-bit AVR ATmega328P running at 16 MHz on the Arduino Uno R3) containing a CPU core, Flash program memory (32 KB), SRAM (2 KB), EEPROM (1 KB), timers, and general-purpose input/output (GPIO) peripherals on a single die.'
       },
       {
-        term: 'Sense → Decide → Act',
-        plainMeaning: 'The universal continuous circle of robotics: sensors feel the world, the brain calculates what to do, and motors or lights make it happen.',
-        technicalMeaning: 'The fundamental closed-loop feedback architecture: sensory input acquisition → algorithmic state evaluation → actuator output execution.'
+        term: 'Sensor (Input)',
+        plainMeaning: 'A robot\'s "eyes, ears, or fingertips" that measure things like distance, light, touch, or temperature.',
+        technicalMeaning: 'An input transducer that converts a physical phenomenon (sound waves, infrared reflectance, mechanical pressure, heat) into a measurable electrical voltage or digital signal for the microcontroller.'
       },
       {
-        term: 'Arduino Uno R3',
-        plainMeaning: 'The world-standard blue microcontroller board we use to wire our robot’s brain, sensors, and motor drivers together.',
-        technicalMeaning: 'An open-source microcontroller development board built around the Microchip ATmega328P, featuring 14 digital I/O pins, 6 analog inputs, and a 16 MHz quartz crystal.'
+        term: 'Actuator / Output',
+        plainMeaning: 'A robot\'s "muscles or voice"—any part that does physical work or shows a signal, like an LED lighting up or a motor spinning a wheel.',
+        technicalMeaning: 'A hardware device driven by electrical energy that produces a physical output (photon emission in an LED, rotational torque in a DC/servo motor, or acoustic waves in a piezo buzzer).'
       },
       {
-        term: 'Voltage (V)',
-        plainMeaning: 'The electrical push or pressure that forces electrons through a wire (like water pressure pushing through a pipe).',
-        technicalMeaning: 'The electrical potential difference between two points in a circuit, measured in Volts (V). The Arduino Uno operates on a 5.0V DC standard.'
+        term: 'Solderless Breadboard',
+        plainMeaning: 'A reusable plug-and-play board with hidden metal clips underneath that lets us connect electronic parts without melting solder.',
+        technicalMeaning: 'A construction base for prototyping electronics featuring internal spring-loaded nickel-silver phosphor bronze clips arranged in horizontal 5-point terminal strips (separated by a 7.62 mm DIP center channel) and vertical power distribution buses.'
       },
       {
-        term: 'Current (I)',
-        plainMeaning: 'The actual flow rate of electrons rushing through a circuit (like the gallons of water flowing per second).',
-        technicalMeaning: 'The rate of flow of electric charge past a point, measured in Amperes (A) or Milliamps (mA). 1 Ampere equals 6.242 × 10^18 electrons per second.'
+        term: 'LED (Light-Emitting Diode)',
+        plainMeaning: 'A tiny electronic light that only lets electricity flow in one direction—in through the long leg (+ Anode) and out through the short leg (- Cathode).',
+        technicalMeaning: 'A two-lead semiconductor light source (p–n junction diode) that emits photons via electroluminescence when forward-biased above its forward voltage drop (Vf ≈ 1.8V–2.2V for standard red LEDs).'
       },
       {
-        term: 'Resistance (R)',
-        plainMeaning: 'The electrical friction or narrowing in a wire that limits how much electricity can rush through.',
-        technicalMeaning: 'A material’s opposition to the flow of electric current, measured in Ohms (Ω). Follows Ohm’s Law: V = I × R.'
+        term: 'Current-Limiting Resistor (Ohm\'s Law)',
+        plainMeaning: 'A safety "speed bump" for electricity that slows down electrical current so the LED and Arduino pin don\'t burn out.',
+        technicalMeaning: 'A passive two-terminal component measured in Ohms (Ω) placed in series with a load to restrict current flow according to Ohm\'s Law (I = (Vsupply - Vf) / R), keeping pin current safely around 10–15 mA (well under the ATmega328P\'s 20 mA recommended continuous limit and 40 mA absolute maximum).'
       },
       {
-        term: 'Light Emitting Diode (LED)',
-        plainMeaning: 'A tiny electronic light bulb that only lets electricity pass in one direction and glows brightly without burning up a fragile filament.',
-        technicalMeaning: 'A specialized semiconductor P-N junction diode that emits incoherent light through electroluminescence when forward-biased.'
+        term: 'Digital Signal (HIGH / LOW)',
+        plainMeaning: 'A two-state electrical switch signal where HIGH means "ON (5 Volts)" and LOW means "OFF (0 Volts)".',
+        technicalMeaning: 'A discrete binary logic signal representing two voltage states: Logic 1 (HIGH, ≈ 5.0V on 5V AVR boards or 3.3V on 3.3V boards) and Logic 0 (LOW, 0V referenced to Ground).'
       },
       {
         term: 'Ground (GND)',
-        plainMeaning: 'The 0-Volt return terminal of a circuit. Electricity will never flow unless it has a complete path back to Ground!',
-        technicalMeaning: 'The common reference point in an electrical circuit from which voltages are measured, acting as the return path for electric current.'
+        plainMeaning: 'The "return home" path for electricity—every circuit must connect back to GND to complete a closed loop.',
+        technicalMeaning: 'The common zero-volt (0V) reference potential in an electrical circuit through which return current flows back to the power source.'
       },
       {
-        term: 'void setup() vs void loop()',
-        plainMeaning: 'setup() runs once when the board wakes up to configure the pins; loop() repeats over and over forever as long as the robot has power.',
-        technicalMeaning: 'The two mandatory functions of an Arduino C++ program: setup() initializes registers and hardware modes; loop() executes perpetually inside an implicit while(1) polling cycle.'
+        term: 'void setup() & void loop()',
+        plainMeaning: 'setup() is the checklist the Arduino runs once when it wakes up; loop() is the main routine it repeats forever while powered on.',
+        technicalMeaning: 'The two mandatory entry-point functions in an Arduino C++ sketch: setup() executes once after power-on or hardware reset to initialize pin modes and peripherals, after which the runtime infinitely invokes loop().'
+      },
+      {
+        term: 'Milliseconds (ms) & delay()',
+        plainMeaning: 'One-thousandths of a second (1,000 ms = 1 second). delay(1000) tells the Arduino to pause right where it is for 1 full second.',
+        technicalMeaning: 'A unit of time equal to 10^-3 seconds passed as an unsigned long argument to delay(ms), which halts sequential CPU instruction execution for the specified duration while hardware timers continue counting.'
+      }
+    ],
+    realWorldDomains: [
+      {
+        title: 'Precision Agriculture & Food Security',
+        domain: 'Agriculture',
+        sense: 'Soil moisture probes, ambient humidity & crop canopy cameras',
+        decide: 'Microcontroller calculates irrigation deficit & nutrient requirements',
+        act: 'Solenoid water valves open & autonomous sprayer rovers navigate rows',
+        description: 'Autonomous soil-moisture rovers and automated irrigation systems sense plant hydration, decide exactly which zones need water, and act by opening targeted valves—conserving fresh water across agricultural communities.'
+      },
+      {
+        title: 'Healthcare, Surgery & Hospital Logistics',
+        domain: 'Healthcare',
+        sense: 'Hallway LiDAR, ultrasonic obstacle rangefinders & patient bed sensors',
+        decide: 'Navigation computer calculates collision-free hospital transit routes',
+        act: 'Differential-drive wheels deliver sterile medicine trays to nurse stations',
+        description: 'Autonomous hospital pharmacy carts sense hallway obstacles using ultrasonic and laser sensors, decide safe detours around gurneys, and act by delivering critical medication safely without delay.'
+      },
+      {
+        title: 'Safe Manufacturing & Quality Inspection',
+        domain: 'Manufacturing',
+        sense: 'High-speed line-scan cameras & optical solder-joint profilers',
+        decide: 'Embedded vision controller evaluates component placement tolerances',
+        act: 'Pneumatic reject actuators divert defective circuit boards off the line',
+        description: 'Automated assembly systems sense solder joints on electronics boards, decide if joints meet quality standards, and act by sorting defective parts before they reach consumers.'
+      },
+      {
+        title: 'Autonomous & Assisted Transportation',
+        domain: 'Transportation',
+        sense: 'Millimeter-wave radar, optical cameras & wheel speed encoders',
+        decide: 'Safety ECU compares distance and closing velocity against braking curve',
+        act: 'Hydraulic emergency braking actuators engage faster than human reaction',
+        description: 'Modern railway and vehicle collision-avoidance systems sense stopping distances, decide when a crash risk exists, and act by applying brakes autonomously.'
+      },
+      {
+        title: 'Accessibility & Assistive Robotics',
+        domain: 'Assistive Tech',
+        sense: 'Surface electromyography (EMG) electrodes sensing forearm muscle pulses',
+        decide: 'Pattern-recognition algorithm maps nerve firing intent to grip modes',
+        act: 'Precision micro-servo motors actuate bionic fingers to grasp a cup',
+        description: 'Myoelectric bionic hands sense tiny muscle impulses, decide the intended user grip pattern, and act via micro-servos to restore independence.'
+      },
+      {
+        title: 'Disaster Search & Rescue',
+        domain: 'Rescue',
+        sense: 'Thermal infrared cameras, CO2 gas sensors & microphone arrays',
+        decide: 'Search controller prioritizes survivor heat signatures in rubble voids',
+        act: 'High-torque tracked flippers climb over debris and drop emergency radios',
+        description: 'Inspection rovers navigate collapsed buildings, sense body heat and air quality, decide if pathways are passable, and act by establishing communication lines without risking rescue workers.'
+      },
+      {
+        title: 'Environmental & River Monitoring',
+        domain: 'Environment',
+        sense: 'Water pH electrodes, dissolved oxygen probes & optical turbidity meters',
+        decide: 'Controller checks if chemical pollutants exceed statutory thresholds',
+        act: 'Surface thrusters steer boat toward contamination source while logging GPS',
+        description: 'Solar-powered robotic surface boats sense river pH and turbidity, decide when pollution levels spike, and act by collecting water samples and transmitting GPS coordinates to environmental scientists.'
+      }
+    ],
+    robotOrNotChallenge: [
+      {
+        item: 'Standard Ceiling Fan with Wall Regulator',
+        senses: 'No — does not measure room temperature or human presence',
+        decides: 'No — passive variable resistance sets motor voltage directly',
+        acts: 'Yes — spins blades continuously',
+        verdict: 'NOT A ROBOT (Simple Electrical Appliance): It acts, but cannot sense room conditions or make autonomous decisions.',
+        isRobot: false
+      },
+      {
+        item: 'Basic Pop-Up Kitchen Toaster',
+        senses: 'Mechanical thermal timer / bimetallic strip only',
+        decides: 'No programmable controller or adaptable decision logic',
+        acts: 'Heating coils glow and mechanical spring pops toast',
+        verdict: 'NOT A ROBOT (Automated Mechanical Appliance): Follows a fixed physical timer regardless of whether the bread is actually burnt.',
+        isRobot: false
+      },
+      {
+        item: 'Basic Radio-Controlled (RC) Toy Car',
+        senses: 'Receives human thumbstick radio commands only (no obstacle sensors)',
+        decides: 'No — the human driver\'s brain makes 100% of steering decisions',
+        acts: 'Yes — DC motors spin wheels and steering servo turns',
+        verdict: 'NOT AN AUTONOMOUS ROBOT (Teleoperated Machine): A great stepping stone, but until it has onboard sensors and decision code, the human is the controller.',
+        isRobot: false
+      },
+      {
+        item: 'Smart Inverter Air Conditioner / Washing Machine',
+        senses: 'Yes — measures water weight/turbidity or room temperature via thermistors',
+        decides: 'Yes — embedded microcontroller adjusts wash cycle time or compressor speed',
+        acts: 'Yes — drives drum motor, water valves, or compressor',
+        verdict: 'BORDERLINE / EMBEDDED SMART APPLIANCE: Uses the exact same Sense → Decide → Act microcontroller principles inside a fixed household enclosure!',
+        isRobot: false
+      },
+      {
+        item: 'Obstacle-Avoiding Wheeled Rover',
+        senses: 'Yes — HC-SR04 ultrasonic sensor measures distance to walls in cm',
+        decides: 'Yes — Arduino C++ program compares distance < 20 cm and chooses turn direction',
+        acts: 'Yes — Motor driver reverses and pivots left/right DC gear motors',
+        verdict: 'TRUE ROBOT: Continuously senses its physical environment, runs programmed decision logic, and moves autonomously.',
+        isRobot: true
+      },
+      {
+        item: 'Line-Following Warehouse Delivery Bot',
+        senses: 'Yes — IR reflectance sensor array detects contrast between black track and floor',
+        decides: 'Yes — Microcontroller calculates steering correction from sensor state',
+        acts: 'Yes — Adjusts left and right wheel PWM speeds to stay centered on track',
+        verdict: 'TRUE ROBOT: Classic industrial mobile robot operating in a continuous closed-loop Sense → Decide → Act cycle.',
+        isRobot: true
+      },
+      {
+        item: 'Automated Hydroponic Seeding & Harvesting Arm',
+        senses: 'Yes — Vision camera, limit switches, and moisture/EC sensors',
+        decides: 'Yes — Controller computes inverse kinematics and plant readiness',
+        acts: 'Yes — Stepper/SCARA arm joints move and gripper harvests tray',
+        verdict: 'TRUE ROBOT: Multi-axis agricultural robot combining environmental sensing, coordinate math, and mechanical actuation.',
+        isRobot: true
+      },
+      {
+        item: 'Autonomous Search-and-Rescue Quadruped',
+        senses: 'Yes — IMU balance sensor, depth cameras, and thermal sensors',
+        decides: 'Yes — Onboard computer plans foot placement over rubble',
+        acts: 'Yes — 12 servo/brushless joint actuators walk over uneven obstacles',
+        verdict: 'TRUE ROBOT: Advanced mobile robot adapting dynamically to unpredictable terrain.',
+        isRobot: true
       }
     ],
     teacherPrep: [
-      'Inspect classroom Arduino Uno R3 boards and high-quality USB type-A to type-B data cables (verify data lines are active, not charge-only).',
-      'Confirm Arduino IDE 2.x is installed on all student workstations with the Arduino AVR Boards package pre-downloaded.',
-      'Prepare student hardware kits: Arduino Uno boards, half-size breadboards, 5mm red LEDs, 220Ω resistors, and male-to-male jumper wires.',
-      'Launch the interactive Arduino Uno pinout inspector and web Blink simulator on the main classroom projector.',
-      'Print student First-Light prediction & observation logs or provide access via the digital classroom portal.'
+      'Pre-Class Step 1: Test-upload the Class 1 Blink sketch on 1 demo Arduino Uno R3 and verify the classroom projector displays ProjectorView.tsx clearly at 125% zoom from the back of the room.',
+      'Pre-Class Step 2: Pre-sort student hardware trays so each station has strictly today\'s parts: 1x Arduino Uno R3 (or compatible board), 1x USB-A to USB-B cable, 1x 400-point breadboard, 2x 5mm Red LEDs (1 primary + 1 spare), 2x 220Ω or 330Ω resistors, and 3x Male-to-Male jumper wires (1 Red, 1 Black, 1 spare). Keep motors and batteries out of the tray for Class 1 to prevent distractions and short circuits.',
+      'Pre-Class Step 3: Confirm Arduino IDE 2.x is installed on lab laptops with Arduino AVR Boards core ready, OR open the Class 1 Code Lab & Simulator tab for browser-based simulation stations.',
+      'Student Group Structure: Organize students into pairs or trios with rotating engineering roles: Hardware Engineer (breadboard placement), Firmware Navigator (IDE / code input), and Safety & Quality Inspector (polarity and pre-power verification). Roles swap between Part A and Part B.',
+      'Lab Safety Enforcement: Maintain the 5 Mandatory Lab Safety Rules: 1) Unplug before wiring; 2) Never connect an external LED without a series resistor; 3) Protect against short circuits (no bare 5V to GND connections); 4) Check polarity twice, power once; 5) Touch test and emergency disconnect if any component feels warm.',
+      'No-Kit Fallback: For remote or no-kit stations, use the built-in Interactive Arduino Uno Board Tour and Synchronized Blink Simulator in Tab 4 / Slide 6 & 11, clearly noting that it models ideal behavior while physical hardware requires port selection and resistor checks.'
     ],
     verifiedMaterials: [
-      'Arduino Uno R3 (Microchip ATmega328P DIP or SMD edition with 16MHz crystal)',
-      'USB-A to USB-B Data Cable (1.5m shielded, verifying data communication lines)',
-      'Half-size solderless breadboard (400 tie-points with dual power rails)',
-      '5mm Diffused Red LED (Forward voltage 1.8V–2.2V, 20mA nominal)',
-      '220Ω Carbon Film Resistor, 1/4 Watt, 5% tolerance (Color bands: Red-Red-Brown-Gold)',
-      '2x Male-to-Male Flexible Jumper Wires (20cm, 24 AWG copper)',
-      'Classroom workstation with Arduino IDE 2.x or modern Web USB Simulator'
+      'Arduino Uno R3 (Microchip ATmega328P DIP or SMD edition with 16 MHz crystal oscillator)',
+      'High-quality shielded USB-A to USB-B Cable (1.5m, verified with active D+ and D- serial data lines)',
+      '400-tie-point solderless breadboard (with vertical power rails and 0.3-inch center DIP ravine)',
+      '5mm Red Diffused LED (Forward voltage Vf ≈ 2.0V, max continuous current 20 mA)',
+      '220 Ω Axial Carbon Film Resistor (Color bands: Red-Red-Brown-Gold, 1/4 Watt, 5% tolerance; 330 Ω also approved)',
+      'Male-to-Male Flexible Jumper Wires (1x Red 20cm, 1x Black 20cm, 1x spare)',
+      'Classroom workstation with Arduino IDE 2.x or Web USB Simulator environment'
     ],
     safetyNotes: [
-      'Low-voltage 5V DC safety: The 5V supplied by USB is safe to touch with dry skin, but you must NEVER connect or disconnect wires while the USB cable is plugged in!',
-      'The Current-Limiter Rule: Never connect an external LED directly between 5V and GND without a 220Ω current-limiting resistor. Without a resistor, the LED will draw excess current and instantly burn out in a puff of smoke!',
-      'Workbench Hygiene: Keep screwdrivers, paper clips, foil wrappers, and water bottles away from the table. A single metal paperclip dropped onto an active circuit board can bridge 5V to GND and short out your computer’s USB port.'
+      '1. Unplug Before Wiring: Always disconnect the USB cable (or power source) before adding, moving, or removing wires and components on the breadboard.',
+      '2. Never Connect an External LED Without a Series Resistor: Connecting an LED directly between 5V (or an output pin) and GND without a 220 Ω – 330 Ω resistor draws excessive current and permanently burns out the LED or damages the microcontroller pin.',
+      '3. Protect Against Short Circuits: Never connect the 5V pin directly to GND with a bare wire, and never place the Arduino board onto a conductive metal desk, coin, or wire clippings.',
+      '4. Check Polarity Twice, Power Once: Have your partner verify LED Anode (+ long leg) and Cathode (- short leg / flat edge) before plugging in the USB cable.',
+      '5. Touch Test & Emergency Disconnect: If any component or chip ever feels warm or smells unusual, immediately unplug the USB cable by gripping the plastic connector housing (never yank the cable wire).'
     ],
     classRhythm: [
       {
-        segment: '0–8m Hook',
-        minutes: 8,
-        teacherAction: 'Display 6 high-resolution pictures: NASA Mars Curiosity rover, Amazon automated warehouse bot, Da Vinci surgical arm, kitchen microwave, home washing machine, and hand drill. Ask students: "Which of these are true robots, and which are just machines?"',
-        studentAction: 'Analyze, debate, and vote on each machine. Discover that a microwave follows a dumb timer, while a Mars rover senses obstacles, decides its path, and drives itself!'
-      },
-      {
-        segment: '8–18m Relevance',
+        segment: '00:00 – 00:10 Welcome, Safety Ground Rules & "Robot or Not?" Debate',
         minutes: 10,
-        teacherAction: 'Connect robotics to urgent real-world challenges: agricultural soil-moisture monitoring rovers in rural Bangladesh, medicine delivery drones, river trash collectors, and search-and-rescue systems.',
-        studentAction: 'Brainstorm and share: "If you could build any robot in the world to solve a problem in your neighborhood or school, what would it do?"'
+        teacherAction: 'Welcome students to RoboBEE Innovators. Present Slide 1 & Slide 3 on the projector. Poll the room on the 8 "Robot or Not?" items before clicking to reveal the Sense-Decide-Act breakdown.',
+        studentAction: 'Vote on each machine, debate why an RC car differs from an autonomous rover, and state the 3 parts of the robotics loop.'
       },
       {
-        segment: '18–30m System Model',
-        minutes: 12,
-        teacherAction: 'Break down the 4 Universal Subsystems of every robot: Body (Mechanical), Power/Nerves (Electrical), Senses (Sensors), and Brain (Microcontroller). Detail the Sense → Decide → Act closed feedback loop.',
-        studentAction: 'Trace the sensory signal flow on the classroom screen. Identify what happens when a sensor detects an obstacle and how the microcontroller commands the motors to pivot.'
+        segment: '00:10 – 00:25 Sense → Decide → Act & Real-World Robotics Tour',
+        minutes: 15,
+        teacherAction: 'Walk through Slide 2 (7 real-world domains) and Slide 4 (Interactive Sense-Decide-Act diagram). Show the physical kit components using Slide 5 (Parts Gallery).',
+        studentAction: 'Match physical kit components on their desk (sensor, Arduino, LED, motor) to Sense, Decide, or Act.'
       },
       {
-        segment: '30–42m Board Tour',
-        minutes: 12,
-        teacherAction: 'Lead a hands-on physical anatomy tour of the Arduino Uno board. Walk through the USB port, DC power jack, ATmega328P chip, 16MHz crystal, 5V/3.3V/GND power headers, and digital pins 0–13.',
-        studentAction: 'Hold physical Arduino Uno boards. Locate the black ATmega328P chip, find the amber "L" LED wired to Pin 13, locate GND, and verify the physical reset button.'
+        segment: '00:25 – 00:40 Meet the Brain: Interactive Arduino Uno R3 & Breadboard Tour',
+        minutes: 15,
+        teacherAction: 'Project Slide 6 (ArduinoUnoPinout.tsx) and Slide 7 (Breadboard & LED anatomy). Hold up an Arduino Uno and breadboard; point out GND, Pin 13, the breadboard center gap, and LED long (+) vs. short (-) legs.',
+        studentAction: 'Locate the USB port, Reset button, 5V, GND, Pin 13, and LED_BUILTIN on their reference diagram or physical board. Inspect an LED to find the long anode leg and flat cathode rim.'
       },
       {
-        segment: '42–68m Hands-on Blink',
-        minutes: 26,
-        teacherAction: 'Guide Arduino IDE workflow: selecting "Arduino Uno" board, identifying COM port, opening the First-Light sketch, and explaining every keyword (void, setup, loop, pinMode, digitalWrite, delay).',
-        studentAction: 'Predict what the code will do, plug in the USB cable, click Upload, watch the TX/RX communication lights flicker, and celebrate as the onboard amber light pulses to life!'
+        segment: '00:40 – 00:55 Lab Part A: First Light with LED_BUILTIN & Code Walkthrough',
+        minutes: 15,
+        teacherAction: 'Project Slide 8 & Slide 10. Guide students through selecting board + COM port in Arduino IDE (or launching the software simulator if running no-kit). Walk through setup(), loop(), pinMode(), digitalWrite(), and delay() line by line.',
+        studentAction: 'Connect Arduino via USB (only after visual check), upload the Stage A LED_BUILTIN sketch, verify the onboard L LED blinks at 1 Hz (1 sec ON, 1 sec OFF), and trace which line of code causes each state.'
       },
       {
-        segment: '68–78m Make It Yours',
-        minutes: 10,
-        teacherAction: 'Introduce 3 Creative Engineering Missions: Mission 1 (Heartbeat pulse), Mission 2 (SOS Morse Code distress signal), and Mission 3 (Strobe beacon).',
-        studentAction: 'Edit the timing delays in C++, predict the new flash rhythm, re-compile, upload, and test their custom light signals on physical hardware.'
+        segment: '00:55 – 01:15 Lab Part B: External Breadboard LED Build & Timing Experiments',
+        minutes: 20,
+        teacherAction: 'Project Slide 9 (Wiring Diagram & Wire Table) and Slide 11 (Timing Challenge). Enforce the Unplug USB Before Wiring rule. Inspect each team\'s 220 Ω resistor and LED polarity before they plug USB back in.',
+        studentAction: 'Unplug USB, wire Pin 13 → 220 Ω resistor → LED Anode (+) and LED Cathode (-) → GND. Reconnect USB, test external blink, then run the 4 "Predict → Modify → Test" timing challenges and fill in the Trial Log.'
       },
       {
-        segment: '78–86m Kit Explorer',
-        minutes: 8,
-        teacherAction: 'Unbox the full robotics kit: DC gear motors, TB6612FNG H-bridge motor driver, ultrasonic distance sensor, infrared line sensors, micro servos, and wheels. Preview the 10-class roadmap to an autonomous rover.',
-        studentAction: 'Categorize physical kit parts into the 4 robot subsystems: Body, Electrical, Sensors, and Brain.'
-      },
-      {
-        segment: '86–90m Exit & Teaser',
-        minutes: 4,
-        teacherAction: 'Facilitate the 4-question mastery exit check. Tease Class 02: moving beyond built-in LEDs to build external breadboard circuits with resistors and pushbuttons!',
-        studentAction: 'Complete the exit reflection ticket, safely unplug the USB cable, and store the Arduino board in its anti-static protective kit box.'
+        segment: '01:15 – 01:30 Troubleshooting Review, Check for Understanding & Exit Ticket',
+        minutes: 15,
+        teacherAction: 'Project Slide 12. Lead the 5-question class quiz, review how to debug a dark LED using the Troubleshooting Matrix, oversee kit pack-up, and collect the 4-part Exit Reflection.',
+        studentAction: 'Complete the 5-question check, record their Exit Reflection (1 Input, 1 Decision, 1 Output, 1 Safety Rule), disconnect USB cables by gripping the plug housing, and organize parts back into kit compartments.'
       }
     ],
     concepts: [
@@ -1089,7 +1229,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
       successEvidence: [
         'A running physical Arduino Uno board (or web simulator) pulsing the built-in amber LED on Pin 13 with verified timing.',
         'A modified embedded C++ sketch compiled and flashed with zero compiler syntax errors.',
-        'A completed Engineering Prediction Log documenting measured differences between standard 500ms blinks, rapid 100ms strobes, and heartbeat pulse intervals.'
+        'A completed Engineering Prediction Log documenting measured differences between standard 1000ms blinks, rapid 200ms strobes, asymmetric warning beacons, and heartbeat pulse intervals.'
       ]
     },
     activity: {
@@ -1100,43 +1240,47 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
         'Step 3 (Software Configuration): Open Arduino IDE 2.x on your computer. Go to Tools -> Board -> Arduino AVR Boards -> Arduino Uno. Then go to Tools -> Port and select the active COM port (e.g. COM3 or COM4 on Windows).',
         'Step 4 (Inspect the Starter Code): Open File -> Examples -> 01.Basics -> Blink. Read through setup() and loop(). Predict what will happen before you run it.',
         'Step 5 (Compile & Flash): Click the Upload button (the rightward arrow ➔). Watch the tiny TX and RX LEDs on the board flicker rapidly for two seconds as serial data is flashed into memory. When the IDE displays "Done uploading", look at the board: LED "L" is pulsing on and off with exact 1-second precision!',
-        'Step 6 (Mission 1 - The Heartbeat Challenge): Modify the code to create a realistic human heartbeat rhythm (lub-dub... pause): Turn ON for 100ms, OFF for 100ms, ON for 100ms, then OFF for 700ms. Upload and observe the lifelike pulse!',
+        'Step 6 (Mission 1 - The Heartbeat Challenge): Modify the code to create a realistic human heartbeat rhythm (lub-dub... pause): Turn ON for 120ms, OFF for 120ms, ON for 120ms, then OFF for 800ms. Upload and observe the lifelike pulse!',
         'Step 7 (Mission 2 - S.O.S. Maritime Distress Beacon): Program the universal international emergency signal in Morse Code: 3 rapid short flashes (150ms), 3 long flashes (500ms), and 3 rapid short flashes (150ms), followed by a 2-second pause before repeating.',
-        'Step 8 (Mission 3 - Strobe & Persistence of Vision): Set the delays to 50ms ON and 50ms OFF. Observe how human eyes begin to blend rapid flashes into continuous motion.'
+        'Step 8 (Mission 3 - Strobe & Persistence of Vision): Set the delays to 10ms ON and 10ms OFF. Observe how human eyes begin to blend rapid flashes into continuous motion at half brightness.'
       ],
       successCriteria: [
         'The student successfully configures the IDE board and serial COM port with "Done uploading" status.',
         'The student can point to the physical LED on the board and explain which line of code turns it on versus off.',
         'The student successfully modifies delay values, predicts the visual result, and demonstrates at least one custom signaling pattern (Heartbeat, SOS, or Strobe).'
       ],
-      extension: 'Wire an external 5mm red LED on a solderless breadboard: Connect the long anode leg to Digital Pin 12, wire a 220Ω resistor in series from the short cathode leg to an Arduino GND pin, and reprogram the sketch so Pin 12 and Pin 13 alternate back and forth like railroad crossing warning lights!'
+      extension: 'Wire an external 5mm red LED on a solderless breadboard: Connect the long anode leg to Digital Pin 13 through a 220Ω resistor, connect the short cathode leg to an Arduino GND pin, and reprogram timing challenges!'
     },
     physicalBuildPack: {
-      verifiedBoardAndModules: ['Arduino Uno R3 Development Board (Microchip ATmega328P microcontroller)'],
+      verifiedBoardAndModules: ['Arduino Uno R3 (Microchip ATmega328P DIP or SMD edition with 16 MHz crystal)'],
       componentList: [
-        { name: 'Arduino Uno R3 Development Board', exactVariant: 'Standard Rev3 with ATmega328P DIP or SMD edition and 16MHz crystal', quantity: 1 },
+        { name: 'Arduino Uno R3 Development Board', exactVariant: 'Standard Rev3 with ATmega328P DIP or SMD edition and 16 MHz crystal', quantity: 1 },
         { name: 'USB-A to USB-B Shielded Cable', exactVariant: '1.5m standard data communication cable (verify data lines present)', quantity: 1 },
-        { name: 'Onboard Surface Mount LED "L"', exactVariant: 'Factory-soldered amber SMD LED connected internally to Digital Pin 13', quantity: 1 },
-        { name: 'Optional External Breadboard Lab Pack', exactVariant: 'Half-size breadboard (400 tie-points) + 5mm diffused red LED + 220Ω 1/4W resistor + 2 jumper wires', quantity: 1 }
+        { name: '400-Tie-Point Solderless Breadboard', exactVariant: 'Half-size breadboard with dual power rails and center 0.3-inch DIP ravine', quantity: 1 },
+        { name: '5mm Red Diffused LED', exactVariant: 'Forward voltage Vf ≈ 2.0V, max continuous current 20 mA, anode long leg', quantity: 1 },
+        { name: '220 Ω Axial Resistor', exactVariant: 'Color bands: Red-Red-Brown-Gold, 1/4 Watt, 5% tolerance (330 Ω also approved)', quantity: 1 },
+        { name: 'Male-to-Male Jumper Wires', exactVariant: '20cm flexible jumper wires: 1x Red (signal), 1x Black (Ground return)', quantity: 2 }
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/arduino_uno_built_in_led_pin13.svg',
-      schematic: 'Digital Pin 13 ──[ Internal 1kΩ Resistor ]──[ Amber LED "L" ]── Ground (GND). For external breadboard extension: Arduino Pin 12 ──[ 220Ω Resistor ]──[ Anode (+) 5mm Red LED Cathode (-) ]── Arduino GND.',
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/class1-external-blink-wiring.svg',
+      schematic: 'Arduino Digital Pin 13 ──[ 220 Ω Resistor (10c to 15c) ]──[ Anode (+) 5mm Red LED (15e) ]──[ Cathode (-) (16e) ]── Arduino GND (via 16a to GND).',
       wireTable: [
-        { from: 'Computer USB Port', to: 'Arduino Uno USB-B Port', wireOrPolarityNote: 'Supplies regulated 5.0V DC bus power and bi-directional serial data' },
-        { from: 'Microcontroller Pin 13 (Internal)', to: 'Anode (+) of Onboard Amber LED "L"', wireOrPolarityNote: 'Internal PCB trace protected by onboard 1kΩ resistor' },
-        { from: 'Cathode (-) of Onboard LED "L"', to: 'Arduino System Ground (GND)', wireOrPolarityNote: 'Internal PCB copper ground plane' },
-        { from: 'OPTIONAL External Pin 12', to: 'Tie-point Row 10 on Breadboard', wireOrPolarityNote: 'Connects to one leg of 220Ω current-limiting resistor' },
-        { from: '220Ω Resistor other leg', to: 'Tie-point Row 15 (Long Anode of LED)', wireOrPolarityNote: 'Resistor protects the external LED from burning out' },
-        { from: 'Short Cathode of LED', to: 'Arduino GND header pin', wireOrPolarityNote: 'Returns current to ground sink to complete the circular loop' }
+        { from: '220 Ω Resistor (Lead 1)', to: 'Breadboard Row 10, Column c (10c)', wireOrPolarityNote: 'Non-polarized (works either way); receives HIGH/LOW signal from Pin 13' },
+        { from: '220 Ω Resistor (Lead 2)', to: 'Breadboard Row 15, Column c (15c)', wireOrPolarityNote: 'Spans rows 10 to 15; limits circuit current to ≈ 13.6 mA' },
+        { from: '5mm Red LED — Anode (+ LONGER Leg)', to: 'Breadboard Row 15, Column e (15e)', wireOrPolarityNote: 'Shares Row 15 (a–e) with resistor lead 2; positive diode terminal' },
+        { from: '5mm Red LED — Cathode (- SHORTER Leg, Flat Rim)', to: 'Breadboard Row 16, Column e (16e)', wireOrPolarityNote: 'Must be in different row (Row 16); negative diode exit terminal' },
+        { from: 'Arduino Digital Pin 13', to: 'Breadboard Row 10, Column a (10a)', wireOrPolarityNote: 'Red Jumper Wire; delivers programmed 5V HIGH / 0V LOW signals' },
+        { from: 'Breadboard Row 16, Column a (16a)', to: 'Arduino GND Pin (or via Blue - Rail to GND)', wireOrPolarityNote: 'Black Jumper Wire; completes the closed return loop back to 0V Ground' }
       ],
       assemblyAndPowerUpSteps: [
-        '1. Clear your workbench of all metal tools, loose screws, liquids, and wire clippings.',
-        '2. Inspect the Arduino Uno board: verify that the underside plastic baseplate or rubber feet are secure.',
-        '3. Connect the square USB-B plug firmly into the Arduino board until you hear a solid mechanical click.',
-        '4. Connect the flat USB-A plug into your computer workstation.',
-        '5. Verify that the green LED labeled "ON" lights up brightly and stays on solid.',
-        '6. Open the Arduino IDE, verify that the board is detected on an active COM port, and upload your sketch.',
-        '7. Confirm that the amber LED labeled "L" begins blinking according to your programmed intervals.'
+        '1. Disconnect Power First: Confirm the USB cable is completely unplugged from both laptop and Arduino board before placing any parts.',
+        '2. Stage A Verification (Built-In LED First): Before wiring the breadboard, connect bare Arduino via USB, select Tools -> Board -> Arduino Uno and Tools -> Port, upload sketch, confirm onboard amber "L" LED blinks at 1 Hz (1s ON, 1s OFF), then unplug USB.',
+        '3. Insert the 220 Ω Resistor: Gently bend leads into a 90° U-shape. Insert one lead firmly into breadboard hole 10c and the other into 15c. (Resistors have no polarity—either direction works).',
+        '4. Inspect & Insert 5mm Red LED: Identify the LONGER leg (Anode, +) and SHORTER leg with flat edge on plastic rim (Cathode, -). Insert LONGER leg into 15e (sharing Row 15 with resistor) and SHORTER leg into 16e.',
+        '5. Connect Signal Jumper (Red): Plug one end of Red jumper into Arduino Digital Pin 13 and other end into breadboard hole 10a (sharing Row 10 with top resistor leg).',
+        '6. Connect Ground Return Jumper (Black): Plug one end of Black jumper into breadboard hole 16a (sharing Row 16 with short LED cathode leg) and other end into any Arduino GND pin.',
+        '7. Partner Pre-Power Inspection: Verify resistor bridges Row 10c to 15c, LED long leg is in 15e and short leg is in 16e, Red wire connects Pin 13 to 10a, and Black wire connects 16a to GND.',
+        '8. Power-Up & Expected Result: Plug USB cable back into laptop. Within 2 seconds both the onboard "L" LED and your external red breadboard LED will blink in perfect synchronization: 1.0s ON, 1.0s OFF.',
+        '9. Safe Shutdown & Storage: When done, unplug USB by gripping connector body. Pull components straight out gently with fingers near base of leads, and place parts into labeled storage compartments.'
       ],
       powerAndSafetyChecks: [
         'Never place an active, powered Arduino board directly onto a conductive metal table, aluminum foil, or copper tape.',
@@ -1145,78 +1289,57 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
         'If the board ever feels hot to the touch or your computer warns of a "USB Power Surge", unplug the USB cable immediately!'
       ],
       testCases: [
-        { action: 'Upload standard 1000ms Blink sketch', expectedResult: 'Amber LED "L" turns ON for 1.0 second, turns OFF for 1.0 second, repeating indefinitely.' },
-        { action: 'Change delay values to 100ms and re-upload', expectedResult: 'Amber LED "L" pulses at a rapid 5 Hz strobe rate (looks like a fast camera flash).' },
-        { action: 'Press the red physical RESET button on the board', expectedResult: 'The blinking pauses for approximately 1 second while the bootloader restarts, then resumes normal blinking.' },
+        { action: 'Upload standard 1000ms Blink sketch', expectedResult: 'Both onboard amber "L" LED and external breadboard red LED turn ON for 1.0s and OFF for 1.0s in synchronization.' },
+        { action: 'Change delay values to 200ms and re-upload', expectedResult: 'Both LEDs pulse at a rapid 2.5 Hz strobe rate (200ms ON, 200ms OFF).' },
+        { action: 'Press the red physical RESET button on the board', expectedResult: 'The blinking pauses for approximately 1 second while bootloader restarts, then resumes normal blinking.' },
         { action: 'Disconnect USB cable from computer', expectedResult: 'All LEDs turn off immediately as electrical current stops flowing through the open circuit.' }
       ]
     },
     codeLab: {
       language: 'cpp',
-      code: `// =========================================================================
-// ROBOBEE INNOVATORS ACADEMY — CLASS 01: FIRST-LIGHT BLINK & SIGNALING LAB
-// Hardware: Arduino Uno R3 (Microchip ATmega328P Microcontroller)
-// Output: Built-in Amber LED on Digital Pin 13 (LED_BUILTIN)
-// =========================================================================
+      code: `/*
+ * ============================================================================
+ * RoboBEE Innovators — Beginner Robotics & Arduino (Proposed Track)
+ * Class 1 (beg-01): Welcome to Robotics: Meet Arduino, Then Make an LED Blink
+ * ============================================================================
+ * Target Reference Board : Arduino Uno R3 (ATmega328P)
+ * Circuit Configuration  :
+ *   - Stage A (Built-in test) : Uses onboard LED_BUILTIN (mapped to Pin 13 on Uno R3)
+ *   - Stage B (External circuit):
+ *       Arduino Pin 13 ---> 220 Ohm Resistor ---> Red LED Anode (+, Long Leg)
+ *       Red LED Cathode (-, Short Leg / Flat Rim) ---> Arduino GND
+ * ============================================================================
+ */
 
-// Global constant: Pin 13 is mapped to the onboard surface-mount LED 'L'
-const int ledPin = LED_BUILTIN; 
+// 1. PIN & TIMING CONSTANTS (Global Scope — easy to read and change in one place)
+const int LED_PIN     = LED_BUILTIN; // On Arduino Uno R3, LED_BUILTIN equals Digital Pin 13
+const int ON_TIME_MS  = 1000;        // Time LED stays ON in milliseconds (1000 ms = 1.0 second)
+const int OFF_TIME_MS = 1000;        // Time LED stays OFF in milliseconds (1000 ms = 1.0 second)
 
-// -------------------------------------------------------------------------
-// setup(): Runs exactly ONCE when the Arduino is powered up or reset
-// -------------------------------------------------------------------------
+// 2. SETUP FUNCTION — Runs ONCE when the Arduino powers on or the Reset button is pressed
 void setup() {
-  // Configure Digital Pin 13 as an OUTPUT so it can push 5V electricity out.
-  // Under the hood, this sets bit 5 of the DDRB register on the ATmega328P.
-  pinMode(ledPin, OUTPUT);
+  // Configure LED_PIN as a digital OUTPUT so the microcontroller can drive 5V or 0V safely
+  pinMode(LED_PIN, OUTPUT);
 }
 
-// -------------------------------------------------------------------------
-// loop(): Runs continuously in an infinite cycle for as long as power exists
-// -------------------------------------------------------------------------
+// 3. LOOP FUNCTION — Repeats continuously forever (Sense -> Decide -> Act cycle)
 void loop() {
-  // 1. Turn the LED ON by sending +5.0 Volts to Digital Pin 13
-  digitalWrite(ledPin, HIGH);
-  
-  // 2. Pause execution and keep the light illuminated for 500 milliseconds (0.5s)
-  delay(500);
-  
-  // 3. Turn the LED OFF by dropping Digital Pin 13 down to 0.0 Volts (Ground)
-  digitalWrite(ledPin, LOW);
-  
-  // 4. Pause execution and keep the light dark for 500 milliseconds (0.5s)
-  delay(500);
-  
-  // Once the processor reaches this closing brace, it immediately jumps back
-  // to the beginning of loop() and executes step 1 again!
-}
+  // ACT Step 1: Turn the LED ON by driving the output pin HIGH (5 Volts on Uno R3)
+  digitalWrite(LED_PIN, HIGH);
 
-/*
- * =========================================================================
- * STUDENT ENGINEERING MISSIONS (TRY MODIFYING loop() WITH THESE PATTERNS):
- * =========================================================================
- * 
- * MISSION 1: THE HUMAN HEARTBEAT (LUB-DUB PULSE)
- * ----------------------------------------------
- * digitalWrite(ledPin, HIGH); delay(100);
- * digitalWrite(ledPin, LOW);  delay(100);
- * digitalWrite(ledPin, HIGH); delay(100);
- * digitalWrite(ledPin, LOW);  delay(700); // Rest period between heartbeats
- * 
- * MISSION 2: S.O.S. MARITIME DISTRESS BEACON (MORSE CODE: ... --- ...)
- * --------------------------------------------------------------------
- * // 3 Short flashes (S)
- * for(int i=0; i<3; i++) { digitalWrite(ledPin, HIGH); delay(150); digitalWrite(ledPin, LOW); delay(150); }
- * delay(300);
- * // 3 Long flashes (O)
- * for(int i=0; i<3; i++) { digitalWrite(ledPin, HIGH); delay(500); digitalWrite(ledPin, LOW); delay(200); }
- * delay(300);
- * // 3 Short flashes (S)
- * for(int i=0; i<3; i++) { digitalWrite(ledPin, HIGH); delay(150); digitalWrite(ledPin, LOW); delay(150); }
- * delay(2000); // 2 second pause before repeating emergency signal
- */`,
+  // DECIDE / TIMING Step 1: Hold the ON state for ON_TIME_MS milliseconds
+  delay(ON_TIME_MS);
+
+  // ACT Step 2: Turn the LED OFF by pulling the output pin LOW (0 Volts / Ground)
+  digitalWrite(LED_PIN, LOW);
+
+  // DECIDE / TIMING Step 2: Hold the OFF state for OFF_TIME_MS milliseconds before loop() repeats
+  delay(OFF_TIME_MS);
+}
+`,
       pinMap: {
         'LED_BUILTIN': 'Digital Pin 13 (Built-in SMD amber LED with internal 1kΩ resistor)',
+        'Pin 13': 'Digital Output Pin delivering 5V HIGH / 0V LOW to external breadboard circuit',
         '5V': 'Regulated 5.0V DC bus power rail from USB or NCP1117 linear voltage regulator',
         'GND': 'System Ground reference plane (0.0V DC return path for current)'
       },
@@ -1227,24 +1350,55 @@ void loop() {
         '4. Go to Tools -> Port and click on the port identified with your board (e.g. COM3, COM4, or /dev/ttyACM0).',
         '5. Click the Verify button (Checkmark icon) to compile your C++ code into machine hex bytes.',
         '6. Click the Upload button (Rightward Arrow icon) to flash the compiled hex file into the ATmega328P Flash memory.',
-        '7. Look at the board: verify that the TX and RX LEDs flicker rapidly for two seconds, followed by the amber LED "L" pulsing to life!'
+        '7. Look at the board: verify that the TX and RX LEDs flicker rapidly for two seconds, followed by the amber LED "L" and external LED pulsing to life!'
       ],
       explanations: [
-        'const int ledPin = LED_BUILTIN;: Declares an immutable integer constant that tells the compiler we are using the board’s designated Pin 13.',
-        'pinMode(pin, OUTPUT);: Accesses the microcontroller’s Data Direction Register (DDR) and configures the pin’s internal push-pull MOSFET transistors to deliver 5.0V voltage.',
-        'digitalWrite(pin, HIGH);: Connects the physical pin to the internal 5.0V power rail, sourcing up to 20 milliamps of current into the circuit.',
-        'digitalWrite(pin, LOW);: Pulls the physical pin down to 0.0V Ground, cutting off the voltage difference across the LED.',
-        'delay(milliseconds);: Pauses CPU program counter advancement by counting clock cycles for the specified duration (1000 milliseconds = 1 full second).'
+        '/* ... */ and // (Comments): Explanatory text for human engineers. The C++ compiler ignores comments completely—they consume zero bytes in memory.',
+        'const int LED_PIN = LED_BUILTIN;: Declares an immutable integer constant mapping to Pin 13 on the Uno R3. The const keyword prevents accidental alteration.',
+        'const int ON_TIME_MS = 1000; and OFF_TIME_MS = 1000;: Stores blink durations in milliseconds at the top of the sketch for quick timing modifications.',
+        'void setup() { ... }: The mandatory initialization function. Runs exactly once after power-on or hardware reset; void indicates no return value.',
+        'pinMode(LED_PIN, OUTPUT);: Sets the internal transistor driver for Pin 13 to low-impedance OUTPUT mode, enabling it to source current safely.',
+        'void loop() { ... }: The primary execution routine. Infinitely repeats sequentially from top to bottom as long as power is maintained.',
+        'digitalWrite(LED_PIN, HIGH); and LOW;: HIGH connects the pin to 5V (turning LED ON); LOW pulls the pin to 0V Ground (turning LED OFF).',
+        'delay(ON_TIME_MS); and delay(OFF_TIME_MS);: Pauses CPU instruction progression for specified milliseconds, allowing the eye to register each state.'
       ],
-      expectedResult: 'The onboard amber SMD LED labeled "L" alternates steadily between bright illumination (5V) and complete darkness (0V) at the exact programmed interval.',
+      expectedResult: 'Both the onboard amber SMD LED labeled "L" and the external red breadboard LED alternate steadily between bright illumination (5V) and complete darkness (0V) at the exact programmed interval.',
       caveats: [
         'Blocking Delay Warning: While delay() is executing, the microcontroller is completely frozen in an idle loop and CANNOT read sensors or react to emergency stops. In Class 03 and Advanced classes, we will master non-blocking millis() timing!',
         'Power Indicator Distinguish: Do not confuse the green power LED labeled "ON" with the programmable amber LED labeled "L". The green light indicates 5V power presence; only "L" is controlled by your code.',
         'Pin 13 Resistor: While Pin 13 has a built-in resistor for the onboard surface-mount LED, any external LED connected to external breadboard pins MUST have its own 220Ω resistor!'
       ],
-      tweakTip: 'Try changing the first delay to 50ms and the second delay to 950ms. Your LED will transform into a realistic airport runway strobe beacon!'
+      tweakTip: 'Run the 4 Timing Experiments: 1) Rapid Strobe (200ms/200ms); 2) Beacon (100ms/900ms); 3) Robot Heartbeat (120ms/120ms/120ms/800ms); 4) Persistence of Vision limit (10ms/10ms).'
     },
     troubleshooting: [
+      {
+        symptom: 'Onboard "L" LED blinks, but the external breadboard LED stays completely dark.',
+        checks: [
+          'Unplug USB first. Check LED leg polarity: ensure the longer leg (Anode, +) is in Row 15 sharing with the resistor, and shorter leg (Cathode, -) is in Row 16.',
+          'Verify that the 220 Ω resistor bridges Row 10 (Column c) to Row 15 (Column c).',
+          'Confirm that the Red jumper wire is in Row 10a (connected to Pin 13) and Black jumper wire is in Row 16a (connected to GND).',
+          'Check for accidental short circuits: verify that the LED legs are in DIFFERENT rows (Row 15 and Row 16), not plugged into the same row!'
+        ],
+        explanation: 'LEDs are diodes that only conduct current in one direction (Anode + to Cathode -). If inserted backward or shorted on the same breadboard row, no current will flow through the diode junction.'
+      },
+      {
+        symptom: 'External LED turns ON and stays solidly lit—it never blinks OFF.',
+        checks: [
+          'Check the Arduino pin header: ensure the Red jumper wire is plugged into Digital Pin 13, NOT into the 5V power pin!',
+          'Inspect your loop() code: confirm that there is a delay(OFF_TIME_MS); AFTER the digitalWrite(LED_PIN, LOW); line.',
+          'Verify that OFF_TIME_MS is not set to 0. If delay is omitted or 0, the LED turns off for less than a microsecond and turns back on instantly, appearing constantly on.'
+        ],
+        explanation: 'Connecting directly to 5V bypasses program control. Omitting the second delay causes the MCU to loop back to HIGH faster than the human eye\'s persistence of vision threshold (≈ 50ms).'
+      },
+      {
+        symptom: 'External LED blinks, but it is extremely dim (barely visible in room light).',
+        checks: [
+          'Check your setup() function: confirm that pinMode(LED_PIN, OUTPUT); is included and spelled correctly.',
+          'Inspect the resistor color bands: ensure you used Red-Red-Brown (220 Ω) or Orange-Orange-Brown (330 Ω), NOT Brown-Black-Orange (10,000 Ω / 10 kΩ) or Brown-Black-Yellow (100 kΩ).',
+          'Ensure the breadboard tie-point holes are gripping the component leads firmly and not loose.'
+        ],
+        explanation: 'If pinMode() is omitted, the pin defaults to INPUT mode with a weak 20kΩ internal pull-up, limiting current to < 0.25 mA. A 10kΩ resistor similarly restricts current to < 0.3 mA.'
+      },
       {
         symptom: 'Arduino IDE error: "avrdude: ser_open(): can\'t open device // COM port not found / Permission denied"',
         checks: [
@@ -1257,26 +1411,16 @@ void loop() {
         explanation: 'The Arduino IDE uses the avrdude utility to communicate with the USB-to-Serial bridge chip (ATmega16U2 or CH340) on the Arduino board. If the port is busy, disconnected, or unpowered, upload will fail.'
       },
       {
-        symptom: 'The IDE reports "Done uploading", but the amber LED "L" never turns on or blinks.',
+        symptom: 'Arduino IDE refuses to compile with error: "expected \';\' before \'}\' token" or syntax error.',
         checks: [
-          'Check your code: confirm that pinMode(ledPin, OUTPUT); is written inside setup(), not inside loop().',
-          'Ensure that delay() values are not set to 0. If delay is 0, the LED blinks millions of times per second—far faster than the human eye can perceive—making it appear dim or off.',
-          'Verify that your code is writing to LED_BUILTIN or Pin 13, and not accidentally to Pin 1, 2, or 3.',
-          'Press the red Reset button on the board. Observe if the amber LED flashes briefly during bootloader startup. If it flashes once, the LED is healthy and the issue is in your sketch logic.'
+          'Look at the line number highlighted in red by the compiler, and look at the line directly above it.',
+          'Check that every statement inside setup() and loop() ends with a semicolon (;).',
+          'Verify matching curly braces: ensure setup() has { and }, and loop() has { and }.'
         ],
-        explanation: 'If pinMode() is omitted, the microcontroller pin defaults to high-impedance INPUT mode. In this mode, the pin cannot deliver enough current to illuminate the LED, even if digitalWrite(HIGH) is executed.'
+        explanation: 'C++ syntax requires semicolons to terminate statements. Missing a semicolon prevents the compiler from constructing an Abstract Syntax Tree (AST).'
       },
       {
-        symptom: 'The LED turns ON once, stays solidly illuminated, and never blinks off.',
-        checks: [
-          'Verify that you have BOTH a digitalWrite(..., HIGH) AND a digitalWrite(..., LOW) command inside your loop().',
-          'Confirm that there is a delay() call AFTER the LOW command as well as after the HIGH command. If the second delay is missing, the LED turns off for a fraction of a microsecond and instantly turns back on, appearing solid!',
-          'Check that your sketch does not contain an unintentional infinite while(true) loop that traps the program counter before it can reach the LOW command.'
-        ],
-        explanation: 'Without a delay after turning the pin LOW, the CPU loops back to HIGH in less than 1 microsecond. Because human persistence of vision is about 50 milliseconds, the eye perceives the light as constantly illuminated.'
-      },
-      {
-        symptom: 'The Arduino board becomes warm, or your computer displays a "USB Power Surge Detected" warning.',
+        symptom: 'The green "ON" power LED on the Arduino turns off as soon as a breadboard wire is connected.',
         checks: [
           'UNPLUG THE USB CABLE IMMEDIATELY! Do not hesitate.',
           'Inspect the workbench: check for stray metal staples, paperclips, wire snippings, or aluminum foil touching the underside solder pins.',
@@ -1287,28 +1431,28 @@ void loop() {
       }
     ],
     checksForUnderstanding: [
-      'What are the three stages of the universal robotics cycle, and how does a robot differ from a microwave oven?',
-      'Name the four foundational subsystems that every robot on Earth must possess to function.',
-      'Why does an LED need a 220Ω resistor when connected to a 5V pin, and what physical disaster happens if you omit it?',
-      'Why does the code inside setup() execute only once, while the code inside loop() repeats continuously forever?',
-      'If you change delay(500) to delay(50), does the LED blink 10 times faster or 10 times slower?'
+      'Q1: Why is a standard remote-controlled (RC) toy car usually classified as a teleoperated machine rather than an autonomous robot? (Answer: Because it lacks onboard environmental sensors and programmed decision logic—the human holding the remote makes all steering decisions).',
+      'Q2: On a standard solderless breadboard, how are the 5 holes 15a, 15b, 15c, 15d, and 15e connected underneath the plastic? (Answer: All 5 holes share a single horizontal metal spring strip, and are isolated from 15f–15j by the center gap).',
+      'Q3: What happens if you connect a 5mm Red LED directly between an Arduino 5V pin and GND without a 220 Ω – 330 Ω series resistor? (Answer: Excessive current flows, overheating the semiconductor junction and permanently burning out the LED or damaging the pin).',
+      'Q4: What happens in your Blink program if you write digitalWrite(LED_PIN, LOW); but delete the second delay(1000); after it? (Answer: The LED appears solidly ON because loop() immediately jumps back to HIGH in less than a microsecond).',
+      'Q5: If you set ON_TIME_MS = 250 and OFF_TIME_MS = 250, how long does one complete cycle take and how many cycles occur in 1 second? (Answer: 500 ms per cycle, yielding exactly 2 complete blink cycles per second).'
     ],
     exitTicket: [
       {
-        question: 'Explain what makes an autonomous robot different from an automated appliance (like a toaster) or a remote-controlled car.',
-        rubricOrSampleReasoning: 'A correct response explains that appliances follow a blind open-loop timer with zero sensory awareness, and RC cars have their decisions made by a remote human brain. An autonomous robot possesses onboard sensors to observe the physical world, evaluates logic rules inside its own microcontroller, and takes physical action independently.'
+        question: 'Name 1 Input (Sensor): Name one sensor a robot uses to gather information from its surroundings.',
+        rubricOrSampleReasoning: 'Acceptable answers: HC-SR04 ultrasonic distance sensor, infrared reflectance line sensor, tactile pushbutton bumper, LDR light sensor, or temperature sensor.'
       },
       {
-        question: 'Name the four universal subsystems of a robot and give one physical example of each from our classroom kit.',
-        rubricOrSampleReasoning: '1. Mechanical Body (Chassis, wheels, motor brackets); 2. Electrical Nervous System (Battery pack, jumper wires, voltage rails, Ground); 3. Senses/Perception (Ultrasonic distance sensor, infrared line sensors); 4. Brain/Controller (Arduino Uno ATmega328P microcontroller).'
+        question: 'Name 1 Decision Rule: Give one example of an if/then decision a robot brain might make based on that sensor.',
+        rubricOrSampleReasoning: 'Acceptable answers: "if distance < 20cm then turn right", "if line sensor sees black then steer left", or "if pushbutton is pressed then stop motors".'
       },
       {
-        question: 'Using the Water Pipe Analogy, explain the difference between Voltage, Current, and Resistance.',
-        rubricOrSampleReasoning: 'Voltage is the water pressure pushing through the pipe (measured in Volts); Current is the physical flow rate of electrons rushing through (measured in Amps/mA); Resistance is the friction or narrow constriction in the pipe that restricts the flow (measured in Ohms).'
+        question: 'Name 1 Output (Actuator): Name one actuator that lets the robot act physically on the world, and describe how we wired our LED output today.',
+        rubricOrSampleReasoning: 'Acceptable answers: 5mm LED for visual signals (Anode + long leg through 220Ω resistor to Pin 13, Cathode - short leg to GND), DC gear motor for wheel drive, or servo motor for gripper.'
       },
       {
-        question: 'Which pin leg of an LED connects toward positive voltage, and what is the role of the 220Ω resistor?',
-        rubricOrSampleReasoning: 'The longer leg (Anode) connects toward positive voltage (+5V). The 220Ω resistor acts as a current-limiter to prevent excessive electron flow that would otherwise burn out the microscopic diode semiconductor.'
+        question: 'Name 1 Lab Safety Rule: State one safety rule you followed today before changing wires or powering your circuit.',
+        rubricOrSampleReasoning: 'Acceptable answers: Unplug USB before changing wiring; always use a 220Ω series resistor with an external LED; check polarity twice before power; never connect 5V directly to GND.'
       }
     ],
     differentiation: {
@@ -1325,14 +1469,20 @@ void loop() {
       ]
     },
     nextLessonId: 'beg-02',
-    nextLessonTeaser: 'Beginner 02: Circuits, Breadboards, and Safe Outputs — Step beyond the built-in light! Learn breadboard internal rails, Ohm\'s law resistor safety, and connect external LEDs and pushbuttons.',
+    nextLessonTeaser: 'Class 2: Circuits, Breadboards and Safe Outputs — Multi-LED traffic controller and series vs. parallel breadboard paths.',
     sources: [
-      { title: 'Official Arduino Documentation: Built-in Blink Example', url: 'https://docs.arduino.cc/built-in-examples/basics/Blink/', accessedOrVersioned: 'Arduino Docs 2026' },
-      { title: 'Arduino Uno Rev3 Hardware Reference', url: 'https://docs.arduino.cc/hardware/uno-rev3/', accessedOrVersioned: 'ATmega328P Rev3' }
+      { title: 'Arduino Official Hardware Documentation — UNO R3', url: 'https://docs.arduino.cc/hardware/uno-rev3/', accessedOrVersioned: 'ATmega328P Rev3 Hardware Spec' },
+      { title: 'Arduino Official Built-In Examples — Blink Tutorial', url: 'https://docs.arduino.cc/built-in-examples/basics/Blink/', accessedOrVersioned: 'Official Arduino Blink Guide' },
+      { title: 'Arduino Language Reference — pinMode()', url: 'https://docs.arduino.cc/language-reference/en/functions/digital-io/pinMode/', accessedOrVersioned: 'Arduino Core API' },
+      { title: 'Arduino Language Reference — digitalWrite()', url: 'https://www.arduino.cc/en/Reference/digitalWrite', accessedOrVersioned: 'Arduino Core API' },
+      { title: 'Arduino Language Reference — delay()', url: 'https://docs.arduino.cc/language-reference/en/functions/time/delay/', accessedOrVersioned: 'Arduino Timing API' },
+      { title: 'Arduino Language Reference — LED_BUILTIN Constant', url: 'https://docs.arduino.cc/language-reference/en/variables/constants/ledbuiltin', accessedOrVersioned: 'Arduino Board Pin Constants' },
+      { title: 'SparkFun Engineering Tutorial — How to Use a Breadboard', url: 'https://learn.sparkfun.com/tutorials/how-to-use-a-breadboard/all', accessedOrVersioned: 'SparkFun Electronics' },
+      { title: 'SparkFun Engineering Tutorial — Light-Emitting Diodes (LEDs)', url: 'https://learn.sparkfun.com/tutorials/light-emitting-diodes-leds/all', accessedOrVersioned: 'SparkFun Electronics' }
     ],
     assetCredits: [
-      { asset: 'Arduino Uno R3 Vector Pinout', creator: 'RoboBEE Innovators Engineering Team', license: 'RoboBEE Innovators IP', sourceUrl: 'team_info' },
-      { asset: 'Interactive Board Tour Simulator', creator: 'RoboBEE Innovators Visual Interaction Lab', license: 'Proprietary', sourceUrl: 'team_info' }
+      { asset: 'Arduino Uno R3 Vector Pinout & Anatomy', creator: 'RoboBEE Innovators Engineering Team', license: 'RoboBEE Innovators IP', sourceUrl: 'team_info' },
+      { asset: 'Interactive Board Tour & Synchronized Blink Simulator', creator: 'RoboBEE Innovators Visual Interaction Lab', license: 'Proprietary', sourceUrl: 'team_info' }
     ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },

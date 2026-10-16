@@ -1,0 +1,227 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b101b" />
+      <stop offset="50%" stop-color="#161B26" />
+      <stop offset="100%" stop-color="#080c14" />
+    </linearGradient>
+
+    <!-- LED Epoxy Dome Gradient -->
+    <linearGradient id="ledRedDome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d4d" />
+      <stop offset="60%" stop-color="#cc0000" />
+      <stop offset="100%" stop-color="#800000" />
+    </linearGradient>
+
+    <!-- Resistor Body Gradient -->
+    <linearGradient id="resistorBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#eed9b3" />
+      <stop offset="50%" stop-color="#dfc597" />
+      <stop offset="100%" stop-color="#be9f67" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="640" rx="16" fill="url(#bgGrad3)" stroke="#1e293b" stroke-width="2" />
+
+  <!-- Top Title Banner -->
+  <rect x="30" y="20" width="670" height="34" rx="17" fill="rgba(245, 184, 0, 0.12)" stroke="#F5B800" stroke-width="1.2" />
+  <text x="45" y="43" font-family="'Segoe UI', system-ui, sans-serif" font-size="13.5" font-weight="800" fill="#F5B800" letter-spacing="1">
+    COMPONENT ANATOMY: 5mm RED LED &bull; 220 &Omega; CURRENT LIMITING RESISTOR &bull; OHM'S LAW
+  </text>
+
+  <!-- Mandatory Reference Badge -->
+  <g transform="translate(730, 20)">
+    <rect width="440" height="34" rx="8" fill="#6B0F24" stroke="#F5B800" stroke-width="1.2" />
+    <text x="220" y="22" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">
+      ⚠ RoboBEE Reference Illustration — Verify Hardware Before Powering
+    </text>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- LEFT: 5mm LED PHYSICAL & SCHEMATIC ANATOMY -->
+  <!-- ========================================================== -->
+  <g transform="translate(40, 75)">
+    <rect width="550" height="535" rx="14" fill="#111827" stroke="#334155" stroke-width="2" />
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="550" height="44" rx="14" fill="#334155" />
+    <rect x="0" y="30" width="550" height="14" fill="#334155" />
+    <text x="275" y="29" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle">
+      1. 5mm RED LED (LIGHT-EMITTING DIODE) ANATOMY
+    </text>
+
+    <!-- Physical LED Drawing -->
+    <g transform="translate(50, 70)">
+      <!-- Epoxy Dome -->
+      <path d="M 70,120 L 70,80 C 70,20 170,20 170,80 L 170,120 Z" fill="url(#ledRedDome)" stroke="#ff6b6b" stroke-width="2" />
+      
+      <!-- Epoxy Base Rim (Highlighting Flat Edge) -->
+      <rect x="65" y="120" width="110" height="15" rx="3" fill="#b30000" stroke="#ff4d4d" stroke-width="1.5" />
+      
+      <!-- Flat Edge Indicator Callout on Right Rim -->
+      <line x1="175" y1="120" x2="175" y2="135" stroke="#F5B800" stroke-width="4" stroke-linecap="round" />
+      <line x1="178" y1="127" x2="225" y2="127" stroke="#F5B800" stroke-width="1.5" />
+      <rect x="225" y="112" width="135" height="30" rx="6" fill="#090e18" stroke="#F5B800" stroke-width="1.2" />
+      <text x="292" y="131" font-family="'Segoe UI', sans-serif" font-size="10.5" font-weight="800" fill="#F5B800" text-anchor="middle">
+        FLAT EDGE ON RIM (-)
+      </text>
+
+      <!-- Internal Anvil and Post (Inside Epoxy Dome) -->
+      <path d="M 95,120 L 95,85 L 105,75 L 105,85 Z" fill="#cbd5e1" opacity="0.75" />
+      <path d="M 145,120 L 145,75 L 125,75 L 115,85 L 135,85 L 135,120 Z" fill="#cbd5e1" opacity="0.75" />
+      <!-- Wire bond -->
+      <path d="M 105,75 Q 115,65 125,75" fill="none" stroke="#fef08a" stroke-width="1.5" />
+
+      <!-- Anode Leg (+) Longer Leg -->
+      <line x1="95" y1="135" x2="95" y2="280" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round" />
+      <!-- Cathode Leg (-) Shorter Leg -->
+      <line x1="145" y1="135" x2="145" y2="245" stroke="#94a3b8" stroke-width="5" stroke-linecap="round" />
+
+      <!-- Leg Length Indicator Callouts -->
+      <!-- Anode Callout -->
+      <line x1="95" y1="200" x2="20" y2="200" stroke="#10b981" stroke-width="1.5" />
+      <circle cx="95" cy="200" r="4" fill="#10b981" />
+      <rect x="-10" y="215" width="150" height="48" rx="6" fill="#090e18" stroke="#10b981" stroke-width="1.5" />
+      <text x="65" y="233" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="900" fill="#10b981" text-anchor="middle">
+        ANODE (+ POSITIVE)
+      </text>
+      <text x="65" y="250" font-family="'Segoe UI', sans-serif" font-size="10" fill="#ffffff" text-anchor="middle">
+        LONGER LEG &rarr; Pin 13
+      </text>
+
+      <!-- Cathode Callout -->
+      <line x1="145" y1="210" x2="235" y2="210" stroke="#38BDF8" stroke-width="1.5" />
+      <circle cx="145" cy="210" r="4" fill="#38BDF8" />
+      <rect x="180" y="225" width="150" height="48" rx="6" fill="#090e18" stroke="#38BDF8" stroke-width="1.5" />
+      <text x="255" y="243" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="900" fill="#38BDF8" text-anchor="middle">
+        CATHODE (- NEGATIVE)
+      </text>
+      <text x="255" y="260" font-family="'Segoe UI', sans-serif" font-size="10" fill="#ffffff" text-anchor="middle">
+        SHORTER LEG &rarr; GND
+      </text>
+    </g>
+
+    <!-- Schematic Symbol Inset -->
+    <g transform="translate(30, 395)">
+      <rect width="490" height="115" rx="10" fill="#090e18" stroke="#1e293b" stroke-width="1.5" />
+      <text x="245" y="24" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#F5B800" text-anchor="middle">
+        OFFICIAL SCHEMATIC SYMBOL FOR DIODE / LED:
+      </text>
+
+      <!-- Schematic graphic -->
+      <g transform="translate(140, 50)">
+        <line x1="0" y1="20" x2="60" y2="20" stroke="#ffffff" stroke-width="2.5" />
+        <polygon points="60,5 60,35 90,20" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+        <line x1="90" y1="5" x2="90" y2="35" stroke="#ffffff" stroke-width="2.5" />
+        <line x1="90" y1="20" x2="150" y2="20" stroke="#ffffff" stroke-width="2.5" />
+        <!-- Photon emission arrows -->
+        <line x1="75" y1="2" x2="88" y2="-12" stroke="#F5B800" stroke-width="2" />
+        <polygon points="88,-12 80,-10 86,-5" fill="#F5B800" />
+        <line x1="88" y1="5" x2="101" y2="-9" stroke="#F5B800" stroke-width="2" />
+        <polygon points="101,-9 93,-7 99,-2" fill="#F5B800" />
+
+        <text x="15" y="42" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="900" fill="#10b981">Anode (+)</text>
+        <text x="110" y="42" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="900" fill="#38BDF8">Cathode (-)</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- RIGHT: 220 OHM RESISTOR & OHM'S LAW MATH -->
+  <!-- ========================================================== -->
+  <g transform="translate(610, 75)">
+    <rect width="550" height="535" rx="14" fill="#111827" stroke="#334155" stroke-width="2" />
+
+    <!-- Header -->
+    <rect x="0" y="0" width="550" height="44" rx="14" fill="#6B0F24" />
+    <rect x="0" y="30" width="550" height="14" fill="#6B0F24" />
+    <text x="275" y="29" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle">
+      2. 220 &Omega; CURRENT-LIMITING RESISTOR &amp; OHM'S LAW
+    </text>
+
+    <!-- Resistor Physical Drawing -->
+    <g transform="translate(40, 65)">
+      <!-- Left Wire Lead -->
+      <line x1="20" y1="40" x2="120" y2="40" stroke="#cbd5e1" stroke-width="4.5" stroke-linecap="round" />
+      
+      <!-- Resistor Body Dogbone -->
+      <rect x="120" y="20" width="220" height="40" rx="16" fill="url(#resistorBody)" stroke="#a1824a" stroke-width="2" />
+      
+      <!-- Color Bands (220 Ohm = Red, Red, Brown, Gold) -->
+      <!-- Band 1: RED (2) -->
+      <rect x="160" y="20" width="14" height="40" fill="#dc2626" />
+      <!-- Band 2: RED (2) -->
+      <rect x="195" y="20" width="14" height="40" fill="#dc2626" />
+      <!-- Band 3: BROWN (x10 Multiplier = 220) -->
+      <rect x="230" y="20" width="14" height="40" fill="#78350f" />
+      <!-- Band 4: GOLD (5% Tolerance) -->
+      <rect x="285" y="20" width="14" height="40" fill="#fbbf24" stroke="#d97706" stroke-width="1" />
+
+      <!-- Right Wire Lead -->
+      <line x1="340" y1="40" x2="440" y2="40" stroke="#cbd5e1" stroke-width="4.5" stroke-linecap="round" />
+
+      <!-- Color Band Labels -->
+      <text x="167" y="76" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#dc2626" text-anchor="middle">RED: 2</text>
+      <text x="202" y="76" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#dc2626" text-anchor="middle">RED: 2</text>
+      <text x="237" y="76" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#b45309" text-anchor="middle">BROWN: &times;10</text>
+      <text x="292" y="76" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#fbbf24" text-anchor="middle">&plusmn;5%</text>
+
+      <text x="230" y="98" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="900" fill="#ffffff" text-anchor="middle">
+        Value: 2 &bull; 2 &times; 10 = 220 &Omega; (Non-polarized: works either way)
+      </text>
+    </g>
+
+    <!-- Ohm's Law Calculation Box -->
+    <g transform="translate(30, 185)">
+      <rect width="490" height="325" rx="10" fill="#090e18" stroke="#F5B800" stroke-width="1.5" />
+      
+      <rect x="0" y="0" width="490" height="36" rx="10" fill="rgba(245, 184, 0, 0.2)" />
+      <text x="245" y="24" font-family="'Segoe UI', sans-serif" font-size="13.5" font-weight="900" fill="#F5B800" text-anchor="middle">
+        ⚡ OHM'S LAW: WHY 220 &Omega; IS THE PERFECT VALUE
+      </text>
+
+      <!-- Step 1: Supply vs LED Drop -->
+      <g transform="translate(25, 52)">
+        <text x="0" y="16" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#38BDF8">
+          1. Voltage Dropped Across the Resistor:
+        </text>
+        <text x="15" y="38" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="700" fill="#ffffff">
+          V_resistor = V_supply (5.0V) - V_LED_forward (2.0V) = 3.0V
+        </text>
+        <text x="15" y="55" font-family="'Segoe UI', sans-serif" font-size="11" fill="#94a3b8">
+          The red LED uses 2.0V to emit photons; the resistor absorbs the remaining 3.0V.
+        </text>
+      </g>
+
+      <!-- Step 2: Current Formula -->
+      <g transform="translate(25, 125)">
+        <text x="0" y="16" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#38BDF8">
+          2. Circuit Current (I = V / R):
+        </text>
+        <rect x="15" y="26" width="420" height="42" rx="6" fill="#111827" stroke="#334155" stroke-width="1" />
+        <text x="225" y="52" font-family="'JetBrains Mono', monospace" font-size="15" font-weight="900" fill="#10B981" text-anchor="middle">
+          I = 3.0V / 220 &Omega; &approx; 0.0136 A = 13.6 mA
+        </text>
+      </g>
+
+      <!-- Step 3: Safety Comparison Matrix -->
+      <g transform="translate(25, 205)">
+        <text x="0" y="14" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#F5B800">
+          3. Microcontroller Safety Verification:
+        </text>
+        
+        <rect x="0" y="24" width="440" height="78" rx="6" fill="#111827" stroke="#334155" stroke-width="1" />
+        <text x="15" y="44" font-family="'Segoe UI', sans-serif" font-size="11" fill="#cbd5e1">
+          &bull; <strong style="fill:#10B981;">Our Circuit Current:</strong> 13.6 mA (Bright, clear illumination)
+        </text>
+        <text x="15" y="64" font-family="'Segoe UI', sans-serif" font-size="11" fill="#cbd5e1">
+          &bull; <strong style="fill:#F5B800;">5mm Red LED Maximum Continuous Rating:</strong> 20.0 mA (Safe margin)
+        </text>
+        <text x="15" y="84" font-family="'Segoe UI', sans-serif" font-size="11" fill="#cbd5e1">
+          &bull; <strong style="fill:#ef4444;">ATmega328P Pin Absolute Maximum Limit:</strong> 40.0 mA (Zero risk of burnout!)
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,269 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b101b" />
+      <stop offset="50%" stop-color="#161B26" />
+      <stop offset="100%" stop-color="#080c14" />
+    </linearGradient>
+
+    <!-- Box 1 Sense Gradient -->
+    <linearGradient id="senseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(245, 184, 0, 0.18)" />
+      <stop offset="100%" stop-color="rgba(245, 184, 0, 0.05)" />
+    </linearGradient>
+
+    <!-- Box 2 Decide Gradient -->
+    <linearGradient id="decideGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(107, 15, 36, 0.45)" />
+      <stop offset="100%" stop-color="rgba(107, 15, 36, 0.15)" />
+    </linearGradient>
+
+    <!-- Box 3 Act Gradient -->
+    <linearGradient id="actGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(16, 185, 129, 0.22)" />
+      <stop offset="100%" stop-color="rgba(16, 185, 129, 0.06)" />
+    </linearGradient>
+
+    <!-- Arrow Marker -->
+    <marker id="arrowGold" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#F5B800" />
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#10B981" />
+    </marker>
+    <marker id="arrowCyan" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#38BDF8" />
+    </marker>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="640" rx="16" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="2" />
+
+  <!-- Top Title & Badge Banner -->
+  <rect x="30" y="24" width="680" height="34" rx="17" fill="rgba(245, 184, 0, 0.12)" stroke="#F5B800" stroke-width="1.2" />
+  <text x="45" y="47" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="800" fill="#F5B800" letter-spacing="1">
+    ROBOBEE INNOVATORS &bull; CORE LAW OF ROBOTICS: THE SENSE &rarr; DECIDE &rarr; ACT CLOSED LOOP
+  </text>
+
+  <!-- Mandatory Reference Badge -->
+  <g transform="translate(740, 24)">
+    <rect width="430" height="34" rx="8" fill="#6B0F24" stroke="#F5B800" stroke-width="1.2" />
+    <text x="215" y="22" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">
+      ⚠ RoboBEE Reference Illustration — Verify Hardware Before Powering
+    </text>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- BOX 1: SENSE (INPUT) -->
+  <!-- ========================================================== -->
+  <g transform="translate(40, 80)">
+    <rect width="320" height="420" rx="14" fill="url(#senseGrad)" stroke="#F5B800" stroke-width="2" />
+    
+    <!-- Stage Header -->
+    <rect x="0" y="0" width="320" height="54" rx="14" fill="#F5B800" />
+    <rect x="0" y="38" width="320" height="16" fill="#F5B800" />
+    <text x="160" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="18" font-weight="900" fill="#161B26" text-anchor="middle">
+      STAGE 1: SENSE (INPUT)
+    </text>
+    <text x="160" y="46" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="700" fill="#3b2b00" text-anchor="middle">
+      GATHERS PHYSICAL DATA FROM SURROUNDINGS
+    </text>
+
+    <!-- Component Cards inside SENSE -->
+    <!-- 1. Ultrasonic Distance -->
+    <g transform="translate(16, 70)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(245, 184, 0, 0.2)" stroke="#F5B800" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">📡</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">Ultrasonic Sensor (HC-SR04)</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Measures distance (cm) via 40 kHz sound waves</text>
+    </g>
+
+    <!-- 2. IR Photodiode -->
+    <g transform="translate(16, 150)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(245, 184, 0, 0.2)" stroke="#F5B800" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">👁️</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">IR Reflectance Sensor (Line)</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Measures reflected infrared light (Black vs White)</text>
+    </g>
+
+    <!-- 3. Pushbutton Switch -->
+    <g transform="translate(16, 230)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(245, 184, 0, 0.2)" stroke="#F5B800" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">🔘</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">Tactile Pushbutton (Touch/Bumper)</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Binary touch state: Pressed (LOW) / Released (HIGH)</text>
+    </g>
+
+    <!-- 4. Analog Temperature / Light -->
+    <g transform="translate(16, 310)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(245, 184, 0, 0.2)" stroke="#F5B800" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">🌡️</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">LDR Light / Temp Thermistor</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Continuous analog voltage (0V–5V / 0–1023 ADC)</text>
+    </g>
+
+    <text x="160" y="405" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="700" fill="#F5B800" text-anchor="middle">
+      OUTPUT: Varying Voltage / Digital Binary State
+    </text>
+  </g>
+
+  <!-- ARROW 1: SENSE -> DECIDE -->
+  <g transform="translate(365, 275)">
+    <line x1="0" y1="0" x2="65" y2="0" stroke="#F5B800" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrowGold)" />
+    <rect x="-10" y="-36" width="95" height="26" rx="5" fill="#111827" stroke="#F5B800" stroke-width="1" />
+    <text x="37" y="-23" font-family="'Segoe UI', system-ui, sans-serif" font-size="8.5" font-weight="800" fill="#F5B800" text-anchor="middle">ELECTRICAL</text>
+    <text x="37" y="-12" font-family="'Segoe UI', system-ui, sans-serif" font-size="8.5" font-weight="800" fill="#ffffff" text-anchor="middle">INPUT SIGNAL</text>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- BOX 2: DECIDE (CONTROLLER) -->
+  <!-- ========================================================== -->
+  <g transform="translate(440, 80)">
+    <rect width="320" height="420" rx="14" fill="url(#decideGrad)" stroke="#6B0F24" stroke-width="2.5" />
+
+    <!-- Stage Header -->
+    <rect x="0" y="0" width="320" height="54" rx="14" fill="#6B0F24" />
+    <rect x="0" y="38" width="320" height="16" fill="#6B0F24" />
+    <text x="160" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">
+      STAGE 2: DECIDE (BRAIN)
+    </text>
+    <text x="160" y="46" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="700" fill="#F5B800" text-anchor="middle">
+      ARDUINO UNO R3 &bull; ATMEGA328P MCU (16 MHz)
+    </text>
+
+    <!-- Microcontroller Chip Art -->
+    <g transform="translate(30, 68)">
+      <rect width="260" height="85" rx="8" fill="#090e18" stroke="#F5B800" stroke-width="1.5" />
+      <!-- Chip pins -->
+      <line x1="20" y1="0" x2="20" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      <line x1="50" y1="0" x2="50" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      <line x1="80" y1="0" x2="80" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      <line x1="110" y1="0" x2="110" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      <line x1="140" y1="0" x2="140" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      <line x1="170" y1="0" x2="170" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      <line x1="200" y1="0" x2="200" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      <line x1="230" y1="0" x2="230" y2="-6" stroke="#94a3b8" stroke-width="3" />
+      
+      <circle cx="20" cy="20" r="4" fill="#64748b" />
+      <text x="130" y="32" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">ATmega328P-PU</text>
+      <text x="130" y="52" font-family="'Segoe UI', system-ui, sans-serif" font-size="10" fill="#F5B800" text-anchor="middle">32KB Flash &bull; 2KB SRAM &bull; 16 MHz Clock</text>
+      <text x="130" y="72" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#38BDF8" text-anchor="middle">Executes 16 Million Ops / Sec</text>
+    </g>
+
+    <!-- Embedded C++ Decision Logic Box -->
+    <g transform="translate(16, 170)">
+      <rect width="288" height="180" rx="8" fill="#020617" stroke="#334155" stroke-width="1.5" />
+      <rect x="0" y="0" width="288" height="26" rx="8" fill="#1e293b" />
+      <rect x="0" y="16" width="288" height="10" fill="#1e293b" />
+      <circle cx="14" cy="13" r="4" fill="#ef4444" />
+      <circle cx="26" cy="13" r="4" fill="#f59e0b" />
+      <circle cx="38" cy="13" r="4" fill="#10b981" />
+      <text x="144" y="17" font-family="'Segoe UI', system-ui, sans-serif" font-size="10" font-weight="700" fill="#94a3b8" text-anchor="middle">Firmware Decision Logic</text>
+
+      <text x="14" y="48" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#38BDF8">void loop() {</text>
+      <text x="24" y="68" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#94a3b8">// 1. SENSE input reading</text>
+      <text x="24" y="86" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#ffffff">int dist = readDistance();</text>
+      <text x="24" y="106" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#F5B800">if (dist &lt; 20) {</text>
+      <text x="36" y="124" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#ef4444">  // 2. DECIDE: Obstacle!</text>
+      <text x="36" y="142" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#10B981">  pivotRight(); // ACT</text>
+      <text x="24" y="160" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#F5B800">} else { driveForward(); }</text>
+      <text x="14" y="176" font-family="'JetBrains Mono', monospace" font-size="10.5" fill="#38BDF8">}</text>
+    </g>
+
+    <!-- Stage 2 Footer note -->
+    <text x="160" y="380" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">
+      Compares Input to Programmed Rules
+    </text>
+    <text x="160" y="400" font-family="'Segoe UI', system-ui, sans-serif" font-size="10.5" fill="#cbd5e1" text-anchor="middle">
+      Computes exact output drive states in microseconds
+    </text>
+  </g>
+
+  <!-- ARROW 2: DECIDE -> ACT -->
+  <g transform="translate(765, 275)">
+    <line x1="0" y1="0" x2="65" y2="0" stroke="#10B981" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrowGreen)" />
+    <rect x="-10" y="-36" width="95" height="26" rx="5" fill="#111827" stroke="#10B981" stroke-width="1" />
+    <text x="37" y="-23" font-family="'Segoe UI', system-ui, sans-serif" font-size="8.5" font-weight="800" fill="#10B981" text-anchor="middle">OUTPUT</text>
+    <text x="37" y="-12" font-family="'Segoe UI', system-ui, sans-serif" font-size="8.5" font-weight="800" fill="#ffffff" text-anchor="middle">CONTROL SIGNAL</text>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- BOX 3: ACT (OUTPUT / ACTUATOR) -->
+  <!-- ========================================================== -->
+  <g transform="translate(840, 80)">
+    <rect width="320" height="420" rx="14" fill="url(#actGrad)" stroke="#10B981" stroke-width="2" />
+
+    <!-- Stage Header -->
+    <rect x="0" y="0" width="320" height="54" rx="14" fill="#10B981" />
+    <rect x="0" y="38" width="320" height="16" fill="#10B981" />
+    <text x="160" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="18" font-weight="900" fill="#161B26" text-anchor="middle">
+      STAGE 3: ACT (OUTPUT)
+    </text>
+    <text x="160" y="46" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="700" fill="#064e3b" text-anchor="middle">
+      ACTUATORS &bull; PHYSICAL WORK IN REAL WORLD
+    </text>
+
+    <!-- Component Cards inside ACT -->
+    <!-- 1. 5mm LED Light -->
+    <g transform="translate(16, 70)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(239, 68, 68, 0.2)" stroke="#ef4444" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">💡</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">5mm LED (Visual Signaling)</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Blinks status alerts, beacons, or Morse code</text>
+    </g>
+
+    <!-- 2. DC Gear Motor via Driver -->
+    <g transform="translate(16, 150)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(16, 185, 129, 0.2)" stroke="#10B981" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">⚙️</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">DC Motors + Motor Driver</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Spins rover wheels forward, backward, or turns</text>
+    </g>
+
+    <!-- 3. Micro Servo SG90 -->
+    <g transform="translate(16, 230)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(56, 189, 248, 0.2)" stroke="#38BDF8" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">🦾</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">Micro Servo Motor (SG90)</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Positions gripper or steering to exact angle (0–180°)</text>
+    </g>
+
+    <!-- 4. Piezo Buzzer -->
+    <g transform="translate(16, 310)">
+      <rect width="288" height="68" rx="8" fill="#111827" stroke="#334155" stroke-width="1" />
+      <circle cx="36" cy="34" r="16" fill="rgba(245, 184, 0, 0.2)" stroke="#F5B800" stroke-width="1.5" />
+      <text x="36" y="40" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" text-anchor="middle">🔊</text>
+      <text x="64" y="28" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff">Piezo Acoustic Buzzer</text>
+      <text x="64" y="48" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#94a3b8">Generates warning frequencies and tones</text>
+    </g>
+
+    <text x="160" y="405" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" font-weight="700" fill="#10B981" text-anchor="middle">
+      OUTPUT: Motion, Photons, Sound, Mechanical Work
+    </text>
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- BOTTOM FEEDBACK LOOP: ACT -> ENVIRONMENT -> SENSE -->
+  <!-- ========================================================== -->
+  <g transform="translate(0, 520)">
+    <!-- Path from Box 3 back to Box 1 -->
+    <path d="M 1000,0 L 1000,50 L 200,50 L 200,5" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-dasharray="8,5" marker-end="url(#arrowCyan)" />
+    <rect x="420" y="34" width="360" height="32" rx="16" fill="#090e18" stroke="#38BDF8" stroke-width="1.5" />
+    <text x="600" y="55" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="800" fill="#38BDF8" text-anchor="middle">
+      🔄 CLOSED-LOOP ENVIRONMENT FEEDBACK &bull; Physical State Changes
+    </text>
+  </g>
+
+  <!-- Footer Citation -->
+  <text x="600" y="625" font-family="'Segoe UI', system-ui, sans-serif" font-size="10.5" fill="#64748b" text-anchor="middle">
+    RoboBEE Innovators Academy &bull; &ldquo;Dream. Invent. Experiment. Inspire.&rdquo; &bull; Proprietary Educational Framework
+  </text>
+</svg>
