@@ -155,6 +155,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             36 Classes
           </span>
         </Link>
+        <Link href="/dashboard/curriculum/reference" className={isAct("/dashboard/curriculum/reference")} onClick={closeSidebar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#F5B800' }}>
+          <span>Field Guide &amp; Library</span>
+          <span style={{ fontSize: '0.65rem', background: 'rgba(107, 15, 36, 0.4)', color: '#F5B800', border: '1px solid #F5B800', padding: '0.15rem 0.45rem', borderRadius: '10px', fontWeight: 800 }}>
+            Reference
+          </span>
+        </Link>
         <Link href="/dashboard/profile" className={isAct("/dashboard/profile")} onClick={closeSidebar}>
           My Profile
         </Link>

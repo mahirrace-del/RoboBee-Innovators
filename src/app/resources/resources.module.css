@@ -1,0 +1,175 @@
+.container {
+  min-height: 100vh;
+  background: #090e18;
+  color: #f1f5f9;
+  padding: 2rem 1.5rem 5rem 1.5rem;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #F5B800;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navLinks {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.navLink {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.navLink:hover {
+  color: #F5B800;
+}
+
+.hero {
+  background: linear-gradient(135deg, rgba(107, 15, 36, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(245, 184, 0, 0.3);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(245, 184, 0, 0.15);
+  border: 1px solid #F5B800;
+  color: #F5B800;
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.heroTitle {
+  font-size: 2.25rem;
+  font-weight: 900;
+  margin: 0 0 0.75rem 0;
+  color: #ffffff;
+}
+
+.heroSubtitle {
+  font-size: 1.05rem;
+  color: #cbd5e1;
+  max-width: 800px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.resourceCard {
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s ease;
+}
+
+.resourceCard:hover {
+  border-color: #cbd5e1;
+}
+
+.resourceCategory {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #F5B800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.resourceTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.resourcePublisher {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+}
+
+.resourceSummary {
+  font-size: 0.875rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.metaItem {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+
+.metaItem strong {
+  color: #e2e8f0;
+}
+
+.linkRow {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resourceLink {
+  color: #F5B800;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.licenseBadge {
+  font-size: 0.75rem;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}

@@ -127,6 +127,11 @@ export interface RoboticsLesson {
   sources: { title: string; url: string; accessedOrVersioned?: string }[];
   assetCredits: { asset: string; creator: string; license: string; sourceUrl: string }[];
   ipNotice: string;
+  fieldGuideLinks?: {
+    readBeforeClass: string[];
+    lookUpWhileBuilding: string[];
+    goDeeper: string[];
+  };
 
   // Backward compatibility aliases for legacy views
   classNumber?: number;
@@ -233,6 +238,11 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
   // -----------------------------------------------------------------------
   {
     id: 'exp-01',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-foundations-what-is-robot"],
+      lookUpWhileBuilding: ["fg-foundations-what-is-robot"],
+      goDeeper: ["fg-arduino-microcontroller-vs-computer"]
+    },
     courseId: 'explorer',
     sequence: 1,
     code: 'EXPLORER 01',
@@ -311,6 +321,11 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
 
   {
     id: 'exp-02',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-safety-lab-code"],
+      lookUpWhileBuilding: ["fg-electronics-ohms-law","fg-electronics-breadboards"],
+      goDeeper: ["fg-board-uno-anatomy"]
+    },
     courseId: 'explorer',
     sequence: 2,
     code: 'EXPLORER 02',
@@ -422,6 +437,11 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
 
   {
     id: 'exp-03',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-motion-differential-kinematics"],
+      lookUpWhileBuilding: ["fg-motion-differential-kinematics"],
+      goDeeper: ["fg-comp-tb6612fng"]
+    },
     courseId: 'explorer',
     sequence: 3,
     code: 'EXPLORER 03',
@@ -494,6 +514,11 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
 
   {
     id: 'exp-04',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-foundations-what-is-robot"],
+      lookUpWhileBuilding: ["fg-foundations-what-is-robot"],
+      goDeeper: ["fg-design-cad-measurement"]
+    },
     courseId: 'explorer',
     sequence: 4,
     code: 'EXPLORER 04',
@@ -570,6 +595,11 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
   // -----------------------------------------------------------------------
   {
     id: 'beg-01',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-foundations-what-is-robot","fg-arduino-microcontroller-vs-computer"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-prog-program-structure"],
+      goDeeper: ["fg-arduino-ide-workflow","fg-safety-lab-code"]
+    },
     courseId: 'beginner',
     sequence: 1,
     code: 'BEGINNER 01',
@@ -813,6 +843,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-02',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-electronics-ohms-law","fg-safety-lab-code"],
+      lookUpWhileBuilding: ["fg-electronics-breadboards","fg-board-uno-anatomy"],
+      goDeeper: ["fg-testing-fmea-debugging"]
+    },
     courseId: 'beginner',
     sequence: 2,
     code: 'BEGINNER 02',
@@ -941,6 +976,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-03',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-prog-program-structure","fg-arduino-ide-workflow"],
+      lookUpWhileBuilding: ["fg-comm-i2c-spi-uart","fg-board-uno-anatomy"],
+      goDeeper: ["fg-prog-millis-vs-delay"]
+    },
     courseId: 'beginner',
     sequence: 3,
     code: 'BEGINNER 03',
@@ -1064,6 +1104,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-04',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-electronics-ohms-law"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-comp-tcrt5000"],
+      goDeeper: ["fg-foundations-open-closed-loop"]
+    },
     courseId: 'beginner',
     sequence: 4,
     code: 'BEGINNER 04',
@@ -1193,6 +1238,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-05',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-prog-program-structure"],
+      lookUpWhileBuilding: ["fg-prog-millis-vs-delay","fg-testing-fmea-debugging"],
+      goDeeper: ["fg-arduino-microcontroller-vs-computer"]
+    },
     courseId: 'beginner',
     sequence: 5,
     code: 'BEGINNER 05',
@@ -1343,6 +1393,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-06',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tb6612fng","fg-safety-lab-code"],
+      lookUpWhileBuilding: ["fg-electronics-ohms-law","fg-board-uno-anatomy"],
+      goDeeper: ["fg-motion-differential-kinematics"]
+    },
     courseId: 'beginner',
     sequence: 6,
     code: 'BEGINNER 06',
@@ -1508,6 +1563,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-07',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-motion-differential-kinematics"],
+      lookUpWhileBuilding: ["fg-comp-tb6612fng","fg-prog-program-structure"],
+      goDeeper: ["fg-comp-encoders-odometry"]
+    },
     courseId: 'beginner',
     sequence: 7,
     code: 'BEGINNER 07',
@@ -1693,6 +1753,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-08',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-design-cad-measurement"],
+      lookUpWhileBuilding: ["fg-design-cad-measurement"],
+      goDeeper: ["fg-comp-hc-sr04"]
+    },
     courseId: 'beginner',
     sequence: 8,
     code: 'BEGINNER 08',
@@ -1823,6 +1888,11 @@ ultrasonicMount();`,
   // -----------------------------------------------------------------------
   {
     id: 'beg-09',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-hc-sr04","fg-comp-tb6612fng"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-safety-lab-code"],
+      goDeeper: ["fg-motion-differential-kinematics","fg-prog-millis-vs-delay"]
+    },
     courseId: 'beginner',
     sequence: 9,
     code: 'BEGINNER 09',
@@ -1974,6 +2044,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'beg-10',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-testing-fmea-debugging"],
+      lookUpWhileBuilding: ["fg-testing-fmea-debugging","fg-comp-hc-sr04"],
+      goDeeper: ["fg-comp-tournament-prep"]
+    },
     courseId: 'beginner',
     sequence: 10,
     code: 'BEGINNER 10',
@@ -2104,6 +2179,11 @@ void loop() {
   // -----------------------------------------------------------------------
   {
     id: 'int-01',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-foundations-what-is-robot","fg-foundations-open-closed-loop"],
+      lookUpWhileBuilding: ["fg-comp-tcrt5000","fg-motion-differential-kinematics"],
+      goDeeper: ["fg-testing-fmea-debugging"]
+    },
     courseId: 'intermediate',
     sequence: 1,
     code: 'INTERMEDIATE 01',
@@ -2156,6 +2236,11 @@ void loop() {
 
   {
     id: 'int-02',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tcrt5000"],
+      lookUpWhileBuilding: ["fg-electronics-ohms-law","fg-board-uno-anatomy"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'intermediate',
     sequence: 2,
     code: 'INTERMEDIATE 02',
@@ -2208,6 +2293,11 @@ void loop() {
 
   {
     id: 'int-03',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-prog-program-structure"],
+      lookUpWhileBuilding: ["fg-prog-millis-vs-delay"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'intermediate',
     sequence: 3,
     code: 'INTERMEDIATE 03',
@@ -2384,6 +2474,11 @@ void reportTelemetry() {
 
   {
     id: 'int-04',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tb6612fng"],
+      lookUpWhileBuilding: ["fg-motion-differential-kinematics","fg-board-uno-anatomy"],
+      goDeeper: ["fg-comp-encoders-odometry"]
+    },
     courseId: 'intermediate',
     sequence: 4,
     code: 'INTERMEDIATE 04',
@@ -2436,6 +2531,11 @@ void reportTelemetry() {
 
   {
     id: 'int-05',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tcrt5000","fg-comp-tb6612fng"],
+      lookUpWhileBuilding: ["fg-safety-lab-code","fg-board-uno-anatomy"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'intermediate',
     sequence: 5,
     code: 'INTERMEDIATE 05',
@@ -2653,6 +2753,11 @@ void brakeMotors() {
 
   {
     id: 'int-06',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-sg90-servo"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-safety-lab-code"],
+      goDeeper: ["fg-design-cad-measurement"]
+    },
     courseId: 'intermediate',
     sequence: 6,
     code: 'INTERMEDIATE 06',
@@ -2818,6 +2923,11 @@ void smoothMove(int targetAngle) {
 
   {
     id: 'int-07',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-prog-program-structure","fg-foundations-open-closed-loop"],
+      lookUpWhileBuilding: ["fg-motion-differential-kinematics"],
+      goDeeper: ["fg-comp-encoders-odometry"]
+    },
     courseId: 'intermediate',
     sequence: 7,
     code: 'INTERMEDIATE 07',
@@ -2993,6 +3103,11 @@ void brake() {
 
   {
     id: 'int-08',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-design-cad-measurement"],
+      lookUpWhileBuilding: ["fg-design-cad-measurement"],
+      goDeeper: ["fg-comp-sg90-servo"]
+    },
     courseId: 'intermediate',
     sequence: 8,
     code: 'INTERMEDIATE 08',
@@ -3034,6 +3149,11 @@ void brake() {
 
   {
     id: 'int-09',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comm-i2c-spi-uart","fg-safety-lab-code"],
+      lookUpWhileBuilding: ["fg-prog-millis-vs-delay"],
+      goDeeper: ["fg-board-other-microcontrollers","fg-comp-tournament-prep"]
+    },
     courseId: 'intermediate',
     sequence: 9,
     code: 'INTERMEDIATE 09',
@@ -3174,6 +3294,11 @@ void brake() {
 
   {
     id: 'int-10',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-testing-fmea-debugging","fg-comp-tournament-prep"],
+      lookUpWhileBuilding: ["fg-safety-lab-code"],
+      goDeeper: ["fg-comp-tournament-prep"]
+    },
     courseId: 'intermediate',
     sequence: 10,
     code: 'INTERMEDIATE 10',
@@ -3218,6 +3343,11 @@ void brake() {
   // -----------------------------------------------------------------------
   {
     id: 'adv-01',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tournament-prep"],
+      lookUpWhileBuilding: ["fg-comp-tournament-prep","fg-safety-lab-code"],
+      goDeeper: ["fg-testing-fmea-debugging"]
+    },
     courseId: 'advanced',
     sequence: 1,
     code: 'ADVANCED 01',
@@ -3259,6 +3389,11 @@ void brake() {
 
   {
     id: 'adv-02',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-electronics-ohms-law","fg-safety-lab-code"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-comp-tb6612fng"],
+      goDeeper: ["fg-testing-fmea-debugging"]
+    },
     courseId: 'advanced',
     sequence: 2,
     code: 'ADVANCED 02',
@@ -3300,6 +3435,11 @@ void brake() {
 
   {
     id: 'adv-03',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-prog-millis-vs-delay","fg-prog-program-structure"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-arduino-ide-workflow"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'advanced',
     sequence: 3,
     code: 'ADVANCED 03',
@@ -3438,6 +3578,11 @@ void loop() {
 
   {
     id: 'adv-04',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-encoders-odometry"],
+      lookUpWhileBuilding: ["fg-motion-differential-kinematics","fg-board-uno-anatomy"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'advanced',
     sequence: 4,
     code: 'ADVANCED 04',
@@ -3624,6 +3769,11 @@ void brake() {
 
   {
     id: 'adv-05',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-motion-pid-control","fg-foundations-open-closed-loop"],
+      lookUpWhileBuilding: ["fg-comp-encoders-odometry","fg-comp-tb6612fng"],
+      goDeeper: ["fg-testing-fmea-debugging"]
+    },
     courseId: 'advanced',
     sequence: 5,
     code: 'ADVANCED 05',
@@ -3651,7 +3801,7 @@ void brake() {
       deliverableType: 'simulation',
       successEvidence: ['Documented PID tuning log showing Kp, Ki, Kd values with stable settling time and zero persistent oscillations.']
     },
-    activity: { title: 'Tune a Closed-Loop PID Controller', steps: ['Set Ki=0, Kd=0', 'Increase Kp until slight oscillation', 'Increase Kd to dampen oscillation', 'Add tiny Ki if steady-state error persists'], successCriteria: ['Smooth, high-speed line tracking with zero overshoot.'] },
+    activity: { title: 'Tune a Closed-Loop PID Controller', steps: ['Set Ki=0, Kd=0', 'Increase Kp until slight oscillation', 'Increase Kd to dampen oscillation', 'Add tiny Ki if steady-state error persists'], successCriteria: ['Stable line tracking with measured damping under 5mm lateral deviation across 3 recorded trials.'] },
     troubleshooting: [{ symptom: 'Robot vibrates uncontrollably at high frequency.', checks: ['Kd is set too high, amplifying sensor noise'], explanation: 'Derivative terms amplify high-frequency measurement noise.' }],
     checksForUnderstanding: ['What happens if Kp is set way too high? (Answer: Violent oscillation and instability!)'],
     exitTicket: [{ question: 'What does the Proportional (P) term calculate in a PID controller?', rubricOrSampleReasoning: 'It calculates an output correction proportional to the current error (Output = Kp * Error).' }],
@@ -3665,6 +3815,11 @@ void brake() {
 
   {
     id: 'adv-06',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comm-i2c-spi-uart"],
+      lookUpWhileBuilding: ["fg-board-uno-anatomy","fg-foundations-open-closed-loop"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'advanced',
     sequence: 6,
     code: 'ADVANCED 06',
@@ -3707,6 +3862,11 @@ void brake() {
 
   {
     id: 'adv-07',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-design-cad-measurement"],
+      lookUpWhileBuilding: ["fg-design-cad-measurement"],
+      goDeeper: ["fg-comp-tournament-prep"]
+    },
     courseId: 'advanced',
     sequence: 7,
     code: 'ADVANCED 07',
@@ -3748,6 +3908,11 @@ void brake() {
 
   {
     id: 'adv-08',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-board-other-microcontrollers"],
+      lookUpWhileBuilding: ["fg-comm-i2c-spi-uart","fg-safety-lab-code"],
+      goDeeper: ["fg-prog-millis-vs-delay"]
+    },
     courseId: 'advanced',
     sequence: 8,
     code: 'ADVANCED 08',
@@ -3896,6 +4061,11 @@ void loop() {
 
   {
     id: 'adv-09',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tournament-prep","fg-safety-lab-code"],
+      lookUpWhileBuilding: ["fg-comp-tcrt5000","fg-comp-hc-sr04","fg-comp-tb6612fng"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'advanced',
     sequence: 9,
     code: 'ADVANCED 09',
@@ -4029,6 +4199,11 @@ void loop() {
 
   {
     id: 'adv-10',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-testing-fmea-debugging"],
+      lookUpWhileBuilding: ["fg-testing-fmea-debugging","fg-safety-lab-code"],
+      goDeeper: ["fg-comp-tournament-prep"]
+    },
     courseId: 'advanced',
     sequence: 10,
     code: 'ADVANCED 10',
@@ -4070,6 +4245,11 @@ void loop() {
 
   {
     id: 'adv-11',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tournament-prep","fg-safety-lab-code"],
+      lookUpWhileBuilding: ["fg-comp-tb6612fng","fg-board-uno-anatomy","fg-testing-fmea-debugging"],
+      goDeeper: ["fg-motion-pid-control"]
+    },
     courseId: 'advanced',
     sequence: 11,
     code: 'ADVANCED 11',
@@ -4261,6 +4441,11 @@ void brake() {
 
   {
     id: 'adv-12',
+    fieldGuideLinks: {
+      readBeforeClass: ["fg-comp-tournament-prep","fg-testing-fmea-debugging"],
+      lookUpWhileBuilding: ["fg-safety-lab-code"],
+      goDeeper: ["fg-foundations-what-is-robot"]
+    },
     courseId: 'advanced',
     sequence: 12,
     code: 'ADVANCED 12',

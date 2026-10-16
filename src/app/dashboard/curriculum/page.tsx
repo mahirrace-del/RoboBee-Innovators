@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import styles from "./curriculum.module.css";
 import { 
   ALL_ROBOTICS_LESSONS, 
@@ -18,7 +19,7 @@ import { collection, onSnapshot, doc, setDoc, updateDoc, increment } from "fireb
 import { 
   Award, Lock, Unlock, CheckCircle, Clock, Copy, Check, Download, 
   HelpCircle, Eye, Zap, BookOpen, Layers, X, Tv, Shield, Radio, Sparkles, Code,
-  Wrench, AlertTriangle, FileText, Activity, CheckSquare, Info
+  Wrench, AlertTriangle, FileText, Activity, CheckSquare, Info, ArrowRight, ExternalLink
 } from "lucide-react";
 
 export default function MemberCurriculumPage() {
@@ -179,9 +180,31 @@ export default function MemberCurriculumPage() {
             <Sparkles size={14} />
             <span>RoboBEE Innovators Academy</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', background: 'rgba(255, 255, 255, 0.05)', padding: '0.4rem 1rem', borderRadius: '30px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-            <Award size={18} color="#F5B800" />
-            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#F5B800' }}>{userXp} RoboXP</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link
+              href="/dashboard/curriculum/reference"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                background: '#6B0F24',
+                border: '1px solid #F5B800',
+                color: '#ffffff',
+                padding: '0.4rem 0.95rem',
+                borderRadius: '30px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 2px 6px rgba(107, 15, 36, 0.4)'
+              }}
+            >
+              <BookOpen size={16} color="#F5B800" />
+              <span>Arduino &amp; Robotics Field Guide ➔</span>
+            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', background: 'rgba(255, 255, 255, 0.05)', padding: '0.4rem 1rem', borderRadius: '30px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <Award size={18} color="#F5B800" />
+              <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#F5B800' }}>{userXp} RoboXP</span>
+            </div>
           </div>
         </div>
 
@@ -482,6 +505,84 @@ export default function MemberCurriculumPage() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* FIELD GUIDE REFERENCE LINKS */}
+                  {activeLesson.fieldGuideLinks && (
+                    <div style={{ marginTop: '1.5rem', background: '#161B26', border: '1px solid #6B0F24', borderRadius: '12px', padding: '1.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ fontWeight: 800, color: '#F5B800', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <BookOpen size={18} />
+                          <span>Arduino &amp; Robotics Field Guide References</span>
+                        </div>
+                        <Link
+                          href="/dashboard/curriculum/reference"
+                          style={{ fontSize: '0.82rem', color: '#F5B800', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}
+                        >
+                          <span>Open Full Library</span>
+                          <ExternalLink size={12} />
+                        </Link>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                        {/* Read Before Class */}
+                        <div style={{ background: '#0b101b', padding: '0.85rem', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                            📘 Read Before Class
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                            {activeLesson.fieldGuideLinks.readBeforeClass.map(id => (
+                              <Link
+                                key={id}
+                                href={`/dashboard/curriculum/reference?entry=${id}`}
+                                style={{ fontSize: '0.82rem', color: '#f1f5f9', textDecoration: 'none', padding: '0.35rem 0.6rem', background: '#1e293b', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                              >
+                                <span>{id.replace(/^fg-/, '').replace(/-/g, ' ')}</span>
+                                <ArrowRight size={12} color="#F5B800" />
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Look Up While Building */}
+                        <div style={{ background: '#0b101b', padding: '0.85rem', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F5B800', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                            🔍 Look Up While Building
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                            {activeLesson.fieldGuideLinks.lookUpWhileBuilding.map(id => (
+                              <Link
+                                key={id}
+                                href={`/dashboard/curriculum/reference?entry=${id}`}
+                                style={{ fontSize: '0.82rem', color: '#f1f5f9', textDecoration: 'none', padding: '0.35rem 0.6rem', background: '#1e293b', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                              >
+                                <span>{id.replace(/^fg-/, '').replace(/-/g, ' ')}</span>
+                                <ArrowRight size={12} color="#F5B800" />
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Go Deeper */}
+                        <div style={{ background: '#0b101b', padding: '0.85rem', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                            🚀 Go Deeper
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                            {activeLesson.fieldGuideLinks.goDeeper.map(id => (
+                              <Link
+                                key={id}
+                                href={`/dashboard/curriculum/reference?entry=${id}`}
+                                style={{ fontSize: '0.82rem', color: '#f1f5f9', textDecoration: 'none', padding: '0.35rem 0.6rem', background: '#1e293b', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                              >
+                                <span>{id.replace(/^fg-/, '').replace(/-/g, ' ')}</span>
+                                <ArrowRight size={12} color="#F5B800" />
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -1,0 +1,455 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem 2rem 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #0f172a;
+}
+
+.hero {
+  background: linear-gradient(135deg, #6B0F24 0%, #4a0918 100%);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  color: #ffffff;
+  box-shadow: 0 10px 25px -5px rgba(107, 15, 36, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(245, 184, 0, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(245, 184, 0, 0.2);
+  border: 1px solid rgba(245, 184, 0, 0.4);
+  color: #F5B800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.heroTitle {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  font-size: 1.05rem;
+  color: #cbd5e1;
+  max-width: 800px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Search and Filters */
+.searchFilterBar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.searchRow {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.95rem;
+  color: #0f172a;
+  outline: none;
+}
+
+.levelFilter {
+  padding: 0.6rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 0.9rem;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Section Navigation Tabs */
+.sectionTabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.sectionTab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.sectionTab:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.sectionTabActive {
+  background: #6B0F24;
+  color: #ffffff;
+  border-color: #6B0F24;
+  box-shadow: 0 2px 4px rgba(107, 15, 36, 0.2);
+}
+
+.sectionTabActive:hover {
+  background: #560c1d;
+  color: #ffffff;
+}
+
+/* Entries Grid & Cards */
+.entriesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.entryCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.entryCard:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.entryCardSelected {
+  border: 2px solid #6B0F24 !important;
+  box-shadow: 0 0 0 3px rgba(107, 15, 36, 0.15) !important;
+}
+
+.entryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.entryTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.badgeRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.levelBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.levelExplorer { background: #e0f2fe; color: #0369a1; }
+.levelBeginner { background: #dcfce7; color: #15803d; }
+.levelIntermediate { background: #fef3c7; color: #b45309; }
+.levelAdvanced { background: #fae8ff; color: #86198f; }
+
+.quickVersionBox {
+  background: #f8fafc;
+  border-left: 4px solid #6B0F24;
+  padding: 1rem 1.25rem;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #1e293b;
+  margin-bottom: 1.25rem;
+}
+
+.fullText {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #334155;
+  white-space: pre-line;
+  margin-bottom: 1.25rem;
+}
+
+.workedExampleBox {
+  background: #161B26; /* RoboBEE dark code panel */
+  color: #f1f5f9;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.workedExampleTitle {
+  color: #F5B800;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mistakesBox {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.mistakesTitle {
+  color: #9f1239;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mistakesList {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #881337;
+  font-size: 0.875rem;
+}
+
+.mistakesList li {
+  margin-bottom: 0.35rem;
+}
+
+.entryFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1rem;
+}
+
+.lessonLinkList {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.lessonPill {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.lessonPill:hover {
+  background: #6B0F24;
+  color: #ffffff;
+}
+
+.tryItBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #6B0F24;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.tryItBtn:hover {
+  background: #83142d;
+}
+
+.sourcesBlock {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.75rem;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 0.5rem;
+}
+
+/* Cheat Sheet Card */
+.cheatSheetCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.cheatSheetTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #6B0F24;
+  margin: 0 0 0.5rem 0;
+}
+
+.cheatSheetPoints {
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.cheatSheetPoints li {
+  margin-bottom: 0.5rem;
+}
+
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.printBtn:hover {
+  background: #1e293b;
+}
+
+/* Glossary Section */
+.glossaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.glossaryCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.glossaryTerm {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #6B0F24;
+  margin: 0 0 0.4rem 0;
+}
+
+.glossaryCategory {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.glossaryPlain {
+  font-size: 0.9rem;
+  color: #1e293b;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.glossaryTechnical {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.4;
+  background: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid #cbd5e1;
+}
+
+/* Print Media Query */
+@media print {
+  .hero, .searchFilterBar, .sectionTabs, .printBtn {
+    display: none !important;
+  }
+  .container {
+    padding: 0;
+    max-width: 100%;
+  }
+  .entryCard, .cheatSheetCard {
+    box-shadow: none;
+    border: 1px solid #000000;
+    page-break-inside: avoid;
+  }
+}

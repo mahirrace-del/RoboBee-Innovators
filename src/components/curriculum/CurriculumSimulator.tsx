@@ -1,21 +1,24 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./curriculumSimulator.module.css";
 import { InteractiveVisualType } from "@/lib/curriculumData";
 import { 
   Eye, Cpu, Zap, Radio, Sliders, Play, RotateCcw, 
   CheckCircle, AlertTriangle, Battery, Shield, Target,
-  Wifi, Compass, CheckSquare, RefreshCw, Volume2, ShieldAlert,
+  Compass, CheckSquare, RefreshCw, Volume2, ShieldAlert,
   Info, Activity
 } from "lucide-react";
 
 interface SimulatorProps {
-  type: InteractiveVisualType;
-  classNumber: number;
+  type?: InteractiveVisualType;
+  visualizerId?: InteractiveVisualType;
+  classNumber?: number;
+  lessonTitle?: string;
 }
 
-export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
+export function CurriculumSimulator({ type: propType, visualizerId, classNumber = 1 }: SimulatorProps) {
+  const type = visualizerId || propType || 'sense_decide_act_sim';
   // -----------------------------------------------------------------
   // 1. CLASS 01: sense_decide_act_sim
   // -----------------------------------------------------------------
@@ -120,7 +123,7 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
   const executeRoute = async () => {
     if (c6Executing) return;
     setC6Executing(true);
-    let cur = { ...c6RobotPos };
+    const cur = { ...c6RobotPos };
 
     for (const block of c6Queue) {
       if (block === 'turnRight') {
@@ -1238,13 +1241,13 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
 
               {/* If/else decision box */}
               <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.85rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                <div style={{ color: '#94a3b8', marginBottom: '4px' }}>// Arduino avoidance logic (running in sketch):</div>
+                <div style={{ color: '#94a3b8', marginBottom: '4px' }}>{'// Arduino avoidance logic (running in sketch):'}</div>
                 <div style={{ color: roverObstacleDist <= roverThreshold ? '#f87171' : '#64748b' }}>
-                  <span style={{ color: '#38bdf8' }}>if</span> (distance &lt;= {roverThreshold}) &#123; <span style={{ color: '#f87171' }}>// ← {roverIsBlocked ? 'TRUE now' : 'false now'}</span>
+                  <span style={{ color: '#38bdf8' }}>if</span> (distance &lt;= {roverThreshold}) &#123; <span style={{ color: '#f87171' }}>{'// ← ' + (roverIsBlocked ? 'TRUE now' : 'false now')}</span>
                 </div>
                 <div style={{ paddingLeft: '1.2rem', color: roverIsBlocked ? '#fca5a5' : '#334155' }}>brake(); reverseLeft(); pivotRight();</div>
                 <div style={{ color: '#64748b' }}>&#125; <span style={{ color: '#38bdf8' }}>else</span> &#123;</div>
-                <div style={{ paddingLeft: '1.2rem', color: !roverIsBlocked ? '#86efac' : '#334155' }}>driveForward(); <span style={{ color: '#10b981' }}>// ← {!roverIsBlocked ? 'TRUE now' : ''}</span></div>
+                <div style={{ paddingLeft: '1.2rem', color: !roverIsBlocked ? '#86efac' : '#334155' }}>driveForward(); <span style={{ color: '#10b981' }}>{'// ← ' + (!roverIsBlocked ? 'TRUE now' : '')}</span></div>
                 <div style={{ color: '#64748b' }}>&#125;</div>
               </div>
 
@@ -2330,7 +2333,7 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
                 ].map(s => (
                   <button
                     key={s.id}
-                    onClick={() => { setHelperSensor(s.id as any); setHelperTriggered(false); }}
+                    onClick={() => { setHelperSensor(s.id as 'camera' | 'sound' | 'touch' | 'temp'); setHelperTriggered(false); }}
                     className={`${styles.simBtn} ${helperSensor === s.id ? styles.simBtnCyan : ''}`}
                     style={{ flex: 1 }}
                   >
@@ -2351,7 +2354,7 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
                 ].map(r => (
                   <button
                     key={r.id}
-                    onClick={() => { setHelperRule(r.id as any); setHelperTriggered(false); }}
+                    onClick={() => { setHelperRule(r.id as 'bump' | 'dark' | 'loud' | 'hot'); setHelperTriggered(false); }}
                     className={`${styles.simBtn} ${helperRule === r.id ? styles.simBtnAmber : ''}`}
                     style={{ flex: 1 }}
                   >
@@ -2372,7 +2375,7 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
                 ].map(a => (
                   <button
                     key={a.id}
-                    onClick={() => { setHelperActuator(a.id as any); setHelperTriggered(false); }}
+                    onClick={() => { setHelperActuator(a.id as 'wheels' | 'lights' | 'buzzer' | 'arm'); setHelperTriggered(false); }}
                     className={`${styles.simBtn} ${helperActuator === a.id ? styles.simBtnGreen : ''}`}
                     style={{ flex: 1 }}
                   >
@@ -2579,7 +2582,7 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
               </div>
 
               <div style={{ width: '100%', background: '#050811', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.75rem', color: '#86efac' }}>
-                <div style={{ color: '#64748b', marginBottom: '4px' }}>// Serial Monitor (9600 baud):</div>
+                <div style={{ color: '#64748b', marginBottom: '4px' }}>{'// Serial Monitor (9600 baud):'}</div>
                 <div>[SERIAL] PIN A0 RAW: {obsSensor === 'pot' ? Math.round((obsPotAngle / 100) * 1023) : Math.round((obsLux / 1000) * 1023)} | VOLTS: {((obsSensor === 'pot' ? (obsPotAngle / 100) : (obsLux / 1000)) * 5.0).toFixed(2)}V</div>
                 <div style={{ color: '#94a3b8' }}>[SERIAL] Condition: {((obsSensor === 'pot' ? (obsPotAngle / 100) : (obsLux / 1000)) * 1023) > 512 ? 'HIGH (>= 2.5V)' : 'LOW (< 2.5V)'}</div>
               </div>
@@ -2684,7 +2687,7 @@ export function CurriculumSimulator({ type, classNumber }: SimulatorProps) {
               </div>
 
               <div style={{ width: '100%', background: '#050811', border: '1px solid #1e293b', borderRadius: '8px', padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.75rem', color: '#cbd5e1' }}>
-                <span style={{ color: '#38bdf8' }}>while</span> (digitalRead(PIN_BTN) == HIGH) &#123; <span style={{ color: '#64748b' }}>// wait for click</span> &#125;<br/>
+                <span style={{ color: '#38bdf8' }}>while</span> (digitalRead(PIN_BTN) == HIGH) &#123; <span style={{ color: '#64748b' }}>{'// wait for click'}</span> &#125;<br/>
                 <span style={{ color: '#F5B800' }}>unsigned long</span> reaction = millis() - lightTurnOnTime;
               </div>
             </div>

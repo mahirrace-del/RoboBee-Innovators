@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import styles from "./adminCurriculum.module.css";
 import { 
   ALL_ROBOTICS_LESSONS, 
@@ -16,7 +17,7 @@ import { db } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc, query, orderBy, limit } from "firebase/firestore";
 import { 
   Tv, Lock, Unlock, Eye, CheckCircle, Clock, 
-  Layers, Users, Award, AlertTriangle, ArrowRight, Radio, Sparkles
+  Layers, Users, Award, AlertTriangle, ArrowRight, Radio, Sparkles, BookOpen
 } from "lucide-react";
 
 export default function AdminCurriculumPage() {
@@ -136,6 +137,14 @@ export default function AdminCurriculumPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link
+            href="/dashboard/curriculum/reference"
+            className={styles.statusBtn}
+            style={{ padding: '0.65rem 1rem', fontSize: '0.85rem', background: '#111827', color: '#F5B800', borderColor: '#F5B800', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+          >
+            <BookOpen size={14} style={{ marginRight: '6px' }} />
+            Open Field Guide
+          </Link>
           <button 
             onClick={() => publishTier(selectedTier)} 
             className={styles.statusBtn} 
