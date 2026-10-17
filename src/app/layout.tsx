@@ -15,8 +15,22 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Robo Innovators | Team Portal",
-  description: "Official portal and website for the Robo Innovators robotics team.",
+  title: {
+    default: "RoboBEE Innovators | Team Portal & STEM Academy",
+    template: "%s | RoboBEE Innovators",
+  },
+  description: "Official portal, curriculum laboratory, and STEM academy website for RoboBEE Innovators. Dream. Invent. Experiment. Inspire.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
