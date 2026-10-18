@@ -19,7 +19,9 @@ import {
   calculateScheduleProgression, 
   saveSessionAttendance, 
   getDefaultNextClassDate,
-  getLessonForSession
+  getLessonForSession,
+  resolveUniquePresentMemberIds,
+  isMemberPresentInSession
 } from "@/lib/scheduleAttendance";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
 import styles from "./admin-attendance.module.css";
@@ -94,6 +96,24 @@ export default function AdminAttendancePage() {
       unsubUsers();
     };
   }, [canAccess]);
+
+  // Auto-sanitize any legacy session in Firestore that stored both uid and email in attendees
+  useEffect(() => {
+    if (!canAccess || members.length === 0 || sessions.length === 0) return;
+    sessions.forEach((s) => {
+      const raw = s.attendees || [];
+      if (raw.length === 0) return;
+      const cleanIds = resolveUniquePresentMemberIds(raw, members);
+      const needsCleanup =
+        raw.length !== cleanIds.length ||
+        raw.some((val, idx) => val !== cleanIds[idx]);
+      if (needsCleanup) {
+        updateDoc(doc(db, "sessions", s.id), {
+          attendees: cleanIds,
+        }).catch(() => {});
+      }
+    });
+  }, [canAccess, sessions, members]);
 
   // Compute Schedule Progression & Metrics
   const progression = useMemo(() => calculateScheduleProgression(sessions), [sessions]);
@@ -219,33 +239,67 @@ export default function AdminAttendancePage() {
   // Open Attendance Roster for a Session
   const handleOpenAttendance = (session: ScheduledClassSession) => {
     setActiveAttendanceSession(session);
-    // Attendees can be stored as user IDs or emails; map to member IDs
-    const presentIds = new Set<string>();
-    (session.attendees || []).forEach(att => {
-      // Find matching member by ID or by email
-      const matched = members.find(m => m.id === att || (m.email && m.email.toLowerCase() === att.toLowerCase()));
-      if (matched) presentIds.add(matched.id);
-      else presentIds.add(att);
-    });
-    setPresentMemberIds(presentIds);
+    const uniqueCanonicalIds = resolveUniquePresentMemberIds(session.attendees, members);
+    setPresentMemberIds(new Set(uniqueCanonicalIds));
+
+    // If the session in Firestore had duplicate/legacy entries (e.g. uid + email), normalize it immediately
+    if ((session.attendees || []).length !== uniqueCanonicalIds.length && members.length > 0) {
+      saveSessionAttendance(
+        session.id,
+        {
+          lessonId: session.lessonId,
+          lessonCode: session.lessonCode,
+          title: session.title,
+          date: session.date,
+        },
+        uniqueCanonicalIds,
+        members
+      ).catch(() => {});
+    }
   };
 
-  // Toggle Single Member Attendance
+  // Toggle Single Member Attendance (immediately syncs to Firestore so toggling Present <-> Absent stays 100% accurate)
   const handleToggleMember = (memberId: string) => {
     setPresentMemberIds(prev => {
       const next = new Set(prev);
       if (next.has(memberId)) next.delete(memberId);
       else next.add(memberId);
+
+      if (activeAttendanceSession) {
+        const cleanArray = Array.from(next).filter(id => members.some(m => m.id === id));
+        saveSessionAttendance(
+          activeAttendanceSession.id,
+          {
+            lessonId: activeAttendanceSession.lessonId,
+            lessonCode: activeAttendanceSession.lessonCode,
+            title: activeAttendanceSession.title,
+            date: activeAttendanceSession.date,
+          },
+          cleanArray,
+          members
+        ).catch(err => console.error("Error syncing single member toggle:", err));
+      }
+
       return next;
     });
   };
 
   // Mark All Present / Absent
   const handleMarkAll = (present: boolean) => {
-    if (present) {
-      setPresentMemberIds(new Set(members.map(m => m.id)));
-    } else {
-      setPresentMemberIds(new Set());
+    const nextIds = present ? members.map(m => m.id) : [];
+    setPresentMemberIds(new Set(nextIds));
+    if (activeAttendanceSession) {
+      saveSessionAttendance(
+        activeAttendanceSession.id,
+        {
+          lessonId: activeAttendanceSession.lessonId,
+          lessonCode: activeAttendanceSession.lessonCode,
+          title: activeAttendanceSession.title,
+          date: activeAttendanceSession.date,
+        },
+        nextIds,
+        members
+      ).catch(err => console.error("Error syncing mark-all:", err));
     }
   };
 
@@ -255,7 +309,7 @@ export default function AdminAttendancePage() {
     setIsSavingAttendance(true);
 
     try {
-      await saveSessionAttendance(
+      const cleanIds = await saveSessionAttendance(
         activeAttendanceSession.id,
         {
           lessonId: activeAttendanceSession.lessonId,
@@ -267,7 +321,8 @@ export default function AdminAttendancePage() {
         members
       );
 
-      alert(`Attendance saved: ${presentMemberIds.size} of ${members.length} members marked present.`);
+      setPresentMemberIds(new Set(cleanIds));
+      alert(`Attendance saved: ${cleanIds.length} of ${members.length} members marked present.`);
       setActiveAttendanceSession(null);
     } catch (error) {
       console.error("Error saving attendance:", error);
@@ -401,7 +456,7 @@ export default function AdminAttendancePage() {
                     style={{ flex: 1 }}
                   >
                     <Users size={16} />
-                    Take Attendance ({progression.activeSession.attendees?.length || 0} / {members.length})
+                    Take Attendance ({resolveUniquePresentMemberIds(progression.activeSession.attendees, members).length} / {members.length})
                   </button>
                   {progression.activeSession.lessonId && (
                     <button
@@ -656,7 +711,7 @@ export default function AdminAttendancePage() {
                       const isActive = session.status === 'active';
                       const isCompleted = session.status === 'completed';
                       const isSelected = activeAttendanceSession?.id === session.id;
-                      const attendanceCount = (session.attendees || []).length;
+                      const attendanceCount = resolveUniquePresentMemberIds(session.attendees, members).length;
 
                       return (
                         <div

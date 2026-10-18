@@ -78,12 +78,9 @@ export default function AttendancePage() {
   const handleCheckIn = async (sessionId: string, session: ScheduledClassSession) => {
     if (!user) return;
     try {
-      const identifiers = [user.uid];
-      if (user.email) identifiers.push(user.email);
-
-      // 1. Update session attendees array
+      // 1. Update session attendees array with strictly the student's unique UID
       await updateDoc(doc(db, "sessions", sessionId), {
-        attendees: arrayUnion(...identifiers),
+        attendees: arrayUnion(user.uid),
         updatedAt: serverTimestamp()
       });
 
