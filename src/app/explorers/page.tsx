@@ -103,7 +103,7 @@ export default function FreeRoboExplorersPage() {
             </p>
             <div className={styles.heroActions}>
               <a href="#learning-path" className={styles.primaryButton}>Choose a mission <ArrowRight size={17} /></a>
-              <div className={styles.heroFact}><Clock3 size={17} aria-hidden="true" /><span><strong>4 missions</strong><br />about 45 minutes each</span></div>
+              <div className={styles.heroFact}><Clock3 size={17} aria-hidden="true" /><span><strong>4 missions</strong><br />120 minutes each (60m compact option)</span></div>
             </div>
           </div>
           <div className={styles.heroArtwork}>

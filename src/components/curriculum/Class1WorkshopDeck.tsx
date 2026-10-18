@@ -33,8 +33,9 @@ import {
 } from "lucide-react";
 
 export type SlideColorTheme =
-  | "electric-indigo"
+  | "robobee-dark"
   | "daylight-studio"
+  | "electric-indigo"
   | "arduino-teal"
   | "cyber-blueprint";
 
@@ -247,6 +248,22 @@ export const THEME_PALETTE_CONFIG: Record<
     isLight: boolean;
   }
 > = {
+  "robobee-dark": {
+    name: "RoboBEE Dark Studio",
+    canvasBg:
+      "radial-gradient(circle at 15% 15%, rgba(107, 15, 36, 0.35) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(245, 184, 0, 0.10) 0%, transparent 45%), linear-gradient(135deg, #161B26 0%, #1E2533 60%, #161B26 100%)",
+    cardBg: "#1E2533",
+    cardBorder: "#2E374B",
+    cardShadow: "0 20px 45px -15px rgba(0, 0, 0, 0.55)",
+    headingColor: "#FFFFFF",
+    bodyColor: "#E2E8F0",
+    mutedColor: "#94A3B8",
+    accentPrimary: "#F5B800",
+    accentSecondary: "#6B0F24",
+    badgeBg: "rgba(245, 184, 0, 0.15)",
+    badgeText: "#F5B800",
+    isLight: false,
+  },
   "electric-indigo": {
     name: "Electric Indigo",
     canvasBg:

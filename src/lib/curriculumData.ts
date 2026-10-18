@@ -927,12 +927,12 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
     courseId: 'beginner',
     sequence: 1,
     code: 'CLASS 01',
-    title: 'Introduction to Robotics & Future Engineering',
-    subtitle: 'Why extracurriculars & robotics matter, the history of machines, Sense-Think-Act architecture, the 5 main robot subsystems, and interactive Arduino Uno anatomy.',
-    promise: 'Explore why robotics is the ultimate 21st-century skill, discover how robots Sense, Think, and Act, inspect the 5 core subsystems of every robot, and master the anatomy of an Arduino Uno.',
+    title: 'Welcome to Robotics: Meet Arduino, Then Make an LED Blink',
+    subtitle: 'Why extracurriculars & robotics matter, Sense → Decide → Act architecture, interactive Arduino Uno R3 reference tour, and building your first current-limited LED blink circuit.',
+    promise: 'I can explain how a robot senses, decides, and acts—and I can wire a current-limited LED and change C++ code to control a light.',
     status: 'published',
     proposedAudience: 'Proposed Pathway for Classes 5–8 (Ages 10–14) — Subject to Cohort & Kit Confirmation',
-    durationMinutes: 90,
+    durationMinutes: 120,
     compactDurationMinutes: 60,
     prerequisites: ['None — Designed for complete beginners with zero prior electronics or coding experience.'],
     outcomes: [
@@ -1039,7 +1039,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
       },
       {
         title: 'Accessibility & Assistive Robotics',
-        domain: 'Assistive Tech',
+        domain: 'Accessibility',
         sense: 'Surface electromyography (EMG) electrodes sensing forearm muscle pulses',
         decide: 'Pattern-recognition algorithm maps nerve firing intent to grip modes',
         act: 'Precision micro-servo motors actuate bionic fingers to grasp a cup',
@@ -1047,7 +1047,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
       },
       {
         title: 'Disaster Search & Rescue',
-        domain: 'Rescue',
+        domain: 'Disaster Response',
         sense: 'Thermal infrared cameras, CO2 gas sensors & microphone arrays',
         decide: 'Search controller prioritizes survivor heat signatures in rubble voids',
         act: 'High-torque tracked flippers climb over debris and drop emergency radios',
@@ -1055,7 +1055,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
       },
       {
         title: 'Environmental & River Monitoring',
-        domain: 'Environment',
+        domain: 'Environmental Monitoring',
         sense: 'Water pH electrodes, dissolved oxygen probes & optical turbidity meters',
         decide: 'Controller checks if chemical pollutants exceed statutory thresholds',
         act: 'Surface thrusters steer boat toward contamination source while logging GPS',
@@ -1064,67 +1064,51 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
     ],
     robotOrNotChallenge: [
       {
-        item: 'Standard Ceiling Fan with Wall Regulator',
-        senses: 'No — does not measure room temperature or human presence',
-        decides: 'No — passive variable resistance sets motor voltage directly',
-        acts: 'Yes — spins blades continuously',
-        verdict: 'NOT A ROBOT (Simple Electrical Appliance): It acts, but cannot sense room conditions or make autonomous decisions.',
+        item: 'Standard Microwave Oven',
+        senses: 'No environmental sensing — runs blindly on a fixed countdown timer',
+        decides: 'No autonomous decision logic — cannot tell if food is frozen or burning',
+        acts: 'Yes — turns magnetron and turntable motor ON for set time',
+        verdict: 'NOT A ROBOT (Open-Loop Timed Appliance): It acts on a fixed timer without sensing the food state or making adaptive decisions.',
         isRobot: false
       },
       {
-        item: 'Basic Pop-Up Kitchen Toaster',
-        senses: 'Mechanical thermal timer / bimetallic strip only',
-        decides: 'No programmable controller or adaptable decision logic',
-        acts: 'Heating coils glow and mechanical spring pops toast',
-        verdict: 'NOT A ROBOT (Automated Mechanical Appliance): Follows a fixed physical timer regardless of whether the bread is actually burnt.',
+        item: 'Remote-Controlled Toy Car without Autonomy',
+        senses: 'Receives human radio stick inputs only (zero obstacle or environment sensors)',
+        decides: 'No — the human driver\'s brain makes 100% of steering and braking decisions',
+        acts: 'Yes — DC motors spin wheels and steering linkage turns',
+        verdict: 'NOT AN AUTONOMOUS ROBOT (Teleoperated Machine): Until it has onboard sensors and decision code, the human is the controller.',
         isRobot: false
       },
       {
-        item: 'Basic Radio-Controlled (RC) Toy Car',
-        senses: 'Receives human thumbstick radio commands only (no obstacle sensors)',
-        decides: 'No — the human driver\'s brain makes 100% of steering decisions',
-        acts: 'Yes — DC motors spin wheels and steering servo turns',
-        verdict: 'NOT AN AUTONOMOUS ROBOT (Teleoperated Machine): A great stepping stone, but until it has onboard sensors and decision code, the human is the controller.',
-        isRobot: false
-      },
-      {
-        item: 'Smart Inverter Air Conditioner / Washing Machine',
-        senses: 'Yes — measures water weight/turbidity or room temperature via thermistors',
-        decides: 'Yes — embedded microcontroller adjusts wash cycle time or compressor speed',
-        acts: 'Yes — drives drum motor, water valves, or compressor',
-        verdict: 'BORDERLINE / EMBEDDED SMART APPLIANCE: Uses the exact same Sense → Decide → Act microcontroller principles inside a fixed household enclosure!',
-        isRobot: false
-      },
-      {
-        item: 'Obstacle-Avoiding Wheeled Rover',
-        senses: 'Yes — HC-SR04 ultrasonic sensor measures distance to walls in cm',
-        decides: 'Yes — Arduino C++ program compares distance < 20 cm and chooses turn direction',
-        acts: 'Yes — Motor driver reverses and pivots left/right DC gear motors',
-        verdict: 'TRUE ROBOT: Continuously senses its physical environment, runs programmed decision logic, and moves autonomously.',
+        item: 'Agricultural Crop-Monitoring Drone',
+        senses: 'Yes — GPS, barometer, IMU, and multispectral crop-health cameras',
+        decides: 'Yes — flight controller computes waypoint path and flags dry crop zones',
+        acts: 'Yes — adjusts 4 brushless rotor speeds to hover, navigate, and log imagery',
+        verdict: 'TRUE ROBOT: Continuously senses flight stability and crop reflectance, decides path corrections, and acts autonomously.',
         isRobot: true
       },
       {
-        item: 'Line-Following Warehouse Delivery Bot',
+        item: 'Hospital Automated Pharmacy Dispenser',
+        senses: 'Yes — barcode/optical scanners, pill-count optical gates, and tray sensors',
+        decides: 'Yes — embedded controller verifies prescription ID and checks stock levels',
+        acts: 'Yes — stepper actuators position vials, dispense exact counts, and seal labels',
+        verdict: 'TRUE ROBOT: Industrial medical automation system operating in a closed Sense → Decide → Act verification loop.',
+        isRobot: true
+      },
+      {
+        item: 'Industrial Welding Arm',
+        senses: 'Yes — rotary joint encoders, current feedback sensors, and seam-tracking vision',
+        decides: 'Yes — motion controller calculates multi-axis trajectory and weld penetration',
+        acts: 'Yes — 6-axis servo actuators position the torch with sub-millimeter precision',
+        verdict: 'TRUE ROBOT: Classic articulated industrial robot arm combining encoder feedback, path planning, and precision actuation.',
+        isRobot: true
+      },
+      {
+        item: 'Autonomous Line-Following Rover',
         senses: 'Yes — IR reflectance sensor array detects contrast between black track and floor',
-        decides: 'Yes — Microcontroller calculates steering correction from sensor state',
-        acts: 'Yes — Adjusts left and right wheel PWM speeds to stay centered on track',
-        verdict: 'TRUE ROBOT: Classic industrial mobile robot operating in a continuous closed-loop Sense → Decide → Act cycle.',
-        isRobot: true
-      },
-      {
-        item: 'Automated Hydroponic Seeding & Harvesting Arm',
-        senses: 'Yes — Vision camera, limit switches, and moisture/EC sensors',
-        decides: 'Yes — Controller computes inverse kinematics and plant readiness',
-        acts: 'Yes — Stepper/SCARA arm joints move and gripper harvests tray',
-        verdict: 'TRUE ROBOT: Multi-axis agricultural robot combining environmental sensing, coordinate math, and mechanical actuation.',
-        isRobot: true
-      },
-      {
-        item: 'Autonomous Search-and-Rescue Quadruped',
-        senses: 'Yes — IMU balance sensor, depth cameras, and thermal sensors',
-        decides: 'Yes — Onboard computer plans foot placement over rubble',
-        acts: 'Yes — 12 servo/brushless joint actuators walk over uneven obstacles',
-        verdict: 'TRUE ROBOT: Advanced mobile robot adapting dynamically to unpredictable terrain.',
+        decides: 'Yes — microcontroller calculates steering correction from sensor state',
+        acts: 'Yes — adjusts left and right wheel PWM speeds to stay centered on track',
+        verdict: 'TRUE ROBOT: Mobile autonomous robot operating in a continuous closed-loop Sense → Decide → Act cycle.',
         isRobot: true
       }
     ],
@@ -1134,7 +1118,7 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
       'Pre-Class Step 3: Confirm Arduino IDE 2.x is installed on lab laptops with Arduino AVR Boards core ready, OR open the Class 1 Code Lab & Simulator tab for browser-based simulation stations.',
       'Student Group Structure: Organize students into pairs or trios with rotating engineering roles: Hardware Engineer (breadboard placement), Firmware Navigator (IDE / code input), and Safety & Quality Inspector (polarity and pre-power verification). Roles swap between Part A and Part B.',
       'Lab Safety Enforcement: Maintain the 5 Mandatory Lab Safety Rules: 1) Unplug before wiring; 2) Never connect an external LED without a series resistor; 3) Protect against short circuits (no bare 5V to GND connections); 4) Check polarity twice, power once; 5) Touch test and emergency disconnect if any component feels warm.',
-      'No-Kit Fallback: For remote or no-kit stations, use the built-in Interactive Arduino Uno Board Tour and Synchronized Blink Simulator in Tab 4 / Slide 6 & 11, clearly noting that it models ideal behavior while physical hardware requires port selection and resistor checks.'
+      'No-Kit Fallback: For remote or no-kit stations, use the built-in Interactive Arduino Uno Board Tour and Synchronized Blink Simulator in Tab 4 / Slide 8, clearly noting that it models ideal behavior while physical hardware requires port selection and resistor checks.'
     ],
     verifiedMaterials: [
       'Arduino Uno R3 (Microchip ATmega328P DIP or SMD edition with 16 MHz crystal oscillator)',
@@ -1154,40 +1138,34 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
     ],
     classRhythm: [
       {
-        segment: '00:00 – 00:10 Welcome, Safety Ground Rules & "Robot or Not?" Debate',
-        minutes: 10,
-        teacherAction: 'Welcome students to RoboBEE Innovators. Present Slide 1 & Slide 3 on the projector. Poll the room on the 8 "Robot or Not?" items before clicking to reveal the Sense-Decide-Act breakdown.',
-        studentAction: 'Vote on each machine, debate why an RC car differs from an autonomous rover, and state the 3 parts of the robotics loop.'
-      },
-      {
-        segment: '00:10 – 00:25 Sense → Decide → Act & Real-World Robotics Tour',
+        segment: '00–15 min (15 min): Welcome, Real-World Hook & Safety Briefing',
         minutes: 15,
-        teacherAction: 'Walk through Slide 2 (7 real-world domains) and Slide 4 (Interactive Sense-Decide-Act diagram). Show the physical kit components using Slide 5 (Parts Gallery).',
-        studentAction: 'Match physical kit components on their desk (sensor, Arduino, LED, motor) to Sense, Decide, or Act.'
+        teacherAction: 'Welcome students to RoboBEE Innovators. Present the "Robot or Not?" challenge (6 everyday machines) and discuss the 7 real-world robotics domains (Agriculture, Healthcare, Manufacturing, Transportation, Accessibility, Disaster Response, Environmental Monitoring) and the 5 mandatory lab safety rules.',
+        studentAction: 'Vote on each machine in the "Robot or Not?" challenge, debate why an RC car differs from an autonomous rover, and verify unpowered desk safety rules.'
       },
       {
-        segment: '00:25 – 00:40 Meet the Brain: Interactive Arduino Uno R3 & Breadboard Tour',
+        segment: '15–40 min (25 min): Core Concept & Visual Interactive Walkthrough',
+        minutes: 25,
+        teacherAction: 'Walk through the interactive Sense → Decide → Act diagram, the Visual Parts Gallery, and the Interactive Arduino Uno R3 Reference Board Tour (ArduinoUnoPinout.tsx), noting that Uno R3 maps LED_BUILTIN to D13.',
+        studentAction: 'Click through Input → Processing → Output examples, classify kit parts into Sense/Decide/Act, and locate USB, Reset, 5V, GND, A0–A5, and D0–D13 on the reference board.'
+      },
+      {
+        segment: '40–75 min (35 min): Hands-On Hardware Build / CAD / Circuit Assembly',
+        minutes: 35,
+        teacherAction: 'Guide Stage A (unpowered board inspection + onboard LED_BUILTIN verification) followed by Stage B (external 5mm LED + 220 Ω series resistor on breadboard rows 10, 15, and 16). Perform partner pre-power polarity inspection.',
+        studentAction: 'Unplug USB, wire Pin D13 → Row 10a, 220 Ω resistor (10c to 15c), LED Anode (+) long leg in 15e, LED Cathode (-) short leg in 16e, and Row 16a → Arduino GND. Verify with partner before connecting USB.'
+      },
+      {
+        segment: '75–105 min (30 min): Code Lab, Upload, Testing & Guided Modification',
+        minutes: 30,
+        teacherAction: 'Walk through const int LED_PIN = LED_BUILTIN;, setup(), loop(), pinMode(), digitalWrite(), and delay() line by line. Guide students through the Predict-Test-Modify timing challenge (delay(1000) → delay(250) fast beacon → 100ms ON / 900ms OFF heartbeat).',
+        studentAction: 'Upload the starter Blink sketch, observe synchronized onboard and external LED blinking, predict frequency changes before modifying delay() values, and record results in the trial log.'
+      },
+      {
+        segment: '105–120 min (15 min): Troubleshooting, Exit Check Reflection & Safe Shutdown',
         minutes: 15,
-        teacherAction: 'Project Slide 6 (ArduinoUnoPinout.tsx) and Slide 7 (Breadboard & LED anatomy). Hold up an Arduino Uno and breadboard; point out GND, Pin 13, the breadboard center gap, and LED long (+) vs. short (-) legs.',
-        studentAction: 'Locate the USB port, Reset button, 5V, GND, Pin 13, and LED_BUILTIN on their reference diagram or physical board. Inspect an LED to find the long anode leg and flat cathode rim.'
-      },
-      {
-        segment: '00:40 – 00:55 Lab Part A: First Light with LED_BUILTIN & Code Walkthrough',
-        minutes: 15,
-        teacherAction: 'Project Slide 8 & Slide 10. Guide students through selecting board + COM port in Arduino IDE (or launching the software simulator if running no-kit). Walk through setup(), loop(), pinMode(), digitalWrite(), and delay() line by line.',
-        studentAction: 'Connect Arduino via USB (only after visual check), upload the Stage A LED_BUILTIN sketch, verify the onboard L LED blinks at 1 Hz (1 sec ON, 1 sec OFF), and trace which line of code causes each state.'
-      },
-      {
-        segment: '00:55 – 01:15 Lab Part B: External Breadboard LED Build & Timing Experiments',
-        minutes: 20,
-        teacherAction: 'Project Slide 9 (Wiring Diagram & Wire Table) and Slide 11 (Timing Challenge). Enforce the Unplug USB Before Wiring rule. Inspect each team\'s 220 Ω resistor and LED polarity before they plug USB back in.',
-        studentAction: 'Unplug USB, wire Pin 13 → 220 Ω resistor → LED Anode (+) and LED Cathode (-) → GND. Reconnect USB, test external blink, then run the 4 "Predict → Modify → Test" timing challenges and fill in the Trial Log.'
-      },
-      {
-        segment: '01:15 – 01:30 Troubleshooting Review, Check for Understanding & Exit Ticket',
-        minutes: 15,
-        teacherAction: 'Project Slide 12. Lead the 5-question class quiz, review how to debug a dark LED using the Troubleshooting Matrix, oversee kit pack-up, and collect the 4-part Exit Reflection.',
-        studentAction: 'Complete the 5-question check, record their Exit Reflection (1 Input, 1 Decision, 1 Output, 1 Safety Rule), disconnect USB cables by gripping the plug housing, and organize parts back into kit compartments.'
+        teacherAction: 'Lead the troubleshooting matrix review (debugging reversed LED polarity or missing row connections), collect the 4-question Exit Ticket reflection, and supervise safe USB disconnect and component storage.',
+        studentAction: 'Submit the 4-part Exit Ticket (1 Input, 1 Decision rule, 1 Output, 1 Safety Rule), unplug USB by gripping the connector body, and return LEDs, resistors, and jumpers to kit trays.'
       }
     ],
     concepts: [
@@ -12664,8 +12642,616 @@ void printTelemetry() {
   }
 ];
 
-// Populate backward-compatibility aliases
+const SUPPLEMENTAL_BUILD_PACKS: Record<string, PhysicalBuildPack> = {
+  'exp-01': {
+    verifiedBoardAndModules: ['Physical Machine Cards', 'Sense-Decide-Act Sorting Mats', 'Demo Arduino Uno R3 + HC-SR04'],
+    componentList: [
+      { name: 'Sense-Decide-Act Sorting Mat', exactVariant: 'Laminated A3 Classroom Mat', quantity: 1 },
+      { name: 'Machine & Robot Evidence Cards', exactVariant: '12-Card Classroom Set', quantity: 1 },
+      { name: 'Instructor Demo Sonar Rig', exactVariant: 'Arduino Uno R3 + HC-SR04 Ultrasonic Sensor', quantity: 1 }
+    ],
+    connectionPhotoOrClearlyLabeledIllustration: '/illustrations/explorer-robot-detective.svg',
+    schematic: '[Sensor Input (Eyes/Ears)] ---> [Controller Brain (Decision Rules)] ---> [Actuator Output (Motors/Lights)]',
+    wireTable: [
+      { from: 'Sensor Card (Input)', to: 'SENSE Column on Detective Mat', wireOrPolarityNote: 'Identifies what changed in the environment' },
+      { from: 'Rule Card (Logic)', to: 'DECIDE Column on Detective Mat', wireOrPolarityNote: 'Matches sensor reading to an IF/THEN rule' },
+      { from: 'Motor/Light Card (Output)', to: 'ACT Column on Detective Mat', wireOrPolarityNote: 'Performs physical action in the real world' }
+    ],
+    assemblyAndPowerUpSteps: [
+      'Lay out the Sense-Decide-Act Detective Mat at your partner station.',
+      'Sort all 12 machine cards into Robot vs. Non-Robot piles using the 3-part test.',
+      'Trace the signal arrow from the sensor input to the controller brain and out to the actuator.'
+    ],
+    powerAndSafetyChecks: [
+      'Do not touch spinning demo fan blades during the live machine comparison.',
+      'Keep magnetic sorting cards away from exposed USB power ports.'
+    ],
+    testCases: [
+      { action: 'Hold hand 15 cm in front of the demo ultrasonic sensor', expectedResult: 'Demo robot senses distance, controller decides it is < 20 cm, and LED/buzzer acts immediately' },
+      { action: 'Flip wall switch on a standard toaster', expectedResult: 'Heats on a fixed timer without sensing bread color — classified as a non-robot machine' }
+    ]
+  },
+  'exp-03': {
+    verifiedBoardAndModules: ['2WD Demo Rover or Tabletop Grid Bot', 'Floor Grid Mat (4x4 Tiles)', 'Command Arrow Cards'],
+    componentList: [
+      { name: 'Floor Grid Mat', exactVariant: '4x4 Taped Classroom Tiles (30 cm per square)', quantity: 1 },
+      { name: 'Sequence Command Cards', exactVariant: 'FORWARD 1, TURN LEFT 90°, TURN RIGHT 90°, STOP', quantity: 20 },
+      { name: 'Obstacle Marker Cones', exactVariant: 'Foam Classroom Cones', quantity: 3 }
+    ],
+    connectionPhotoOrClearlyLabeledIllustration: '/illustrations/explorer-rover-route.svg',
+    schematic: '[START Tile] --> [FORWARD 1] --> [TURN RIGHT 90°] --> [FORWARD 2] --> [STOP on Target]',
+    wireTable: [
+      { from: 'Left Wheel + Right Wheel Forward', to: 'Rover Drives Straight 1 Grid Square', wireOrPolarityNote: 'Both motors spin forward at equal speed' },
+      { from: 'Left Wheel Forward + Right Wheel Stop/Reverse', to: 'Rover Pivots 90° Right', wireOrPolarityNote: 'Differential steering pivot turn' },
+      { from: 'Card Bug Marker', to: 'Exact Step Where Rover Left the Path', wireOrPolarityNote: 'Used to isolate and fix one card at a time' }
+    ],
+    assemblyAndPowerUpSteps: [
+      'Place the Rover on the START square facing the North arrow.',
+      'Lay out your Command Cards in a single left-to-right row on the programming strip.',
+      'Have the Robot Walker execute ONLY what each card says, one step at a time.'
+    ],
+    powerAndSafetyChecks: [
+      'Keep the floor grid clear of backpacks and loose wires to prevent tripping.',
+      'Never push or force a motorized rover wheels by hand while its motor switch is ON.'
+    ],
+    testCases: [
+      { action: 'Run the 5-card sequence around the center obstacle cone', expectedResult: 'Rover reaches the yellow TARGET square without touching any obstacle cone' },
+      { action: 'Swap a TURN LEFT card for an accidental TURN RIGHT bug', expectedResult: 'Rover turns away from the obstacle and reaches the goal on Trial 2' }
+    ]
+  },
+  'exp-04': {
+    verifiedBoardAndModules: ['RoboBEE Invention Blueprint Sheet', 'Cardboard & Craft Prototype Materials', '3V Coin-Cell LED Indicator Kit'],
+    componentList: [
+      { name: 'Invention Blueprint Template', exactVariant: 'A3 Sense-Decide-Act Design Sheet', quantity: 1 },
+      { name: '3V Coin-Cell & 5mm LED Indicator', exactVariant: 'CR2032 Holder + Diffused LED', quantity: 1 },
+      { name: 'Chassis Prototype Craft Pack', exactVariant: 'Cardboard panels, brass fasteners, markers', quantity: 1 }
+    ],
+    connectionPhotoOrClearlyLabeledIllustration: '/illustrations/explorer-helper-design.svg',
+    schematic: '[Problem Identified] --> [Sensor Placement] --> [Controller Rule Card] --> [Actuator Output]',
+    wireTable: [
+      { from: 'CR2032 Positive (+) Terminal', to: 'LED Long Leg (Anode)', wireOrPolarityNote: 'Provides 3V indicator power when switch closes' },
+      { from: 'CR2032 Negative (-) Terminal', to: 'LED Short Leg (Cathode) via Paper Switch', wireOrPolarityNote: 'Completes the indicator circuit during demo' }
+    ],
+    assemblyAndPowerUpSteps: [
+      'Draw your Helper Robot on the Blueprint Sheet and label its Sensor, Brain, and Actuator.',
+      'Build a tabletop cardboard model showing where the sensor looks and what part moves or lights up.',
+      'Attach the 3V LED indicator to light up when your helper robot activates.'
+    ],
+    powerAndSafetyChecks: [
+      'Use safety scissors under instructor supervision when cutting cardboard panels.',
+      'Keep 3V coin cells inside their snaps and never place batteries near your mouth.'
+    ],
+    testCases: [
+      { action: 'Press the paper switch on the Helper Robot prototype', expectedResult: 'Status LED illuminates and team explains Sense -> Decide -> Act in 60 seconds' }
+    ]
+  },
+  'int-08': {
+    verifiedBoardAndModules: ['Digital Calipers (0-150mm)', 'OpenSCAD / Tinkercad Workstation', 'SG90 Servo & HC-SR04 Reference Parts'],
+    componentList: [
+      { name: 'Digital Caliper', exactVariant: '0.1mm Resolution Stainless/Carbon Caliper', quantity: 1 },
+      { name: 'SG90 Micro Servo', exactVariant: '9g Servo with Mounting Ears (22.5 x 12.2 mm)', quantity: 1 },
+      { name: 'M3 Hardware Assortment', exactVariant: 'M3x10 Bolts & M3 Hex Nuts for clearance testing', quantity: 4 }
+    ],
+    connectionPhotoOrClearlyLabeledIllustration: '/illustrations/cad_ultrasonic_bracket_blueprint.svg',
+    schematic: '[Caliper Nominal Measurement] + [0.4mm FDM Clearance Allowance] --> [Parametric OpenSCAD Bracket] --> [STL Export]',
+    wireTable: [
+      { from: 'M3 Bolt Nominal Shaft (3.0 mm)', to: 'CAD Clearance Hole (3.4 mm)', wireOrPolarityNote: '+0.4 mm clearance so bolt slides through without cracking PLA' },
+      { from: 'SG90 Servo Body (22.5 x 12.2 mm)', to: 'CAD Pocket Cutout (23.0 x 12.7 mm)', wireOrPolarityNote: '+0.5 mm pocket tolerance for clean press-in fit' },
+      { from: 'Chassis Deck Hole Spacing (30.0 mm)', to: 'Bracket Base Mount Holes (30.0 mm center-to-center)', wireOrPolarityNote: 'Aligns bracket with existing rover deck' }
+    ],
+    assemblyAndPowerUpSteps: [
+      'Zero your digital calipers with jaws closed before measuring the SG90 servo body and mounting ears.',
+      'Record raw measurements in your engineering notebook, then add +0.4 mm clearance for holes and +0.5 mm for pockets.',
+      'Enter your dimensions into the parametric OpenSCAD script, render (F6), and verify wall thickness >= 3.0 mm.'
+    ],
+    powerAndSafetyChecks: [
+      'Digital caliper tips are sharp — keep jaws closed when placing on the workbench.',
+      'Never touch a 3D printer hotend (200°C+) or heated build plate during print verification.'
+    ],
+    testCases: [
+      { action: 'Change hole_d or pocket_w variable at the top of the OpenSCAD file and press F5', expectedResult: 'Entire 3D bracket updates cleanly without broken geometry' },
+      { action: 'Test-fit an M3 bolt through a 3.4 mm printed test coupon hole', expectedResult: 'M3 bolt passes through smoothly with zero post-drilling required' }
+    ]
+  },
+  'int-10': {
+    verifiedBoardAndModules: ['Arduino Uno R3', 'L298N / TB6612FNG Dual Motor Driver', 'Dual IR Reflectance Sensors', 'HC-SR04 Ultrasonic Sensor', 'SG90 Servo'],
+    componentList: [
+      { name: 'Autonomous Rover Platform', exactVariant: '2WD Chassis with Arduino Uno R3 & Motor Driver', quantity: 1 },
+      { name: 'Dual IR Line Sensor Pair', exactVariant: 'Left (A0) & Right (A1) Downward Reflectance Sensors', quantity: 2 },
+      { name: 'HC-SR04 Ultrasonic Sensor', exactVariant: 'Front Obstacle Detector (Trig D9, Echo D10)', quantity: 1 },
+      { name: 'SG90 Servo Gate/Gripper', exactVariant: 'Payload Marker Arm on D6', quantity: 1 }
+    ],
+    connectionPhotoOrClearlyLabeledIllustration: '/illustrations/line_follower_integrated_wiring.svg',
+    schematic: '[IR Left A0 / Right A1] + [HC-SR04 D9/D10] --> [Arduino Finite State Machine] --> [Motor Driver D5/D3/D7/D8 + Servo D6]',
+    wireTable: [
+      { from: 'Left & Right IR Sensors OUT', to: 'Arduino A0 (Left) & A1 (Right)', wireOrPolarityNote: 'Reads track reflectance continuously' },
+      { from: 'HC-SR04 TRIG / ECHO', to: 'Arduino D9 (TRIG) / D10 (ECHO)', wireOrPolarityNote: 'Checks for safety stop obstacles < 15 cm' },
+      { from: 'Motor Driver ENA / IN1 / IN2 / ENB / IN3 / IN4', to: 'Arduino D5 / D7 / D8 / D3 / D4 / D2', wireOrPolarityNote: 'Controls differential wheel speed and direction' },
+      { from: 'Battery Pack GND & Arduino GND', to: 'Common Ground Rail', wireOrPolarityNote: 'Mandatory shared reference across all subsystems' }
+    ],
+    assemblyAndPowerUpSteps: [
+      'Complete the Pre-Run Inspection Checklist: common ground verified, battery > 7.4V, sensor bolts tight, wires strain-relieved.',
+      'Place the rover at the start of the 3-Zone Course (Zone 1: Line Follow -> Zone 2: Obstacle Stop -> Zone 3: Target Dock).',
+      'Execute 3 official timed trials and log completion time, state transitions, and any interventions.'
+    ],
+    powerAndSafetyChecks: [
+      'Always lift drive wheels off the table when uploading new firmware so the rover does not drive off the bench.',
+      'Disconnect the main battery pack immediately if the servo or motor stalls against a physical stop.'
+    ],
+    testCases: [
+      { action: 'Place an obstacle block in Zone 2 while the rover is following the line', expectedResult: 'Rover transitions from FOLLOW_LINE to OBSTACLE_WAIT within 15 cm and pauses safely' },
+      { action: 'Remove the obstacle block from Zone 2', expectedResult: 'Rover resumes line tracking and docks cleanly in Zone 3' }
+    ]
+  },
+  'adv-01': {
+    verifiedBoardAndModules: ['Competition Robot Platform', 'Digital Kitchen Scale (0-2000g)', '200x200mm Sizing Box', 'Digital Multimeter'],
+    componentList: [
+      { name: 'Sizing Inspection Box', exactVariant: '200 mm x 200 mm Internal Acrylic/Plywood Check Box', quantity: 1 },
+      { name: 'Digital Mass Scale', exactVariant: '1g Resolution Bench Scale', quantity: 1 },
+      { name: 'Kill-Switch & Battery Harness', exactVariant: 'High-Current Toggle Switch in Series with Battery (+)', quantity: 1 }
+    ],
+    connectionPhotoOrClearlyLabeledIllustration: '/illustrations/3_trial_arena_test_setup.svg',
+    schematic: '[Competition Rulebook Constraints] --> [Weighted Trade-Off Matrix] --> [Sub-System Architecture & Kill-Switch Spec]',
+    wireTable: [
+      { from: 'Main Battery Pack Positive (+)', to: 'Master Kill-Switch Terminal 1', wireOrPolarityNote: 'All robot power must pass through the master switch' },
+      { from: 'Master Kill-Switch Terminal 2', to: 'Motor Driver VMS & Buck Converter IN+', wireOrPolarityNote: 'Flipping switch OFF cuts all actuators and logic immediately' },
+      { from: 'Main Battery Pack Negative (-)', to: 'Star Ground Point', wireOrPolarityNote: 'Single common ground return for power and telemetry' }
+    ],
+    assemblyAndPowerUpSteps: [
+      'Place the candidate robot chassis inside the 200x200mm sizing box with zero manual compression.',
+      'Weigh the complete chassis, battery, motors, and sensors on the digital scale and record the mass margin below 1500g.',
+      'Score 3 candidate architectures in the Weighted Trade-Off Matrix and verify 1-second kill-switch accessibility.'
+    ],
+    powerAndSafetyChecks: [
+      'Every competition robot must have a clearly marked red Master Kill-Switch reachable from above without touching wheels or blades.',
+      'Insulate all exposed battery terminals with heat-shrink tubing before tech inspection.'
+    ],
+    testCases: [
+      { action: 'Drop robot into the 200x200mm inspection box and weigh on scale', expectedResult: 'Passes dimensional clearance with >= 4 mm margin and mass <= 1450g' },
+      { action: 'Actuate the Master Kill-Switch during full-speed bench test', expectedResult: 'All motors and indicators de-energize instantaneously' }
+    ]
+  },
+  'adv-02': {
+    verifiedBoardAndModules: ['2S 7.4V LiPo / 6xAA Battery Pack', 'LM2596 / Pololu 5V Step-Down Buck Converter', 'Inline Blade Fuse Holder (5A)', 'Digital Multimeter'],
+    componentList: [
+      { name: 'Adjustable Buck Converter', exactVariant: 'LM2596 DC-DC Step-Down Regulator (Adjusted to 5.00V)', quantity: 1 },
+      { name: 'Inline Fuse & Master Switch', exactVariant: '5A Fast-Blow Blade Fuse + High-Current Switch', quantity: 1 },
+      { name: 'Decoupling Capacitor', exactVariant: '470µF 16V Electrolytic Capacitor across Motor Rail', quantity: 1 },
+      { name: 'Digital Multimeter', exactVariant: 'DC Voltage & Continuity Tester', quantity: 1 }
+    ],
+    connectionPhotoOrClearlyLabeledIllustration: '/illustrations/dual_rail_power_wiring.svg',
+    schematic: '[Battery +] --> [5A Fuse] --> [Kill Switch] --+--> [Raw Motor Rail (VMS)] \n                                               +--> [Buck IN+] --> [5.00V Logic Rail (Arduino 5V / Sensors)]',
+    wireTable: [
+      { from: 'Battery (+) via 5A Fuse & Kill Switch', to: 'Motor Driver VMS + Buck Converter IN+', wireOrPolarityNote: 'Splits high-current motor power from regulated logic input' },
+      { from: 'Buck Converter OUT+ (Pre-calibrated to 5.00V)', to: 'Logic & Sensor 5V Rail', wireOrPolarityNote: 'Verify 5.00V on multimeter BEFORE connecting microcontroller!' },
+      { from: 'Battery (-), Motor Driver GND, Buck GND, Logic GND', to: 'Central Star Ground Bus', wireOrPolarityNote: 'Prevents ground-bounce resets during motor stall current spikes' }
+    ],
+    assemblyAndPowerUpSteps: [
+      'Wire the Battery (+) through the 5A inline fuse and Master Kill-Switch before connecting any downstream load.',
+      'Connect the Buck Converter input only (leave the microcontroller disconnected!), power on, and turn the brass trim pot until your multimeter reads exactly 5.00V DC.',
+      'Power off, connect the logic rail and star ground bus, and verify zero brownout resets under simulated motor load.'
+    ],
+    powerAndSafetyChecks: [
+      'CRITICAL: Always calibrate an adjustable buck converter with a multimeter BEFORE connecting the Arduino or sensors — factory trim pots often ship set to 9V–12V!',
+      'Never bypass the inline 5A fuse on LiPo or high-current battery packs.'
+    ],
+    testCases: [
+      { action: 'Measure Buck Converter output voltage with multimeter while motor load switches on', expectedResult: 'Logic rail remains rock-steady between 4.95V and 5.05V with zero MCU resets' },
+      { action: 'Check continuity from Battery (-) to Arduino GND, Sensor GND, and Driver GND', expectedResult: 'Multimeter beeps (< 0.5 Ω) confirming solid Star Ground continuity' }
+    ]
+  }
+};
+
+const SUPPLEMENTAL_CODE_LABS: Record<string, CodeLab> = {
+  'exp-01': {
+    language: 'pseudocode',
+    code: `// EXPLORER 01: ROBOT DETECTIVE LOGIC RULES
+// Every true robot follows SENSE -> DECIDE -> ACT:
+
+WHEN ultrasonic_sensor_distance_cm < 20:
+  DECIDE: "Obstacle is close!"
+  ACT:    turn_on_warning_led(GREEN_SAFE = OFF, RED_ALERT = ON)
+  ACT:    stop_wheel_motors()
+OTHERWISE:
+  DECIDE: "Path is clear!"
+  ACT:    turn_on_warning_led(GREEN_SAFE = ON, RED_ALERT = OFF)
+  ACT:    drive_forward_slowly()`,
+    pinMap: {
+      'Ultrasonic Eye': 'SENSE Input (Measures distance in cm)',
+      'Arduino Brain': 'DECIDE Controller (Checks if distance < 20 cm)',
+      'Wheels & LED': 'ACT Output (Stops motors and lights warning LED)'
+    },
+    setupAndUpload: [
+      'Read each line of the Robot Detective rule card aloud with your partner.',
+      'Point to the physical part on the instructor demo robot that performs SENSE, DECIDE, and ACT.',
+      'Test both branches of the rule by moving your hand closer than 20 cm and farther than 20 cm.'
+    ],
+    explanations: [
+      'WHEN ultrasonic_sensor_distance_cm < 20 checks the sensor input (SENSE).',
+      'DECIDE compares the sensor reading against our safety rule.',
+      'ACT sends power to the LEDs and wheel motors based on that decision.'
+    ],
+    expectedResult: 'Students accurately predict whether the demo robot will drive or stop before the hand test is performed.',
+    caveats: ['A machine without a sensor or decision rule repeats the same action blindly even if an obstacle is in the way.'],
+    tweakTip: 'What happens if we change the rule from 20 cm to 40 cm? The robot stops much earlier!'
+  },
+  'exp-02': {
+    language: 'pseudocode',
+    code: `// EXPLORER 02: CLOSED LOOP & SWITCH LOGIC
+// Electricity only flows when the loop is complete from (+) to (-):
+
+IF switch_button == PRESSED:
+  circuit_loop = CLOSED
+  current_flows_through_resistor_and_led = TRUE
+  red_led_state = ON
+ELSE:
+  circuit_loop = OPEN_GAP
+  current_flows_through_resistor_and_led = FALSE
+  red_led_state = OFF`,
+    pinMap: {
+      'Battery (+) Red Rail': 'Energy Source (Pushes current into the loop)',
+      'Pushbutton Switch': 'Gatekeeper (Closes or opens the bridge)',
+      'Resistor + LED': 'Protected Load (Lights up when current returns to -)'
+    },
+    setupAndUpload: [
+      'Trace the circuit path with your finger starting at Battery (+).',
+      'Verify the LED long leg (+) faces the switch/battery (+) side and short leg (-) faces Ground (-).',
+      'Press the switch to close the gap and watch the LED illuminate.'
+    ],
+    explanations: [
+      'CLOSED loop means there is an unbroken metal path from (+) through the LED and back to (-).',
+      'OPEN loop means a gap (like an unpressed switch) stops current everywhere in the branch.'
+    ],
+    expectedResult: 'The LED lights brightly when the switch is pressed and turns off immediately when released.',
+    caveats: ['If the LED is plugged in backward, the loop is blocked because an LED is a one-way valve for electricity.'],
+    tweakTip: 'Try adding a second switch in series — now BOTH partners must press their switches together to light the LED!'
+  },
+  'exp-03': {
+    language: 'pseudocode',
+    code: `// EXPLORER 03: ROVER GRID NAVIGATION SEQUENCE
+// Each step executes in strict top-to-bottom order:
+
+STEP 1: START at Square (A, 1) facing NORTH
+STEP 2: MOVE_FORWARD(1_SQUARE)      // Now at (A, 2) facing NORTH
+STEP 3: TURN_RIGHT(90_DEGREES)      // Now at (A, 2) facing EAST (avoids cone at A,3)
+STEP 4: MOVE_FORWARD(2_SQUARES)     // Now at (C, 2) facing EAST
+STEP 5: TURN_LEFT(90_DEGREES)       // Now at (C, 2) facing NORTH
+STEP 6: MOVE_FORWARD(2_SQUARES)     // Now at TARGET (C, 4)!
+STEP 7: STOP_MOTORS()`,
+    pinMap: {
+      'Left + Right Motors Forward': 'MOVE_FORWARD(1_SQUARE)',
+      'Left Forward + Right Reverse': 'TURN_RIGHT(90_DEGREES)',
+      'Left Reverse + Right Forward': 'TURN_LEFT(90_DEGREES)'
+    },
+    setupAndUpload: [
+      'Lay out your 7 command cards in order from left to right.',
+      'Have the Programmer read one step at a time while the Robot Walker moves on the floor grid.',
+      'If the rover touches a cone, place the Bug Marker on that exact card and swap it.'
+    ],
+    explanations: [
+      'TURN_RIGHT(90_DEGREES) rotates the rover in place on its current grid square without moving forward.',
+      'MOVE_FORWARD(2_SQUARES) advances two full grid tiles in the direction the rover Nose Arrow is currently pointing.'
+    ],
+    expectedResult: 'The rover navigates around the obstacle cones and stops cleanly inside the TARGET square.',
+    caveats: ['Forgetting that a turn only rotates in place (and does not move to the next square) is the #1 navigation bug!'],
+    tweakTip: 'Can you find a second valid path around the left side of the obstacle using the exact same number of cards?'
+  },
+  'exp-04': {
+    language: 'pseudocode',
+    code: `// EXPLORER 04: MY HELPER ROBOT DESIGN SPECIFICATION
+// Helper Robot Name: Smart Plant Watering Buddy
+
+DEFINE SENSE_INPUT:
+  soil_moisture_sensor (placed in flowerpot soil)
+
+DEFINE DECIDE_RULE:
+  IF soil_moisture_level == DRY:
+    trigger_action = WATER_AND_ALERT
+  ELSE:
+    trigger_action = STAND_BY_HAPPY
+
+DEFINE ACT_OUTPUT:
+  WHEN WATER_AND_ALERT:
+    turn_on_blue_led()
+    open_water_spout_for_3_seconds()`,
+    pinMap: {
+      'Sensor Input': 'Soil Moisture Probe / Touch Switch',
+      'Controller Brain': 'Arduino Decision Rule (DRY vs. OK)',
+      'Actuator Output': '3V Blue Status LED + Servo Spout'
+    },
+    setupAndUpload: [
+      'Fill in your own Sensor, Decision Rule, and Actuator on the Invention Blueprint Sheet.',
+      'Wire the 3V coin-cell and LED indicator into your cardboard prototype.',
+      'Present a 60-second showcase demonstrating how your helper robot senses, decides, and acts.'
+    ],
+    explanations: [
+      'SENSE_INPUT defines what real-world clue your robot measures.',
+      'DECIDE_RULE states the exact condition that triggers your robot into action.',
+      'ACT_OUTPUT describes the physical movement, light, or sound that helps the user.'
+    ],
+    expectedResult: 'Every student team presents a complete, working tabletop prototype with a clear Sense-Decide-Act specification.',
+    caveats: ['Make sure your sensor measures something related to the problem (e.g., moisture for plants, distance for doorway alerts).'],
+    tweakTip: 'Add a second LED color so humans can tell at a glance whether the robot is standing by (Green) or actively helping (Blue)!'
+  },
+  'int-08': {
+    language: 'openscad',
+    code: `// INTERMEDIATE 08: PARAMETRIC SENSOR/SERVO BRACKET WITH FIT TOLERANCES
+// All dimensions in millimeters (mm)
+$fn = 48;
+
+// 1. Measured Nominal Dimensions + 3D Print Clearance Allowances
+servo_w      = 22.5 + 0.5; // 22.5mm nominal + 0.5mm pocket clearance
+servo_d      = 12.2 + 0.5; // 12.2mm nominal + 0.5mm pocket clearance
+wall_t       = 3.2;        // Minimum 3.0mm structural wall thickness
+base_hole_cc = 30.0;       // Chassis deck M3 hole spacing (center-to-center)
+m3_clear_d   = 3.0 + 0.4;  // 3.0mm M3 screw + 0.4mm clearance fit
+
+module sensor_servo_bracket() {
+  difference() {
+    // Outer structural body + mounting flange
+    union() {
+      cube([servo_w + 2*wall_t, servo_d + 2*wall_t, 16], center=true);
+      translate([0, 0, -6])
+        cube([base_hole_cc + 14, servo_d + 2*wall_t, 4], center=true);
+    }
+    // Servo rectangular pocket cutout
+    cube([servo_w, servo_d, 20], center=true);
+    // Left & Right M3 chassis mounting holes (3.4mm diameter)
+    for (x_pos = [-base_hole_cc/2, base_hole_cc/2]) {
+      translate([x_pos, 0, -6])
+        cylinder(h=10, d=m3_clear_d, center=true);
+    }
+  }
+}
+
+sensor_servo_bracket();`,
+    pinMap: {
+      'm3_clear_d (3.4 mm)': 'M3 through-hole (+0.4 mm clearance so bolt does not crack PLA)',
+      'servo_w (23.0 mm)': 'SG90 body width (+0.5 mm pocket clearance)',
+      'wall_t (3.2 mm)': 'Structural wall thickness (>= 3.0 mm rule)'
+    },
+    setupAndUpload: [
+      'Open OpenSCAD (or model the equivalent parametric solids in Tinkercad) and paste the script.',
+      'Press F5 to preview and inspect the servo pocket and two M3 mounting holes.',
+      'Verify with your caliper log that servo_w, servo_d, and base_hole_cc match your physical hardware, then press F6 and Export as STL.'
+    ],
+    explanations: [
+      'Adding +0.4 mm to m3_clear_d compensates for FDM plastic squish so M3 bolts slide in cleanly.',
+      'Using variables at the top of the file lets you adjust tolerances in 5 seconds if a printer runs tight.'
+    ],
+    expectedResult: 'Clean, manifold 3D bracket STL with 3.4 mm M3 clearance holes, 23.0 x 12.7 mm servo pocket, and 3.2 mm walls.',
+    caveats: ['Designing a 3.0 mm hole for a 3.0 mm screw will print undersized (~2.7 mm) and split the layer lines when forced.'],
+    tweakTip: 'Change m3_clear_d to 2.85 if you want the M3 screw to self-tap threads directly into the plastic without a hex nut!'
+  },
+  'int-10': {
+    language: 'cpp',
+    code: `// INTERMEDIATE 10: CAPSTONE MULTI-SENSOR STATE-MACHINE ROVER
+const int PIN_IR_L = A0, PIN_IR_R = A1;
+const int PIN_TRIG = 9,  PIN_ECHO = 10;
+const int ENA = 5, IN1 = 7, IN2 = 8;
+const int ENB = 3, IN3 = 4, IN4 = 2;
+
+enum MissionState { FOLLOW_LINE, OBSTACLE_HOLD, MISSION_DOCKED };
+MissionState state = FOLLOW_LINE;
+const int IR_THRESH = 500; // Calibrated midpoint from Serial Plotter
+
+long readSonarCm() {
+  digitalWrite(PIN_TRIG, LOW); delayMicroseconds(2);
+  digitalWrite(PIN_TRIG, HIGH); delayMicroseconds(10);
+  digitalWrite(PIN_TRIG, LOW);
+  long dur = pulseIn(PIN_ECHO, HIGH, 20000);
+  return (dur == 0) ? 999 : (dur * 0.0343) / 2;
+}
+
+void setMotors(int leftSpd, int rightSpd) {
+  digitalWrite(IN1, leftSpd >= 0 ? HIGH : LOW);
+  digitalWrite(IN2, leftSpd >= 0 ? LOW  : HIGH);
+  analogWrite(ENA, abs(leftSpd));
+  digitalWrite(IN3, rightSpd >= 0 ? HIGH : LOW);
+  digitalWrite(IN4, rightSpd >= 0 ? LOW  : HIGH);
+  analogWrite(ENB, abs(rightSpd));
+}
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(PIN_TRIG, OUTPUT); pinMode(PIN_ECHO, INPUT);
+  pinMode(ENA, OUTPUT); pinMode(IN1, OUTPUT); pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT); pinMode(IN3, OUTPUT); pinMode(IN4, OUTPUT);
+}
+
+void loop() {
+  int irL = analogRead(PIN_IR_L);
+  int irR = analogRead(PIN_IR_R);
+  long distCm = readSonarCm();
+
+  switch (state) {
+    case FOLLOW_LINE:
+      if (distCm < 15) { setMotors(0, 0); state = OBSTACLE_HOLD; }
+      else if (irL > IR_THRESH && irR > IR_THRESH) { setMotors(0, 0); state = MISSION_DOCKED; }
+      else if (irL > IR_THRESH) setMotors(70, 150);
+      else if (irR > IR_THRESH) setMotors(150, 70);
+      else setMotors(135, 135);
+      break;
+    case OBSTACLE_HOLD:
+      setMotors(0, 0);
+      if (distCm >= 20) state = FOLLOW_LINE;
+      break;
+    case MISSION_DOCKED:
+      setMotors(0, 0);
+      break;
+  }
+}`,
+    pinMap: {
+      'A0 / A1': 'Left & Right IR Reflectance Sensors',
+      'D9 / D10': 'HC-SR04 Ultrasonic TRIG / ECHO',
+      'D5, D7, D8': 'Left Motor PWM (ENA) & Direction (IN1, IN2)',
+      'D3, D4, D2': 'Right Motor PWM (ENB) & Direction (IN3, IN4)'
+    },
+    setupAndUpload: [
+      'Measure white floor and black tape values first and update IR_THRESH with your calibrated midpoint.',
+      'Upload the sketch with wheels elevated off the bench and verify state transitions in the Serial Monitor.',
+      'Place the rover on the Zone 1 start line and switch motor power ON for your 3 official trials.'
+    ],
+    explanations: [
+      'MissionState enum keeps FOLLOW_LINE, OBSTACLE_HOLD, and MISSION_DOCKED cleanly separated with zero spaghetti if/else nesting.',
+      'pulseIn timeout (20000 us) prevents the line follower from freezing if no ultrasonic echo is returned.'
+    ],
+    expectedResult: 'Rover tracks the course line smoothly, pauses automatically when an obstacle is within 15 cm, resumes when cleared, and docks at the perpendicular stop bar.',
+    caveats: ['Never use delay(1000) inside FOLLOW_LINE — even a 200ms blocking delay will make the rover overshoot sharp turns.'],
+    tweakTip: 'Lower base speed from 135 to 115 if your battery pack is freshly charged above 8.0V.'
+  },
+  'adv-01': {
+    language: 'cpp',
+    code: `// ADVANCED 01: PRE-MATCH COMPLIANCE & HARDWARE SELF-TEST DIAGNOSTIC
+const int PIN_BATT_SENSE = A3;
+const int PIN_START_BTN  = 12;
+const int PIN_STATUS_LED = 13;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_START_BTN, INPUT_PULLUP);
+  pinMode(PIN_STATUS_LED, OUTPUT);
+  Serial.println(F("=== ROBOBEE COMPETITION TECH-INSPECTION DIAGNOSTIC ==="));
+  Serial.println(F("1. Verify chassis fits 200x200mm box & mass < 1500g"));
+  Serial.println(F("2. Verify Master Kill-Switch cuts VMS + Logic cleanly"));
+  Serial.println(F("3. Waiting for Start Button (D12 -> GND) for 5s Safety Delay..."));
+}
+
+void loop() {
+  if (digitalRead(PIN_START_BTN) == LOW) {
+    Serial.println(F("MATCH START TRIGGERED: Counting mandatory 5.00s safety delay..."));
+    for (int i = 5; i > 0; i--) {
+      Serial.print(F("T-minus ")); Serial.print(i); Serial.println(F("s"));
+      digitalWrite(PIN_STATUS_LED, HIGH); delay(250);
+      digitalWrite(PIN_STATUS_LED, LOW);  delay(750);
+    }
+    Serial.println(F("AUTONOMOUS MATCH STATE ACTIVE!"));
+    while (true) { digitalWrite(PIN_STATUS_LED, HIGH); }
+  }
+}`,
+    pinMap: {
+      'D12 (INPUT_PULLUP)': 'Competition Start Button (Active-LOW to GND)',
+      'D13': 'Inspection & 5-Second Countdown Status LED',
+      'A3': 'Optional Voltage Divider Sense Input'
+    },
+    setupAndUpload: [
+      'Upload the diagnostic firmware to verify serial telemetry at 115200 baud.',
+      'Press the Start Button on D12 and time the 5-second safety countdown with a stopwatch.',
+      'Test the Master Kill-Switch mid-countdown to prove instantaneous power cutoff.'
+    ],
+    explanations: [
+      'Competition rules require a mandatory 5-second hands-clear countdown after pressing Start before any motor may spin.',
+      'INPUT_PULLUP holds D12 HIGH until the button connects it to GND, preventing false starts from electrical noise.'
+    ],
+    expectedResult: 'Pressing the Start button blinks D13 five times at 1 Hz and logs the countdown before entering Autonomous Match State.',
+    caveats: ['Moving before the 5.0-second countdown completes results in an automatic false-start disqualification in Mini-Sumo.'],
+    tweakTip: 'Use millis() timestamps during the countdown so sensors can warm up and sample background reflectance before motion starts.'
+  },
+  'adv-02': {
+    language: 'cpp',
+    code: `// ADVANCED 02: BROWNOUT DETECTOR & BATTERY RAIL TELEMETRY MONITOR
+// Detects unexpected MCU resets caused by power-rail sag during motor stall spikes
+const int PIN_STATUS_LED = 13;
+unsigned long bootTimestampMs = 0;
+unsigned long lastHeartbeatMs = 0;
+int loopCounter = 0;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_STATUS_LED, OUTPUT);
+  // Rapid 3-flash signature indicates a fresh MCU boot or brownout reset!
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(PIN_STATUS_LED, HIGH); delay(80);
+    digitalWrite(PIN_STATUS_LED, LOW);  delay(80);
+  }
+  Serial.println(F("!!! MCU BOOT EVENT DETECTED (Check for Brownout if mid-run) !!!"));
+}
+
+void loop() {
+  unsigned long now = millis();
+  if (now - lastHeartbeatMs >= 500) {
+    lastHeartbeatMs = now;
+    loopCounter++;
+    Serial.print(F("[UPTIME ")); Serial.print(now / 1000.0, 1);
+    Serial.print(F("s] Rail Stable | Heartbeat #")); Serial.println(loopCounter);
+  }
+}`,
+    pinMap: {
+      'D13': 'Boot-Signature LED (Flashes 3x rapidly if MCU resets)',
+      'Buck OUT+ (5.00V)': 'Regulated 5V Logic Supply',
+      'Star Ground Bus': 'Common Reference for Battery (-), Driver GND, and Logic GND'
+    },
+    setupAndUpload: [
+      'Calibrate your Buck Converter to 5.00V with a multimeter BEFORE connecting the Arduino.',
+      'Upload the Brownout Detector sketch and open Serial Monitor at 115200 baud.',
+      'Command a sudden motor direction reversal; verify that Uptime continues counting smoothly without printing a fresh MCU BOOT EVENT.'
+    ],
+    explanations: [
+      'setup() only runs once at power-up or after a reset. If you see "MCU BOOT EVENT" when motors start, your 5V rail sagged below the brownout threshold!',
+      'Separating the raw motor rail from the regulated 5.00V buck rail eliminates voltage droop on the microcontroller.'
+    ],
+    expectedResult: 'Uptime counter increments continuously across heavy motor starts with zero unexpected reboot signatures.',
+    caveats: ['Never power high-stall DC motors from the Arduino onboard 5V pin — its linear regulator will overheat or drop out.'],
+    tweakTip: 'Add a 470µF electrolytic capacitor across the motor driver VMS and GND terminals to absorb sudden current spikes.'
+  }
+};
+
+// Populate universal 120-minute standard, complete build/code packs, and backward-compatibility aliases
 ALL_ROBOTICS_LESSONS.forEach(lesson => {
+  // 1. Enforce 120-minute (2-hour) standard across all 36 classes with 60-minute compact option
+  lesson.durationMinutes = 120;
+  lesson.compactDurationMinutes = 60;
+
+  // 2. Enforce 5-segment 120-minute Class Rhythm (15 + 25 + 35 + 30 + 15 = 120m)
+  const rhythmSum = lesson.classRhythm.reduce((acc, r) => acc + r.minutes, 0);
+  if (lesson.classRhythm.length !== 5 || rhythmSum !== 120) {
+    const r0 = lesson.classRhythm[0];
+    const r1 = lesson.classRhythm[1] || r0;
+    const r2 = lesson.classRhythm[2] || r1;
+    const r3 = lesson.classRhythm[3] || r2;
+    lesson.classRhythm = [
+      {
+        segment: r0?.segment || 'Warm-Up & Concept Hook',
+        minutes: 15,
+        teacherAction: r0?.teacherAction || `Introduce ${lesson.title} and frame today's engineering mission.`,
+        studentAction: r0?.studentAction || 'Inspect starter hardware, review safety rules, and predict system behavior.'
+      },
+      {
+        segment: r1?.segment || 'Core Engineering Theory & Pinout Walkthrough',
+        minutes: 25,
+        teacherAction: r1?.teacherAction || 'Walk through the schematic, pinout map, and key engineering vocabulary on the projector.',
+        studentAction: r1?.studentAction || 'Trace signal and power paths on the diagram and record pin assignments.'
+      },
+      {
+        segment: r2?.segment || 'Guided Physical Build & Wiring Lab',
+        minutes: 35,
+        teacherAction: r2?.teacherAction || 'Coach bench teams through power-off wiring, mechanical assembly, and continuity inspection.',
+        studentAction: r2?.studentAction || 'Build the circuit or mechanism step-by-step with power disconnected and verify polarity.'
+      },
+      {
+        segment: 'Code Upload, Calibration & Challenge Trials',
+        minutes: 30,
+        teacherAction: r2?.teacherAction || 'Guide code upload, live telemetry verification, and structured 3-trial bench testing.',
+        studentAction: r2?.studentAction || 'Upload code, tune parameters, and record results across structured test cases.'
+      },
+      {
+        segment: r3?.segment || 'Exit Check, Troubleshooting Debrief & Bench Reset',
+        minutes: 15,
+        teacherAction: r3?.teacherAction || 'Run the 4-question Exit Check, review common hardware bugs, and verify kit sign-off.',
+        studentAction: r3?.studentAction || 'Complete the Exit Check, log final evidence, and sort components back into storage.'
+      }
+    ];
+  }
+
+  // 3. Populate supplemental physicalBuildPack & codeLab so 36/36 lessons have complete hardware & code packs
+  if (!lesson.physicalBuildPack && SUPPLEMENTAL_BUILD_PACKS[lesson.id]) {
+    lesson.physicalBuildPack = SUPPLEMENTAL_BUILD_PACKS[lesson.id];
+  }
+  if (!lesson.codeLab && SUPPLEMENTAL_CODE_LABS[lesson.id]) {
+    lesson.codeLab = SUPPLEMENTAL_CODE_LABS[lesson.id];
+  }
+
+  // 4. Backward-compatibility aliases
   lesson.classNumber = lesson.sequence;
   lesson.level = COURSE_SPACES.find(c => c.id === lesson.courseId)?.title || lesson.proposedAudience;
   lesson.subtitle = lesson.promise;
@@ -12692,12 +13278,12 @@ export function getLessonById(id: string): RoboticsLesson | undefined {
   return ALL_ROBOTICS_LESSONS.find(l => l.id === id);
 }
 
-// Backward compatibility with legacy 14-class components
+// Backward compatibility with legacy components
 export const CURRICULUM_CLASSES = ALL_ROBOTICS_LESSONS.filter(l => l.courseId === 'beginner');
 
 export const CURRICULUM_STATS = {
   totalClasses: ALL_ROBOTICS_LESSONS.length,
-  totalHours: 36,
+  totalHours: 72,
   levels: COURSE_SPACES.map(cs => ({
     name: cs.title,
     classes: ALL_ROBOTICS_LESSONS.filter(l => l.courseId === cs.id).map(l => l.sequence),
@@ -12705,3 +13291,4 @@ export const CURRICULUM_STATS = {
     description: cs.description
   }))
 };
+

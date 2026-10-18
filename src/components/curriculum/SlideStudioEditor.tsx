@@ -54,13 +54,13 @@ export function SlideStudioEditor({
 }: SlideStudioEditorProps) {
   const [deck, setDeck] = useState<EditableClassDeck>(initialDeck);
   const [activeSlideIdx, setActiveSlideIdx] = useState<number>(0);
-  const [inspectorTab, setInspectorTab] = useState<"text" | "media" | "elements">("text");
+  const [inspectorTab, setInspectorTab] = useState<"design" | "text" | "media">("design");
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [savedToast, setSavedToast] = useState<boolean>(false);
 
   const currentSlide: EditableSlide = deck.slides[activeSlideIdx] || deck.slides[0];
-  const palette = THEME_PALETTE_CONFIG[currentSlide?.theme || "electric-indigo"];
+  const palette = THEME_PALETTE_CONFIG[currentSlide?.theme || "robobee-dark"] || THEME_PALETTE_CONFIG["robobee-dark"];
 
   const relabelSlides = (slides: EditableSlide[]): EditableSlide[] =>
     slides.map((s, idx) => ({
@@ -91,7 +91,7 @@ export function SlideStudioEditor({
 
   // Slide Filmstrip Operations
   const handleAddSlide = () => {
-    const newSlide = createBlankSlide(deck.slides.length + 1, currentSlide?.theme || "electric-indigo");
+    const newSlide = createBlankSlide(deck.slides.length + 1, currentSlide?.theme || "robobee-dark");
     const nextSlides = relabelSlides([
       ...deck.slides.slice(0, activeSlideIdx + 1),
       newSlide,
@@ -149,7 +149,7 @@ export function SlideStudioEditor({
     };
     updateCurrentSlide({ cards: [...currentSlide.cards, newCard] });
     setSelectedElementId(newCard.id);
-    setInspectorTab("elements");
+    setInspectorTab("media");
   };
 
   const handleUpdateCard = (cardId: string, patch: Partial<EditableSlideCard>) => {
@@ -172,14 +172,14 @@ export function SlideStudioEditor({
       title: `Component Pin #${nextNum}`,
       badge: `PIN 0${nextNum} • HARDWARE`,
       description: "Drag this numbered pin directly on the slide image to position it, and edit its description here.",
-      color: "#FBBF24",
+      color: "#F5B800",
     };
     updateCurrentSlide({
       layout: "interactive-hotspot",
       hotspots: [...currentSlide.hotspots, newPin],
     });
     setSelectedElementId(newPin.id);
-    setInspectorTab("elements");
+    setInspectorTab("media");
   };
 
   const handleUpdateHotspot = (pinId: string, patch: Partial<EditableHotspotPin>) => {
@@ -198,7 +198,7 @@ export function SlideStudioEditor({
   const handleAddGalleryPhoto = () => {
     const newImg: SlideImageItem = {
       id: `img-${Date.now()}`,
-      url: "https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=1200&q=80",
+      url: "/illustrations/class1-external-blink-wiring.svg",
       caption: `Gallery Photo #${(currentSlide.galleryImages?.length || 0) + 2}`,
       fallbackVariant: "arduino",
     };
@@ -246,21 +246,23 @@ export function SlideStudioEditor({
         position: "fixed",
         inset: 0,
         zIndex: 95000,
-        background: "#070B14",
-        color: "#F8FAFC",
+        background: "#161B26",
+        color: "#FFFFFF",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
       }}
     >
       {/* =================================================================== */}
-      {/* TOP POWERPOINT / CANVA RIBBON TOOLBAR */}
+      {/* SINGLE-ROW H-14 (56px) STUDIO HEADER (NO WRAPPING TOOLBAR COLLISION) */}
       {/* =================================================================== */}
-      <div
+      <header
         style={{
-          height: "66px",
-          background: "#0F172A",
-          borderBottom: "1px solid #1E293B",
+          height: "56px",
+          minHeight: "56px",
+          maxHeight: "56px",
+          background: "#1E2533",
+          borderBottom: "1px solid #2E374B",
           padding: "0 1.25rem",
           display: "flex",
           alignItems: "center",
@@ -269,186 +271,65 @@ export function SlideStudioEditor({
           flexShrink: 0,
         }}
       >
-        {/* Left: Back + Class Title */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+        {/* Left: <- Back + Class Code + Editable Class Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minWidth: 0, flex: 1 }}>
           <button
             type="button"
             onClick={onClose}
             style={{
-              background: "#1E293B",
+              background: "#161B26",
               color: "#E2E8F0",
-              border: "1px solid #334155",
-              borderRadius: "10px",
-              padding: "0.5rem 0.9rem",
-              fontSize: "0.82rem",
+              border: "1px solid #2E374B",
+              borderRadius: "8px",
+              padding: "0.42rem 0.85rem",
+              fontSize: "0.8rem",
               fontWeight: 800,
               cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
               gap: "0.4rem",
+              flexShrink: 0,
             }}
           >
-            <ArrowLeft size={15} /> Back to Class Hub
+            <ArrowLeft size={15} /> Back
           </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <span
-              style={{
-                background: "rgba(0, 245, 212, 0.15)",
-                border: "1px solid #00F5D4",
-                color: "#00F5D4",
-                padding: "0.25rem 0.65rem",
-                borderRadius: "6px",
-                fontSize: "0.75rem",
-                fontWeight: 900,
-              }}
-            >
-              {deck.classCode}
-            </span>
-            <input
-              type="text"
-              value={deck.title}
-              onChange={(e) => setDeck((prev) => ({ ...prev, title: e.target.value }))}
-              style={{
-                background: "transparent",
-                border: "1px solid transparent",
-                color: "#FFFFFF",
-                fontSize: "1rem",
-                fontWeight: 900,
-                padding: "0.25rem 0.5rem",
-                borderRadius: "6px",
-                width: "310px",
-              }}
-              title="Click to rename class presentation title"
-            />
-          </div>
-        </div>
-
-        {/* Center: Quick Formatting Ribbon (Theme, Layout, Font, Size, Alignment, Animation) */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", flexWrap: "wrap" }}>
-          {/* Theme Picker */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "#1E293B", padding: "0.3rem 0.6rem", borderRadius: "8px", border: "1px solid #334155" }}>
-            <Palette size={14} color="#38BDF8" />
-            <select
-              value={currentSlide.theme}
-              onChange={(e) => updateCurrentSlide({ theme: e.target.value as SlideColorTheme })}
-              style={{ background: "#1E293B", color: "#F8FAFC", border: "none", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer" }}
-              title="Slide Color Palette"
-            >
-              <option value="electric-indigo">Theme: Electric Indigo</option>
-              <option value="daylight-studio">Theme: Daylight Studio (White)</option>
-              <option value="arduino-teal">Theme: Arduino Teal</option>
-              <option value="cyber-blueprint">Theme: Cyber Blueprint</option>
-            </select>
-          </div>
-
-          {/* Layout Picker */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "#1E293B", padding: "0.3rem 0.6rem", borderRadius: "8px", border: "1px solid #334155" }}>
-            <Layout size={14} color="#00F5D4" />
-            <select
-              value={currentSlide.layout}
-              onChange={(e) =>
-                updateCurrentSlide({ layout: e.target.value as EditableSlide["layout"] })
-              }
-              style={{ background: "#1E293B", color: "#F8FAFC", border: "none", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer" }}
-              title="Slide Layout Template"
-            >
-              <option value="hero-title">Layout: Hero Title Banner</option>
-              <option value="split-media">Layout: Split Media + Cards</option>
-              <option value="interactive-grid">Layout: Interactive Bento Grid</option>
-              <option value="timeline-stepper">Layout: Timeline Stepper</option>
-              <option value="interactive-hotspot">Layout: Hardware Hotspot Pins</option>
-              <option value="photo-gallery">Layout: Multi-Photo Gallery</option>
-            </select>
-          </div>
-
-          {/* Font Family Picker */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "#1E293B", padding: "0.3rem 0.6rem", borderRadius: "8px", border: "1px solid #334155" }}>
-            <Type size={14} color="#FBBF24" />
-            <select
-              value={currentSlide.fontFamily || "sans"}
-              onChange={(e) =>
-                updateCurrentSlide({ fontFamily: e.target.value as EditableSlide["fontFamily"] })
-              }
-              style={{ background: "#1E293B", color: "#F8FAFC", border: "none", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer" }}
-              title="Font Family"
-            >
-              <option value="sans">Font: Inter Sans</option>
-              <option value="display">Font: Space Display</option>
-              <option value="mono">Font: Technical Mono</option>
-              <option value="serif">Font: Editorial Serif</option>
-            </select>
-          </div>
-
-          {/* Title Size Picker */}
-          <select
-            value={currentSlide.titleSize || "standard"}
-            onChange={(e) =>
-              updateCurrentSlide({ titleSize: e.target.value as EditableSlide["titleSize"] })
-            }
-            style={{ background: "#1E293B", color: "#F8FAFC", border: "1px solid #334155", padding: "0.35rem 0.55rem", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer" }}
-            title="Headline Size"
+          <span
+            style={{
+              background: "rgba(245, 184, 0, 0.14)",
+              border: "1px solid rgba(245, 184, 0, 0.4)",
+              color: "#F5B800",
+              padding: "0.22rem 0.6rem",
+              borderRadius: "6px",
+              fontSize: "0.72rem",
+              fontWeight: 900,
+              flexShrink: 0,
+            }}
           >
-            <option value="compact">Size: Compact</option>
-            <option value="standard">Size: Standard</option>
-            <option value="large">Size: Large</option>
-            <option value="hero">Size: Hero XL</option>
-          </select>
+            {deck.classCode}
+          </span>
 
-          {/* Alignment Buttons */}
-          <div style={{ display: "inline-flex", background: "#1E293B", borderRadius: "8px", border: "1px solid #334155", overflow: "hidden" }}>
-            <button
-              type="button"
-              onClick={() => updateCurrentSlide({ textAlign: "left" })}
-              style={{
-                background: currentSlide.textAlign !== "center" ? "#38BDF8" : "transparent",
-                color: currentSlide.textAlign !== "center" ? "#090D16" : "#CBD5E1",
-                border: "none",
-                padding: "0.35rem 0.5rem",
-                cursor: "pointer",
-              }}
-              title="Align Left"
-            >
-              <AlignLeft size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={() => updateCurrentSlide({ textAlign: "center" })}
-              style={{
-                background: currentSlide.textAlign === "center" ? "#38BDF8" : "transparent",
-                color: currentSlide.textAlign === "center" ? "#090D16" : "#CBD5E1",
-                border: "none",
-                padding: "0.35rem 0.5rem",
-                cursor: "pointer",
-              }}
-              title="Align Center"
-            >
-              <AlignCenter size={14} />
-            </button>
-          </div>
-
-          {/* Animation Picker */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "#1E293B", padding: "0.3rem 0.6rem", borderRadius: "8px", border: "1px solid #334155" }}>
-            <Sparkles size={14} color="#A855F7" />
-            <select
-              value={currentSlide.animation || "fade-up"}
-              onChange={(e) =>
-                updateCurrentSlide({ animation: e.target.value as EditableSlide["animation"] })
-              }
-              style={{ background: "#1E293B", color: "#F8FAFC", border: "none", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer" }}
-              title="Slide Entrance Animation"
-            >
-              <option value="fade-up">Anim: Fade &amp; Rise</option>
-              <option value="zoom-in">Anim: Keynote Zoom</option>
-              <option value="slide-right">Anim: Slide Glide</option>
-              <option value="cyber-glow">Anim: Cyber Pulse</option>
-              <option value="none">Anim: Instant</option>
-            </select>
-          </div>
+          <input
+            type="text"
+            value={deck.title}
+            onChange={(e) => setDeck((prev) => ({ ...prev, title: e.target.value }))}
+            style={{
+              background: "transparent",
+              border: "1px solid transparent",
+              color: "#FFFFFF",
+              fontSize: "0.95rem",
+              fontWeight: 800,
+              padding: "0.25rem 0.5rem",
+              borderRadius: "6px",
+              width: "100%",
+              maxWidth: "460px",
+            }}
+            title="Click to rename class presentation title"
+          />
         </div>
 
-        {/* Right: Present & Save Buttons */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+        {/* Right: Preview Projector & Save Changes */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", flexShrink: 0 }}>
           <button
             type="button"
             onClick={async () => {
@@ -458,20 +339,20 @@ export function SlideStudioEditor({
               onLaunchProjector(deck, activeSlideIdx);
             }}
             style={{
-              background: "#1E293B",
-              color: "#38BDF8",
-              border: "1px solid #38BDF8",
-              borderRadius: "10px",
-              padding: "0.52rem 0.95rem",
-              fontSize: "0.82rem",
-              fontWeight: 900,
+              background: "#161B26",
+              color: "#FFFFFF",
+              border: "1px solid #2E374B",
+              borderRadius: "8px",
+              padding: "0.45rem 0.9rem",
+              fontSize: "0.8rem",
+              fontWeight: 800,
               cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
               gap: "0.4rem",
             }}
           >
-            <Tv size={15} /> Present Slide {currentSlide.numberLabel}
+            <Tv size={15} color="#F5B800" /> Preview Projector
           </button>
 
           <button
@@ -479,27 +360,24 @@ export function SlideStudioEditor({
             onClick={handleSave}
             disabled={saving}
             style={{
-              background: savedToast
-                ? "#10B981"
-                : "linear-gradient(135deg, #00F5D4 0%, #38BDF8 100%)",
-              color: "#090D16",
-              border: "none",
-              borderRadius: "10px",
-              padding: "0.55rem 1.15rem",
-              fontSize: "0.85rem",
-              fontWeight: 900,
+              background: savedToast ? "#10B981" : "#6B0F24",
+              color: "#FFFFFF",
+              border: "1px solid #F5B800",
+              borderRadius: "8px",
+              padding: "0.45rem 1.05rem",
+              fontSize: "0.82rem",
+              fontWeight: 800,
               cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
               gap: "0.4rem",
-              boxShadow: "0 6px 20px rgba(0, 245, 212, 0.25)",
             }}
           >
-            {savedToast ? <Check size={16} /> : <Save size={16} />}
-            {savedToast ? "Saved!" : saving ? "Saving..." : "Save Deck"}
+            {savedToast ? <Check size={15} /> : <Save size={15} color="#F5B800" />}
+            {savedToast ? "Saved!" : saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
-      </div>
+      </header>
 
       {/* =================================================================== */}
       {/* 3-COLUMN WORKSPACE: LEFT FILMSTRIP | CENTER STAGE | RIGHT INSPECTOR */}
@@ -508,8 +386,8 @@ export function SlideStudioEditor({
         {/* 1. LEFT SIDEBAR: SLIDE FILMSTRIP & SORTER */}
         <div
           style={{
-            background: "#0B1120",
-            borderRight: "1px solid #1E293B",
+            background: "#161B26",
+            borderRight: "1px solid #2E374B",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
@@ -518,21 +396,21 @@ export function SlideStudioEditor({
           <div
             style={{
               padding: "0.85rem 1rem",
-              borderBottom: "1px solid #1E293B",
+              borderBottom: "1px solid #2E374B",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "0.78rem", fontWeight: 900, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <span style={{ fontSize: "0.76rem", fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               Slides ({deck.slides.length})
             </span>
             <button
               type="button"
               onClick={handleAddSlide}
               style={{
-                background: "#00F5D4",
-                color: "#090D16",
+                background: "#F5B800",
+                color: "#161B26",
                 border: "none",
                 borderRadius: "6px",
                 padding: "0.28rem 0.6rem",
@@ -560,15 +438,15 @@ export function SlideStudioEditor({
           >
             {deck.slides.map((s, idx) => {
               const isSelected = idx === activeSlideIdx;
-              const sPalette = THEME_PALETTE_CONFIG[s.theme];
+              const sPalette = THEME_PALETTE_CONFIG[s.theme] || THEME_PALETTE_CONFIG["robobee-dark"];
               return (
                 <div
                   key={s.id}
                   onClick={() => setActiveSlideIdx(idx)}
                   style={{
-                    background: isSelected ? "#1E293B" : "#0F172A",
-                    border: `2px solid ${isSelected ? "#00F5D4" : "#1E293B"}`,
-                    borderRadius: "12px",
+                    background: isSelected ? "#1E2533" : "#161B26",
+                    border: `2px solid ${isSelected ? "#F5B800" : "#2E374B"}`,
+                    borderRadius: "10px",
                     padding: "0.65rem",
                     cursor: "pointer",
                     transition: "all 0.15s ease",
@@ -577,8 +455,8 @@ export function SlideStudioEditor({
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
                     <span
                       style={{
-                        fontSize: "0.7rem",
-                        fontWeight: 900,
+                        fontSize: "0.68rem",
+                        fontWeight: 800,
                         padding: "0.14rem 0.45rem",
                         borderRadius: "6px",
                         background: sPalette.canvasBg,
@@ -611,7 +489,7 @@ export function SlideStudioEditor({
                       <button
                         type="button"
                         onClick={() => handleDuplicateSlide(idx)}
-                        style={{ background: "transparent", border: "none", color: "#38BDF8", cursor: "pointer", padding: "2px" }}
+                        style={{ background: "transparent", border: "none", color: "#F5B800", cursor: "pointer", padding: "2px" }}
                         title="Duplicate Slide"
                       >
                         <Copy size={13} />
@@ -641,7 +519,7 @@ export function SlideStudioEditor({
                   >
                     {s.title}
                   </div>
-                  <div style={{ fontSize: "0.68rem", color: "#64748B", marginTop: "0.25rem", textTransform: "uppercase", fontWeight: 700 }}>
+                  <div style={{ fontSize: "0.68rem", color: "#94A3B8", marginTop: "0.25rem", textTransform: "uppercase", fontWeight: 700 }}>
                     {s.layout} • {1 + (s.galleryImages?.length || 0)} photo(s)
                   </div>
                 </div>
@@ -653,9 +531,9 @@ export function SlideStudioEditor({
         {/* 2. CENTER STAGE: LIVE WYSIWYG SLIDE CANVAS */}
         <div
           style={{
-            background: "#050811",
+            background: "#0F141D",
             overflowY: "auto",
-            padding: "1.75rem",
+            padding: "1.5rem",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -666,7 +544,7 @@ export function SlideStudioEditor({
             style={{
               width: "100%",
               maxWidth: "1120px",
-              marginBottom: "1rem",
+              marginBottom: "0.85rem",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -675,7 +553,7 @@ export function SlideStudioEditor({
             }}
           >
             <div style={{ fontSize: "0.8rem", color: "#94A3B8", fontWeight: 700 }}>
-              Editing <strong>Slide {currentSlide.numberLabel} of {String(deck.slides.length).padStart(2, "0")}</strong> • Theme: <strong style={{ color: "#38BDF8" }}>{palette.name}</strong>
+              Editing <strong>Slide {currentSlide.numberLabel} of {String(deck.slides.length).padStart(2, "0")}</strong> • Theme: <strong style={{ color: "#F5B800" }}>{palette.name}</strong>
             </div>
 
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -683,12 +561,12 @@ export function SlideStudioEditor({
                 type="button"
                 onClick={handleAddCard}
                 style={{
-                  background: "#1E293B",
-                  color: "#00F5D4",
-                  border: "1px solid #00F5D4",
+                  background: "#1E2533",
+                  color: "#F5B800",
+                  border: "1px solid #2E374B",
                   borderRadius: "8px",
-                  padding: "0.38rem 0.75rem",
-                  fontSize: "0.76rem",
+                  padding: "0.35rem 0.7rem",
+                  fontSize: "0.75rem",
                   fontWeight: 800,
                   cursor: "pointer",
                   display: "inline-flex",
@@ -702,12 +580,12 @@ export function SlideStudioEditor({
                 type="button"
                 onClick={handleAddGalleryPhoto}
                 style={{
-                  background: "#1E293B",
-                  color: "#38BDF8",
-                  border: "1px solid #38BDF8",
+                  background: "#1E2533",
+                  color: "#E2E8F0",
+                  border: "1px solid #2E374B",
                   borderRadius: "8px",
-                  padding: "0.38rem 0.75rem",
-                  fontSize: "0.76rem",
+                  padding: "0.35rem 0.7rem",
+                  fontSize: "0.75rem",
                   fontWeight: 800,
                   cursor: "pointer",
                   display: "inline-flex",
@@ -721,12 +599,12 @@ export function SlideStudioEditor({
                 type="button"
                 onClick={handleAddHotspot}
                 style={{
-                  background: "#1E293B",
-                  color: "#FBBF24",
-                  border: "1px solid #FBBF24",
+                  background: "#1E2533",
+                  color: "#E2E8F0",
+                  border: "1px solid #2E374B",
                   borderRadius: "8px",
-                  padding: "0.38rem 0.75rem",
-                  fontSize: "0.76rem",
+                  padding: "0.35rem 0.7rem",
+                  fontSize: "0.75rem",
                   fontWeight: 800,
                   cursor: "pointer",
                   display: "inline-flex",
@@ -751,9 +629,9 @@ export function SlideStudioEditor({
                 : palette.canvasBg,
               backgroundSize: palette.gridOverlay ? "24px 24px, 100% 100%" : "100% 100%",
               border: `2px solid ${palette.cardBorder}`,
-              borderRadius: "24px",
-              padding: "2.25rem",
-              boxShadow: "0 28px 70px rgba(0, 0, 0, 0.65)",
+              borderRadius: "20px",
+              padding: "2rem",
+              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.55)",
             }}
           >
             <EditableSlideCanvas
@@ -763,17 +641,17 @@ export function SlideStudioEditor({
               selectedElementId={selectedElementId}
               onSelectElement={(id) => {
                 setSelectedElementId(id);
-                setInspectorTab("elements");
+                setInspectorTab("media");
               }}
             />
           </div>
         </div>
 
-        {/* 3. RIGHT SIDEBAR: INSPECTOR PANEL (TEXT, MULTI-PHOTO GALLERY, CARDS & HOTSPOTS) */}
+        {/* 3. RIGHT SIDEBAR: INSPECTOR PANEL (1. DESIGN & LAYOUT | 2. TEXT & NOTES | 3. MEDIA & CARDS) */}
         <div
           style={{
-            background: "#0B1120",
-            borderLeft: "1px solid #1E293B",
+            background: "#161B26",
+            borderLeft: "1px solid #2E374B",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
@@ -784,63 +662,191 @@ export function SlideStudioEditor({
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr 1fr",
-              borderBottom: "1px solid #1E293B",
-              background: "#0F172A",
+              borderBottom: "1px solid #2E374B",
+              background: "#1E2533",
             }}
           >
             <button
               type="button"
-              onClick={() => setInspectorTab("text")}
+              onClick={() => setInspectorTab("design")}
               style={{
-                background: inspectorTab === "text" ? "#1E293B" : "transparent",
-                color: inspectorTab === "text" ? "#00F5D4" : "#94A3B8",
+                background: inspectorTab === "design" ? "#161B26" : "transparent",
+                color: inspectorTab === "design" ? "#F5B800" : "#94A3B8",
                 border: "none",
-                borderBottom: inspectorTab === "text" ? "2px solid #00F5D4" : "2px solid transparent",
-                padding: "0.75rem 0.4rem",
-                fontSize: "0.76rem",
-                fontWeight: 900,
+                borderBottom: inspectorTab === "design" ? "2px solid #F5B800" : "2px solid transparent",
+                padding: "0.75rem 0.35rem",
+                fontSize: "0.73rem",
+                fontWeight: 800,
                 cursor: "pointer",
               }}
             >
-              1. Text &amp; Notes
+              1. Design &amp; Layout
+            </button>
+            <button
+              type="button"
+              onClick={() => setInspectorTab("text")}
+              style={{
+                background: inspectorTab === "text" ? "#161B26" : "transparent",
+                color: inspectorTab === "text" ? "#F5B800" : "#94A3B8",
+                border: "none",
+                borderBottom: inspectorTab === "text" ? "2px solid #F5B800" : "2px solid transparent",
+                padding: "0.75rem 0.35rem",
+                fontSize: "0.73rem",
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              2. Text &amp; Notes
             </button>
             <button
               type="button"
               onClick={() => setInspectorTab("media")}
               style={{
-                background: inspectorTab === "media" ? "#1E293B" : "transparent",
-                color: inspectorTab === "media" ? "#38BDF8" : "#94A3B8",
+                background: inspectorTab === "media" ? "#161B26" : "transparent",
+                color: inspectorTab === "media" ? "#F5B800" : "#94A3B8",
                 border: "none",
-                borderBottom: inspectorTab === "media" ? "2px solid #38BDF8" : "2px solid transparent",
-                padding: "0.75rem 0.4rem",
-                fontSize: "0.76rem",
-                fontWeight: 900,
+                borderBottom: inspectorTab === "media" ? "2px solid #F5B800" : "2px solid transparent",
+                padding: "0.75rem 0.35rem",
+                fontSize: "0.73rem",
+                fontWeight: 800,
                 cursor: "pointer",
               }}
             >
-              2. Photos ({1 + (currentSlide.galleryImages?.length || 0)})
-            </button>
-            <button
-              type="button"
-              onClick={() => setInspectorTab("elements")}
-              style={{
-                background: inspectorTab === "elements" ? "#1E293B" : "transparent",
-                color: inspectorTab === "elements" ? "#FBBF24" : "#94A3B8",
-                border: "none",
-                borderBottom: inspectorTab === "elements" ? "2px solid #FBBF24" : "2px solid transparent",
-                padding: "0.75rem 0.4rem",
-                fontSize: "0.76rem",
-                fontWeight: 900,
-                cursor: "pointer",
-              }}
-            >
-              3. Cards ({currentSlide.cards.length + currentSlide.hotspots.length})
+              3. Media &amp; Cards
             </button>
           </div>
 
           {/* Inspector Scroll Body */}
           <div style={{ flex: 1, overflowY: "auto", padding: "1.1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {/* TAB 1: SLIDE HEADLINES & SPEAKER NOTES */}
+            {/* TAB 1: DESIGN & LAYOUT (Theme, Layout Template, Typography Font/Size, Alignment, Animation) */}
+            {inspectorTab === "design" && (
+              <>
+                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Palette size={14} /> Slide Color Theme
+                  </div>
+                  <select
+                    value={currentSlide.theme}
+                    onChange={(e) => updateCurrentSlide({ theme: e.target.value as SlideColorTheme })}
+                    style={{ width: "100%", padding: "0.55rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.82rem", fontWeight: 700 }}
+                  >
+                    <option value="robobee-dark">RoboBEE Dark Studio (#161B26 / #F5B800)</option>
+                    <option value="daylight-studio">Daylight Studio (Projector High-Contrast Light)</option>
+                    <option value="electric-indigo">Electric Indigo</option>
+                    <option value="arduino-teal">Arduino Teal</option>
+                    <option value="cyber-blueprint">Cyber Blueprint</option>
+                  </select>
+                </div>
+
+                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Layout size={14} /> Slide Layout Template
+                  </div>
+                  <select
+                    value={currentSlide.layout}
+                    onChange={(e) => updateCurrentSlide({ layout: e.target.value as EditableSlide["layout"] })}
+                    style={{ width: "100%", padding: "0.55rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.82rem", fontWeight: 700 }}
+                  >
+                    <option value="hero-title">Hero Title Banner</option>
+                    <option value="split-media">Split Media + Cards</option>
+                    <option value="interactive-grid">Interactive Bento Grid</option>
+                    <option value="timeline-stepper">120-Minute Timeline Stepper</option>
+                    <option value="interactive-hotspot">Hardware Hotspot Pins</option>
+                    <option value="photo-gallery">Multi-Photo Gallery</option>
+                  </select>
+                </div>
+
+                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Type size={14} /> Typography &amp; Alignment
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
+                      Font Family
+                    </label>
+                    <select
+                      value={currentSlide.fontFamily || "sans"}
+                      onChange={(e) => updateCurrentSlide({ fontFamily: e.target.value as EditableSlide["fontFamily"] })}
+                      style={{ width: "100%", padding: "0.5rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.8rem" }}
+                    >
+                      <option value="sans">Inter Sans (Clean UI)</option>
+                      <option value="display">Space Display (Headlines)</option>
+                      <option value="mono">JetBrains Mono (Code &amp; Schematics)</option>
+                      <option value="serif">Editorial Serif</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.5rem", alignItems: "end" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
+                        Headline Size
+                      </label>
+                      <select
+                        value={currentSlide.titleSize || "standard"}
+                        onChange={(e) => updateCurrentSlide({ titleSize: e.target.value as EditableSlide["titleSize"] })}
+                        style={{ width: "100%", padding: "0.5rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.8rem" }}
+                      >
+                        <option value="compact">Compact</option>
+                        <option value="standard">Standard</option>
+                        <option value="large">Large</option>
+                        <option value="hero">Hero XL</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: "inline-flex", background: "#161B26", borderRadius: "8px", border: "1px solid #2E374B", overflow: "hidden" }}>
+                      <button
+                        type="button"
+                        onClick={() => updateCurrentSlide({ textAlign: "left" })}
+                        style={{
+                          background: currentSlide.textAlign !== "center" ? "#F5B800" : "transparent",
+                          color: currentSlide.textAlign !== "center" ? "#161B26" : "#CBD5E1",
+                          border: "none",
+                          padding: "0.5rem 0.65rem",
+                          cursor: "pointer",
+                        }}
+                        title="Align Left"
+                      >
+                        <AlignLeft size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateCurrentSlide({ textAlign: "center" })}
+                        style={{
+                          background: currentSlide.textAlign === "center" ? "#F5B800" : "transparent",
+                          color: currentSlide.textAlign === "center" ? "#161B26" : "#CBD5E1",
+                          border: "none",
+                          padding: "0.5rem 0.65rem",
+                          cursor: "pointer",
+                        }}
+                        title="Align Center"
+                      >
+                        <AlignCenter size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Sparkles size={14} /> Slide Transition Animation
+                  </div>
+                  <select
+                    value={currentSlide.animation || "fade-up"}
+                    onChange={(e) => updateCurrentSlide({ animation: e.target.value as EditableSlide["animation"] })}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.8rem" }}
+                  >
+                    <option value="fade-up">Fade &amp; Rise</option>
+                    <option value="zoom-in">Keynote Zoom</option>
+                    <option value="slide-right">Slide Glide</option>
+                    <option value="cyber-glow">Subtle Highlight</option>
+                    <option value="none">Instant (No Animation)</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            {/* TAB 2: SLIDE HEADLINES & SPEAKER NOTES */}
             {inspectorTab === "text" && (
               <>
                 <div>
@@ -851,7 +857,7 @@ export function SlideStudioEditor({
                     type="text"
                     value={currentSlide.badge}
                     onChange={(e) => updateCurrentSlide({ badge: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#0F172A", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.84rem" }}
+                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.84rem" }}
                   />
                 </div>
 
@@ -863,7 +869,7 @@ export function SlideStudioEditor({
                     rows={2}
                     value={currentSlide.title}
                     onChange={(e) => updateCurrentSlide({ title: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#0F172A", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.9rem", fontWeight: 700 }}
+                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.9rem", fontWeight: 700 }}
                   />
                 </div>
 
@@ -875,7 +881,7 @@ export function SlideStudioEditor({
                     rows={3}
                     value={currentSlide.subtitle}
                     onChange={(e) => updateCurrentSlide({ subtitle: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#0F172A", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.84rem" }}
+                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.84rem" }}
                   />
                 </div>
 
@@ -888,41 +894,41 @@ export function SlideStudioEditor({
                       type="text"
                       value={currentSlide.ctaText || ""}
                       onChange={(e) => updateCurrentSlide({ ctaText: e.target.value })}
-                      placeholder="e.g. Launch Class Engine ➔"
-                      style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#0F172A", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.84rem" }}
+                      placeholder="e.g. Begin 120-Minute Session ->"
+                      style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.84rem" }}
                     />
                   </div>
                 )}
 
                 <div>
-                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#FBBF24", marginBottom: "0.3rem" }}>
+                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.3rem" }}>
                     Instructor Speaker Notes (Shown in Presenter Dock)
                   </label>
                   <textarea
                     rows={5}
                     value={currentSlide.speakerNotes}
                     onChange={(e) => updateCurrentSlide({ speakerNotes: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#0F172A", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.82rem", lineHeight: 1.5 }}
+                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.82rem", lineHeight: 1.5 }}
                   />
                 </div>
               </>
             )}
 
-            {/* TAB 2: PRIMARY PHOTO & MULTI-IMAGE GALLERY */}
+            {/* TAB 3: MEDIA, GALLERY, CARDS & HOTSPOTS */}
             {inspectorTab === "media" && (
               <>
-                <div style={{ background: "#0F172A", border: "1px solid #1E293B", borderRadius: "12px", padding: "0.9rem" }}>
-                  <div style={{ fontSize: "0.78rem", fontWeight: 900, color: "#38BDF8", marginBottom: "0.5rem" }}>
-                    Primary Slide Photo / Diagram
+                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "12px", padding: "0.9rem" }}>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 900, color: "#F5B800", marginBottom: "0.5rem" }}>
+                    Primary Slide Photo / Local SVG Diagram
                   </div>
                   <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
-                    Image URL or SVG Path
+                    Image URL or Local SVG Path (/illustrations/*.svg)
                   </label>
                   <input
                     type="text"
                     value={currentSlide.heroImage}
                     onChange={(e) => updateCurrentSlide({ heroImage: e.target.value })}
-                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.8rem", marginBottom: "0.5rem" }}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.8rem", marginBottom: "0.5rem" }}
                   />
 
                   <label
@@ -930,9 +936,9 @@ export function SlideStudioEditor({
                       display: "inline-flex",
                       alignItems: "center",
                       gap: "0.4rem",
-                      background: "#1E293B",
-                      color: "#00F5D4",
-                      border: "1px solid #00F5D4",
+                      background: "#161B26",
+                      color: "#F5B800",
+                      border: "1px solid #2E374B",
                       borderRadius: "6px",
                       padding: "0.38rem 0.7rem",
                       fontSize: "0.75rem",
@@ -951,13 +957,13 @@ export function SlideStudioEditor({
                   </label>
 
                   <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
-                    Caption Bar Text
+                    Caption Bar Text (Labeled Reference Illustration / Photo)
                   </label>
                   <input
                     type="text"
                     value={currentSlide.imageCaption}
                     onChange={(e) => updateCurrentSlide({ imageCaption: e.target.value })}
-                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.8rem" }}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.8rem" }}
                   />
                 </div>
 
@@ -970,9 +976,9 @@ export function SlideStudioEditor({
                     type="button"
                     onClick={handleAddGalleryPhoto}
                     style={{
-                      background: "#38BDF8",
-                      color: "#090D16",
-                      border: "none",
+                      background: "#1E2533",
+                      color: "#F5B800",
+                      border: "1px solid #2E374B",
                       borderRadius: "6px",
                       padding: "0.32rem 0.65rem",
                       fontSize: "0.74rem",
@@ -991,14 +997,14 @@ export function SlideStudioEditor({
                   <div
                     key={img.id}
                     style={{
-                      background: "#0F172A",
-                      border: "1px solid #334155",
+                      background: "#1E2533",
+                      border: "1px solid #2E374B",
                       borderRadius: "10px",
                       padding: "0.8rem",
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                      <strong style={{ fontSize: "0.76rem", color: "#00F5D4" }}>Gallery Photo #{i + 2}</strong>
+                      <strong style={{ fontSize: "0.76rem", color: "#F5B800" }}>Gallery Photo #{i + 2}</strong>
                       <button
                         type="button"
                         onClick={() => handleDeleteGalleryPhoto(img.id)}
@@ -1012,15 +1018,15 @@ export function SlideStudioEditor({
                       value={img.url}
                       onChange={(e) => handleUpdateGalleryPhoto(img.id, { url: e.target.value })}
                       placeholder="Image URL"
-                      style={{ width: "100%", padding: "0.45rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.78rem", marginBottom: "0.4rem" }}
+                      style={{ width: "100%", padding: "0.45rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.78rem", marginBottom: "0.4rem" }}
                     />
                     <label
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "0.3rem",
-                        background: "#1E293B",
-                        color: "#38BDF8",
+                        background: "#161B26",
+                        color: "#E2E8F0",
                         borderRadius: "6px",
                         padding: "0.28rem 0.55rem",
                         fontSize: "0.72rem",
@@ -1042,26 +1048,22 @@ export function SlideStudioEditor({
                       value={img.caption}
                       onChange={(e) => handleUpdateGalleryPhoto(img.id, { caption: e.target.value })}
                       placeholder="Photo caption"
-                      style={{ width: "100%", padding: "0.45rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.78rem" }}
+                      style={{ width: "100%", padding: "0.45rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.78rem" }}
                     />
                   </div>
                 ))}
-              </>
-            )}
 
-            {/* TAB 3: CARDS & HOTSPOT PINS */}
-            {inspectorTab === "elements" && (
-              <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.8rem", fontWeight: 900, color: "#00F5D4" }}>
+                {/* Slide Cards & Hotspot Pins */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
+                  <span style={{ fontSize: "0.8rem", fontWeight: 900, color: "#F5B800" }}>
                     Slide Cards ({currentSlide.cards.length})
                   </span>
                   <button
                     type="button"
                     onClick={handleAddCard}
                     style={{
-                      background: "#00F5D4",
-                      color: "#090D16",
+                      background: "#F5B800",
+                      color: "#161B26",
                       border: "none",
                       borderRadius: "6px",
                       padding: "0.28rem 0.6rem",

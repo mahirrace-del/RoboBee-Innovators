@@ -5,6 +5,8 @@ import Link from "next/link";
 import styles from "./curriculum.module.css";
 import {
   ALL_ROBOTICS_LESSONS,
+  COURSE_SPACES,
+  CourseTier,
   RoboticsLesson,
   ClassStatus,
 } from "@/lib/curriculumData";
@@ -13,13 +15,9 @@ import {
   calculateScheduleProgression,
 } from "@/lib/scheduleAttendance";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
-import {
-  THEME_PALETTE_CONFIG,
-  PresentationMediaFrame,
-} from "@/components/curriculum/Class1WorkshopDeck";
+import { PresentationMediaFrame } from "@/components/curriculum/Class1WorkshopDeck";
 import {
   EditableClassDeck,
-  ClassTrackCategory,
   loadDecksFromStorage,
   syncDecksFromFirestore,
 } from "@/lib/slideStudioStore";
@@ -32,37 +30,38 @@ import {
   Lock,
   CheckCircle,
   Clock,
-  Eye,
   BookOpen,
   Tv,
   Radio,
-  Sparkles,
   Calendar,
   Play,
-  Compass,
   Cpu,
   Search,
-  Filter,
+  Cloud,
+  HardDrive,
+  X,
+  Wrench,
+  Code2,
 } from "lucide-react";
 
 export default function MemberCurriculumPage() {
   const { user, userData } = useAuth();
 
-  // Multi-Class Deck Store (Class 01, Class 02, Class 03, Class 04 + Custom Decks)
+  // All 36 Canonical Lessons + Any Custom Instructor Decks
   const [decks, setDecks] = useState<EditableClassDeck[]>([]);
-  const [selectedPreviewDeckId, setSelectedPreviewDeckId] =
-    useState<string>("beg-01");
 
-  // Search & Track Filter
+  // Course Pathway Filter ('beginner' default so students immediately see Beginner 01–10, or switch across all 4 courses)
+  const [courseFilter, setCourseFilter] = useState<"ALL" | CourseTier>("beginner");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [trackFilter, setTrackFilter] = useState<"ALL" | ClassTrackCategory>(
-    "ALL"
-  );
 
   // Class status tracking
   const [classStatuses, setClassStatuses] = useState<{
     [id: string]: ClassStatus;
   }>({
+    "exp-01": "published",
+    "exp-02": "published",
+    "exp-03": "published",
+    "exp-04": "published",
     "beg-01": "published",
     "beg-02": "published",
     "beg-03": "published",
@@ -73,9 +72,11 @@ export default function MemberCurriculumPage() {
   const [completedClasses, setCompletedClasses] = useState<{
     [classId: string]: boolean;
   }>({});
-  const [userXp, setUserXp] = useState<number>(userData?.xp || 200);
+  const userXp = userData?.xp || 200;
 
-  // Active Projector & Hardware Lab Drawer states
+  // Active Student Lesson Workbench Modal, Slide Deck, and Hardware Simulator Drawer
+  const [activeLessonDeck, setActiveLessonDeck] =
+    useState<EditableClassDeck | null>(null);
   const [projectorDeck, setProjectorDeck] = useState<EditableClassDeck | null>(
     null
   );
@@ -165,131 +166,167 @@ export default function MemberCurriculumPage() {
     );
   };
 
+  const resolveDeckCourseId = (deck: EditableClassDeck): CourseTier => {
+    if (deck.courseId) return deck.courseId;
+    if (deck.id.startsWith("exp-")) return "explorer";
+    if (deck.id.startsWith("int-")) return "intermediate";
+    if (deck.id.startsWith("adv-")) return "advanced";
+    return "beginner";
+  };
+
   const completedCount = Object.keys(completedClasses).length;
-  const totalSlidesAcrossAllClasses = decks.reduce(
-    (acc, d) => acc + d.slides.length,
-    0
-  );
 
   const filteredDecks = decks.filter((d) => {
-    const matchesTrack = trackFilter === "ALL" || d.track === trackFilter;
+    const cId = resolveDeckCourseId(d);
+    const matchesCourse = courseFilter === "ALL" || cId === courseFilter;
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch =
       !q ||
       d.classCode.toLowerCase().includes(q) ||
       d.title.toLowerCase().includes(q) ||
-      d.subtitle.toLowerCase().includes(q) ||
-      d.track.toLowerCase().includes(q);
-    return matchesTrack && matchesSearch;
+      d.subtitle.toLowerCase().includes(q);
+    return matchesCourse && matchesSearch;
   });
 
-  const activePreviewDeck =
-    decks.find((d) => d.id === selectedPreviewDeckId) || decks[0];
+  const activeLessonRecord = activeLessonDeck
+    ? resolveLessonForDeck(activeLessonDeck)
+    : null;
 
   return (
-    <div className={styles.pageContainer}>
-      {/* Hero Header */}
-      <div className={styles.heroHeader}>
-        <div className={styles.heroTopRow}>
-          <div className={styles.heroBadge}>
-            <Sparkles size={14} />
-            <span>RoboBEE Innovators Academy</span>
+    <div
+      className={styles.pageContainer}
+      style={{
+        background: "#161B26",
+        color: "#FFFFFF",
+        minHeight: "100vh",
+        padding: "1.75rem",
+      }}
+    >
+      {/* Editorial Engineering Student Header */}
+      <div
+        style={{
+          background: "#1E2533",
+          border: "1px solid #2E374B",
+          borderRadius: "14px",
+          padding: "1.5rem",
+          marginBottom: "1.5rem",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "0.75rem",
+            marginBottom: "0.85rem",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+            <span
+              style={{
+                padding: "0.25rem 0.7rem",
+                borderRadius: "6px",
+                background: "rgba(107, 15, 36, 0.45)",
+                border: "1px solid #6B0F24",
+                color: "#F5B800",
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+              }}
+            >
+              ROBOBEE INNOVATORS ACADEMY • STUDENT PORTAL
+            </span>
+
+            {/* Honest Cloud vs Local State Persistence Badge */}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                padding: "0.25rem 0.65rem",
+                borderRadius: "6px",
+                background: "#161B26",
+                border: "1px solid #2E374B",
+                color: user ? "#10B981" : "#F59E0B",
+                fontSize: "0.72rem",
+                fontWeight: 700,
+              }}
+            >
+              {user ? <Cloud size={13} /> : <HardDrive size={13} />}
+              {user
+                ? "Saved to Account (Cloud)"
+                : "Saved Locally in Browser — Sign in to sync progress"}
+            </span>
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              flexWrap: "wrap",
-            }}
-          >
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", flexWrap: "wrap" }}>
             <Link
               href="/dashboard/curriculum/reference"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "0.45rem",
-                background: "#6B0F24",
-                border: "1px solid #F5B800",
-                color: "#ffffff",
-                padding: "0.4rem 0.95rem",
-                borderRadius: "30px",
-                fontSize: "0.85rem",
+                gap: "0.4rem",
+                background: "#161B26",
+                border: "1px solid #2E374B",
+                color: "#E2E8F0",
+                padding: "0.45rem 0.85rem",
+                borderRadius: "8px",
+                fontSize: "0.8rem",
                 fontWeight: 700,
                 textDecoration: "none",
-                boxShadow: "0 2px 6px rgba(107, 15, 36, 0.4)",
               }}
             >
-              <BookOpen size={16} color="#F5B800" />
-              <span>Arduino &amp; Robotics Field Guide ➔</span>
+              <BookOpen size={15} color="#F5B800" />
+              <span>Arduino &amp; Robotics Field Guide</span>
             </Link>
+
             <div
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: "0.65rem",
-                background: "rgba(255, 255, 255, 0.05)",
-                padding: "0.4rem 1rem",
-                borderRadius: "30px",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                gap: "0.45rem",
+                background: "#161B26",
+                padding: "0.45rem 0.85rem",
+                borderRadius: "8px",
+                border: "1px solid #2E374B",
               }}
             >
-              <Award size={18} color="#F5B800" />
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: 800,
-                  color: "#F5B800",
-                }}
-              >
+              <Award size={16} color="#F5B800" />
+              <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "#F5B800" }}>
                 {userXp} RoboXP
               </span>
             </div>
           </div>
         </div>
 
-        <h1 className={styles.heroTitle}>
-          Interactive Curriculum Hub &amp; Hardware Simulator Lab
+        <h1 style={{ margin: "0 0 0.4rem 0", fontSize: "1.65rem", fontWeight: 800, color: "#FFFFFF" }}>
+          Robotics &amp; Engineering Curriculum Hub
         </h1>
-        <p className={styles.heroSubtitle}>
-          <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em>
-          <br />
-          Explore all interactive workshop decks — including{" "}
-          <strong>
-            Class 01: Introduction to Robotics &amp; Future Engineering
-          </strong>{" "}
-          and{" "}
-          <strong>
-            Class 02: Basic Electronics, Breadboards, LEDs &amp; Ohm&apos;s Law
-          </strong>{" "}
-          — complete with live Keynote slides, Virtual Breadboard &amp; Ohm&apos;s
-          Law simulators, C++ code labs, and exit checks!
+        <p style={{ margin: "0 0 1.15rem 0", color: "#94A3B8", fontSize: "0.9rem", lineHeight: 1.55, maxWidth: "820px" }}>
+          <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em> — Explore 36 proposed 120-minute (2-hour) hands-on lessons across 4 progressive courses. Click <strong style={{ color: "#FFFFFF" }}>Start Lesson</strong> on any unlocked class to open its 12-slide presentation, wiring guide, C++ code lab, interactive circuit simulator, and 4-question Exit Check.
         </p>
 
-        <div className={styles.heroStats}>
-          <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue}>{decks.length} Classes</span>
-            <span className={styles.heroStatLabel}>Curriculum Library</span>
+        {/* Accurate 36-Lesson Student Stats Row */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: "0.85rem",
+          }}
+        >
+          <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF" }}>36 Total Lessons</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>4 Proposed Courses (4 + 10 + 10 + 12)</div>
           </div>
-          <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue} style={{ color: "#38bdf8" }}>
-              {totalSlidesAcrossAllClasses} Slides
-            </span>
-            <span className={styles.heroStatLabel}>
-              Interactive Presentations
-            </span>
+          <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#F5B800" }}>120 Min / Class</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>2-Hour Workshop Standard (72h Total)</div>
           </div>
-          <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue} style={{ color: "#10b981" }}>
-              {completedCount}
-            </span>
-            <span className={styles.heroStatLabel}>Completed Badges</span>
-          </div>
-          <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue} style={{ color: "#F5B800" }}>
-              4 Palettes
-            </span>
-            <span className={styles.heroStatLabel}>Dynamic Keynote Themes</span>
+          <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#10B981" }}>{completedCount} Completed</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>Exit Checks Submitted</div>
           </div>
         </div>
       </div>
@@ -298,22 +335,17 @@ export default function MemberCurriculumPage() {
       {(progression.activeSession || progression.nextSession) && (
         <div
           style={{
-            background: progression.activeSession
-              ? "linear-gradient(135deg, rgba(107, 15, 36, 0.55), rgba(22, 27, 38, 0.95))"
-              : "rgba(22, 27, 38, 0.85)",
+            background: "#1E2533",
             border: "1px solid",
-            borderColor: progression.activeSession
-              ? "#F5B800"
-              : "rgba(255, 255, 255, 0.1)",
-            borderRadius: "14px",
-            padding: "1.15rem 1.5rem",
-            marginBottom: "2rem",
+            borderColor: progression.activeSession ? "#F5B800" : "#2E374B",
+            borderRadius: "12px",
+            padding: "1rem 1.25rem",
+            marginBottom: "1.5rem",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
             gap: "1rem",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
           }}
         >
           <div>
@@ -322,7 +354,7 @@ export default function MemberCurriculumPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: "0.5rem",
-                marginBottom: "0.35rem",
+                marginBottom: "0.3rem",
               }}
             >
               {progression.activeSession ? (
@@ -331,12 +363,12 @@ export default function MemberCurriculumPage() {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "0.35rem",
-                    background: "rgba(239, 68, 68, 0.2)",
-                    color: "#ef4444",
+                    background: "rgba(239, 68, 68, 0.18)",
+                    color: "#EF4444",
                     border: "1px solid rgba(239, 68, 68, 0.4)",
-                    padding: "0.25rem 0.65rem",
-                    borderRadius: "12px",
-                    fontSize: "0.75rem",
+                    padding: "0.2rem 0.6rem",
+                    borderRadius: "6px",
+                    fontSize: "0.72rem",
                     fontWeight: 800,
                   }}
                 >
@@ -348,98 +380,128 @@ export default function MemberCurriculumPage() {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "0.35rem",
-                    background: "rgba(245, 184, 0, 0.15)",
+                    background: "rgba(245, 184, 0, 0.14)",
                     color: "#F5B800",
                     border: "1px solid rgba(245, 184, 0, 0.3)",
-                    padding: "0.25rem 0.65rem",
-                    borderRadius: "12px",
-                    fontSize: "0.75rem",
+                    padding: "0.2rem 0.6rem",
+                    borderRadius: "6px",
+                    fontSize: "0.72rem",
                     fontWeight: 800,
                   }}
                 >
                   <Calendar size={12} /> Next Scheduled Class
                 </span>
               )}
-              <span style={{ fontSize: "0.82rem", color: "#cbd5e1" }}>
-                📅 {(progression.activeSession || progression.nextSession)?.date}{" "}
-                &bull;{" "}
-                {(progression.activeSession || progression.nextSession)?.time ||
-                  "15:30"}
+              <span style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
+                {(progression.activeSession || progression.nextSession)?.date} &bull;{" "}
+                {(progression.activeSession || progression.nextSession)?.time || "15:30"}
               </span>
             </div>
-            <div
-              style={{ fontWeight: 800, fontSize: "1.15rem", color: "#ffffff" }}
-            >
-              {
-                (progression.activeSession || progression.nextSession)
-                  ?.lessonCode
-              }
-              : {(progression.activeSession || progression.nextSession)?.title}
-            </div>
-            <div
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                marginTop: "0.2rem",
-              }}
-            >
-              📍{" "}
-              {(progression.activeSession || progression.nextSession)
-                ?.location || "RoboBEE Lab"}
+            <div style={{ fontWeight: 800, fontSize: "1.05rem", color: "#FFFFFF" }}>
+              {(progression.activeSession || progression.nextSession)?.lessonCode}:{" "}
+              {(progression.activeSession || progression.nextSession)?.title}
             </div>
           </div>
 
           <Link
             href="/dashboard/attendance"
             style={{
-              background: "#F5B800",
-              color: "#161B26",
-              padding: "0.65rem 1.25rem",
+              background: "#6B0F24",
+              border: "1px solid #F5B800",
+              color: "#FFFFFF",
+              padding: "0.55rem 1rem",
               borderRadius: "8px",
               fontWeight: 800,
-              fontSize: "0.9rem",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
+              fontSize: "0.82rem",
               textDecoration: "none",
             }}
           >
             {progression.activeSession
-              ? "Check In to Active Class ➔"
-              : "View Schedule & Attendance ➔"}
+              ? "Check In to Active Class"
+              : "View Schedule & Attendance"}
           </Link>
         </div>
       )}
 
-      {/* Search & Track Filter Bar */}
+      {/* 4 Course Pathway Tabs + Search Bar */}
       <div
         style={{
-          background: "#0B1120",
-          border: "1px solid #1E293B",
-          borderRadius: "18px",
-          padding: "1rem 1.25rem",
-          marginBottom: "1.75rem",
+          background: "#1E2533",
+          border: "1px solid #2E374B",
+          borderRadius: "12px",
+          padding: "0.85rem 1rem",
+          marginBottom: "1.25rem",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           flexWrap: "wrap",
-          gap: "1rem",
+          gap: "0.85rem",
         }}
       >
-        <div
-          style={{
-            position: "relative",
-            minWidth: "240px",
-            flex: "1 1 280px",
-            maxWidth: "380px",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "wrap" }}>
+          {COURSE_SPACES.map((cs) => {
+            const count = decks.filter((d) => resolveDeckCourseId(d) === cs.id).length;
+            const isSelected = courseFilter === cs.id;
+            return (
+              <button
+                key={cs.id}
+                type="button"
+                onClick={() => setCourseFilter(cs.id)}
+                style={{
+                  padding: "0.48rem 0.85rem",
+                  borderRadius: "8px",
+                  border: `1px solid ${isSelected ? "#F5B800" : "#2E374B"}`,
+                  background: isSelected ? "#6B0F24" : "#161B26",
+                  color: isSelected ? "#FFFFFF" : "#94A3B8",
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                }}
+              >
+                <span>{cs.title}</span>
+                <span
+                  style={{
+                    padding: "0.1rem 0.4rem",
+                    borderRadius: "999px",
+                    background: isSelected ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
+                    color: isSelected ? "#F5B800" : "#94A3B8",
+                    fontSize: "0.7rem",
+                  }}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => setCourseFilter("ALL")}
+            style={{
+              padding: "0.48rem 0.85rem",
+              borderRadius: "8px",
+              border: `1px solid ${courseFilter === "ALL" ? "#F5B800" : "#2E374B"}`,
+              background: courseFilter === "ALL" ? "#6B0F24" : "#161B26",
+              color: courseFilter === "ALL" ? "#FFFFFF" : "#94A3B8",
+              fontSize: "0.78rem",
+              fontWeight: 800,
+              cursor: "pointer",
+            }}
+          >
+            All 36 Classes
+          </button>
+        </div>
+
+        <div style={{ position: "relative", minWidth: "240px", flex: "0 1 300px" }}>
           <Search
-            size={15}
-            color="#64748B"
+            size={14}
+            color="#94A3B8"
             style={{
               position: "absolute",
-              left: "12px",
+              left: "11px",
               top: "50%",
               transform: "translateY(-50%)",
             }}
@@ -448,221 +510,178 @@ export default function MemberCurriculumPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Class 01, Class 02, Breadboard, Ohm's Law..."
+            placeholder="Search class code, topic, sensor..."
             style={{
               width: "100%",
-              padding: "0.55rem 0.75rem 0.55rem 2.2rem",
-              borderRadius: "10px",
-              background: "#0F172A",
-              border: "1px solid #334155",
-              color: "#F8FAFC",
-              fontSize: "0.85rem",
+              padding: "0.48rem 0.75rem 0.48rem 2.1rem",
+              borderRadius: "8px",
+              background: "#161B26",
+              border: "1px solid #2E374B",
+              color: "#FFFFFF",
+              fontSize: "0.8rem",
             }}
           />
         </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.4rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <Filter size={14} color="#38BDF8" />
-          {(
-            [
-              "ALL",
-              "Foundation Track",
-              "Hardware & Sensors",
-              "Combat & Autonomous Bots",
-            ] as const
-          ).map((track) => {
-            const active = trackFilter === track;
-            return (
-              <button
-                key={track}
-                type="button"
-                onClick={() => setTrackFilter(track)}
-                style={{
-                  padding: "0.42rem 0.85rem",
-                  borderRadius: "999px",
-                  border: `1px solid ${
-                    active ? "#00F5D4" : "rgba(255,255,255,0.12)"
-                  }`,
-                  background: active
-                    ? "rgba(0, 245, 212, 0.16)"
-                    : "rgba(255,255,255,0.04)",
-                  color: active ? "#00F5D4" : "#94A3B8",
-                  fontSize: "0.76rem",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
-              >
-                {track === "ALL" ? "All Tracks" : track}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
-      {/* MULTI-CLASS LIBRARY GRID */}
+      {/* Selected Course Pathway Description Banner */}
+      {courseFilter !== "ALL" && (() => {
+        const activeSpace = COURSE_SPACES.find((c) => c.id === courseFilter);
+        if (!activeSpace) return null;
+        return (
+          <div
+            style={{
+              background: "#1E2533",
+              border: "1px solid #2E374B",
+              borderLeft: "4px solid #F5B800",
+              borderRadius: "10px",
+              padding: "0.9rem 1.15rem",
+              marginBottom: "1.25rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "0.75rem",
+            }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
+                <strong style={{ fontSize: "0.95rem", color: "#FFFFFF" }}>
+                  {activeSpace.title}
+                </strong>
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    fontWeight: 800,
+                    padding: "0.15rem 0.5rem",
+                    borderRadius: "6px",
+                    background: "rgba(245, 184, 0, 0.14)",
+                    color: "#F5B800",
+                  }}
+                >
+                  {activeSpace.badge}
+                </span>
+              </div>
+              <div style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
+                {activeSpace.description}
+              </div>
+            </div>
+            <div style={{ fontSize: "0.76rem", color: "#E2E8F0", fontWeight: 700 }}>
+              Recommended Hardware: <span style={{ color: "#94A3B8", fontWeight: 500 }}>{activeSpace.recommendedHardware}</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* DE-CLUTTERED 3-COLUMN STUDENT CLASS CARDS GRID (NO AUTOMATIC BOTTOM SLIDE DUMP) */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
-          gap: "1.4rem",
-          marginBottom: "2.25rem",
+          gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+          gap: "1.25rem",
         }}
       >
         {filteredDecks.map((deck) => {
           const status = classStatuses[deck.id] || deck.status || "published";
           const isLocked = status === "locked";
           const isCompleted = !!completedClasses[deck.id];
-          const isSelectedForPreview = activePreviewDeck?.id === deck.id;
+          const cId = resolveDeckCourseId(deck);
+          const space = COURSE_SPACES.find((c) => c.id === cId);
+          const proposedLabel = deck.proposedAudience || space?.badge || "Proposed • Classes 5–8";
 
           return (
             <div
               key={deck.id}
               style={{
-                background:
-                  "linear-gradient(160deg, #111827 0%, #0F172A 55%, #1E1B4B 100%)",
-                border: `2px solid ${
-                  isSelectedForPreview
-                    ? "#00F5D4"
-                    : "rgba(56, 189, 248, 0.28)"
-                }`,
-                borderRadius: "22px",
-                padding: "1.4rem",
+                background: "#1E2533",
+                border: "1px solid #2E374B",
+                borderRadius: "14px",
+                padding: "1.2rem",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
                 gap: "1rem",
-                opacity: isLocked ? 0.65 : 1,
-                boxShadow: isSelectedForPreview
-                  ? "0 20px 45px rgba(0, 245, 212, 0.18)"
-                  : "0 16px 35px rgba(0, 0, 0, 0.4)",
+                opacity: isLocked ? 0.68 : 1,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.85rem",
-                }}
-              >
-                {/* Badges Row */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                {/* 1.3.1: Maximum 2 Metadata Pills at Top of Card */}
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: "0.45rem",
+                    gap: "0.5rem",
                   }}
                 >
-                  <div
+                  <span
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.45rem",
-                      flexWrap: "wrap",
+                      padding: "0.24rem 0.65rem",
+                      borderRadius: "6px",
+                      background: "rgba(245, 184, 0, 0.14)",
+                      border: "1px solid rgba(245, 184, 0, 0.35)",
+                      color: "#F5B800",
+                      fontSize: "0.72rem",
+                      fontWeight: 800,
+                      letterSpacing: "0.04em",
                     }}
                   >
+                    {deck.classCode}
+                  </span>
+
+                  {isCompleted ? (
                     <span
                       style={{
-                        padding: "0.28rem 0.75rem",
-                        borderRadius: "999px",
-                        background: "rgba(0, 245, 212, 0.16)",
-                        border: "1px solid #00F5D4",
-                        color: "#00F5D4",
-                        fontSize: "0.74rem",
-                        fontWeight: 900,
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      {deck.classCode}
-                    </span>
-                    <span
-                      style={{
-                        padding: "0.25rem 0.65rem",
-                        borderRadius: "999px",
-                        background: "rgba(56, 189, 248, 0.14)",
-                        border: "1px solid rgba(56, 189, 248, 0.4)",
-                        color: "#38BDF8",
+                        padding: "0.24rem 0.65rem",
+                        borderRadius: "6px",
+                        background: "rgba(16, 185, 129, 0.16)",
+                        border: "1px solid rgba(16, 185, 129, 0.4)",
+                        color: "#10B981",
                         fontSize: "0.7rem",
                         fontWeight: 800,
-                      }}
-                    >
-                      {deck.track}
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                    }}
-                  >
-                    <span
-                      style={{
-                        padding: "0.25rem 0.65rem",
-                        borderRadius: "999px",
-                        background: "rgba(251, 191, 36, 0.15)",
-                        border: "1px solid #FBBF24",
-                        color: "#FBBF24",
-                        fontSize: "0.72rem",
-                        fontWeight: 900,
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: "0.3rem",
+                        gap: "0.25rem",
                       }}
                     >
-                      <Sparkles size={12} /> {deck.slides.length} Slides
+                      <CheckCircle size={12} /> Completed
                     </span>
-                    {isCompleted && (
-                      <span
-                        style={{
-                          padding: "0.25rem 0.65rem",
-                          borderRadius: "999px",
-                          background: "rgba(16, 185, 129, 0.2)",
-                          border: "1px solid #10B981",
-                          color: "#34D399",
-                          fontSize: "0.72rem",
-                          fontWeight: 800,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.25rem",
-                        }}
-                      >
-                        <CheckCircle size={12} /> Done
-                      </span>
-                    )}
-                  </div>
+                  ) : (
+                    <span
+                      style={{
+                        padding: "0.24rem 0.65rem",
+                        borderRadius: "6px",
+                        background: "#161B26",
+                        border: "1px solid #2E374B",
+                        color: "#94A3B8",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {proposedLabel}
+                    </span>
+                  )}
                 </div>
 
-                {/* Cover Thumbnail */}
+                {/* Clean Reference Illustration Thumbnail */}
                 <PresentationMediaFrame
                   src={deck.coverImage}
                   alt={deck.title}
-                  caption={`${deck.classCode} • ${deck.slides.length} Interactive Slides`}
-                  fallbackVariant={
-                    deck.id === "beg-02" ? "mcu" : "arduino"
-                  }
-                  accentColor="#00F5D4"
-                  height="185px"
+                  caption={`Reference Illustration • ${deck.slides.length} Slides`}
+                  fallbackVariant={deck.id === "beg-02" ? "mcu" : "arduino"}
+                  accentColor="#F5B800"
+                  height="168px"
                 />
 
-                {/* Title & Subtitle */}
+                {/* Title & Concise Promise */}
                 <div>
                   <h3
                     style={{
                       margin: "0 0 0.35rem 0",
-                      fontSize: "1.2rem",
-                      fontWeight: 900,
+                      fontSize: "1.08rem",
+                      fontWeight: 800,
                       color: "#FFFFFF",
-                      lineHeight: 1.25,
+                      lineHeight: 1.3,
                     }}
                   >
                     {deck.title}
@@ -670,9 +689,13 @@ export default function MemberCurriculumPage() {
                   <p
                     style={{
                       margin: 0,
-                      fontSize: "0.84rem",
-                      color: "#CBD5E1",
+                      fontSize: "0.82rem",
+                      color: "#94A3B8",
                       lineHeight: 1.5,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
                     }}
                   >
                     {deck.subtitle}
@@ -685,342 +708,297 @@ export default function MemberCurriculumPage() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    fontSize: "0.76rem",
+                    fontSize: "0.74rem",
                     color: "#94A3B8",
-                    paddingTop: "0.25rem",
-                    borderTop: "1px solid rgba(255,255,255,0.08)",
+                    paddingTop: "0.5rem",
+                    borderTop: "1px solid #2E374B",
                   }}
                 >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.3rem",
-                    }}
-                  >
-                    <Clock size={13} color="#00F5D4" /> {deck.durationMinutes}{" "}
-                    Mins
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <Clock size={13} color="#F5B800" /> 120 Mins (2-Hour Session)
                   </span>
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.3rem",
-                      color: "#FBBF24",
-                      fontWeight: 800,
-                    }}
-                  >
-                    <Award size={13} /> +{deck.xpReward || 100} RoboXP
+                  <span style={{ color: "#F5B800", fontWeight: 700 }}>
+                    +{deck.xpReward || 250} XP
                   </span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.55rem",
-                }}
-              >
-                {isLocked ? (
-                  <button
-                    type="button"
-                    disabled
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem 1rem",
-                      borderRadius: "12px",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      background: "rgba(255,255,255,0.05)",
-                      color: "#64748B",
-                      fontWeight: 800,
-                      cursor: "not-allowed",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "0.4rem",
-                    }}
-                  >
-                    <Lock size={15} /> Locked by Instructor
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProjectorInitialSlide(0);
-                        setProjectorDeck(deck);
-                      }}
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem 1rem",
-                        borderRadius: "12px",
-                        border: "none",
-                        background:
-                          "linear-gradient(135deg, #00F5D4 0%, #38BDF8 100%)",
-                        color: "#090D16",
-                        fontWeight: 900,
-                        fontSize: "0.88rem",
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "0.5rem",
-                        boxShadow: "0 10px 25px rgba(0, 245, 212, 0.25)",
-                      }}
-                    >
-                      <Tv size={16} /> Launch Live Projector (
-                      {deck.slides.length} Slides)
-                    </button>
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setHardwareLabDeck(deck)}
-                        style={{
-                          padding: "0.65rem 0.75rem",
-                          borderRadius: "10px",
-                          border: "1px solid #10B981",
-                          background: "rgba(16, 185, 129, 0.15)",
-                          color: "#34D399",
-                          fontWeight: 800,
-                          fontSize: "0.78rem",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.35rem",
-                        }}
-                      >
-                        <Cpu size={14} /> Open Hardware Lab
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPreviewDeckId(deck.id)}
-                        style={{
-                          padding: "0.65rem 0.75rem",
-                          borderRadius: "10px",
-                          border: "1px solid rgba(56, 189, 248, 0.4)",
-                          background: isSelectedForPreview
-                            ? "rgba(56, 189, 248, 0.22)"
-                            : "rgba(255,255,255,0.05)",
-                          color: "#38BDF8",
-                          fontWeight: 800,
-                          fontSize: "0.78rem",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.35rem",
-                        }}
-                      >
-                        <Eye size={14} /> Browse {deck.slides.length} Slides
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+              {/* 1.3.1 Member View: 1 Primary Button (Start Lesson if unlocked; disabled Locked by Instructor if locked) */}
+              {isLocked ? (
+                <button
+                  type="button"
+                  disabled
+                  style={{
+                    width: "100%",
+                    padding: "0.65rem 1rem",
+                    borderRadius: "8px",
+                    border: "1px solid #2E374B",
+                    background: "#161B26",
+                    color: "#64748B",
+                    fontWeight: 800,
+                    fontSize: "0.8rem",
+                    cursor: "not-allowed",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <Lock size={14} /> Locked by Instructor
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveLessonDeck(deck)}
+                  style={{
+                    width: "100%",
+                    padding: "0.65rem 1rem",
+                    borderRadius: "8px",
+                    border: "1px solid #F5B800",
+                    background: "#6B0F24",
+                    color: "#FFFFFF",
+                    fontWeight: 800,
+                    fontSize: "0.82rem",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.45rem",
+                  }}
+                >
+                  <Play size={14} color="#F5B800" /> Start Lesson
+                </button>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* INTERACTIVE SLIDE DECK PREVIEW FOR THE SELECTED CLASS */}
-      {activePreviewDeck && (
-        <section style={{ marginBottom: "2.5rem" }}>
+      {/* STUDENT LESSON & HARDWARE WORKBENCH MODAL (Opens ONLY when student clicks "Start Lesson") */}
+      {activeLessonDeck && activeLessonRecord && (
+        <div
+          onClick={() => setActiveLessonDeck(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(22, 27, 38, 0.90)",
+            backdropFilter: "blur(12px)",
+            zIndex: 99990,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.25rem",
+          }}
+        >
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
+              background: "#1E2533",
+              border: "1px solid #2E374B",
+              borderRadius: "16px",
+              width: "100%",
+              maxWidth: "1040px",
+              maxHeight: "90vh",
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "1rem",
-              marginBottom: "1.15rem",
+              flexDirection: "column",
+              overflow: "hidden",
+              boxShadow: "0 24px 64px rgba(0, 0, 0, 0.65)",
             }}
           >
-            <div>
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: "1.3rem",
-                  fontWeight: 900,
-                  color: "#FFFFFF",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                }}
-              >
-                <Compass size={20} color="#00F5D4" />
-                {activePreviewDeck.classCode}: {activePreviewDeck.title} (
-                {activePreviewDeck.slides.length} Interactive Slides)
-              </h3>
-              <p
-                style={{
-                  margin: "0.25rem 0 0 0",
-                  fontSize: "0.86rem",
-                  color: "#94A3B8",
-                }}
-              >
-                Click any slide below to launch the full-screen interactive
-                presentation directly at that topic, or open the{" "}
-                <strong>Hardware Lab &amp; Simulator</strong>.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setHardwareLabDeck(activePreviewDeck)}
+            {/* Modal Top Bar */}
+            <div
               style={{
-                padding: "0.6rem 1.1rem",
-                borderRadius: "10px",
-                border: "1px solid #10B981",
-                background: "rgba(16, 185, 129, 0.16)",
-                color: "#34D399",
-                fontWeight: 800,
-                fontSize: "0.84rem",
-                cursor: "pointer",
-                display: "inline-flex",
+                padding: "1rem 1.4rem",
+                background: "#161B26",
+                borderBottom: "1px solid #2E374B",
+                display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
-                gap: "0.4rem",
+                gap: "1rem",
+                flexWrap: "wrap",
               }}
             >
-              <Cpu size={15} /> Open {activePreviewDeck.classCode} Hardware Lab
-              &amp; Simulator
-            </button>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "1.1rem",
-            }}
-          >
-            {activePreviewDeck.slides.map((s, idx) => {
-              const palette = THEME_PALETTE_CONFIG[s.theme];
-              return (
-                <div
-                  key={s.id}
-                  style={{
-                    background: palette.canvasBg,
-                    border: `2px solid ${palette.cardBorder}`,
-                    borderRadius: "18px",
-                    padding: "1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    gap: "0.85rem",
-                    boxShadow: "0 12px 28px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "0.4rem",
-                        marginBottom: "0.65rem",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "0.72rem",
-                          fontWeight: 900,
-                          padding: "0.22rem 0.6rem",
-                          borderRadius: "999px",
-                          background: palette.badgeBg,
-                          color: palette.badgeText,
-                          letterSpacing: "0.06em",
-                        }}
-                      >
-                        SLIDE {s.numberLabel} • {palette.name.toUpperCase()}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "0.68rem",
-                          fontWeight: 800,
-                          color: palette.mutedColor,
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {s.layout}
-                      </span>
-                    </div>
-
-                    <div style={{ marginBottom: "0.75rem" }}>
-                      <PresentationMediaFrame
-                        src={s.heroImage}
-                        alt={s.title}
-                        caption={s.imageCaption}
-                        fallbackVariant={s.fallbackVariant || "arduino"}
-                        accentColor={palette.accentPrimary}
-                        height="160px"
-                      />
-                    </div>
-
-                    <h4
-                      style={{
-                        margin: "0 0 0.35rem 0",
-                        fontSize: "1.02rem",
-                        fontWeight: 900,
-                        color: palette.headingColor,
-                        lineHeight: 1.25,
-                      }}
-                    >
-                      {s.title}
-                    </h4>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "0.8rem",
-                        color: palette.bodyColor,
-                        lineHeight: 1.45,
-                      }}
-                    >
-                      {s.subtitle}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProjectorInitialSlide(idx);
-                      setProjectorDeck(activePreviewDeck);
-                    }}
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
+                  <span
                     style={{
-                      width: "100%",
-                      background: palette.isLight
-                        ? "#0F172A"
-                        : "rgba(255,255,255,0.14)",
-                      color: "#FFFFFF",
-                      border: `1px solid ${palette.accentPrimary}`,
-                      borderRadius: "10px",
-                      padding: "0.6rem 0.9rem",
-                      fontSize: "0.82rem",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "0.45rem",
+                      padding: "0.2rem 0.6rem",
+                      borderRadius: "6px",
+                      background: "rgba(245, 184, 0, 0.15)",
+                      color: "#F5B800",
+                      fontSize: "0.72rem",
+                      fontWeight: 800,
                     }}
                   >
-                    <Play size={14} /> Open Slide {s.numberLabel}
-                  </button>
+                    {activeLessonDeck.classCode}
+                  </span>
+                  <span style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: 700 }}>
+                    120-Minute Student Lesson &amp; Hardware Guide
+                  </span>
                 </div>
-              );
-            })}
+                <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: "#FFFFFF" }}>
+                  {activeLessonDeck.title}
+                </h2>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProjectorInitialSlide(0);
+                    setProjectorDeck(activeLessonDeck);
+                  }}
+                  style={{
+                    padding: "0.52rem 0.95rem",
+                    borderRadius: "8px",
+                    border: "1px solid #F5B800",
+                    background: "#6B0F24",
+                    color: "#FFFFFF",
+                    fontSize: "0.8rem",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <Tv size={14} color="#F5B800" /> Open 12-Slide Presentation
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setHardwareLabDeck(activeLessonDeck)}
+                  style={{
+                    padding: "0.52rem 0.95rem",
+                    borderRadius: "8px",
+                    border: "1px solid #2E374B",
+                    background: "#1E2533",
+                    color: "#E2E8F0",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <Cpu size={14} color="#F5B800" /> Interactive Circuit Simulator &amp; Exit Check
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveLessonDeck(null)}
+                  style={{
+                    padding: "0.45rem",
+                    borderRadius: "8px",
+                    border: "1px solid #2E374B",
+                    background: "transparent",
+                    color: "#94A3B8",
+                    cursor: "pointer",
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div style={{ padding: "1.4rem", overflowY: "auto", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              {/* Promise & 5-Segment 120-Minute Session Rhythm */}
+              <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1.1rem" }}>
+                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.35rem" }}>
+                  Today&apos;s Big Promise
+                </div>
+                <p style={{ margin: "0 0 0.9rem 0", fontSize: "0.92rem", color: "#E2E8F0", lineHeight: 1.55 }}>
+                  {activeLessonRecord.promise}
+                </p>
+
+                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                  120-Minute (2-Hour) Workshop Timeline
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: "0.6rem" }}>
+                  {activeLessonRecord.classRhythm.map((seg, i) => (
+                    <div key={i} style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "8px", padding: "0.65rem" }}>
+                      <div style={{ fontSize: "0.7rem", fontWeight: 800, color: "#F5B800" }}>
+                        Segment {i + 1} • {seg.minutes}m
+                      </div>
+                      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#FFFFFF", marginTop: "0.15rem" }}>
+                        {seg.segment}
+                      </div>
+                      <div style={{ fontSize: "0.74rem", color: "#94A3B8", marginTop: "0.25rem", lineHeight: 1.4 }}>
+                        {seg.studentAction}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Wiring Diagram & Point-to-Point Wire Table */}
+              {activeLessonRecord.physicalBuildPack && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1rem" }}>
+                  <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1rem" }}>
+                    <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <Wrench size={14} /> Reference Wiring Illustration
+                    </div>
+                    <PresentationMediaFrame
+                      src={activeLessonRecord.physicalBuildPack.connectionPhotoOrClearlyLabeledIllustration}
+                      alt={activeLessonRecord.title}
+                      caption={`Reference Illustration • ${activeLessonRecord.physicalBuildPack.schematic}`}
+                      fallbackVariant="arduino"
+                      accentColor="#F5B800"
+                      height="210px"
+                    />
+                  </div>
+
+                  <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1rem" }}>
+                    <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.6rem" }}>
+                      Point-to-Point Wire Table (Wire with Power OFF)
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                      {activeLessonRecord.physicalBuildPack.wireTable.map((w, idx) => (
+                        <div key={idx} style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "8px", padding: "0.55rem 0.7rem" }}>
+                          <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#FFFFFF", fontFamily: "monospace" }}>
+                            {w.from} &rarr; {w.to}
+                          </div>
+                          {w.wireOrPolarityNote && (
+                            <div style={{ fontSize: "0.73rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+                              {w.wireOrPolarityNote}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Code Lab Preview */}
+              {activeLessonRecord.codeLab && (
+                <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1rem" }}>
+                  <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Code2 size={14} /> Complete Workshop Code ({activeLessonRecord.codeLab.language.toUpperCase()})
+                  </div>
+                  <pre
+                    style={{
+                      margin: 0,
+                      padding: "0.9rem",
+                      borderRadius: "8px",
+                      background: "#0F141D",
+                      border: "1px solid #2E374B",
+                      color: "#E2E8F0",
+                      fontSize: "0.78rem",
+                      fontFamily: "monospace",
+                      overflowX: "auto",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {activeLessonRecord.codeLab.code}
+                  </pre>
+                </div>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
       )}
 
       {/* CLEAN NON-OVERLAPPING HARDWARE LAB & CIRCUIT SIMULATOR DRAWER */}

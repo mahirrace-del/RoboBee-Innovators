@@ -5,14 +5,13 @@ import Link from "next/link";
 import styles from "./adminCurriculum.module.css";
 import {
   ALL_ROBOTICS_LESSONS,
+  COURSE_SPACES,
+  CourseTier,
   RoboticsLesson,
   ClassStatus,
 } from "@/lib/curriculumData";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
-import {
-  THEME_PALETTE_CONFIG,
-  PresentationMediaFrame,
-} from "@/components/curriculum/Class1WorkshopDeck";
+import { PresentationMediaFrame } from "@/components/curriculum/Class1WorkshopDeck";
 import {
   EditableClassDeck,
   ClassTrackCategory,
@@ -39,25 +38,22 @@ import {
   Tv,
   Lock,
   Unlock,
-  Eye,
   Clock,
   Radio,
   BookOpen,
   Calendar,
   Plus,
   Trash2,
-  Sparkles,
-  Play,
   Cpu,
-  Compass,
   Edit3,
   Copy,
   Download,
   Upload,
   Search,
-  Filter,
   FolderPlus,
   X,
+  MoreHorizontal,
+  Settings,
 } from "lucide-react";
 
 export default function AdminCurriculumPage() {
@@ -66,16 +62,16 @@ export default function AdminCurriculumPage() {
     "library"
   );
 
-  // Multi-Class Deck Store (Class 01, Class 02, Class 03, Class 04 + Custom Decks)
+  // All 36 Canonical Lessons + Any Custom Created Decks
   const [decks, setDecks] = useState<EditableClassDeck[]>([]);
-  const [selectedPreviewDeckId, setSelectedPreviewDeckId] =
-    useState<string>("beg-01");
 
-  // Search & Track Filter
+  // Course Pathway Filter ('beginner' default so instructors immediately see Beginner 01–10, or switch across all 4 courses)
+  const [courseFilter, setCourseFilter] = useState<"ALL" | CourseTier>("beginner");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [trackFilter, setTrackFilter] = useState<"ALL" | ClassTrackCategory>(
-    "ALL"
-  );
+
+  // Header "Data & Backup" Dropdown & Per-Card "•••" Menu State
+  const [showDataMenu, setShowDataMenu] = useState<boolean>(false);
+  const [openCardMenuId, setOpenCardMenuId] = useState<string | null>(null);
 
   // Active Modals / Drawers
   const [projectorDeck, setProjectorDeck] = useState<EditableClassDeck | null>(
@@ -88,13 +84,14 @@ export default function AdminCurriculumPage() {
 
   // "+ Create New Class Presentation" Modal State
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [newClassCode, setNewClassCode] = useState<string>("CLASS 05");
+  const [newClassCode, setNewClassCode] = useState<string>("CUSTOM 01");
   const [newClassTitle, setNewClassTitle] = useState<string>("");
   const [newClassSubtitle, setNewClassSubtitle] = useState<string>("");
+  const [newClassCourse, setNewClassCourse] = useState<CourseTier>("beginner");
   const [newClassTrack, setNewClassTrack] =
     useState<ClassTrackCategory>("Foundation Track");
   const [newClassCover, setNewClassCover] = useState<string>(
-    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
+    "/illustrations/class1-external-blink-wiring.svg"
   );
 
   const jsonImportRef = useRef<HTMLInputElement | null>(null);
@@ -103,6 +100,10 @@ export default function AdminCurriculumPage() {
   const [classStatuses, setClassStatuses] = useState<{
     [id: string]: ClassStatus;
   }>({
+    "exp-01": "published",
+    "exp-02": "published",
+    "exp-03": "published",
+    "exp-04": "published",
     "beg-01": "published",
     "beg-02": "published",
     "beg-03": "published",
@@ -170,6 +171,7 @@ export default function AdminCurriculumPage() {
 
   const updateStatus = async (classId: string, newStatus: ClassStatus) => {
     setClassStatuses((prev) => ({ ...prev, [classId]: newStatus }));
+    setOpenCardMenuId(null);
     try {
       await setDoc(
         doc(db, "curriculum_status", classId),
@@ -199,31 +201,28 @@ export default function AdminCurriculumPage() {
     const newId = `custom-class-${Date.now()}`;
     const starterSlides = [
       {
-        ...createBlankSlide(0),
+        ...createBlankSlide(1, "robobee-dark"),
         numberLabel: "01",
-        theme: "electric-indigo" as const,
         layout: "hero-title" as const,
-        badge: `${newClassCode.toUpperCase()} • LIVE WORKSHOP`,
+        badge: `${newClassCode.toUpperCase()} • PROPOSED WORKSHOP`,
         title: newClassTitle.trim(),
         subtitle:
           newClassSubtitle.trim() ||
-          "Interactive hands-on engineering workshop — customize slides in Slide Studio.",
+          "Interactive 120-minute hands-on engineering workshop — customize slides in Slide Studio.",
         heroImage: newClassCover.trim(),
-        imageCaption: `${newClassCode}: ${newClassTitle.trim()}`,
+        imageCaption: `Reference Illustration • ${newClassCode}: ${newClassTitle.trim()}`,
       },
       {
-        ...createBlankSlide(1),
+        ...createBlankSlide(2, "daylight-studio"),
         numberLabel: "02",
-        theme: "daylight-studio" as const,
         layout: "interactive-grid" as const,
         badge: "CORE CONCEPTS",
         title: "Key Engineering Concepts & Theory",
         subtitle: "Add custom cards, photos, or flip-cards in the Slide Studio editor.",
       },
       {
-        ...createBlankSlide(2),
+        ...createBlankSlide(3, "arduino-teal"),
         numberLabel: "03",
-        theme: "arduino-teal" as const,
         layout: "interactive-hotspot" as const,
         badge: "HARDWARE ANATOMY",
         title: "Interactive Hardware & Wiring Map",
@@ -233,14 +232,18 @@ export default function AdminCurriculumPage() {
 
     const createdDeck: EditableClassDeck = {
       id: newId,
+      courseId: newClassCourse,
+      proposedAudience:
+        COURSE_SPACES.find((c) => c.id === newClassCourse)?.badge ||
+        "Proposed for Classes 5–8",
       classCode: newClassCode.trim().toUpperCase(),
       title: newClassTitle.trim(),
       subtitle:
         newClassSubtitle.trim() ||
-        "Custom RoboBEE Innovators interactive presentation deck.",
+        "Custom RoboBEE Innovators 120-minute interactive presentation deck.",
       track: newClassTrack,
-      durationMinutes: 90,
-      xpReward: 100,
+      durationMinutes: 120,
+      xpReward: 250,
       coverImage: newClassCover.trim(),
       lastEditedAt: new Date().toISOString(),
       status: "published",
@@ -263,13 +266,12 @@ export default function AdminCurriculumPage() {
     setShowCreateModal(false);
     setNewClassTitle("");
     setNewClassSubtitle("");
-    setNewClassCode(`CLASS 0${updated.length + 1}`);
-    // Immediately open in Slide Studio so the Admin can customize!
     setStudioDeck(createdDeck);
   };
 
   // Duplicate Class Deck
   const handleDuplicateDeck = async (deck: EditableClassDeck) => {
+    setOpenCardMenuId(null);
     const copyDeck: EditableClassDeck = {
       ...JSON.parse(JSON.stringify(deck)),
       id: `${deck.id}-copy-${Date.now()}`,
@@ -281,11 +283,12 @@ export default function AdminCurriculumPage() {
     setDecks(updated);
   };
 
-  // Delete Custom Class Deck
+  // Delete / Reset Class Deck
   const handleDeleteDeck = async (deck: EditableClassDeck) => {
+    setOpenCardMenuId(null);
     if (
       !confirm(
-        `Delete "${deck.classCode}: ${deck.title}"? (Built-in classes will reset to default if deleted.)`
+        `Reset or delete "${deck.classCode}: ${deck.title}"? (Canonical classes will reset to their default 12-slide deck.)`
       )
     )
       return;
@@ -295,10 +298,12 @@ export default function AdminCurriculumPage() {
 
   // Export Single Deck or All Decks as JSON
   const handleExportDecks = (targetDeck?: EditableClassDeck) => {
+    setShowDataMenu(false);
+    setOpenCardMenuId(null);
     const payload = targetDeck ? [targetDeck] : decks;
     const filename = targetDeck
       ? `RoboBEE_${targetDeck.classCode.replace(/\s+/g, "_")}_Deck.json`
-      : `RoboBEE_All_Class_Decks_${new Date().toISOString().slice(0, 10)}.json`;
+      : `RoboBEE_All_36_Class_Decks_${new Date().toISOString().slice(0, 10)}.json`;
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
     });
@@ -314,6 +319,7 @@ export default function AdminCurriculumPage() {
 
   // Import Decks from JSON file
   const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowDataMenu(false);
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -334,7 +340,7 @@ export default function AdminCurriculumPage() {
         }
         setDecks(latest);
         alert(`Successfully imported ${list.length} class deck(s)!`);
-      } catch (err) {
+      } catch {
         alert("Invalid JSON deck file.");
       }
     };
@@ -342,21 +348,27 @@ export default function AdminCurriculumPage() {
     e.target.value = "";
   };
 
+  // Resolve courseId for each deck
+  const resolveDeckCourseId = (deck: EditableClassDeck): CourseTier => {
+    if (deck.courseId) return deck.courseId;
+    if (deck.id.startsWith("exp-")) return "explorer";
+    if (deck.id.startsWith("int-")) return "intermediate";
+    if (deck.id.startsWith("adv-")) return "advanced";
+    return "beginner";
+  };
+
   // Filtered Decks
   const filteredDecks = decks.filter((d) => {
-    const matchesTrack = trackFilter === "ALL" || d.track === trackFilter;
+    const cId = resolveDeckCourseId(d);
+    const matchesCourse = courseFilter === "ALL" || cId === courseFilter;
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch =
       !q ||
       d.classCode.toLowerCase().includes(q) ||
       d.title.toLowerCase().includes(q) ||
-      d.subtitle.toLowerCase().includes(q) ||
-      d.track.toLowerCase().includes(q);
-    return matchesTrack && matchesSearch;
+      d.subtitle.toLowerCase().includes(q);
+    return matchesCourse && matchesSearch;
   });
-
-  const activePreviewDeck =
-    decks.find((d) => d.id === selectedPreviewDeckId) || decks[0];
 
   const totalSlidesAcrossAllClasses = decks.reduce(
     (acc, d) => acc + d.slides.length,
@@ -364,7 +376,19 @@ export default function AdminCurriculumPage() {
   );
 
   return (
-    <div className={styles.pageContainer}>
+    <div
+      className={styles.pageContainer}
+      style={{
+        background: "#161B26",
+        color: "#FFFFFF",
+        minHeight: "100vh",
+        padding: "1.75rem",
+      }}
+      onClick={() => {
+        if (openCardMenuId) setOpenCardMenuId(null);
+        if (showDataMenu) setShowDataMenu(false);
+      }}
+    >
       {/* Hidden JSON File Input */}
       <input
         ref={jsonImportRef}
@@ -374,418 +398,593 @@ export default function AdminCurriculumPage() {
         style={{ display: "none" }}
       />
 
-      {/* Header */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <h1>
-            <Radio size={28} color="#F5B800" />
-            Classroom Studio • Multi-Class Library &amp; PowerPoint Slide Editor
+      {/* Editorial Engineering Header */}
+      <div
+        className={styles.headerRow}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+          gap: "1rem",
+          marginBottom: "1.5rem",
+        }}
+      >
+        <div className={styles.titleArea} style={{ maxWidth: "720px" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.25rem 0.7rem",
+              borderRadius: "6px",
+              background: "rgba(107, 15, 36, 0.45)",
+              border: "1px solid #6B0F24",
+              color: "#F5B800",
+              fontSize: "0.72rem",
+              fontWeight: 800,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              marginBottom: "0.5rem",
+            }}
+          >
+            ROBOBEE INNOVATORS • INSTRUCTOR &amp; ADMIN STUDIO
+          </div>
+          <h1
+            style={{
+              margin: "0 0 0.4rem 0",
+              fontSize: "1.75rem",
+              fontWeight: 800,
+              color: "#FFFFFF",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.6rem",
+            }}
+          >
+            <Radio size={24} color="#F5B800" />
+            Curriculum &amp; Classroom Studio
           </h1>
-          <p>
-            Select any class below to <strong>Launch Live Projector</strong>,{" "}
-            <strong>Edit in Slide Studio</strong> (add/remove slides, upload
-            multiple photos, drag hotspot pins, customize fonts &amp; palettes),
-            or open the <strong>Virtual Breadboard &amp; Ohm&apos;s Law Lab</strong>.
+          <p style={{ margin: 0, color: "#94A3B8", fontSize: "0.92rem", lineHeight: 1.55 }}>
+            36 proposed 120-minute (2-hour) robotics lessons across 4 course pathways. Launch{" "}
+            <strong style={{ color: "#FFFFFF" }}>Present Class</strong> for classroom delivery or{" "}
+            <strong style={{ color: "#FFFFFF" }}>Edit / Manage</strong> to customize slides, diagrams, and bench tools.
           </p>
         </div>
 
+        {/* Clean Top Header Actions (including tucked Data & Backup menu) */}
         <div
           style={{
             display: "flex",
-            gap: "0.65rem",
+            gap: "0.6rem",
             alignItems: "center",
             flexWrap: "wrap",
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           <Link
             href="/dashboard/admin/attendance"
-            className={styles.statusBtn}
             style={{
-              padding: "0.6rem 0.95rem",
-              fontSize: "0.82rem",
-              background: "#111827",
-              color: "#10b981",
-              borderColor: "#10b981",
+              padding: "0.55rem 0.9rem",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+              borderRadius: "8px",
+              background: "#1E2533",
+              color: "#E2E8F0",
+              border: "1px solid #2E374B",
               textDecoration: "none",
               display: "inline-flex",
               alignItems: "center",
+              gap: "0.4rem",
             }}
           >
-            <Calendar size={14} style={{ marginRight: "6px" }} />
-            Schedule &amp; Attendance
+            <Calendar size={14} color="#F5B800" />
+            Attendance
           </Link>
+
           <Link
             href="/dashboard/curriculum/reference"
-            className={styles.statusBtn}
             style={{
-              padding: "0.6rem 0.95rem",
-              fontSize: "0.82rem",
-              background: "#111827",
-              color: "#F5B800",
-              borderColor: "#F5B800",
+              padding: "0.55rem 0.9rem",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+              borderRadius: "8px",
+              background: "#1E2533",
+              color: "#E2E8F0",
+              border: "1px solid #2E374B",
               textDecoration: "none",
               display: "inline-flex",
               alignItems: "center",
+              gap: "0.4rem",
             }}
           >
-            <BookOpen size={14} style={{ marginRight: "6px" }} />
+            <BookOpen size={14} color="#F5B800" />
             Field Guide
           </Link>
+
+          {/* Admin Settings: Data & Backup Dropdown (Export/Import JSON moved out of search bar) */}
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setShowDataMenu((prev) => !prev)}
+              style={{
+                padding: "0.55rem 0.9rem",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                borderRadius: "8px",
+                background: "#1E2533",
+                color: "#E2E8F0",
+                border: "1px solid #2E374B",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+              }}
+            >
+              <Settings size={14} color="#94A3B8" />
+              Data &amp; Backup
+            </button>
+
+            {showDataMenu && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "calc(100% + 6px)",
+                  width: "220px",
+                  background: "#1E2533",
+                  border: "1px solid #2E374B",
+                  borderRadius: "10px",
+                  padding: "0.4rem",
+                  boxShadow: "0 16px 36px rgba(0, 0, 0, 0.55)",
+                  zIndex: 50,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.25rem",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleExportDecks()}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "0.5rem 0.65rem",
+                    borderRadius: "6px",
+                    background: "transparent",
+                    border: "none",
+                    color: "#E2E8F0",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}
+                >
+                  <Download size={14} color="#F5B800" /> Export All JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={() => jsonImportRef.current?.click()}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "0.5rem 0.65rem",
+                    borderRadius: "6px",
+                    background: "transparent",
+                    border: "none",
+                    color: "#E2E8F0",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}
+                >
+                  <Upload size={14} color="#F5B800" /> Import JSON Backup
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
             style={{
-              padding: "0.65rem 1.15rem",
-              fontSize: "0.86rem",
-              fontWeight: 900,
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #00F5D4, #38BDF8)",
-              color: "#090D16",
-              border: "none",
+              padding: "0.58rem 1rem",
+              fontSize: "0.82rem",
+              fontWeight: 800,
+              borderRadius: "8px",
+              background: "#6B0F24",
+              color: "#FFFFFF",
+              border: "1px solid #F5B800",
               cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
-              gap: "0.45rem",
-              boxShadow: "0 8px 25px rgba(0, 245, 212, 0.3)",
+              gap: "0.4rem",
             }}
           >
-            <Plus size={16} />+ Create New Class Presentation
+            <Plus size={15} color="#F5B800" /> Create New Class
           </button>
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className={styles.statsBar}>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Curriculum Library</span>
-          <span className={styles.statValue}>{decks.length} Classes</span>
-          <span className={styles.statSub}>
-            Class 01, Class 02, Class 03, Class 04 + Custom
-          </span>
+      {/* Accurate 36-Lesson KPI Summary Strip */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "1rem",
+          marginBottom: "1.5rem",
+        }}
+      >
+        <div
+          style={{
+            background: "#1E2533",
+            border: "1px solid #2E374B",
+            borderRadius: "12px",
+            padding: "1rem 1.2rem",
+          }}
+        >
+          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
+            Total Curriculum Scope
+          </div>
+          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#FFFFFF", marginTop: "0.2rem" }}>
+            36 Total Lessons
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+            4 Explorers + 10 Beginner + 10 Intermediate + 12 Advanced
+          </div>
         </div>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Total Interactive Slides</span>
-          <span className={styles.statValue} style={{ color: "#38bdf8" }}>
+
+        <div
+          style={{
+            background: "#1E2533",
+            border: "1px solid #2E374B",
+            borderRadius: "12px",
+            padding: "1rem 1.2rem",
+          }}
+        >
+          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
+            Standard Session Pacing
+          </div>
+          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#F5B800", marginTop: "0.2rem" }}>
+            120 Min / Class
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+            72 Total Workshop Hours (60m compact supported)
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "#1E2533",
+            border: "1px solid #2E374B",
+            borderRadius: "12px",
+            padding: "1rem 1.2rem",
+          }}
+        >
+          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
+            Projector Slide Decks
+          </div>
+          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#FFFFFF", marginTop: "0.2rem" }}>
             {totalSlidesAcrossAllClasses} Slides
-          </span>
-          <span className={styles.statSub}>
-            Editable in In-Browser PowerPoint Studio
-          </span>
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+            12 structured slides per class • Daylight &amp; Dark Studio
+          </div>
         </div>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Hardware &amp; Ohm&apos;s Law Lab</span>
-          <span className={styles.statValue} style={{ color: "#10b981" }}>
-            4-Tab Sim
-          </span>
-          <span className={styles.statSub}>
-            Virtual Breadboard • Wiring • C++ • Exit Check
-          </span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Exit Check Submissions</span>
-          <span className={styles.statValue} style={{ color: "#F5B800" }}>
-            {submissions.length}
-          </span>
-          <span className={styles.statSub}>Student reflections logged</span>
+
+        <div
+          style={{
+            background: "#1E2533",
+            border: "1px solid #2E374B",
+            borderRadius: "12px",
+            padding: "1rem 1.2rem",
+          }}
+        >
+          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
+            Exit Check Submissions
+          </div>
+          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#10B981", marginTop: "0.2rem" }}>
+            {submissions.length} Logged
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+            4-question student exit reflections
+          </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className={styles.tabsBar}>
+      {/* Primary View Switcher: Course Library vs. Student Exit Check Submissions */}
+      <div
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          borderBottom: "1px solid #2E374B",
+          marginBottom: "1.25rem",
+        }}
+      >
         <button
+          type="button"
           onClick={() => setActiveTab("library")}
-          className={`${styles.tabBtn} ${
-            activeTab === "library" ? styles.tabBtnActive : ""
-          }`}
+          style={{
+            padding: "0.65rem 1.15rem",
+            background: activeTab === "library" ? "#1E2533" : "transparent",
+            color: activeTab === "library" ? "#F5B800" : "#94A3B8",
+            border: "1px solid",
+            borderColor: activeTab === "library" ? "#2E374B" : "transparent",
+            borderBottom: activeTab === "library" ? "2px solid #F5B800" : "none",
+            borderRadius: "8px 8px 0 0",
+            fontWeight: 800,
+            fontSize: "0.84rem",
+            cursor: "pointer",
+          }}
         >
-          Multi-Class Library Hub ({decks.length} Classes)
+          Course Pathways &amp; Class Library ({decks.length})
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab("submissions")}
-          className={`${styles.tabBtn} ${
-            activeTab === "submissions" ? styles.tabBtnActive : ""
-          }`}
+          style={{
+            padding: "0.65rem 1.15rem",
+            background: activeTab === "submissions" ? "#1E2533" : "transparent",
+            color: activeTab === "submissions" ? "#F5B800" : "#94A3B8",
+            border: "1px solid",
+            borderColor: activeTab === "submissions" ? "#2E374B" : "transparent",
+            borderBottom: activeTab === "submissions" ? "2px solid #F5B800" : "none",
+            borderRadius: "8px 8px 0 0",
+            fontWeight: 800,
+            fontSize: "0.84rem",
+            cursor: "pointer",
+          }}
         >
           Student Exit Check Submissions ({submissions.length})
         </button>
       </div>
 
-      {/* TAB 1: MULTI-CLASS LIBRARY HUB */}
+      {/* TAB 1: COURSE PATHWAYS & CLEAN CLASS GRID */}
       {activeTab === "library" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
-          {/* Top Action Bar: Search, Track Filter Pills & JSON Import/Export */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          {/* 4 Course Pathway Tabs + Search Bar */}
           <div
             style={{
-              background: "#0B1120",
-              border: "1px solid #1E293B",
-              borderRadius: "18px",
-              padding: "1rem 1.25rem",
+              background: "#1E2533",
+              border: "1px solid #2E374B",
+              borderRadius: "12px",
+              padding: "0.85rem 1rem",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               flexWrap: "wrap",
-              gap: "1rem",
+              gap: "0.85rem",
             }}
           >
-            {/* Search & Track Filters */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.65rem",
-                flexWrap: "wrap",
-                flex: 1,
-              }}
-            >
-              <div
-                style={{
-                  position: "relative",
-                  minWidth: "240px",
-                  flex: "1 1 260px",
-                  maxWidth: "360px",
-                }}
-              >
-                <Search
-                  size={15}
-                  color="#64748B"
-                  style={{
-                    position: "absolute",
-                    left: "12px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                  }}
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Class 01, Class 02, Breadboard, Ohm's Law..."
-                  style={{
-                    width: "100%",
-                    padding: "0.55rem 0.75rem 0.55rem 2.2rem",
-                    borderRadius: "10px",
-                    background: "#0F172A",
-                    border: "1px solid #334155",
-                    color: "#F8FAFC",
-                    fontSize: "0.84rem",
-                  }}
-                />
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.4rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <Filter size={14} color="#38BDF8" />
-                {(
-                  [
-                    "ALL",
-                    "Foundation Track",
-                    "Hardware & Sensors",
-                    "Combat & Autonomous Bots",
-                  ] as const
-                ).map((track) => {
-                  const active = trackFilter === track;
-                  return (
-                    <button
-                      key={track}
-                      type="button"
-                      onClick={() => setTrackFilter(track)}
+            {/* 4 Course Pathway Tabs */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "wrap" }}>
+              {COURSE_SPACES.map((cs) => {
+                const count = decks.filter((d) => resolveDeckCourseId(d) === cs.id).length;
+                const isSelected = courseFilter === cs.id;
+                return (
+                  <button
+                    key={cs.id}
+                    type="button"
+                    onClick={() => setCourseFilter(cs.id)}
+                    style={{
+                      padding: "0.48rem 0.85rem",
+                      borderRadius: "8px",
+                      border: `1px solid ${isSelected ? "#F5B800" : "#2E374B"}`,
+                      background: isSelected ? "#6B0F24" : "#161B26",
+                      color: isSelected ? "#FFFFFF" : "#94A3B8",
+                      fontSize: "0.78rem",
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                    }}
+                  >
+                    <span>{cs.title}</span>
+                    <span
                       style={{
-                        padding: "0.42rem 0.85rem",
+                        padding: "0.1rem 0.4rem",
                         borderRadius: "999px",
-                        border: `1px solid ${
-                          active ? "#00F5D4" : "rgba(255,255,255,0.12)"
-                        }`,
-                        background: active
-                          ? "rgba(0, 245, 212, 0.16)"
-                          : "rgba(255,255,255,0.04)",
-                        color: active ? "#00F5D4" : "#94A3B8",
-                        fontSize: "0.76rem",
-                        fontWeight: 800,
-                        cursor: "pointer",
+                        background: isSelected ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
+                        color: isSelected ? "#F5B800" : "#94A3B8",
+                        fontSize: "0.7rem",
                       }}
                     >
-                      {track === "ALL" ? "All Tracks" : track}
-                    </button>
-                  );
-                })}
-              </div>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => setCourseFilter("ALL")}
+                style={{
+                  padding: "0.48rem 0.85rem",
+                  borderRadius: "8px",
+                  border: `1px solid ${courseFilter === "ALL" ? "#F5B800" : "#2E374B"}`,
+                  background: courseFilter === "ALL" ? "#6B0F24" : "#161B26",
+                  color: courseFilter === "ALL" ? "#FFFFFF" : "#94A3B8",
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                All 36 Classes
+              </button>
             </div>
 
-            {/* Backup & Restore JSON Controls */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <button
-                type="button"
-                onClick={() => handleExportDecks()}
+            {/* Clean Search Input */}
+            <div style={{ position: "relative", minWidth: "240px", flex: "0 1 300px" }}>
+              <Search
+                size={14}
+                color="#94A3B8"
                 style={{
-                  padding: "0.5rem 0.9rem",
-                  borderRadius: "10px",
-                  border: "1px solid rgba(56, 189, 248, 0.35)",
-                  background: "rgba(56, 189, 248, 0.1)",
-                  color: "#38BDF8",
-                  fontSize: "0.78rem",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.4rem",
+                  position: "absolute",
+                  left: "11px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
                 }}
-              >
-                <Download size={14} /> Export All JSON
-              </button>
-              <button
-                type="button"
-                onClick={() => jsonImportRef.current?.click()}
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search class code, topic, sensor..."
                 style={{
-                  padding: "0.5rem 0.9rem",
-                  borderRadius: "10px",
-                  border: "1px solid rgba(251, 191, 36, 0.35)",
-                  background: "rgba(251, 191, 36, 0.1)",
-                  color: "#FBBF24",
-                  fontSize: "0.78rem",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.4rem",
+                  width: "100%",
+                  padding: "0.48rem 0.75rem 0.48rem 2.1rem",
+                  borderRadius: "8px",
+                  background: "#161B26",
+                  border: "1px solid #2E374B",
+                  color: "#FFFFFF",
+                  fontSize: "0.8rem",
                 }}
-              >
-                <Upload size={14} /> Import JSON
-              </button>
+              />
             </div>
           </div>
 
-          {/* Responsive 3-Column Class Cards Grid */}
+          {/* Selected Course Pathway Banner */}
+          {courseFilter !== "ALL" && (() => {
+            const activeSpace = COURSE_SPACES.find((c) => c.id === courseFilter);
+            if (!activeSpace) return null;
+            return (
+              <div
+                style={{
+                  background: "#1E2533",
+                  border: "1px solid #2E374B",
+                  borderLeft: "4px solid #F5B800",
+                  borderRadius: "10px",
+                  padding: "0.9rem 1.15rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "0.75rem",
+                }}
+              >
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
+                    <strong style={{ fontSize: "0.95rem", color: "#FFFFFF" }}>
+                      {activeSpace.title}
+                    </strong>
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        fontWeight: 800,
+                        padding: "0.15rem 0.5rem",
+                        borderRadius: "6px",
+                        background: "rgba(245, 184, 0, 0.14)",
+                        color: "#F5B800",
+                      }}
+                    >
+                      {activeSpace.badge}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
+                    {activeSpace.description}
+                  </div>
+                </div>
+                <div style={{ fontSize: "0.76rem", color: "#E2E8F0", fontWeight: 700 }}>
+                  Hardware: <span style={{ color: "#94A3B8", fontWeight: 500 }}>{activeSpace.recommendedHardware}</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* De-Cluttered 3-Column Class Cards Grid */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
-              gap: "1.35rem",
+              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+              gap: "1.25rem",
             }}
           >
             {filteredDecks.map((deck) => {
               const status = classStatuses[deck.id] || deck.status || "published";
-              const isSelectedForPreview = activePreviewDeck?.id === deck.id;
+              const cId = resolveDeckCourseId(deck);
+              const space = COURSE_SPACES.find((c) => c.id === cId);
+              const proposedLabel = deck.proposedAudience || space?.badge || "Proposed • Classes 5–8";
+              const isMenuOpen = openCardMenuId === deck.id;
+
               return (
                 <div
                   key={deck.id}
                   style={{
-                    background:
-                      "linear-gradient(160deg, #111827 0%, #0F172A 60%, #1E1B4B 100%)",
-                    border: `2px solid ${
-                      isSelectedForPreview
-                        ? "#00F5D4"
-                        : "rgba(56, 189, 248, 0.25)"
-                    }`,
-                    borderRadius: "22px",
-                    padding: "1.35rem",
+                    background: "#1E2533",
+                    border: "1px solid #2E374B",
+                    borderRadius: "14px",
+                    padding: "1.2rem",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
                     gap: "1rem",
-                    boxShadow: isSelectedForPreview
-                      ? "0 20px 45px rgba(0, 245, 212, 0.18)"
-                      : "0 16px 35px rgba(0, 0, 0, 0.4)",
+                    position: "relative",
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.85rem",
-                    }}
-                  >
-                    {/* Top Badges Row */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                    {/* 1.3.1: Maximum 2 Metadata Pills at Top of Card */}
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                         gap: "0.5rem",
-                        flexWrap: "wrap",
                       }}
                     >
-                      <div
+                      <span
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.45rem",
-                          flexWrap: "wrap",
+                          padding: "0.24rem 0.65rem",
+                          borderRadius: "6px",
+                          background: "rgba(245, 184, 0, 0.14)",
+                          border: "1px solid rgba(245, 184, 0, 0.35)",
+                          color: "#F5B800",
+                          fontSize: "0.72rem",
+                          fontWeight: 800,
+                          letterSpacing: "0.04em",
                         }}
                       >
-                        <span
-                          style={{
-                            padding: "0.28rem 0.75rem",
-                            borderRadius: "999px",
-                            background: "rgba(0, 245, 212, 0.16)",
-                            border: "1px solid #00F5D4",
-                            color: "#00F5D4",
-                            fontSize: "0.74rem",
-                            fontWeight: 900,
-                            letterSpacing: "0.06em",
-                          }}
-                        >
-                          {deck.classCode}
-                        </span>
-                        <span
-                          style={{
-                            padding: "0.26rem 0.65rem",
-                            borderRadius: "999px",
-                            background: "rgba(56, 189, 248, 0.14)",
-                            border: "1px solid rgba(56, 189, 248, 0.4)",
-                            color: "#38BDF8",
-                            fontSize: "0.7rem",
-                            fontWeight: 800,
-                          }}
-                        >
-                          {deck.track}
-                        </span>
-                      </div>
+                        {deck.classCode}
+                      </span>
 
                       <span
                         style={{
-                          padding: "0.25rem 0.65rem",
-                          borderRadius: "999px",
-                          background: "rgba(251, 191, 36, 0.15)",
-                          border: "1px solid #FBBF24",
-                          color: "#FBBF24",
-                          fontSize: "0.72rem",
-                          fontWeight: 900,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.3rem",
+                          padding: "0.24rem 0.65rem",
+                          borderRadius: "6px",
+                          background: "#161B26",
+                          border: "1px solid #2E374B",
+                          color: "#94A3B8",
+                          fontSize: "0.7rem",
+                          fontWeight: 700,
                         }}
                       >
-                        <Sparkles size={12} /> {deck.slides.length} Slides
+                        {proposedLabel}
                       </span>
                     </div>
 
-                    {/* Cover Thumbnail */}
+                    {/* Clean Reference Illustration Thumbnail */}
                     <PresentationMediaFrame
                       src={deck.coverImage}
                       alt={deck.title}
-                      caption={`${deck.classCode} • ${deck.slides.length} Interactive Slides`}
-                      fallbackVariant={
-                        deck.id === "beg-02" ? "mcu" : "arduino"
-                      }
-                      accentColor="#00F5D4"
-                      height="185px"
+                      caption={`Reference Illustration • ${deck.slides.length} Slides`}
+                      fallbackVariant={deck.id === "beg-02" ? "mcu" : "arduino"}
+                      accentColor="#F5B800"
+                      height="168px"
                     />
 
-                    {/* Title & Subtitle */}
+                    {/* Title & Concise Promise */}
                     <div>
                       <h3
                         style={{
                           margin: "0 0 0.35rem 0",
-                          fontSize: "1.2rem",
-                          fontWeight: 900,
+                          fontSize: "1.08rem",
+                          fontWeight: 800,
                           color: "#FFFFFF",
-                          lineHeight: 1.25,
+                          lineHeight: 1.3,
                         }}
                       >
                         {deck.title}
@@ -793,130 +992,64 @@ export default function AdminCurriculumPage() {
                       <p
                         style={{
                           margin: 0,
-                          fontSize: "0.84rem",
-                          color: "#CBD5E1",
+                          fontSize: "0.82rem",
+                          color: "#94A3B8",
                           lineHeight: 1.5,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
                         }}
                       >
                         {deck.subtitle}
                       </p>
                     </div>
 
-                    {/* Metadata & Status Row */}
+                    {/* Subtle Duration & Member Access Indicator */}
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        flexWrap: "wrap",
-                        gap: "0.5rem",
-                        paddingTop: "0.3rem",
-                        borderTop: "1px solid rgba(255,255,255,0.08)",
-                        fontSize: "0.75rem",
+                        paddingTop: "0.5rem",
+                        borderTop: "1px solid #2E374B",
+                        fontSize: "0.74rem",
                         color: "#94A3B8",
                       }}
                     >
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                        <Clock size={13} color="#F5B800" /> 120m Standard (60m Compact)
+                      </span>
                       <span
                         style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.3rem",
+                          color:
+                            status === "locked"
+                              ? "#EF4444"
+                              : status === "live_in_class"
+                              ? "#F5B800"
+                              : "#10B981",
+                          fontWeight: 700,
                         }}
                       >
-                        <Clock size={13} color="#00F5D4" /> {deck.durationMinutes}m
-                        • Edited{" "}
-                        {new Date(deck.lastEditedAt).toLocaleDateString()}
+                        {status === "locked"
+                          ? "Locked"
+                          : status === "live_in_class"
+                          ? "Live in Lab"
+                          : "Unlocked"}
                       </span>
-
-                      {/* Status Switcher */}
-                      <div style={{ display: "inline-flex", gap: "0.25rem" }}>
-                        <button
-                          type="button"
-                          onClick={() => updateStatus(deck.id, "published")}
-                          style={{
-                            padding: "0.2rem 0.5rem",
-                            borderRadius: "6px",
-                            border: "1px solid",
-                            borderColor:
-                              status === "published"
-                                ? "#10B981"
-                                : "rgba(255,255,255,0.12)",
-                            background:
-                              status === "published"
-                                ? "rgba(16, 185, 129, 0.2)"
-                                : "transparent",
-                            color:
-                              status === "published" ? "#10B981" : "#64748B",
-                            fontSize: "0.68rem",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                          title="Published to Students"
-                        >
-                          <Unlock size={11} /> Pub
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateStatus(deck.id, "live_in_class")}
-                          style={{
-                            padding: "0.2rem 0.5rem",
-                            borderRadius: "6px",
-                            border: "1px solid",
-                            borderColor:
-                              status === "live_in_class"
-                                ? "#F5B800"
-                                : "rgba(255,255,255,0.12)",
-                            background:
-                              status === "live_in_class"
-                                ? "rgba(245, 184, 0, 0.2)"
-                                : "transparent",
-                            color:
-                              status === "live_in_class" ? "#F5B800" : "#64748B",
-                            fontSize: "0.68rem",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                          title="Mark as Live in Lab"
-                        >
-                          <Radio size={11} /> Live
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateStatus(deck.id, "locked")}
-                          style={{
-                            padding: "0.2rem 0.5rem",
-                            borderRadius: "6px",
-                            border: "1px solid",
-                            borderColor:
-                              status === "locked"
-                                ? "#F43F5E"
-                                : "rgba(255,255,255,0.12)",
-                            background:
-                              status === "locked"
-                                ? "rgba(244, 63, 94, 0.2)"
-                                : "transparent",
-                            color: status === "locked" ? "#F43F5E" : "#64748B",
-                            fontSize: "0.68rem",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                          title="Lock Class"
-                        >
-                          <Lock size={11} /> Lock
-                        </button>
-                      </div>
                     </div>
                   </div>
 
-                  {/* 3 Primary Action Buttons */}
+                  {/* 1.3.1: 1 Primary Button (Present Class) + 1 Secondary Button (Edit / Manage) + ••• Menu */}
                   <div
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.55rem",
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr auto",
+                      gap: "0.5rem",
+                      alignItems: "center",
                     }}
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {/* 1. Launch Live Projector */}
                     <button
                       type="button"
                       onClick={() => {
@@ -924,379 +1057,274 @@ export default function AdminCurriculumPage() {
                         setProjectorDeck(deck);
                       }}
                       style={{
-                        width: "100%",
-                        padding: "0.75rem 1rem",
-                        borderRadius: "12px",
-                        border: "none",
-                        background:
-                          "linear-gradient(135deg, #00F5D4 0%, #38BDF8 100%)",
-                        color: "#090D16",
-                        fontWeight: 900,
-                        fontSize: "0.88rem",
+                        padding: "0.6rem 0.75rem",
+                        borderRadius: "8px",
+                        border: "1px solid #F5B800",
+                        background: "#6B0F24",
+                        color: "#FFFFFF",
+                        fontWeight: 800,
+                        fontSize: "0.78rem",
                         cursor: "pointer",
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        gap: "0.5rem",
-                        boxShadow: "0 10px 25px rgba(0, 245, 212, 0.25)",
+                        gap: "0.35rem",
                       }}
                     >
-                      <Tv size={16} /> 1. Launch Live Projector (
-                      {deck.slides.length} Slides)
+                      <Tv size={14} color="#F5B800" /> Present Class
                     </button>
 
-                    {/* 2. Edit in Slide Studio + 3. Hardware Lab & Kit Config */}
-                    <div
+                    <button
+                      type="button"
+                      onClick={() => setStudioDeck(deck)}
                       style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setStudioDeck(deck)}
-                        style={{
-                          padding: "0.65rem 0.75rem",
-                          borderRadius: "10px",
-                          border: "1px solid #38BDF8",
-                          background: "rgba(56, 189, 248, 0.14)",
-                          color: "#38BDF8",
-                          fontWeight: 800,
-                          fontSize: "0.78rem",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.35rem",
-                        }}
-                      >
-                        <Edit3 size={14} /> Edit in Slide Studio
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setHardwareLabDeck(deck)}
-                        style={{
-                          padding: "0.65rem 0.75rem",
-                          borderRadius: "10px",
-                          border: "1px solid #10B981",
-                          background: "rgba(16, 185, 129, 0.14)",
-                          color: "#34D399",
-                          fontWeight: 800,
-                          fontSize: "0.78rem",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.35rem",
-                        }}
-                      >
-                        <Cpu size={14} /> Hardware Lab Sim
-                      </button>
-                    </div>
-
-                    {/* Utility Row: Preview Slides, Duplicate, Export JSON, Delete */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
+                        padding: "0.6rem 0.75rem",
+                        borderRadius: "8px",
+                        border: "1px solid #2E374B",
+                        background: "#161B26",
+                        color: "#E2E8F0",
+                        fontWeight: 700,
+                        fontSize: "0.78rem",
+                        cursor: "pointer",
+                        display: "inline-flex",
                         alignItems: "center",
+                        justifyContent: "center",
                         gap: "0.35rem",
-                        paddingTop: "0.2rem",
                       }}
                     >
+                      <Edit3 size={14} color="#94A3B8" /> Edit / Manage
+                    </button>
+
+                    {/* ••• Overflow Menu Button */}
+                    <div style={{ position: "relative" }}>
                       <button
                         type="button"
-                        onClick={() => setSelectedPreviewDeckId(deck.id)}
+                        onClick={() =>
+                          setOpenCardMenuId((prev) =>
+                            prev === deck.id ? null : deck.id
+                          )
+                        }
+                        title="More class actions"
                         style={{
-                          flex: 1,
-                          padding: "0.4rem 0.6rem",
+                          padding: "0.6rem 0.65rem",
                           borderRadius: "8px",
-                          border: "1px solid rgba(255,255,255,0.12)",
-                          background: isSelectedForPreview
-                            ? "rgba(0, 245, 212, 0.15)"
-                            : "rgba(255,255,255,0.04)",
-                          color: isSelectedForPreview ? "#00F5D4" : "#CBD5E1",
-                          fontSize: "0.72rem",
-                          fontWeight: 700,
+                          border: "1px solid #2E374B",
+                          background: "#161B26",
+                          color: "#94A3B8",
                           cursor: "pointer",
                           display: "inline-flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          gap: "0.3rem",
                         }}
                       >
-                        <Eye size={12} /> Inspect {deck.slides.length} Slides Below
+                        <MoreHorizontal size={15} />
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDuplicateDeck(deck)}
-                        title="Duplicate this Class Presentation"
-                        style={{
-                          padding: "0.4rem 0.55rem",
-                          borderRadius: "8px",
-                          border: "1px solid rgba(255,255,255,0.12)",
-                          background: "rgba(255,255,255,0.04)",
-                          color: "#CBD5E1",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <Copy size={13} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleExportDecks(deck)}
-                        title="Export Class JSON"
-                        style={{
-                          padding: "0.4rem 0.55rem",
-                          borderRadius: "8px",
-                          border: "1px solid rgba(255,255,255,0.12)",
-                          background: "rgba(255,255,255,0.04)",
-                          color: "#CBD5E1",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <Download size={13} />
-                      </button>
-
-                      {deck.id.startsWith("custom-") ||
-                      deck.id.includes("-copy-") ? (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteDeck(deck)}
-                          title="Delete Custom Class"
+                      {isMenuOpen && (
+                        <div
                           style={{
-                            padding: "0.4rem 0.55rem",
-                            borderRadius: "8px",
-                            border: "1px solid rgba(244,63,94,0.3)",
-                            background: "rgba(244,63,94,0.1)",
-                            color: "#FDA4AF",
-                            cursor: "pointer",
+                            position: "absolute",
+                            right: 0,
+                            bottom: "calc(100% + 6px)",
+                            width: "230px",
+                            background: "#161B26",
+                            border: "1px solid #2E374B",
+                            borderRadius: "10px",
+                            padding: "0.4rem",
+                            boxShadow: "0 18px 40px rgba(0, 0, 0, 0.65)",
+                            zIndex: 40,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.2rem",
                           }}
                         >
-                          <Trash2 size={13} />
-                        </button>
-                      ) : null}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenCardMenuId(null);
+                              setHardwareLabDeck(deck);
+                            }}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "0.48rem 0.6rem",
+                              borderRadius: "6px",
+                              background: "transparent",
+                              border: "none",
+                              color: "#FFFFFF",
+                              fontSize: "0.76rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.45rem",
+                            }}
+                          >
+                            <Cpu size={13} color="#F5B800" /> Open Hardware Simulator
+                          </button>
+
+                          <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
+
+                          <button
+                            type="button"
+                            onClick={() => updateStatus(deck.id, "published")}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "0.45rem 0.6rem",
+                              borderRadius: "6px",
+                              background: "transparent",
+                              border: "none",
+                              color: status === "published" ? "#10B981" : "#E2E8F0",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.45rem",
+                            }}
+                          >
+                            <Unlock size={13} /> Unlock for Members
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => updateStatus(deck.id, "live_in_class")}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "0.45rem 0.6rem",
+                              borderRadius: "6px",
+                              background: "transparent",
+                              border: "none",
+                              color: status === "live_in_class" ? "#F5B800" : "#E2E8F0",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.45rem",
+                            }}
+                          >
+                            <Radio size={13} /> Mark as Live in Lab
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => updateStatus(deck.id, "locked")}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "0.45rem 0.6rem",
+                              borderRadius: "6px",
+                              background: "transparent",
+                              border: "none",
+                              color: status === "locked" ? "#EF4444" : "#E2E8F0",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.45rem",
+                            }}
+                          >
+                            <Lock size={13} /> Lock for Members
+                          </button>
+
+                          <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
+
+                          <button
+                            type="button"
+                            onClick={() => handleDuplicateDeck(deck)}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "0.45rem 0.6rem",
+                              borderRadius: "6px",
+                              background: "transparent",
+                              border: "none",
+                              color: "#E2E8F0",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.45rem",
+                            }}
+                          >
+                            <Copy size={13} /> Duplicate Class
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleExportDecks(deck)}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "0.45rem 0.6rem",
+                              borderRadius: "6px",
+                              background: "transparent",
+                              border: "none",
+                              color: "#E2E8F0",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.45rem",
+                            }}
+                          >
+                            <Download size={13} /> Export Class JSON
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteDeck(deck)}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "0.45rem 0.6rem",
+                              borderRadius: "6px",
+                              background: "transparent",
+                              border: "none",
+                              color: "#EF4444",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.45rem",
+                            }}
+                          >
+                            <Trash2 size={13} /> Reset / Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               );
             })}
           </div>
-
-          {/* Slide-by-Slide Inspector Drawer for the Selected Class */}
-          {activePreviewDeck && (
-            <div
-              style={{
-                background: "#0B1120",
-                border: "1px solid #1E293B",
-                borderRadius: "22px",
-                padding: "1.65rem",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "1rem",
-                  marginBottom: "1.25rem",
-                }}
-              >
-                <div>
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontSize: "1.25rem",
-                      fontWeight: 900,
-                      color: "#FFFFFF",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                    }}
-                  >
-                    <Compass size={20} color="#00F5D4" />
-                    {activePreviewDeck.classCode}: {activePreviewDeck.title} —
-                    Slide-by-Slide Preview ({activePreviewDeck.slides.length}{" "}
-                    Slides)
-                  </h3>
-                  <p
-                    style={{
-                      margin: "0.25rem 0 0 0",
-                      fontSize: "0.85rem",
-                      color: "#94A3B8",
-                    }}
-                  >
-                    Click any slide to present live at that exact slide, or click{" "}
-                    <strong>Edit in Slide Studio</strong> to customize text,
-                    images, hotspots, and animations.
-                  </p>
-                </div>
-
-                <div style={{ display: "flex", gap: "0.6rem" }}>
-                  <button
-                    type="button"
-                    onClick={() => setStudioDeck(activePreviewDeck)}
-                    style={{
-                      padding: "0.55rem 1rem",
-                      borderRadius: "10px",
-                      border: "1px solid #38BDF8",
-                      background: "rgba(56, 189, 248, 0.15)",
-                      color: "#38BDF8",
-                      fontWeight: 800,
-                      fontSize: "0.82rem",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                    }}
-                  >
-                    <Edit3 size={14} /> Customize {activePreviewDeck.classCode}{" "}
-                    in Slide Studio
-                  </button>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                  gap: "1.1rem",
-                }}
-              >
-                {activePreviewDeck.slides.map((s, idx) => {
-                  const palette = THEME_PALETTE_CONFIG[s.theme];
-                  return (
-                    <div
-                      key={s.id}
-                      style={{
-                        background: palette.canvasBg,
-                        border: `2px solid ${palette.cardBorder}`,
-                        borderRadius: "18px",
-                        padding: "1rem",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        gap: "0.85rem",
-                        boxShadow: "0 12px 28px rgba(0,0,0,0.3)",
-                      }}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            gap: "0.4rem",
-                            marginBottom: "0.65rem",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: "0.7rem",
-                              fontWeight: 900,
-                              padding: "0.2rem 0.55rem",
-                              borderRadius: "999px",
-                              background: palette.badgeBg,
-                              color: palette.badgeText,
-                              letterSpacing: "0.06em",
-                            }}
-                          >
-                            SLIDE {s.numberLabel} • {palette.name.toUpperCase()}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "0.68rem",
-                              fontWeight: 800,
-                              color: palette.mutedColor,
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            {s.layout}
-                          </span>
-                        </div>
-
-                        <div style={{ marginBottom: "0.75rem" }}>
-                          <PresentationMediaFrame
-                            src={s.heroImage}
-                            alt={s.title}
-                            caption={s.imageCaption}
-                            fallbackVariant={s.fallbackVariant || "arduino"}
-                            accentColor={palette.accentPrimary}
-                            height="155px"
-                          />
-                        </div>
-
-                        <h4
-                          style={{
-                            margin: "0 0 0.35rem 0",
-                            fontSize: "1rem",
-                            fontWeight: 900,
-                            color: palette.headingColor,
-                            lineHeight: 1.25,
-                          }}
-                        >
-                          {s.title}
-                        </h4>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: "0.78rem",
-                            color: palette.bodyColor,
-                            lineHeight: 1.45,
-                          }}
-                        >
-                          {s.subtitle}
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setProjectorInitialSlide(idx);
-                          setProjectorDeck(activePreviewDeck);
-                        }}
-                        style={{
-                          width: "100%",
-                          background: palette.isLight
-                            ? "#0F172A"
-                            : "rgba(255,255,255,0.14)",
-                          color: "#FFFFFF",
-                          border: `1px solid ${palette.accentPrimary}`,
-                          borderRadius: "10px",
-                          padding: "0.55rem 0.9rem",
-                          fontSize: "0.8rem",
-                          fontWeight: 900,
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.4rem",
-                        }}
-                      >
-                        <Play size={14} /> Present from Slide {s.numberLabel}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       {/* TAB 2: STUDENT EXIT CHECK SUBMISSIONS */}
       {activeTab === "submissions" && (
-        <div className={styles.submissionsCard}>
+        <div
+          className={styles.submissionsCard}
+          style={{
+            background: "#1E2533",
+            border: "1px solid #2E374B",
+            borderRadius: "14px",
+            padding: "1.5rem",
+          }}
+        >
           <h2
             style={{
-              fontSize: "1.25rem",
+              fontSize: "1.2rem",
               fontWeight: 800,
-              color: "#f1f5f9",
+              color: "#FFFFFF",
               marginBottom: "1rem",
             }}
           >
@@ -1304,12 +1332,12 @@ export default function AdminCurriculumPage() {
           </h2>
 
           {loadingSubs ? (
-            <p style={{ color: "#94a3b8" }}>Loading submissions...</p>
+            <p style={{ color: "#94A3B8" }}>Loading submissions...</p>
           ) : submissions.length === 0 ? (
             <div className={styles.emptyState}>
-              <p>
+              <p style={{ color: "#94A3B8" }}>
                 No exit check submissions recorded yet. Have students complete
-                the Exit Check inside the Hardware Lab Drawer during class!
+                the 4-Question Exit Check inside their lesson workbench!
               </p>
             </div>
           ) : (
@@ -1325,7 +1353,7 @@ export default function AdminCurriculumPage() {
               <tbody>
                 {submissions.map((sub) => (
                   <tr key={sub.id}>
-                    <td style={{ fontWeight: 700, color: "#f8fafc" }}>
+                    <td style={{ fontWeight: 700, color: "#F8FAFC" }}>
                       {sub.userEmail || sub.userId || "Student"}
                     </td>
                     <td>
@@ -1339,7 +1367,7 @@ export default function AdminCurriculumPage() {
                           style={{
                             margin: 0,
                             paddingLeft: "1.1rem",
-                            color: "#cbd5e1",
+                            color: "#CBD5E1",
                             fontSize: "0.82rem",
                           }}
                         >
@@ -1348,10 +1376,10 @@ export default function AdminCurriculumPage() {
                           ))}
                         </ul>
                       ) : (
-                        <span style={{ color: "#64748b" }}>Completed</span>
+                        <span style={{ color: "#64748B" }}>Completed</span>
                       )}
                     </td>
-                    <td style={{ color: "#94a3b8", fontSize: "0.8rem" }}>
+                    <td style={{ color: "#94A3B8", fontSize: "0.8rem" }}>
                       {sub.submittedAt
                         ? new Date(sub.submittedAt).toLocaleString()
                         : "Recent"}
@@ -1371,8 +1399,8 @@ export default function AdminCurriculumPage() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(7, 11, 20, 0.88)",
-            backdropFilter: "blur(14px)",
+            background: "rgba(22, 27, 38, 0.88)",
+            backdropFilter: "blur(12px)",
             zIndex: 999990,
             display: "flex",
             alignItems: "center",
@@ -1383,14 +1411,14 @@ export default function AdminCurriculumPage() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#0F172A",
-              border: "2px solid #00F5D4",
-              borderRadius: "22px",
-              padding: "1.75rem",
-              maxWidth: "540px",
+              background: "#1E2533",
+              border: "1px solid #2E374B",
+              borderRadius: "16px",
+              padding: "1.5rem",
+              maxWidth: "520px",
               width: "100%",
-              color: "#F8FAFC",
-              boxShadow: "0 25px 65px rgba(0,0,0,0.75)",
+              color: "#FFFFFF",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.65)",
             }}
           >
             <div
@@ -1401,12 +1429,10 @@ export default function AdminCurriculumPage() {
                 marginBottom: "1rem",
               }}
             >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-              >
-                <FolderPlus size={20} color="#00F5D4" />
-                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900 }}>
-                  Create New Class Presentation Deck
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <FolderPlus size={18} color="#F5B800" />
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800 }}>
+                  Create New 120-Minute Class Deck
                 </h3>
               </div>
               <button
@@ -1425,12 +1451,12 @@ export default function AdminCurriculumPage() {
 
             <form
               onSubmit={handleCreateNewClass}
-              style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}
+              style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}
             >
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1.5fr",
+                  gridTemplateColumns: "1fr 1.4fr",
                   gap: "0.75rem",
                 }}
               >
@@ -1438,10 +1464,10 @@ export default function AdminCurriculumPage() {
                   <label
                     style={{
                       display: "block",
-                      fontSize: "0.75rem",
-                      fontWeight: 800,
+                      fontSize: "0.74rem",
+                      fontWeight: 700,
                       color: "#94A3B8",
-                      marginBottom: "0.3rem",
+                      marginBottom: "0.25rem",
                     }}
                   >
                     Class Code Badge
@@ -1451,15 +1477,15 @@ export default function AdminCurriculumPage() {
                     required
                     value={newClassCode}
                     onChange={(e) => setNewClassCode(e.target.value)}
-                    placeholder="CLASS 05"
+                    placeholder="CUSTOM 01"
                     style={{
                       width: "100%",
-                      padding: "0.6rem 0.75rem",
-                      borderRadius: "10px",
-                      background: "#1E293B",
-                      border: "1px solid #334155",
+                      padding: "0.55rem 0.7rem",
+                      borderRadius: "8px",
+                      background: "#161B26",
+                      border: "1px solid #2E374B",
                       color: "#FFFFFF",
-                      fontWeight: 800,
+                      fontWeight: 700,
                     }}
                   />
                 </div>
@@ -1467,36 +1493,32 @@ export default function AdminCurriculumPage() {
                   <label
                     style={{
                       display: "block",
-                      fontSize: "0.75rem",
-                      fontWeight: 800,
+                      fontSize: "0.74rem",
+                      fontWeight: 700,
                       color: "#94A3B8",
-                      marginBottom: "0.3rem",
+                      marginBottom: "0.25rem",
                     }}
                   >
-                    Curriculum Track
+                    Course Pathway
                   </label>
                   <select
-                    value={newClassTrack}
-                    onChange={(e) =>
-                      setNewClassTrack(e.target.value as ClassTrackCategory)
-                    }
+                    value={newClassCourse}
+                    onChange={(e) => setNewClassCourse(e.target.value as CourseTier)}
                     style={{
                       width: "100%",
-                      padding: "0.6rem 0.75rem",
-                      borderRadius: "10px",
-                      background: "#1E293B",
-                      border: "1px solid #334155",
+                      padding: "0.55rem 0.7rem",
+                      borderRadius: "8px",
+                      background: "#161B26",
+                      border: "1px solid #2E374B",
                       color: "#FFFFFF",
                       fontWeight: 700,
                     }}
                   >
-                    <option value="Foundation Track">Foundation Track</option>
-                    <option value="Hardware & Sensors">
-                      Hardware &amp; Sensors
-                    </option>
-                    <option value="Combat & Autonomous Bots">
-                      Combat &amp; Autonomous Bots
-                    </option>
+                    {COURSE_SPACES.map((cs) => (
+                      <option key={cs.id} value={cs.id}>
+                        {cs.title} ({cs.badge})
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1505,10 +1527,10 @@ export default function AdminCurriculumPage() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "0.75rem",
-                    fontWeight: 800,
+                    fontSize: "0.74rem",
+                    fontWeight: 700,
                     color: "#94A3B8",
-                    marginBottom: "0.3rem",
+                    marginBottom: "0.25rem",
                   }}
                 >
                   Class Presentation Title
@@ -1521,10 +1543,10 @@ export default function AdminCurriculumPage() {
                   placeholder="e.g., Servo Motors, Robotic Arms & Kinematics"
                   style={{
                     width: "100%",
-                    padding: "0.6rem 0.75rem",
-                    borderRadius: "10px",
-                    background: "#1E293B",
-                    border: "1px solid #334155",
+                    padding: "0.55rem 0.7rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
                     color: "#FFFFFF",
                     fontWeight: 700,
                   }}
@@ -1535,10 +1557,10 @@ export default function AdminCurriculumPage() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "0.75rem",
-                    fontWeight: 800,
+                    fontSize: "0.74rem",
+                    fontWeight: 700,
                     color: "#94A3B8",
-                    marginBottom: "0.3rem",
+                    marginBottom: "0.25rem",
                   }}
                 >
                   Subtitle / Workshop Promise
@@ -1547,13 +1569,13 @@ export default function AdminCurriculumPage() {
                   rows={2}
                   value={newClassSubtitle}
                   onChange={(e) => setNewClassSubtitle(e.target.value)}
-                  placeholder="What will students build, wire, and program in this session?"
+                  placeholder="What will students build, wire, and program in this 120-minute session?"
                   style={{
                     width: "100%",
-                    padding: "0.6rem 0.75rem",
-                    borderRadius: "10px",
-                    background: "#1E293B",
-                    border: "1px solid #334155",
+                    padding: "0.55rem 0.7rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
                     color: "#FFFFFF",
                   }}
                 />
@@ -1563,13 +1585,13 @@ export default function AdminCurriculumPage() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "0.75rem",
-                    fontWeight: 800,
+                    fontSize: "0.74rem",
+                    fontWeight: 700,
                     color: "#94A3B8",
-                    marginBottom: "0.3rem",
+                    marginBottom: "0.25rem",
                   }}
                 >
-                  Cover Photo URL
+                  Reference Diagram / Cover Path
                 </label>
                 <input
                   type="text"
@@ -1577,11 +1599,11 @@ export default function AdminCurriculumPage() {
                   onChange={(e) => setNewClassCover(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "0.6rem 0.75rem",
-                    borderRadius: "10px",
-                    background: "#1E293B",
-                    border: "1px solid #334155",
-                    color: "#38BDF8",
+                    padding: "0.55rem 0.7rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
+                    color: "#F5B800",
                   }}
                 />
               </div>
@@ -1590,19 +1612,19 @@ export default function AdminCurriculumPage() {
                 style={{
                   display: "flex",
                   justifyContent: "flex-end",
-                  gap: "0.65rem",
-                  marginTop: "0.5rem",
+                  gap: "0.6rem",
+                  marginTop: "0.4rem",
                 }}
               >
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
                   style={{
-                    padding: "0.6rem 1.1rem",
-                    borderRadius: "10px",
-                    border: "1px solid #334155",
+                    padding: "0.55rem 1rem",
+                    borderRadius: "8px",
+                    border: "1px solid #2E374B",
                     background: "transparent",
-                    color: "#CBD5E1",
+                    color: "#94A3B8",
                     fontWeight: 700,
                     cursor: "pointer",
                   }}
@@ -1612,16 +1634,16 @@ export default function AdminCurriculumPage() {
                 <button
                   type="submit"
                   style={{
-                    padding: "0.6rem 1.25rem",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "linear-gradient(135deg, #00F5D4, #38BDF8)",
-                    color: "#090D16",
-                    fontWeight: 900,
+                    padding: "0.55rem 1.15rem",
+                    borderRadius: "8px",
+                    border: "1px solid #F5B800",
+                    background: "#6B0F24",
+                    color: "#FFFFFF",
+                    fontWeight: 800,
                     cursor: "pointer",
                   }}
                 >
-                  Create &amp; Open in Slide Studio ➔
+                  Create &amp; Open in Slide Studio
                 </button>
               </div>
             </form>

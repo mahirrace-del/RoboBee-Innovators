@@ -11,7 +11,7 @@ import {
 } from "./Class1WorkshopDeck";
 import {
   EditableClassDeck,
-  loadDecksFromStorage,
+  getOrBuildDeckForLesson,
   SEED_CLASS_01_DECK,
 } from "@/lib/slideStudioStore";
 import { EditableSlideCanvas } from "./EditableSlideCanvas";
@@ -63,11 +63,11 @@ export function ProjectorView({
 }: ProjectorViewProps) {
   const [mounted, setMounted] = useState<boolean>(false);
   const [activeDeck, setActiveDeck] = useState<EditableClassDeck>(
-    customDeck || SEED_CLASS_01_DECK
+    () => customDeck || getOrBuildDeckForLesson(lesson)
   );
   const [currentSlide, setCurrentSlide] = useState<number>(initialSlide);
 
-  // Dynamic Multi-Palette Theme Override ('auto' or one of the 4 curated themes)
+  // Dynamic Multi-Palette Theme Override ('auto' or one of the curated themes)
   const [themeOverride, setThemeOverride] = useState<SlideColorTheme | "auto">(
     "auto"
   );
@@ -91,9 +91,9 @@ export function ProjectorView({
     caption: string;
   } | null>(null);
 
-  // Rhythm duration mode: 90m vs 60m
+  // Rhythm duration mode: 120m standard vs 60m compact
   const defaultDuration =
-    activeDeck.durationMinutes || lesson.durationMinutes || 90;
+    activeDeck.durationMinutes || lesson.durationMinutes || 120;
   const [isCompactMode, setIsCompactMode] = useState<boolean>(false);
   const [timerSeconds, setTimerSeconds] = useState<number>(defaultDuration * 60);
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
@@ -120,13 +120,9 @@ export function ProjectorView({
     if (customDeck) {
       setActiveDeck(customDeck);
     } else {
-      const stored = loadDecksFromStorage();
-      const matched = stored.find((d) => d.id === lesson.id);
-      if (matched) {
-        setActiveDeck(matched);
-      }
+      setActiveDeck(getOrBuildDeckForLesson(lesson));
     }
-  }, [customDeck, lesson.id]);
+  }, [customDeck, lesson]);
 
   const slides = activeDeck.slides.length > 0 ? activeDeck.slides : SEED_CLASS_01_DECK.slides;
   const totalSlides = slides.length;
@@ -289,7 +285,7 @@ export function ProjectorView({
   const handleToggleCompact = () => {
     const nextMode = !isCompactMode;
     setIsCompactMode(nextMode);
-    resetTimer(nextMode ? 60 : 90);
+    resetTimer(nextMode ? 60 : 120);
   };
 
   const formatTimer = (totalSec: number) => {
@@ -441,7 +437,7 @@ export function ProjectorView({
               fontWeight: 800,
             }}
           >
-            {isCompactMode ? "60m" : "90m"}
+            {isCompactMode ? "60m" : "120m"}
           </button>
         </div>
 
@@ -1077,6 +1073,7 @@ export function ProjectorView({
             [
               { id: "auto", label: "Auto Dynamic" },
               { id: "daylight-studio", label: "Daylight Studio" },
+              { id: "robobee-dark", label: "RoboBEE Dark" },
               { id: "electric-indigo", label: "Electric Indigo" },
               { id: "arduino-teal", label: "Arduino Teal" },
               { id: "cyber-blueprint", label: "Cyber Blueprint" },
