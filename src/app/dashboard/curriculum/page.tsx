@@ -23,6 +23,11 @@ import {
 } from "@/lib/portalRelations";
 import { CurriculumSimulator } from "@/components/curriculum/CurriculumSimulator";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
+import {
+  CLASS_01_SLIDES,
+  THEME_PALETTE_CONFIG,
+  PresentationMediaFrame,
+} from "@/components/curriculum/Class1WorkshopDeck";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, doc, setDoc, updateDoc, increment } from "firebase/firestore";
@@ -30,24 +35,19 @@ import {
   Award, Lock, Unlock, CheckCircle, Clock, Copy, Check, Download, 
   HelpCircle, Eye, Zap, BookOpen, Layers, X, Tv, Shield, Radio, Sparkles, Code,
   Wrench, AlertTriangle, FileText, Activity, CheckSquare, Info, ArrowRight, ExternalLink, Calendar,
-  GraduationCap, Cloud, Database
+  GraduationCap, Cloud, Database, Palette, Play, Compass
 } from "lucide-react";
 
 export default function MemberCurriculumPage() {
   const { user, userData } = useAuth();
 
-  // Tier filter: 'all' or one of the 4 CourseTiers
-  const [selectedTier, setSelectedTier] = useState<CourseTier | 'all'>('all');
+  // Flagship Class 01 Lesson Record
+  const class01Lesson: RoboticsLesson =
+    ALL_ROBOTICS_LESSONS.find((l) => l.id === "beg-01") || ALL_ROBOTICS_LESSONS[0];
 
-  // Class status tracking (defaulting first 3 beginner and all 4 explorer classes to published for seamless exploration)
+  // Class status tracking
   const [classStatuses, setClassStatuses] = useState<{ [id: string]: ClassStatus }>({
-    'exp-01': 'published',
-    'exp-02': 'published',
-    'exp-03': 'published',
-    'exp-04': 'published',
-    'beg-01': 'published',
-    'beg-02': 'published',
-    'beg-03': 'published',
+    "beg-01": "published",
   });
 
   // Selected lesson modal & Dual-Engine view modes
@@ -69,8 +69,9 @@ export default function MemberCurriculumPage() {
   const [submittingQuiz, setSubmittingQuiz] = useState<boolean>(false);
   const [quizSuccess, setQuizSuccess] = useState<boolean>(false);
 
-  // Projector preview
+  // Projector preview & initial slide index
   const [projectorMode, setProjectorMode] = useState<boolean>(false);
+  const [projectorInitialSlide, setProjectorInitialSlide] = useState<number>(0);
 
   // Live Lab Inventory & Custom Slide Blocks
   const [inventoryItems, setInventoryItems] = useState<RelationalInventoryItem[]>([]);
@@ -98,10 +99,10 @@ export default function MemberCurriculumPage() {
     try {
       const unsub = onSnapshot(collection(db, "curriculum_status"), (snapshot) => {
         const updates: { [id: string]: ClassStatus } = {};
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
           if (data && data.status) {
-            updates[doc.id] = data.status;
+            updates[docSnap.id] = data.status;
           }
         });
         setClassStatuses(prev => ({ ...prev, ...updates }));
@@ -120,8 +121,8 @@ export default function MemberCurriculumPage() {
     try {
       const unsub = onSnapshot(collection(db, "curriculum_submissions"), (snapshot) => {
         const completed: { [classId: string]: boolean } = {};
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
           if (data && data.userId === user.uid && data.classId) {
             completed[data.classId] = true;
           }
@@ -215,12 +216,15 @@ export default function MemberCurriculumPage() {
     }
   };
 
-  // Filter lessons based on active tier
-  const visibleLessons = selectedTier === 'all'
-    ? ALL_ROBOTICS_LESSONS
-    : getLessonsByTier(selectedTier);
-
   const completedCount = Object.keys(completedClasses).length;
+  const class01Status = classStatuses["beg-01"] || "published";
+  const isClass01Completed = !!completedClasses["beg-01"];
+
+  const launchProjectorAtSlide = (slideIdx: number) => {
+    setProjectorInitialSlide(slideIdx);
+    setActiveLesson(class01Lesson);
+    setProjectorMode(true);
+  };
 
   return (
     <div className={styles.pageContainer}>
@@ -259,30 +263,28 @@ export default function MemberCurriculumPage() {
           </div>
         </div>
 
-        <h1 className={styles.heroTitle}>Robotics Academy &amp; Interactive Learning Journey</h1>
+        <h1 className={styles.heroTitle}>Interactive Learning Deck &amp; Live Presentation Studio</h1>
         <p className={styles.heroSubtitle}>
           <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em><br />
-          Explore a 4-tier sequenced engineering progression: from your very first LED blink on the Arduino Uno
-          to building obstacle-avoiding rovers, high-speed line followers, robotic pick-and-place grippers,
-          and tournament-grade Mini-Sumo robots!
+          Step inside <strong>Class 01: Introduction to Robotics &amp; Future Engineering</strong> — featuring a 12-slide multi-palette Keynote presentation, interactive Machine vs. Robot flip-cards, 5-part robot anatomy, and an interactive Arduino Uno R3 hardware lab!
         </p>
 
         <div className={styles.heroStats}>
           <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue}>{ALL_ROBOTICS_LESSONS.length} Classes</span>
-            <span className={styles.heroStatLabel}>Total Academy Scope</span>
+            <span className={styles.heroStatValue}>Class 01</span>
+            <span className={styles.heroStatLabel}>Flagship Module</span>
+          </div>
+          <div className={styles.heroStatItem}>
+            <span className={styles.heroStatValue} style={{ color: '#38bdf8' }}>12 Slides</span>
+            <span className={styles.heroStatLabel}>Interactive Presentation</span>
           </div>
           <div className={styles.heroStatItem}>
             <span className={styles.heroStatValue} style={{ color: '#10b981' }}>{completedCount}</span>
             <span className={styles.heroStatLabel}>Completed Badges</span>
           </div>
           <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue} style={{ color: '#38bdf8' }}>4 Tracks</span>
-            <span className={styles.heroStatLabel}>Explorer ➔ Advanced</span>
-          </div>
-          <div className={styles.heroStatItem}>
-            <span className={styles.heroStatValue} style={{ color: '#F5B800' }}>Hardware + Sim</span>
-            <span className={styles.heroStatLabel}>Zero-Lag Lab Mode</span>
+            <span className={styles.heroStatValue} style={{ color: '#F5B800' }}>4 Palettes</span>
+            <span className={styles.heroStatLabel}>Dynamic Keynote Themes</span>
           </div>
         </div>
       </div>
@@ -349,140 +351,318 @@ export default function MemberCurriculumPage() {
         </div>
       )}
 
-      {/* Course Tier Selector Navigation */}
-      <div className={styles.tierNav}>
-        <button
-          onClick={() => setSelectedTier('all')}
-          className={`${styles.tierTab} ${selectedTier === 'all' ? styles.tierTabActive : ''}`}
-        >
-          <span>All 36 Classes</span>
-        </button>
-        {COURSE_SPACES.map(cs => (
-          <button
-            key={cs.id}
-            onClick={() => setSelectedTier(cs.id)}
-            className={`${styles.tierTab} ${selectedTier === cs.id ? styles.tierTabActive : ''}`}
+      {/* FLAGSHIP CLASS 01 RICH COURSE CARD */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #1E1B4B 0%, #311042 52%, #0F172A 100%)",
+          border: "2px solid rgba(0, 245, 212, 0.45)",
+          borderRadius: "24px",
+          padding: "2rem",
+          marginBottom: "2rem",
+          boxShadow: "0 24px 55px rgba(0, 0, 0, 0.5)",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "2rem",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", flexWrap: "wrap" }}>
+            <span
+              style={{
+                background: "rgba(0, 245, 212, 0.16)",
+                border: "1px solid #00F5D4",
+                color: "#00F5D4",
+                padding: "0.3rem 0.85rem",
+                borderRadius: "999px",
+                fontSize: "0.78rem",
+                fontWeight: 900,
+                letterSpacing: "0.08em",
+              }}
+            >
+              CLASS 01 • FLAGSHIP MODULE
+            </span>
+            <span
+              style={{
+                background: "rgba(56, 189, 248, 0.16)",
+                border: "1px solid #38BDF8",
+                color: "#38BDF8",
+                padding: "0.3rem 0.85rem",
+                borderRadius: "999px",
+                fontSize: "0.78rem",
+                fontWeight: 800,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+              }}
+            >
+              <Sparkles size={13} /> 12 Interactive Slides
+            </span>
+            <span
+              style={{
+                background: "rgba(251, 191, 36, 0.16)",
+                border: "1px solid #FBBF24",
+                color: "#FBBF24",
+                padding: "0.3rem 0.85rem",
+                borderRadius: "999px",
+                fontSize: "0.78rem",
+                fontWeight: 800,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+              }}
+            >
+              <Palette size={13} /> 4 Dynamic Color Themes
+            </span>
+            {isClass01Completed && (
+              <span
+                style={{
+                  background: "rgba(16, 185, 129, 0.2)",
+                  border: "1px solid #10B981",
+                  color: "#34D399",
+                  padding: "0.3rem 0.85rem",
+                  borderRadius: "999px",
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                }}
+              >
+                <CheckCircle size={13} /> Completed (+100 XP)
+              </span>
+            )}
+          </div>
+
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "clamp(1.7rem, 2.8vw, 2.35rem)",
+              fontWeight: 900,
+              color: "#FFFFFF",
+              lineHeight: 1.15,
+            }}
           >
-            <span>{cs.title} ({cs.totalClasses})</span>
-          </button>
-        ))}
+            {class01Lesson.title}
+          </h2>
+
+          <p style={{ margin: 0, fontSize: "1rem", color: "#E0E7FF", lineHeight: 1.6 }}>
+            {class01Lesson.promise}
+          </p>
+
+          {/* Topic Tags */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
+            {[
+              "Why Robotics",
+              "History (1206–Today)",
+              "Machine vs. Robot Flip Quiz",
+              "Sense → Think → Act",
+              "5 Robot Parts",
+              "Microcontrollers",
+              "Arduino Uno Anatomy",
+            ].map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  background: "rgba(255, 255, 255, 0.1)",
+                  border: "1px solid rgba(255, 255, 255, 0.22)",
+                  color: "#FFFFFF",
+                  padding: "0.28rem 0.65rem",
+                  borderRadius: "8px",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap", marginTop: "0.35rem" }}>
+            <button
+              onClick={() => launchProjectorAtSlide(0)}
+              style={{
+                background: "linear-gradient(135deg, #00F5D4 0%, #38BDF8 100%)",
+                color: "#090D16",
+                border: "none",
+                padding: "0.85rem 1.55rem",
+                borderRadius: "14px",
+                fontSize: "0.96rem",
+                fontWeight: 900,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.55rem",
+                boxShadow: "0 12px 28px rgba(0, 245, 212, 0.35)",
+              }}
+            >
+              <Tv size={19} />
+              Launch Live Projector (12 Slides)
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveLesson(class01Lesson);
+                setActiveTab("overview");
+              }}
+              style={{
+                background: "rgba(255, 255, 255, 0.12)",
+                color: "#FFFFFF",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                padding: "0.85rem 1.35rem",
+                borderRadius: "14px",
+                fontSize: "0.92rem",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <BookOpen size={17} color="#00F5D4" />
+              Open Hardware Lab &amp; Simulators
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <PresentationMediaFrame
+            src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
+            alt="Class 01: Introduction to Robotics & Future Engineering"
+            caption="Class 01 Interactive Presentation • Click 'Launch Live Projector' to begin"
+            fallbackVariant="robot-arm"
+            accentColor="#00F5D4"
+            height="320px"
+            onZoom={() => launchProjectorAtSlide(0)}
+          />
+        </div>
       </div>
 
-      {/* Render Course Spaces */}
-      {COURSE_SPACES.filter(cs => selectedTier === 'all' || selectedTier === cs.id).map(cs => {
-        const spaceLessons = ALL_ROBOTICS_LESSONS.filter(l => l.courseId === cs.id);
+      {/* 12-SLIDE INTERACTIVE PREVIEW GRID */}
+      <section style={{ marginBottom: "2.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.15rem" }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 900, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Compass size={20} color="#38BDF8" />
+              Class 01 Interactive Slide Deck (12 Slides • 4 Dynamic Palettes)
+            </h3>
+            <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.86rem", color: "#94A3B8" }}>
+              Click any slide below to launch the full-screen interactive presentation directly at that topic.
+            </p>
+          </div>
+        </div>
 
-        return (
-          <section key={cs.id} className={styles.roadmapSection}>
-            {/* Space Overview Card */}
-            <div className={styles.spaceOverviewCard}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.4rem' }}>
-                  <span className={styles.spaceBadge}>{cs.badge}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{cs.proposedBand}</span>
-                </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f1f5f9' }}>
-                  {cs.title}
-                </h2>
-                <p style={{ fontSize: '0.88rem', color: '#cbd5e1', maxWidth: '750px', marginTop: '0.35rem', lineHeight: '1.5' }}>
-                  {cs.description}
-                </p>
-                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.4rem' }}>
-                  Hardware: <strong>{cs.recommendedHardware}</strong>
-                </div>
-              </div>
-
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '0.72rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-                  {cs.statusNotice}
-                </span>
-              </div>
-            </div>
-
-            {/* Grid of Lessons */}
-            <div className={styles.roadmapGrid}>
-              {spaceLessons.map(lesson => {
-                const status = classStatuses[lesson.id] || lesson.status;
-                const isUnlocked = status === 'published' || status === 'live_in_class';
-                const isCompleted = !!completedClasses[lesson.id];
-                const isLive = status === 'live_in_class';
-
-                const sessionForLesson = scheduledSessions.find(s => s.lessonId === lesson.id);
-                const hasAttendedSession = sessionForLesson && user && (sessionForLesson.attendees || []).some(
-                  a => a === user.uid || (user.email && a.toLowerCase() === user.email.toLowerCase())
-                );
-                const isScheduledNext = progression.nextSession?.lessonId === lesson.id;
-
-                return (
-                  <div
-                    key={lesson.id}
-                    onClick={() => {
-                      if (isUnlocked) {
-                        setActiveLesson(lesson);
-                        setActiveTab('overview');
-                      }
-                    }}
-                    className={`${styles.roadmapCard} ${
-                      isUnlocked ? styles.roadmapCardUnlocked : styles.roadmapCardLocked
-                    } ${isLive ? styles.roadmapCardActive : ''}`}
-                  >
-                    <div>
-                      <div className={styles.cardHeader}>
-                        <span className={styles.cardClassCode}>{lesson.code}</span>
-                        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                          {hasAttendedSession && (
-                            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '0.15rem 0.45rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                              <CheckCircle size={10} /> Attended ✓
-                            </span>
-                          )}
-                          {!hasAttendedSession && isScheduledNext && (
-                            <span style={{ background: 'rgba(245, 184, 0, 0.15)', color: '#F5B800', border: '1px solid rgba(245, 184, 0, 0.35)', padding: '0.15rem 0.45rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                              <Calendar size={10} /> Next Up
-                            </span>
-                          )}
-                          <span className={`${styles.cardStatusPill} ${
-                            isLive ? styles.pillLive : isUnlocked ? styles.pillPublished : styles.pillLocked
-                          }`}>
-                            {isLive && <><Radio size={12} /> Live Now</>}
-                            {!isLive && isUnlocked && <><Unlock size={12} /> Available</>}
-                            {!isUnlocked && <><Lock size={12} /> Supervised</>}
-                          </span>
-                        </div>
-                      </div>
-
-                      <h3 className={styles.cardTitle}>{lesson.title}</h3>
-                      <p className={styles.cardSubtitle}>{lesson.promise}</p>
-
-                      <div style={{ marginTop: '0.75rem', background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', fontSize: '0.78rem' }}>
-                        <span style={{ color: '#F5B800', fontWeight: 700 }}>Project: </span>
-                        <span style={{ color: '#cbd5e1' }}>{lesson.project.name}</span>
-                      </div>
-                    </div>
-
-                    <div className={styles.cardFooter}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Clock size={13} color="#F5B800" />
-                        <span>{lesson.durationMinutes} min</span>
-                      </div>
-                      <div>
-                        {isCompleted ? (
-                          <span style={{ color: '#10b981', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <CheckCircle size={14} /> Completed
-                          </span>
-                        ) : isUnlocked ? (
-                          <span style={{ color: '#38bdf8', fontWeight: 700 }}>Explore Lab ➔</span>
-                        ) : (
-                          <span style={{ color: '#64748b' }}>Instructor Supervised</span>
-                        )}
-                      </div>
-                    </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: "1.1rem",
+          }}
+        >
+          {CLASS_01_SLIDES.map((s, idx) => {
+            const palette = THEME_PALETTE_CONFIG[s.theme];
+            return (
+              <div
+                key={s.numberLabel}
+                style={{
+                  background: palette.canvasBg,
+                  border: `2px solid ${palette.cardBorder}`,
+                  borderRadius: "18px",
+                  padding: "1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  gap: "0.85rem",
+                  boxShadow: "0 12px 28px rgba(0,0,0,0.3)",
+                }}
+              >
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.4rem", marginBottom: "0.65rem" }}>
+                    <span
+                      style={{
+                        fontSize: "0.72rem",
+                        fontWeight: 900,
+                        padding: "0.22rem 0.6rem",
+                        borderRadius: "999px",
+                        background: palette.badgeBg,
+                        color: palette.badgeText,
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      SLIDE {s.numberLabel} • {palette.name.toUpperCase()}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 800,
+                        color: palette.mutedColor,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {s.layout}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
+
+                  <div style={{ marginBottom: "0.75rem" }}>
+                    <PresentationMediaFrame
+                      src={s.heroImage}
+                      alt={s.title}
+                      caption={s.imageCaption}
+                      fallbackVariant={s.theme === "arduino-teal" ? "arduino" : s.theme === "cyber-blueprint" ? "rover" : "robot-arm"}
+                      accentColor={palette.accentPrimary}
+                      height="165px"
+                    />
+                  </div>
+
+                  <h4
+                    style={{
+                      margin: "0 0 0.35rem 0",
+                      fontSize: "1.02rem",
+                      fontWeight: 900,
+                      color: palette.headingColor,
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {s.title}
+                  </h4>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "0.8rem",
+                      color: palette.bodyColor,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {s.subtitle}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => launchProjectorAtSlide(idx)}
+                  style={{
+                    width: "100%",
+                    background: palette.isLight ? "#0F172A" : "rgba(255,255,255,0.14)",
+                    color: "#FFFFFF",
+                    border: `1px solid ${palette.accentPrimary}`,
+                    borderRadius: "10px",
+                    padding: "0.6rem 0.9rem",
+                    fontSize: "0.82rem",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.45rem",
+                  }}
+                >
+                  <Play size={14} /> Open Slide {s.numberLabel}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Interactive Lesson Modal */}
       {activeLesson && (
@@ -1551,6 +1731,7 @@ export default function MemberCurriculumPage() {
       {projectorMode && activeLesson && (
         <ProjectorView
           lesson={activeLesson}
+          initialSlide={projectorInitialSlide}
           onClose={() => setProjectorMode(false)}
         />
       )}

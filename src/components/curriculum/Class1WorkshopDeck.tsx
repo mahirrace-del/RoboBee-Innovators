@@ -1,1955 +1,3144 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import styles from "./projectorView.module.css";
+import React, { useState } from "react";
 import { RoboticsLesson } from "@/lib/curriculumData";
-import { ArduinoUnoPinout } from "./ArduinoUnoPinout";
-import { 
-  CheckCircle, Shield, AlertTriangle, Cpu, Zap, 
-  Eye, Award, BookOpen, ChevronDown, ChevronUp, CheckSquare, 
-  Activity, ExternalLink, Sparkles, Target
+import {
+  Sparkles,
+  Rocket,
+  Cpu,
+  Zap,
+  Award,
+  CheckCircle2,
+  XCircle,
+  ZoomIn,
+  X,
+  Plus,
+  RotateCcw,
+  Compass,
+  Clock,
+  Eye,
+  Brain,
+  Cog,
+  BatteryCharging,
+  ShieldCheck,
+  Wifi,
+  Gauge,
+  Layers,
+  Code2,
+  ArrowRight,
+  HelpCircle,
+  Trophy,
+  Globe,
+  Wrench,
 } from "lucide-react";
+
+export type SlideColorTheme =
+  | "electric-indigo"
+  | "daylight-studio"
+  | "arduino-teal"
+  | "cyber-blueprint";
+
+export type SlideLayoutType =
+  | "hero-title"
+  | "split-media"
+  | "interactive-grid"
+  | "interactive-hotspot"
+  | "timeline-stepper";
+
+export interface Class1SlideMeta {
+  index: number;
+  numberLabel: string;
+  title: string;
+  subtitle: string;
+  theme: SlideColorTheme;
+  layout: SlideLayoutType;
+  heroImage: string;
+  imageCaption: string;
+  speakerNotes: string;
+}
+
+export const CLASS_01_SLIDES: Class1SlideMeta[] = [
+  {
+    index: 0,
+    numberLabel: "01",
+    title: "Welcome to the World of Robotics",
+    subtitle:
+      "From Consumer of Technology to Creator of Autonomous Machines — RoboBee Innovators Foundation Track.",
+    theme: "electric-indigo",
+    layout: "hero-title",
+    heroImage:
+      "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1600&q=80",
+    imageCaption: "Autonomous Humanoid & Precision Robotics Lab • Class 01 Foundation",
+    speakerNotes:
+      "Welcome students with high energy! Ask: 'Who here uses technology every day? Now, who wants to BUILD the technology of the future?' Click 'Launch Class Engine' to trigger the HUD boot transition into Slide 02.",
+  },
+  {
+    index: 1,
+    numberLabel: "02",
+    title: "Why Extracurricular Activities Matter",
+    subtitle:
+      "Textbooks teach you formulas—building real hardware in a team teaches you how to engineer the future.",
+    theme: "electric-indigo",
+    layout: "split-media",
+    heroImage:
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Collaborative Robotics Engineering Workbench & Competition Prep",
+    speakerNotes:
+      "Highlight the 3 Bento cards on the left: 1) Beyond Textbooks, 2) Global University Edge (MIT, top engineering schools love hands-on makers), and 3) Real Engineering Resilience when debugging 5 minutes before a match.",
+  },
+  {
+    index: 2,
+    numberLabel: "03",
+    title: "Why You Must Learn Robotics",
+    subtitle:
+      "Where Software Code, Electronic Circuits, and Mechanical Design unite into one superpower.",
+    theme: "daylight-studio",
+    layout: "interactive-grid",
+    heroImage:
+      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Code Meets Physical Reality • Mechatronics Integration",
+    speakerNotes:
+      "Notice how the slide shifts to our bright Daylight Studio theme for crisp conceptual clarity! Click each of the 4 Bento cards to reveal real-world applications and olympiad opportunities.",
+  },
+  {
+    index: 3,
+    numberLabel: "04",
+    title: "What Is Your Interest & Future Goal?",
+    subtitle:
+      "Live Classroom Icebreaker Poll — Raise your hand for your dream engineering path!",
+    theme: "electric-indigo",
+    layout: "interactive-grid",
+    heroImage:
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "RoboBee Innovators Student Builder Personas",
+    speakerNotes:
+      "Poll the room! Ask students to raise their hands for Path A (Combat & Sumo), Path B (Autonomous AI), Path C (Smart System Inventor), or Path D (Curious First-Timer). Click the '+1 Vote' buttons live on screen!",
+  },
+  {
+    index: 4,
+    numberLabel: "05",
+    title: "What Actually IS a Robot?",
+    subtitle:
+      "Not every machine is a robot! A true robot perceives its environment, makes decisions, and acts physically.",
+    theme: "daylight-studio",
+    layout: "split-media",
+    heroImage:
+      "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Autonomous Rover vs. Manual Remote-Controlled Machines",
+    speakerNotes:
+      "Emphasize that a remote-controlled car is just an extension of human fingers. Then run the 3-card interactive Classroom Flip Quiz on the right: have students shout 'Robot' or 'Machine' before clicking each card!",
+  },
+  {
+    index: 5,
+    numberLabel: "06",
+    title: "The Fascinating History of Robotics",
+    subtitle:
+      "Over 800 years of human ingenuity—from medieval clockwork automata to AI-guided Mars rovers.",
+    theme: "daylight-studio",
+    layout: "timeline-stepper",
+    heroImage:
+      "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Evolution of Autonomous Machines: 1206 Automata to Modern Planetary Rovers",
+    speakerNotes:
+      "Step through the 4 historical eras on the horizontal timeline: 1206 (Al-Jazari's programmable automata), 1920 (Karel Čapek coins 'Robota'), 1961 (Unimate first industrial robot arm), and Today (Mars Perseverance & AI quadrupeds).",
+  },
+  {
+    index: 6,
+    numberLabel: "07",
+    title: "How Robots Work: Sense ➔ Think ➔ Act",
+    subtitle:
+      "Every autonomous robot follows a continuous 3-stage closed engineering loop modeled on biology.",
+    theme: "cyber-blueprint",
+    layout: "timeline-stepper",
+    heroImage:
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Closed-Loop Control Architecture: Sensors ➔ Microcontroller ➔ Actuators",
+    speakerNotes:
+      "We are now in the Cyber Blueprint engineering view! Click through SENSE (Eyes/Ultrasonic & IR), THINK (Brain/Microcontroller C++ logic), and ACT (Muscles/Motor Drivers & Servos) to compare human biology with robot architecture.",
+  },
+  {
+    index: 7,
+    numberLabel: "08",
+    title: "The 5 Main Parts of Every Robot",
+    subtitle:
+      "Click each pulsing numbered hotspot (1–5) on the robot blueprint to inspect its core subsystems.",
+    theme: "cyber-blueprint",
+    layout: "interactive-hotspot",
+    heroImage:
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "5-Subsystem Mobile Robot Anatomical Architecture",
+    speakerNotes:
+      "Click hotspots 1 through 5 on the interactive robot schematic: 1) Controller Brain, 2) Sensor Eyes, 3) Actuators & Motor Drivers, 4) LiPo & Buck Power Heart, and 5) 3D-Printed/Aluminum Chassis Skeleton.",
+  },
+  {
+    index: 8,
+    numberLabel: "09",
+    title: "Types of Microcontrollers (The Brains)",
+    subtitle:
+      "Choosing the right silicon brain for starter bots, IoT dashboards, and high-speed PID competition robots.",
+    theme: "arduino-teal",
+    layout: "interactive-grid",
+    heroImage:
+      "https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Embedded Microcontroller Lineup: AVR, Xtensa Dual-Core, ARM Cortex-M4 & RP2040",
+    speakerNotes:
+      "Notice our Arduino Teal hardware theme! Compare the 4 essential boards: Arduino Uno/Nano (16MHz 5V classic), ESP32 (240MHz Wi-Fi/BT), STM32 Black Pill (32-bit ARM for fast PID Line Followers), and Raspberry Pi Pico (RP2040).",
+  },
+  {
+    index: 9,
+    numberLabel: "10",
+    title: "Why We Start With Arduino!",
+    subtitle:
+      "The undisputed global standard for mastering hardware interfacing, sensors, and embedded C/C++.",
+    theme: "arduino-teal",
+    layout: "split-media",
+    heroImage:
+      "https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Arduino Uno R3 Development Board • 5V Logic & Plug-and-Play Ecosystem",
+    speakerNotes:
+      "Explain why every great robotics engineer starts with Arduino: forgiving 5V pins that resist accidental damage, millions of open-source sensor libraries, and clean setup()/loop() C++ fundamentals.",
+  },
+  {
+    index: 10,
+    numberLabel: "11",
+    title: "Interactive Anatomy of an Arduino Uno",
+    subtitle:
+      "Click the 5 pulsing hardware pins on the board to master every connector, header, and microchip.",
+    theme: "arduino-teal",
+    layout: "interactive-hotspot",
+    heroImage:
+      "https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Arduino Uno R3 Interactive Pinout & Silicon Tour",
+    speakerNotes:
+      "Have students hold up their physical Arduino Uno boards while you click Pins 1 to 5 on screen: 1) USB Port & Power Barrel, 2) Digital & PWM Pins (D0-D13), 3) Analog Inputs (A0-A5), 4) Power Rails (5V/GND/VIN), and 5) ATmega328P.",
+  },
+  {
+    index: 11,
+    numberLabel: "12",
+    title: "Your Robotics Journey Starts Today!",
+    subtitle:
+      "Dream. Invent. Experiment. Inspire. — Here is our 3-Phase Roadmap at RoboBee Innovators.",
+    theme: "electric-indigo",
+    layout: "hero-title",
+    heroImage:
+      "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1600&q=80",
+    imageCaption: "RoboBee Innovators Competition Squads & Autonomous Robotics Track",
+    speakerNotes:
+      "Close with maximum inspiration! Walk through Phase 1 (Master Electronics & Arduino), Phase 2 (Build & Code Your First Autonomous Bot), and Phase 3 (Compete with RoboBee Innovators in National & Global Olympiads).",
+  },
+];
+
+export const THEME_PALETTE_CONFIG: Record<
+  SlideColorTheme,
+  {
+    name: string;
+    canvasBg: string;
+    gridOverlay?: string;
+    cardBg: string;
+    cardBorder: string;
+    cardShadow: string;
+    headingColor: string;
+    bodyColor: string;
+    mutedColor: string;
+    accentPrimary: string;
+    accentSecondary: string;
+    badgeBg: string;
+    badgeText: string;
+    isLight: boolean;
+  }
+> = {
+  "electric-indigo": {
+    name: "Electric Indigo",
+    canvasBg:
+      "radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.22) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(0, 245, 212, 0.18) 0%, transparent 50%), linear-gradient(135deg, #1E1B4B 0%, #311042 52%, #0F172A 100%)",
+    cardBg: "rgba(255, 255, 255, 0.10)",
+    cardBorder: "rgba(255, 255, 255, 0.22)",
+    cardShadow: "0 20px 45px -15px rgba(0, 0, 0, 0.45)",
+    headingColor: "#FFFFFF",
+    bodyColor: "#E0E7FF",
+    mutedColor: "#A5B4FC",
+    accentPrimary: "#00F5D4",
+    accentSecondary: "#38BDF8",
+    badgeBg: "rgba(0, 245, 212, 0.16)",
+    badgeText: "#00F5D4",
+    isLight: false,
+  },
+  "daylight-studio": {
+    name: "Daylight Studio",
+    canvasBg:
+      "linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #E0E7FF 100%)",
+    cardBg: "#FFFFFF",
+    cardBorder: "#C7D2FE",
+    cardShadow: "0 20px 40px -15px rgba(30, 41, 59, 0.12)",
+    headingColor: "#0F172A",
+    bodyColor: "#334155",
+    mutedColor: "#475569",
+    accentPrimary: "#2563EB",
+    accentSecondary: "#7C3AED",
+    badgeBg: "rgba(37, 99, 235, 0.12)",
+    badgeText: "#2563EB",
+    isLight: true,
+  },
+  "arduino-teal": {
+    name: "Arduino Teal",
+    canvasBg:
+      "radial-gradient(circle at 80% 18%, rgba(251, 191, 36, 0.16) 0%, transparent 45%), linear-gradient(135deg, #042F2E 0%, #0F766E 50%, #115E59 100%)",
+    cardBg: "rgba(240, 253, 250, 0.12)",
+    cardBorder: "#2DD4BF",
+    cardShadow: "0 20px 45px -15px rgba(4, 47, 46, 0.6)",
+    headingColor: "#FFFFFF",
+    bodyColor: "#F0FDF4",
+    mutedColor: "#FEF3C7",
+    accentPrimary: "#FBBF24",
+    accentSecondary: "#5EEAD4",
+    badgeBg: "rgba(251, 191, 36, 0.18)",
+    badgeText: "#FBBF24",
+    isLight: false,
+  },
+  "cyber-blueprint": {
+    name: "Cyber Blueprint",
+    canvasBg:
+      "linear-gradient(135deg, #0C4A6E 0%, #0369A1 50%, #1E3A8A 100%)",
+    gridOverlay:
+      "linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)",
+    cardBg: "rgba(15, 23, 42, 0.65)",
+    cardBorder: "#38BDF8",
+    cardShadow: "0 20px 45px -15px rgba(12, 74, 110, 0.65)",
+    headingColor: "#FFFFFF",
+    bodyColor: "#E0F2FE",
+    mutedColor: "#67E8F9",
+    accentPrimary: "#F59E0B",
+    accentSecondary: "#38BDF8",
+    badgeBg: "rgba(245, 158, 11, 0.2)",
+    badgeText: "#FBBF24",
+    isLight: false,
+  },
+};
+
+/**
+ * Custom Multi-Layered Vector Hardware Illustration Fallback
+ * Guarantees zero broken image icons even if offline or blocked.
+ */
+function FallbackHardwareArtwork({
+  variant,
+  caption,
+}: {
+  variant: "robot-arm" | "arduino" | "rover" | "team" | "mcu";
+  caption: string;
+}) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: "260px",
+        background:
+          variant === "arduino"
+            ? "linear-gradient(135deg, #042F2E 0%, #0F766E 100%)"
+            : "linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #0C4A6E 100%)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1.5rem",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <svg
+        viewBox="0 0 600 360"
+        style={{ width: "100%", maxWidth: "460px", height: "auto" }}
+      >
+        <defs>
+          <linearGradient id="cyanGlow" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#00F5D4" />
+            <stop offset="100%" stopColor="#38BDF8" />
+          </linearGradient>
+          <linearGradient id="amberGlow" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#F97316" />
+          </linearGradient>
+        </defs>
+        {/* Subtle technical grid */}
+        <g stroke="rgba(255,255,255,0.08)" strokeWidth="1">
+          <line x1="0" y1="60" x2="600" y2="60" />
+          <line x1="0" y1="120" x2="600" y2="120" />
+          <line x1="0" y1="180" x2="600" y2="180" />
+          <line x1="0" y1="240" x2="600" y2="240" />
+          <line x1="0" y1="300" x2="600" y2="300" />
+          <line x1="120" y1="0" x2="120" y2="360" />
+          <line x1="240" y1="0" x2="240" y2="360" />
+          <line x1="360" y1="0" x2="360" y2="360" />
+          <line x1="480" y1="0" x2="480" y2="360" />
+        </g>
+
+        {variant === "arduino" ? (
+          <g>
+            {/* Arduino Uno PCB Vector */}
+            <rect
+              x="90"
+              y="50"
+              width="420"
+              height="260"
+              rx="18"
+              fill="#0D9488"
+              stroke="#5EEAD4"
+              strokeWidth="3"
+            />
+            {/* USB Port */}
+            <rect
+              x="65"
+              y="85"
+              width="55"
+              height="65"
+              rx="6"
+              fill="#CBD5E1"
+              stroke="#475569"
+              strokeWidth="2"
+            />
+            {/* DC Barrel Jack */}
+            <rect
+              x="65"
+              y="215"
+              width="60"
+              height="55"
+              rx="6"
+              fill="#1E293B"
+              stroke="#64748B"
+              strokeWidth="2"
+            />
+            {/* Digital Header Strip */}
+            <rect x="160" y="62" width="310" height="22" rx="4" fill="#0F172A" />
+            <text x="175" y="77" fill="#5EEAD4" fontSize="11" fontWeight="bold" fontFamily="monospace">
+              D13 D12 ~D11 ~D10 ~D9 D8   D7 ~D6 ~D5 D4 ~D3 D2 TX RX
+            </text>
+            {/* ATmega328P DIP Chip */}
+            <rect
+              x="250"
+              y="165"
+              width="210"
+              height="62"
+              rx="6"
+              fill="#1E293B"
+              stroke="#FBBF24"
+              strokeWidth="2.5"
+            />
+            <text x="275" y="200" fill="#FBBF24" fontSize="14" fontWeight="bold" fontFamily="monospace">
+              ATmega328P • 16MHz
+            </text>
+            {/* Power & Analog Headers */}
+            <rect x="160" y="276" width="140" height="22" rx="4" fill="#0F172A" />
+            <text x="172" y="291" fill="#FBBF24" fontSize="11" fontWeight="bold" fontFamily="monospace">
+              IOREF RST 3.3V 5V GND VIN
+            </text>
+            <rect x="320" y="276" width="150" height="22" rx="4" fill="#0F172A" />
+            <text x="335" y="291" fill="#38BDF8" fontSize="11" fontWeight="bold" fontFamily="monospace">
+              A0  A1  A2  A3  A4  A5
+            </text>
+            {/* Glowing Pin 13 LED */}
+            <circle cx="240" cy="122" r="10" fill="#FBBF24" />
+            <circle cx="240" cy="122" r="18" fill="rgba(251, 191, 36, 0.35)" />
+            <text x="265" y="127" fill="#FFFFFF" fontSize="13" fontWeight="bold">
+              ONBOARD LED (L) + RX/TX
+            </text>
+          </g>
+        ) : (
+          <g>
+            {/* Autonomous Robot & Sensor Wave Illustration */}
+            <rect
+              x="160"
+              y="110"
+              width="280"
+              height="150"
+              rx="24"
+              fill="#1E293B"
+              stroke="url(#cyanGlow)"
+              strokeWidth="3"
+            />
+            {/* Wheels */}
+            <rect x="130" y="125" width="26" height="55" rx="8" fill="#F59E0B" />
+            <rect x="130" y="195" width="26" height="55" rx="8" fill="#F59E0B" />
+            <rect x="444" y="125" width="26" height="55" rx="8" fill="#F59E0B" />
+            <rect x="444" y="195" width="26" height="55" rx="8" fill="#F59E0B" />
+            {/* Ultrasonic Sonar Eyes */}
+            <circle cx="260" cy="110" r="22" fill="#0F172A" stroke="#00F5D4" strokeWidth="3" />
+            <circle cx="340" cy="110" r="22" fill="#0F172A" stroke="#00F5D4" strokeWidth="3" />
+            {/* Sonar Waves */}
+            <path
+              d="M 245 70 Q 300 40 355 70"
+              fill="none"
+              stroke="#00F5D4"
+              strokeWidth="3"
+              strokeDasharray="6 4"
+            />
+            <path
+              d="M 220 48 Q 300 12 380 48"
+              fill="none"
+              stroke="#38BDF8"
+              strokeWidth="2.5"
+              strokeDasharray="6 4"
+            />
+            {/* Brain Core */}
+            <rect
+              x="215"
+              y="150"
+              width="170"
+              height="75"
+              rx="10"
+              fill="#0F766E"
+              stroke="#5EEAD4"
+              strokeWidth="2"
+            />
+            <text x="235" y="185" fill="#FFFFFF" fontSize="14" fontWeight="bold" fontFamily="monospace">
+              SENSE ➔ THINK ➔ ACT
+            </text>
+            <text x="242" y="207" fill="#FEF3C7" fontSize="11" fontFamily="monospace">
+              ROBOBEE AUTONOMOUS CORE
+            </text>
+          </g>
+        )}
+      </svg>
+      <div
+        style={{
+          marginTop: "0.5rem",
+          fontSize: "0.78rem",
+          color: "#E0E7FF",
+          fontWeight: 700,
+          textAlign: "center",
+        }}
+      >
+        {caption}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Presentation Media Frame with Rounded Corners, Glowing Border,
+ * Floating Glassmorphic Caption Pill, Fullscreen Zoom Badge, and Strict onError SVG Fallback.
+ */
+export function PresentationMediaFrame({
+  src,
+  alt,
+  caption,
+  fallbackVariant = "robot-arm",
+  height = "340px",
+  accentColor = "#00F5D4",
+  onZoom,
+}: {
+  src: string;
+  alt: string;
+  caption: string;
+  fallbackVariant?: "robot-arm" | "arduino" | "rover" | "team" | "mcu";
+  height?: string;
+  accentColor?: string;
+  onZoom?: (src: string, caption: string) => void;
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      onClick={() => onZoom && onZoom(src, caption)}
+      style={{
+        position: "relative",
+        width: "100%",
+        height,
+        borderRadius: "20px",
+        overflow: "hidden",
+        border: `2px solid ${accentColor}`,
+        boxShadow: `0 20px 50px -12px rgba(0, 0, 0, 0.45), 0 0 24px -6px ${accentColor}`,
+        cursor: onZoom ? "zoom-in" : "default",
+        background: "#0F172A",
+      }}
+    >
+      {!imgError ? (
+        <img
+          src={src}
+          alt={alt}
+          onError={() => setImgError(true)}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+            transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        />
+      ) : (
+        <FallbackHardwareArtwork variant={fallbackVariant} caption={caption} />
+      )}
+
+      {/* Subtle Bottom Gradient Vignette for Caption Readability */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to top, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.15) 45%, transparent 100%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Top-Right Click to Zoom Fullscreen Magnifier Badge */}
+      {onZoom && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onZoom(src, caption);
+          }}
+          style={{
+            position: "absolute",
+            top: "14px",
+            right: "14px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            padding: "0.4rem 0.75rem",
+            borderRadius: "999px",
+            background: "rgba(15, 23, 42, 0.78)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255, 255, 255, 0.28)",
+            color: "#FFFFFF",
+            fontSize: "0.74rem",
+            fontWeight: 700,
+            cursor: "pointer",
+            zIndex: 2,
+          }}
+        >
+          <ZoomIn size={14} color={accentColor} />
+          <span>Click to Zoom Fullscreen</span>
+        </button>
+      )}
+
+      {/* Bottom-Left Floating Glassmorphic Caption Pill */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "14px",
+          left: "14px",
+          right: "14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem",
+          padding: "0.55rem 0.95rem",
+          borderRadius: "12px",
+          background: "rgba(15, 23, 42, 0.78)",
+          backdropFilter: "blur(14px)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          color: "#F8FAFC",
+          fontSize: "0.8rem",
+          fontWeight: 600,
+        }}
+      >
+        <span>{caption}</span>
+        <span
+          style={{
+            fontSize: "0.68rem",
+            fontWeight: 800,
+            color: accentColor,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            flexShrink: 0,
+          }}
+        >
+          HD Visual
+        </span>
+      </div>
+    </div>
+  );
+}
 
 interface Class1WorkshopDeckProps {
   lesson: RoboticsLesson;
   currentSlide: number;
   setCurrentSlide: (slide: number) => void;
   fontScale: number;
+  activeThemeOverride?: SlideColorTheme | "auto";
+  onOpenZoom?: (src: string, caption: string) => void;
 }
 
 export function Class1WorkshopDeck({
-  lesson,
   currentSlide,
   setCurrentSlide,
-  fontScale
+  fontScale,
+  activeThemeOverride = "auto",
+  onOpenZoom,
 }: Class1WorkshopDeckProps) {
-  // ---------------------------------------------------------------------------
-  // SLIDE 2: Real-World Domains State
-  // ---------------------------------------------------------------------------
-  const [selectedDomainIdx, setSelectedDomainIdx] = useState<number>(0);
+  const slideMeta = CLASS_01_SLIDES[currentSlide] || CLASS_01_SLIDES[0];
+  const resolvedThemeKey: SlideColorTheme =
+    activeThemeOverride === "auto" ? slideMeta.theme : activeThemeOverride;
+  const palette = THEME_PALETTE_CONFIG[resolvedThemeKey];
 
-  // ---------------------------------------------------------------------------
-  // SLIDE 3: Robot or Not? State
-  // ---------------------------------------------------------------------------
-  const [revealedVerdicts, setRevealedVerdicts] = useState<{ [key: number]: boolean }>({});
-  const [userGuesses, setUserGuesses] = useState<{ [key: number]: "robot" | "not" }>({});
+  // Fullscreen Image Lightbox State (internal fallback if parent doesn't supply onOpenZoom)
+  const [lightboxMedia, setLightboxMedia] = useState<{
+    src: string;
+    caption: string;
+  } | null>(null);
 
-  const toggleVerdict = (idx: number) => {
-    setRevealedVerdicts(prev => ({ ...prev, [idx]: !prev[idx] }));
-  };
-
-  const setGuess = (idx: number, guess: "robot" | "not") => {
-    setUserGuesses(prev => ({ ...prev, [idx]: guess }));
-  };
-
-  // ---------------------------------------------------------------------------
-  // SLIDE 4: Sense-Decide-Act Stage Selector
-  // ---------------------------------------------------------------------------
-  const [activeStage, setActiveStage] = useState<"all" | "sense" | "decide" | "act" | "feedback">("all");
-
-  // ---------------------------------------------------------------------------
-  // SLIDE 5: Kit Gallery Filter
-  // ---------------------------------------------------------------------------
-  const [galleryFilter, setGalleryFilter] = useState<string>("ALL");
-  const [selectedPartIdx, setSelectedPartIdx] = useState<number | null>(null);
-
-  // ---------------------------------------------------------------------------
-  // SLIDE 6: Board Tour Zone Selector
-  // ---------------------------------------------------------------------------
-  const [activeBoardZone, setActiveBoardZone] = useState<number>(4); // default ATmega328P
-
-  // ---------------------------------------------------------------------------
-  // SLIDE 7: Breadboard & LED Anatomy View Mode
-  // ---------------------------------------------------------------------------
-  const [breadboardView, setBreadboardView] = useState<"surface" | "xray">("surface");
-
-  // ---------------------------------------------------------------------------
-  // SLIDE 9: Partner Pre-Power Safety Checklist
-  // ---------------------------------------------------------------------------
-  const [safetyChecks, setSafetyChecks] = useState<boolean[]>([false, false, false, false]);
-
-  const toggleSafetyCheck = (idx: number) => {
-    setSafetyChecks(prev => {
-      const updated = [...prev];
-      updated[idx] = !updated[idx];
-      return updated;
-    });
-  };
-
-  const allSafetyChecked = safetyChecks.every(Boolean);
-
-  // ---------------------------------------------------------------------------
-  // SLIDE 10: Code Walkthrough Active Block
-  // ---------------------------------------------------------------------------
-  const [activeCodeBlockIdx, setActiveCodeBlockIdx] = useState<number>(0);
-
-  // ---------------------------------------------------------------------------
-  // SLIDE 11: Live Timing Simulator State
-  // ---------------------------------------------------------------------------
-  const [simOnTime, setSimOnTime] = useState<number>(1000);
-  const [simOffTime, setSimOffTime] = useState<number>(1000);
-  const [simRunning, setSimRunning] = useState<boolean>(true);
-  const [simLedState, setSimLedState] = useState<boolean>(true);
-  const [activePreset, setActivePreset] = useState<string>("Standard Blink (1000/1000ms)");
-
-  // Synchronized simulation timer
-  useEffect(() => {
-    if (!simRunning) return;
-    let timeout: NodeJS.Timeout;
-
-    if (activePreset === "Cardiac Rhythm / Heartbeat (Double Pulse)") {
-      // Custom double pulse sequence: 150ms ON, 150ms OFF, 150ms ON, 550ms OFF
-      const seq = [
-        { on: true, ms: 150 },
-        { on: false, ms: 150 },
-        { on: true, ms: 150 },
-        { on: false, ms: 550 }
-      ];
-      let step = 0;
-      const runPulse = () => {
-        setSimLedState(seq[step].on);
-        const curMs = seq[step].ms;
-        step = (step + 1) % seq.length;
-        timeout = setTimeout(runPulse, curMs);
-      };
-      runPulse();
-      return () => clearTimeout(timeout);
+  const handleZoom = (src: string, caption: string) => {
+    if (onOpenZoom) {
+      onOpenZoom(src, caption);
     } else {
-      const currentDelay = simLedState ? simOnTime : simOffTime;
-      timeout = setTimeout(() => {
-        setSimLedState(prev => !prev);
-      }, Math.max(10, currentDelay));
-      return () => clearTimeout(timeout);
+      setLightboxMedia({ src, caption });
     }
-  }, [simRunning, simLedState, simOnTime, simOffTime, activePreset]);
-
-  const applyPreset = (presetName: string, onMs: number, offMs: number) => {
-    setActivePreset(presetName);
-    setSimOnTime(onMs);
-    setSimOffTime(offMs);
   };
 
-  // ---------------------------------------------------------------------------
-  // SLIDE 12: Troubleshooting, Quiz & Exit State
-  // ---------------------------------------------------------------------------
-  const [slide12Tab, setSlide12Tab] = useState<"troubleshoot" | "quiz" | "exit">("troubleshoot");
-  const [expandedTroubleIdx, setExpandedTroubleIdx] = useState<number | null>(0);
-  const [quizAnswers, setQuizAnswers] = useState<{ [qIdx: number]: number }>({});
-  const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false);
-
-  const handleSelectQuizOption = (qIdx: number, optIdx: number) => {
-    if (quizSubmitted) return;
-    setQuizAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
+  // Slide 01: HUD Boot animation state
+  const [bootingEngine, setBootingEngine] = useState(false);
+  const handleStartEngine = () => {
+    setBootingEngine(true);
+    setTimeout(() => {
+      setBootingEngine(false);
+      setCurrentSlide(1);
+    }, 550);
   };
 
-  // 5 Multiple-Choice Mastery Questions
-  const class1QuizQuestions = [
-    {
-      id: "q1",
-      prompt: "Why is a standard remote-controlled (RC) toy car NOT classified as an autonomous robot?",
-      options: [
-        "It uses DC batteries instead of AC wall power",
-        "It lacks onboard environmental sensors and programmed decision logic—a human makes all decisions",
-        "Its wheels move too quickly to be safely programmed",
-        "It does not contain any moving mechanical parts"
-      ],
-      correctOptionIndex: 1,
-      explanation: "A machine is only an autonomous robot if it Senses its environment, Decides using code, and Acts physically. A basic RC car relies 100% on a human holding the joystick to steer."
-    },
-    {
-      id: "q2",
-      prompt: "On a solderless breadboard, how are the holes in row 15 (columns 15a to 15e) connected underneath?",
-      options: [
-        "They are completely isolated from each other with zero electrical connection",
-        "They are connected vertically to row 16a-16e",
-        "They share a single horizontal spring metal clip beneath the plastic, but are separated from 15f-15j by the center trench",
-        "They connect directly to the +5V power rail at all times"
-      ],
-      correctOptionIndex: 2,
-      explanation: "Each 5-hole group (a-e and f-j) shares a 5-point metal spring clip. The center 0.3-inch DIP ravine separates the left and right halves."
-    },
-    {
-      id: "q3",
-      prompt: "What will happen if you connect an external 5mm red LED directly between Pin 13 and GND without a 220 Ω resistor?",
-      options: [
-        "The LED will blink at twice the normal speed",
-        "The LED will illuminate normally and stay cool indefinitely",
-        "Excessive current (>80 mA) will flow, quickly burning out the LED junction and risking microcontroller pin damage",
-        "The Arduino will automatically step down the voltage without needing a resistor"
-      ],
-      correctOptionIndex: 2,
-      explanation: "Diodes have near-zero resistance once forward-biased. Without a 220 Ω current-limiting resistor to drop 3V, current surges beyond the 40 mA pin limit, destroying the component."
-    },
-    {
-      id: "q4",
-      prompt: "In Arduino C++, what is the consequence of omitting the second delay(1000); after digitalWrite(LED_PIN, LOW)?",
-      options: [
-        "The sketch fails to compile with a syntax error",
-        "The LED stays OFF permanently",
-        "The LED appears solidly ON to human eyes because loop() immediately jumps back to HIGH in less than a microsecond",
-        "The USB cable automatically disconnects"
-      ],
-      correctOptionIndex: 2,
-      explanation: "Because loop() repeats instantly, the pin stays LOW for only ~62.5 nanoseconds before turning HIGH again. Human persistence of vision sees the light as constantly illuminated."
-    },
-    {
-      id: "q5",
-      prompt: "If your sketch sets ON_TIME_MS = 250 and OFF_TIME_MS = 250, what is the frequency and duty cycle of the blink?",
-      options: [
-        "Period = 250 ms, Frequency = 4 Hz, Duty Cycle = 25%",
-        "Period = 500 ms, Frequency = 2 Hz, Duty Cycle = 50%",
-        "Period = 1000 ms, Frequency = 1 Hz, Duty Cycle = 100%",
-        "Period = 50 ms, Frequency = 20 Hz, Duty Cycle = 50%"
-      ],
-      correctOptionIndex: 1,
-      explanation: "Total Period T = 250ms + 250ms = 500ms (0.5s). Frequency f = 1 / 0.5s = 2 Hz (2 complete cycles per second). Duty cycle = (250 / 500) * 100% = 50%."
-    }
-  ];
+  // Slide 03: Interactive Bento Grid Expanded Card
+  const [expandedWhyCard, setExpandedWhyCard] = useState<number>(0);
 
-  // 12-Part Hardware Kit Data
-  const kitItems = [
-    {
-      id: "uno",
-      name: "Arduino Uno R3",
-      category: "DECIDE",
-      role: "Microcontroller Brain",
-      specs: "ATmega328P, 16 MHz, 5V Logic, 32KB Flash, 14 Digital I/O, 6 Analog Inputs",
-      safety: "Handle by PCB edges; avoid touching IC pins; store in anti-static ESD bag."
-    },
-    {
-      id: "breadboard",
-      name: "Half-Size Solderless Breadboard",
-      category: "PROTOTYPE",
-      role: "Circuit Prototyping Platform",
-      specs: "400 tie points, 30 rows of 5-pin clips (a-e, f-j), 4 power rails (+/-), center DIP ravine",
-      safety: "Never force thick component leads into clips; keep center ravine free for IC straddling."
-    },
-    {
-      id: "led",
-      name: "5mm Red Diffused LED",
-      category: "ACT",
-      role: "Visual Light Actuator",
-      specs: "Forward Voltage: 2.0V, Max Continuous Current: 20mA, Viewing Angle: 60°",
-      safety: "Strict polarity required! Anode (+) is long leg; Cathode (-) is short leg with flat rim. NEVER connect without 220Ω resistor."
-    },
-    {
-      id: "resistor",
-      name: "220 Ω Carbon Film Resistor",
-      category: "PROTOTYPE",
-      role: "Current-Limiting Bodyguard",
-      specs: "220 Ω ±5%, 1/4 Watt, Color Code: Red-Red-Brown-Gold",
-      safety: "No polarity (works in either orientation). Absorbs 3.0V drop to limit current to safe 13.6 mA."
-    },
-    {
-      id: "jumpers",
-      name: "Male-to-Male Jumper Wires",
-      category: "PROTOTYPE",
-      role: "Signal & Power Interconnects",
-      specs: "24 AWG solid tinned core, molded flexible boots, 10cm–20cm lengths",
-      safety: "Follow color coding: Red = 5V Power, Black = GND Ground, Green/Yellow = Digital Signal."
-    },
-    {
-      id: "usb",
-      name: "USB 2.0 A-to-B Data Cable",
-      category: "DECIDE",
-      role: "Programming & Power Link",
-      specs: "Standard USB Type-A to Type-B, shielded twisted pair, 500mA @ 5V power delivery",
-      safety: "Use data-capable cable (not charge-only). Unplug from PC before touching any breadboard wiring."
-    },
-    {
-      id: "ultrasonic",
-      name: "HC-SR04 Ultrasonic Sensor",
-      category: "SENSE",
-      role: "Echo Distance Measurement",
-      specs: "Operating Voltage: 5V, Range: 2cm–400cm, Resolution: 0.3cm, 40 kHz acoustic burst",
-      safety: "Keep transducer grilles clean; do not apply >5.5V to VCC pin."
-    },
-    {
-      id: "ir",
-      name: "IR Obstacle Avoidance Sensor",
-      category: "SENSE",
-      role: "Reflective Proximity Detection",
-      specs: "Infrared emitter + photodiode pair, LM393 comparator, onboard trimmer pot, 2cm–30cm range",
-      safety: "Sensitive to direct sunlight and dark absorptive surfaces; calibrate trimmer screw gently."
-    },
-    {
-      id: "servo",
-      name: "TowerPro SG90 9g Micro Servo",
-      category: "ACT",
-      role: "Precision Angular Positioning",
-      specs: "Operating Voltage: 4.8V–6.0V, Torque: 1.8 kg-cm @ 4.8V, Rotation: 0°–180°, 50Hz PWM",
-      safety: "Never manually force motor horn while powered; power from external 5V supply if driving multiple servos."
-    },
-    {
-      id: "buzzer",
-      name: "Active 5V Piezoelectric Buzzer",
-      category: "ACT",
-      role: "Acoustic Alert & Signal Sound",
-      specs: "Operating Voltage: 4V–8V, Internal 2.3 kHz oscillating circuit, SPL: ≥85dB @ 10cm",
-      safety: "Observe (+) polarity marking; remove protective sticker over sound port after unboxing."
-    },
-    {
-      id: "battery",
-      name: "9V Battery Snap with DC Barrel Jack",
-      category: "POWER",
-      role: "Tetherless Field Power",
-      specs: "Standard 9V PP3 snap to 2.1mm center-positive barrel plug, feeds onboard 5V regulator",
-      safety: "Never short 9V battery terminals; unplug barrel jack when Arduino is stored in kit box."
-    },
-    {
-      id: "buttons",
-      name: "Tactile Pushbuttons & 10kΩ Resistors",
-      category: "SENSE",
-      role: "User Digital Touch Input",
-      specs: "6x6mm 4-pin momentary tact switch, 10kΩ pull-down resistor (Brown-Black-Orange)",
-      safety: "Always use pull-down or pull-up resistor to prevent floating CMOS input pin states."
-    }
-  ];
+  // Slide 04: Classroom Icebreaker Poll (+1 live student hand tally)
+  const [pollVotes, setPollVotes] = useState<number[]>([8, 6, 5, 9]);
+  const [selectedPollCard, setSelectedPollCard] = useState<number | null>(null);
 
-  const filteredKit = galleryFilter === "ALL" 
-    ? kitItems 
-    : kitItems.filter(i => i.category === galleryFilter);
+  // Slide 05: Machine vs. Robot 3-Card Flip Quiz
+  const [revealedQuizCards, setRevealedQuizCards] = useState<Record<number, boolean>>({});
 
-  // 12-Zone Board Tour Data
-  const boardZones = [
-    {
-      title: "1. USB 2.0 Type-B Port",
-      tag: "COMMUNICATION & POWER",
-      desc: "Delivers regulated 5V power from your PC (up to 500mA) and carries serial UART data for flashing compiled C++ hex machine code into the ATmega328P flash memory."
-    },
-    {
-      title: "2. 7–12V DC Barrel Jack",
-      tag: "EXTERNAL POWER INPUT",
-      desc: "Allows autonomous, computer-free field operation using a 9V battery or 9V-12V AC/DC wall adapter. Feeds the onboard linear voltage regulator."
-    },
-    {
-      title: "3. 5V & 3.3V Voltage Regulators",
-      tag: "POWER REGULATION",
-      desc: "Low-dropout voltage regulators step down 7-12V input to a clean, stable 5.0V for the microcontroller and sensors, and 3.3V for delicate wireless/sensor modules."
-    },
-    {
-      title: "4. 16 MHz Quartz Crystal Oscillator",
-      tag: "SYSTEM HEARTBEAT",
-      desc: "The precision clock that paces the microcontroller. It oscillates exactly 16,000,000 times per second, allowing deterministic instruction execution and microsecond delay accuracy."
-    },
-    {
-      title: "5. ATmega328P 8-Bit RISC Microcontroller",
-      tag: "THE ROBOT BRAIN",
-      desc: "High-performance AVR 8-bit chip with 32KB ISP flash memory, 2KB SRAM, and 1KB EEPROM. Executes your compiled C++ instructions in an infinite loop."
-    },
-    {
-      title: "6. Tactile Reset Pushbutton",
-      tag: "MANUAL RESTART",
-      desc: "Pulls the active-low RESET pin to GND (0V), restarting program execution from the beginning of setup() without unplugging the USB cable."
-    },
-    {
-      title: "7. 14 Digital I/O Pins (D0–D13)",
-      tag: "DIGITAL CONTROL",
-      desc: "Bi-directional GPIO pins configured via pinMode(). Each can supply or sink up to 20mA (40mA absolute maximum). Pins 3, 5, 6, 9, 10, and 11 support hardware PWM output."
-    },
-    {
-      title: "8. 6 Analog Input Pins (A0–A5)",
-      tag: "ANALOG SENSING",
-      desc: "Connect to the onboard 10-bit Successive Approximation ADC, converting 0V–5V continuous voltages into digital values from 0 to 1023 (4.88 mV per unit step)."
-    },
-    {
-      title: "9. Power & Ground Rail Header",
-      tag: "POWER DISTRIBUTION",
-      desc: "Provides 5V, 3.3V, multiple common GND pins, and VIN (unregulated input). All circuits must return their current to one of these GND pins."
-    },
-    {
-      title: "10. Onboard Pin 13 'L' LED",
-      tag: "BUILT-IN VISUAL INDICATOR",
-      desc: "A surface-mount yellow/orange LED internally hardwired through a buffer amplifier to Digital Pin 13. Flashes automatically whenever Pin 13 is driven HIGH."
-    },
-    {
-      title: "11. TX & RX Serial Communication LEDs",
-      tag: "TELEMETRY STATUS",
-      desc: "Transmit (TX) and Receive (RX) LEDs flash furiously during code upload and Serial Monitor data exchange, confirming active hardware communication."
-    },
-    {
-      title: "12. ICSP (In-Circuit Serial Programming) Header",
-      tag: "LOW-LEVEL PROGRAMMING",
-      desc: "A 6-pin SPI interface used for burning the Arduino bootloader directly to the ATmega328P chip using an external programmer."
-    }
-  ];
+  // Slide 06: History of Robotics Timeline Stepper
+  const [historyEraIdx, setHistoryEraIdx] = useState<number>(0);
+
+  // Slide 07: Sense -> Think -> Act Pipeline Stepper
+  const [loopStageIdx, setLoopStageIdx] = useState<number>(0);
+
+  // Slide 08: 5 Main Parts of Every Robot Pulsing Hotspot (1..5)
+  const [robotPartHotspot, setRobotPartHotspot] = useState<number>(0);
+
+  // Slide 09: Microcontroller Comparison Active Card
+  const [selectedMcuIdx, setSelectedMcuIdx] = useState<number>(0);
+
+  // Slide 11: Interactive Anatomy of an Arduino Uno Pulsing Hotspot (1..5)
+  const [arduinoPinHotspot, setArduinoPinHotspot] = useState<number>(0);
+
+  const scaleMultiplier = fontScale === 100 ? 1 : fontScale === 125 ? 1.12 : 1.22;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+    <div
+      style={{
+        width: "100%",
+        minHeight: "calc(100vh - 150px)",
+        borderRadius: "24px",
+        background: palette.canvasBg,
+        backgroundImage: palette.gridOverlay
+          ? `${palette.gridOverlay}, ${palette.canvasBg}`
+          : palette.canvasBg,
+        backgroundSize: palette.gridOverlay ? "24px 24px, 100% 100%" : "100% 100%",
+        color: palette.bodyColor,
+        padding: "2rem 2.4rem",
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.55)",
+        border: `1px solid ${palette.cardBorder}`,
+        transition: "background 0.45s ease, color 0.3s ease",
+        fontSize: `${scaleMultiplier}rem`,
+      }}
+    >
+      {/* Top Slide Header Badge Row */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "0.75rem",
+          marginBottom: "1.35rem",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", flexWrap: "wrap" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              padding: "0.35rem 0.9rem",
+              borderRadius: "999px",
+              background: palette.badgeBg,
+              color: palette.badgeText,
+              border: `1px solid ${palette.accentPrimary}`,
+              fontSize: "0.76rem",
+              fontWeight: 900,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            <Sparkles size={13} />
+            CLASS 01 • SLIDE {slideMeta.numberLabel} OF 12
+          </span>
+
+          <span
+            style={{
+              padding: "0.3rem 0.75rem",
+              borderRadius: "999px",
+              background: palette.isLight
+                ? "rgba(15, 23, 42, 0.06)"
+                : "rgba(255, 255, 255, 0.08)",
+              color: palette.headingColor,
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Theme: {palette.name} • Layout: {slideMeta.layout}
+          </span>
+        </div>
+
+        <div
+          style={{
+            fontSize: "0.78rem",
+            fontWeight: 800,
+            color: palette.mutedColor,
+            letterSpacing: "0.04em",
+          }}
+        >
+          ROBOBEE INNOVATORS • FOUNDATION TRACK
+        </div>
+      </div>
+
       {/* =====================================================================
-          SLIDE 1: WELCOME TO ROBOBEE INNOVATORS & TODAY'S MISSION
-          ===================================================================== */}
+          SLIDE 01: WELCOME TO THE WORLD OF ROBOTICS (Theme: electric-indigo | Layout: hero-title)
+         ===================================================================== */}
       {currentSlide === 0 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", marginBottom: "0.5rem" }}>
-              <div className={styles.slideNumberBadge}>
-                ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 1 OF 12
-              </div>
-              <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                <span style={{ background: "rgba(245, 184, 0, 0.15)", color: "#F5B800", border: "1px solid rgba(245, 184, 0, 0.35)", padding: "0.25rem 0.75rem", borderRadius: "20px", fontSize: "0.8rem", fontWeight: 800 }}>
-                  Proposed for Classes 5–8
-                </span>
-                <span style={{ background: "rgba(107, 15, 36, 0.35)", color: "#fca5a5", border: "1px solid #6B0F24", padding: "0.25rem 0.75rem", borderRadius: "20px", fontSize: "0.8rem", fontWeight: 800 }}>
-                  ⏱ 90m Workshop Masterclass
-                </span>
-              </div>
-            </div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>{lesson.title}</h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem", fontWeight: 600 }}>
-              {lesson.promise}
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            {/* Top Row: Mission & Organization Profile */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "1.25rem" }}>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "1.25rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#F5B800", fontWeight: 800, fontSize: "0.95rem", marginBottom: "0.75rem" }}>
-                  <Target size={18} />
-                  <span>5 Measurable Workshop Outcomes</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  {(lesson.outcomes || []).map((outcome, idx) => (
-                    <div key={idx} style={{ display: "flex", gap: "0.6rem", alignItems: "flex-start", fontSize: "0.85rem", color: "#cbd5e1" }}>
-                      <span style={{ background: "rgba(245, 184, 0, 0.2)", color: "#F5B800", borderRadius: "50%", minWidth: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 800 }}>
-                        {idx + 1}
-                      </span>
-                      <span>{outcome}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Organization Profile & Motto */}
-              <div style={{ background: "linear-gradient(135deg, rgba(107, 15, 36, 0.25), rgba(11, 15, 25, 0.6))", border: "1px solid rgba(107, 15, 36, 0.5)", borderRadius: "14px", padding: "1.25rem", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ color: "#F5B800", fontSize: "0.78rem", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase" }}>
-                    RoboBEE Innovators Academy
-                  </div>
-                  <div style={{ fontSize: "1.35rem", fontWeight: 900, color: "#ffffff", marginTop: "0.25rem", fontStyle: "italic" }}>
-                    &ldquo;Dream. Invent. Experiment. Inspire.&rdquo;
-                  </div>
-                  <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginTop: "0.5rem", lineHeight: "1.5" }}>
-                    Dedicated to providing student-centered, practical STEM, coding, and robotics education. Today you build your very first physical cyber-physical control loop.
-                  </p>
-                </div>
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem", marginTop: "0.75rem", fontSize: "0.75rem", color: "#94a3b8" }}>
-                  <div>📞 Hotline: <strong style={{ color: "#F5B800" }}>+880 1902-821018</strong></div>
-                  <div>📍 Narayanganj Campus: Kids Den Int. Preschool, Flat 2, 75 North Chashara</div>
-                </div>
-              </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            gap: "2rem",
+            alignItems: "center",
+            minHeight: "500px",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.45rem 1rem",
+                borderRadius: "999px",
+                background: "rgba(0, 245, 212, 0.15)",
+                border: "1px solid #00F5D4",
+                color: "#00F5D4",
+                fontWeight: 900,
+                fontSize: "0.82rem",
+                letterSpacing: "0.08em",
+                marginBottom: "1.1rem",
+              }}
+            >
+              <Rocket size={16} /> CLASS 01 • FOUNDATION MASTERCLASS
             </div>
 
-            {/* Bottom Row: 4 Laboratory Safety Ground Rules */}
-            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(245, 184, 0, 0.2)", borderRadius: "14px", padding: "1rem 1.25rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#F5B800", fontWeight: 800, fontSize: "0.9rem", marginBottom: "0.6rem" }}>
-                <Shield size={16} />
-                <span>4 Mandatory Laboratory Safety &amp; Engineering Protocols</span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.85rem" }}>
-                <div style={{ background: "rgba(0,0,0,0.3)", padding: "0.75rem", borderRadius: "8px", borderLeft: "3px solid #ef4444" }}>
-                  <div style={{ color: "#fca5a5", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.25rem" }}>1. Unplug Before Wiring</div>
-                  <p style={{ fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4", margin: 0 }}>
-                    NEVER rewire an active breadboard circuit while USB is plugged in. Always disconnect power first.
-                  </p>
-                </div>
-                <div style={{ background: "rgba(0,0,0,0.3)", padding: "0.75rem", borderRadius: "8px", borderLeft: "3px solid #F5B800" }}>
-                  <div style={{ color: "#fde047", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.25rem" }}>2. Resistor Bodyguard</div>
-                  <p style={{ fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4", margin: 0 }}>
-                    NEVER connect an LED directly to 5V. A 220 Ω resistor must absorb voltage to prevent thermal runaway.
-                  </p>
-                </div>
-                <div style={{ background: "rgba(0,0,0,0.3)", padding: "0.75rem", borderRadius: "8px", borderLeft: "3px solid #3b82f6" }}>
-                  <div style={{ color: "#93c5fd", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.25rem" }}>3. Static &amp; IC Care</div>
-                  <p style={{ fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4", margin: 0 }}>
-                    Handle the Arduino by fiberglass edges. Protect semiconductor pins from electrostatic discharge.
-                  </p>
-                </div>
-                <div style={{ background: "rgba(0,0,0,0.3)", padding: "0.75rem", borderRadius: "8px", borderLeft: "3px solid #10b981" }}>
-                  <div style={{ color: "#6ee7b7", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.25rem" }}>4. Partner Verification</div>
-                  <p style={{ fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4", margin: 0 }}>
-                    Your bench partner must trace the circuit from Pin 13 to GND before you are cleared to connect USB.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 2: WHY ROBOTICS MATTERS IN THE REAL WORLD (7 DOMAINS)
-          ===================================================================== */}
-      {currentSlide === 1 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 2 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Why Robotics Matters in the Real World
+            <h1
+              style={{
+                fontSize: "clamp(2.3rem, 4vw, 3.6rem)",
+                fontWeight: 900,
+                lineHeight: 1.08,
+                color: "#FFFFFF",
+                margin: "0 0 1rem 0",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Welcome to{" "}
+              <span
+                style={{
+                  background: "linear-gradient(90deg, #00F5D4 0%, #38BDF8 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Robotics &amp; Future Engineering
+              </span>
             </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Robots are not just science fiction—they solve urgent human problems across 7 vital societal sectors.
-            </p>
-          </div>
 
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            {/* Domain Selector Pills */}
-            <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", paddingBottom: "0.4rem" }}>
-              {(lesson.realWorldDomains || []).map((domain, idx) => (
-                <button
+            <p
+              style={{
+                fontSize: "1.18rem",
+                lineHeight: 1.55,
+                color: "#E0E7FF",
+                margin: "0 0 1.6rem 0",
+                maxWidth: "600px",
+              }}
+            >
+              From Consumer of Technology to Creator of Autonomous Machines — discover how
+              sensors, microcontrollers, and C++ code bring physical hardware to life.
+            </p>
+
+            {/* 3 Visual Bento Quick Pills */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "0.85rem",
+                marginBottom: "1.8rem",
+              }}
+            >
+              {[
+                {
+                  icon: <Eye size={18} color="#00F5D4" />,
+                  title: "Sense & Perceive",
+                  desc: "Sonar, LiDAR, IR & AI Vision",
+                },
+                {
+                  icon: <Cpu size={18} color="#38BDF8" />,
+                  title: "Think in Code",
+                  desc: "Arduino, ESP32 & STM32 Brains",
+                },
+                {
+                  icon: <Zap size={18} color="#FBBF24" />,
+                  title: "Act Physically",
+                  desc: "Motors, Servos & Autonomous Bots",
+                },
+              ].map((bento, idx) => (
+                <div
                   key={idx}
-                  onClick={() => setSelectedDomainIdx(idx)}
                   style={{
-                    background: selectedDomainIdx === idx ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                    color: selectedDomainIdx === idx ? "#ffffff" : "#cbd5e1",
-                    border: selectedDomainIdx === idx ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "20px",
-                    padding: "0.45rem 0.85rem",
-                    fontSize: "0.8rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.4rem"
+                    background: palette.cardBg,
+                    border: `1px solid ${palette.cardBorder}`,
+                    backdropFilter: "blur(16px)",
+                    borderRadius: "16px",
+                    padding: "0.9rem",
                   }}
                 >
-                  <span>{domain.domain}</span>
-                </button>
+                  <div style={{ marginBottom: "0.35rem" }}>{bento.icon}</div>
+                  <div style={{ fontWeight: 800, color: "#FFFFFF", fontSize: "0.9rem" }}>
+                    {bento.title}
+                  </div>
+                  <div style={{ fontSize: "0.76rem", color: "#E0E7FF", marginTop: "0.15rem" }}>
+                    {bento.desc}
+                  </div>
+                </div>
               ))}
             </div>
 
-            {/* Selected Domain Interactive Showcase */}
-            {lesson.realWorldDomains && lesson.realWorldDomains[selectedDomainIdx] && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: "1.25rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "1.5rem" }}>
-                {/* Left: Domain Context & Machine Example */}
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <div>
-                    <span style={{ background: "rgba(245, 184, 0, 0.15)", color: "#F5B800", border: "1px solid rgba(245, 184, 0, 0.35)", padding: "0.25rem 0.65rem", borderRadius: "12px", fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase" }}>
-                      Sector {selectedDomainIdx + 1}: {lesson.realWorldDomains[selectedDomainIdx].domain}
-                    </span>
-                    <h2 style={{ fontSize: "1.45rem", color: "#ffffff", fontWeight: 800, margin: "0.6rem 0 0.35rem 0" }}>
-                      {lesson.realWorldDomains[selectedDomainIdx].title}
-                    </h2>
-                    <p style={{ fontSize: "0.9rem", color: "#cbd5e1", lineHeight: "1.6" }}>
-                      {lesson.realWorldDomains[selectedDomainIdx].description}
-                    </p>
-                  </div>
-
-                  <div style={{ background: "rgba(107, 15, 36, 0.2)", border: "1px solid rgba(107, 15, 36, 0.5)", borderRadius: "10px", padding: "0.85rem", marginTop: "1rem" }}>
-                    <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                      <Sparkles size={14} /> RoboBEE Curriculum Connection
-                    </div>
-                    <div style={{ fontSize: "0.82rem", color: "#f1f5f9", marginTop: "0.3rem" }}>
-                      Understanding the Sense-Decide-Act foundation of simple LED feedback teaches the exact control loop powering this autonomous system.
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right: The 3 Pillars in Action for this Domain */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>
-                    How This Machine Implements the Robotics Loop
-                  </div>
-
-                  {/* SENSE */}
-                  <div style={{ background: "rgba(245, 184, 0, 0.06)", borderLeft: "4px solid #F5B800", borderRadius: "8px", padding: "0.85rem" }}>
-                    <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                      <Eye size={15} /> 1. SENSE (Physical Input)
-                    </div>
-                    <div style={{ fontSize: "0.85rem", color: "#e2e8f0", marginTop: "0.25rem", lineHeight: "1.5" }}>
-                      {lesson.realWorldDomains[selectedDomainIdx].sense}
-                    </div>
-                  </div>
-
-                  {/* DECIDE */}
-                  <div style={{ background: "rgba(107, 15, 36, 0.15)", borderLeft: "4px solid #6B0F24", borderRadius: "8px", padding: "0.85rem" }}>
-                    <div style={{ color: "#fca5a5", fontWeight: 800, fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                      <Cpu size={15} /> 2. DECIDE (Processing &amp; Algorithms)
-                    </div>
-                    <div style={{ fontSize: "0.85rem", color: "#e2e8f0", marginTop: "0.25rem", lineHeight: "1.5" }}>
-                      {lesson.realWorldDomains[selectedDomainIdx].decide}
-                    </div>
-                  </div>
-
-                  {/* ACT */}
-                  <div style={{ background: "rgba(16, 185, 129, 0.08)", borderLeft: "4px solid #10b981", borderRadius: "8px", padding: "0.85rem" }}>
-                    <div style={{ color: "#6ee7b7", fontWeight: 800, fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                      <Zap size={15} /> 3. ACT (Physical Output &amp; Motion)
-                    </div>
-                    <div style={{ fontSize: "0.85rem", color: "#e2e8f0", marginTop: "0.25rem", lineHeight: "1.5" }}>
-                      {lesson.realWorldDomains[selectedDomainIdx].act}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={handleStartEngine}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                padding: "1rem 2rem",
+                borderRadius: "999px",
+                border: "none",
+                background: bootingEngine
+                  ? "linear-gradient(90deg, #10B981 0%, #00F5D4 100%)"
+                  : "linear-gradient(90deg, #00F5D4 0%, #38BDF8 100%)",
+                color: "#0F172A",
+                fontWeight: 900,
+                fontSize: "1.05rem",
+                cursor: "pointer",
+                boxShadow: "0 0 30px rgba(0, 245, 212, 0.45)",
+                transform: bootingEngine ? "scale(1.04)" : "scale(1)",
+                transition: "all 0.25s ease",
+              }}
+            >
+              <Rocket size={20} />
+              <span>
+                {bootingEngine
+                  ? "INITIALIZING ROBOBEE HUD..."
+                  : "Launch Class Engine ➔"}
+              </span>
+            </button>
           </div>
-        </>
+
+          <PresentationMediaFrame
+            src={slideMeta.heroImage}
+            alt="Welcome to the World of Robotics"
+            caption={slideMeta.imageCaption}
+            fallbackVariant="robot-arm"
+            height="430px"
+            accentColor="#00F5D4"
+            onZoom={handleZoom}
+          />
+        </div>
       )}
 
       {/* =====================================================================
-          SLIDE 3: INTERACTIVE CLASS GAME: "ROBOT OR NOT?"
-          ===================================================================== */}
-      {currentSlide === 2 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 3 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Interactive Class Debate: &ldquo;Robot or Not?&rdquo;
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              A machine is only a robot if it performs ALL THREE: Sense physical environment + Decide autonomously + Act physically!
+          SLIDE 02: WHY EXTRACURRICULAR ACTIVITIES MATTER (Theme: electric-indigo | Layout: split-media)
+         ===================================================================== */}
+      {currentSlide === 1 && (
+        <div>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.4rem 0",
+              }}
+            >
+              Why Extracurricular Activities Matter
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              {slideMeta.subtitle}
             </p>
           </div>
 
-          <div className={styles.slideBody}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.85rem", maxHeight: "480px", overflowY: "auto", paddingRight: "0.25rem" }}>
-              {(lesson.robotOrNotChallenge || []).map((card, idx) => {
-                const isRevealed = revealedVerdicts[idx];
-                const guess = userGuesses[idx];
-                const isCorrect = guess && (
-                  (guess === "robot" && card.isRobot) ||
-                  (guess === "not" && !card.isRobot)
-                );
-
-                return (
-                  <div 
-                    key={idx}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: "1.75rem",
+              alignItems: "stretch",
+            }}
+          >
+            {/* Left: 3 Vibrant Glass Bento Cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {[
+                {
+                  badge: "01 • HANDS-ON MASTERY",
+                  icon: <Wrench size={22} color="#00F5D4" />,
+                  title: "Beyond Textbook Theory",
+                  desc: "Exam grades show you can memorize formulas; building and wiring a working robot proves you can solve real-world physical problems.",
+                },
+                {
+                  badge: "02 • PORTFOLIO POWER",
+                  icon: <Globe size={22} color="#38BDF8" />,
+                  title: "Global University & Career Edge",
+                  desc: "Top universities and global tech pioneers look for hands-on makers, robotics olympiad competitors, and collaborative team leaders.",
+                },
+                {
+                  badge: "03 • GRIT & TEAMWORK",
+                  icon: <Trophy size={22} color="#FBBF24" />,
+                  title: "Real Engineering Resilience",
+                  desc: "Debugging a sensor array 5 minutes before a tournament match builds unshakeable confidence and problem-solving grit under pressure.",
+                },
+              ].map((card, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: palette.cardBg,
+                    border: `1px solid ${palette.cardBorder}`,
+                    backdropFilter: "blur(16px)",
+                    borderRadius: "18px",
+                    padding: "1.2rem 1.35rem",
+                    boxShadow: palette.cardShadow,
+                    display: "flex",
+                    gap: "1rem",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div
                     style={{
-                      background: isRevealed 
-                        ? (card.isRobot ? "rgba(16, 185, 129, 0.08)" : "rgba(239, 68, 68, 0.08)")
-                        : "rgba(255,255,255,0.03)",
-                      border: isRevealed
-                        ? (card.isRobot ? "1px solid #10b981" : "1px solid #ef4444")
-                        : "1px solid rgba(255,255,255,0.1)",
+                      width: "46px",
+                      height: "46px",
                       borderRadius: "12px",
-                      padding: "1rem",
+                      background: "rgba(0, 245, 212, 0.14)",
+                      border: "1px solid rgba(0, 245, 212, 0.35)",
                       display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      transition: "all 0.2s ease"
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
                     }}
                   >
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
-                        <span style={{ fontSize: "0.7rem", fontWeight: 800, color: "#94a3b8", textTransform: "uppercase" }}>
-                          Item #{idx + 1}
-                        </span>
-                        {isRevealed && (
-                          <span style={{
-                            background: card.isRobot ? "#10b981" : "#ef4444",
-                            color: "#ffffff",
-                            fontSize: "0.68rem",
-                            fontWeight: 900,
-                            padding: "0.15rem 0.45rem",
-                            borderRadius: "10px",
-                            letterSpacing: "0.5px"
-                          }}>
-                            {card.isRobot ? "TRUE ROBOT" : "NOT A ROBOT"}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: "1rem", fontWeight: 800, color: "#ffffff", marginTop: "0.3rem" }}>
-                        {card.item}
-                      </div>
+                    {card.icon}
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "0.7rem",
+                        fontWeight: 900,
+                        color: "#00F5D4",
+                        letterSpacing: "0.08em",
+                        marginBottom: "0.2rem",
+                      }}
+                    >
+                      {card.badge}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "1.18rem",
+                        fontWeight: 800,
+                        color: "#FFFFFF",
+                        marginBottom: "0.3rem",
+                      }}
+                    >
+                      {card.title}
+                    </div>
+                    <div style={{ fontSize: "0.95rem", color: "#E0E7FF", lineHeight: 1.5 }}>
+                      {card.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right: High-Res Team Robotics Photo */}
+            <PresentationMediaFrame
+              src={slideMeta.heroImage}
+              alt="Students collaborating on a robotics competition table"
+              caption={slideMeta.imageCaption}
+              fallbackVariant="team"
+              height="100%"
+              accentColor="#38BDF8"
+              onZoom={handleZoom}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 03: WHY YOU MUST LEARN ROBOTICS (Theme: daylight-studio | Layout: interactive-grid)
+         ===================================================================== */}
+      {currentSlide === 2 && (
+        <div>
+          <div style={{ marginBottom: "1.4rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              Why You Must Learn Robotics
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              Click any of the 4 Bento Pillars below to explore real-world engineering impact:
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "1.15rem",
+              marginBottom: "1.35rem",
+            }}
+          >
+            {[
+              {
+                num: "01",
+                title: "Code Meets Physical World",
+                short: "The Ultimate Superpower combining Mechanical CAD, Electronics, and Software Code.",
+                example:
+                  "Real-World Impact: Instead of code staying trapped inside a laptop screen, a single line of C++ physically spins motors, reads laser sensors, and moves robotic grippers!",
+                color: "#2563EB",
+                image:
+                  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=80",
+              },
+              {
+                num: "02",
+                title: "Future-Proof AI & Automation",
+                short: "Autonomous vehicles, surgical arms, and smart factories are transforming every industry.",
+                example:
+                  "Real-World Impact: From precision agricultural drones in Bangladesh to automated warehouse rovers and robotic surgery, mechatronics literacy is the #1 future engineering skill.",
+                color: "#7C3AED",
+                image:
+                  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=900&q=80",
+              },
+              {
+                num: "03",
+                title: "National & Global Olympiads",
+                short: "Compete in Sumo Bot, High-Speed Line Follower, Robo Soccer, and Invention Olympiads.",
+                example:
+                  "Real-World Impact: Represent RoboBee Innovators at national university techfests, World Robot Olympiad (WRO), and international autonomous robotics challenges!",
+                color: "#F97316",
+                image:
+                  "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=80",
+              },
+              {
+                num: "04",
+                title: "Invent Real Solutions",
+                short: "Turn an idea sketched in your notebook into a moving, thinking machine on your desk.",
+                example:
+                  "Real-World Impact: Build fire-detecting rescue rovers, smart irrigation controllers for farmers, or ultrasonic assistive glasses for the visually impaired.",
+                color: "#059669",
+                image:
+                  "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=900&q=80",
+              },
+            ].map((card, idx) => {
+              const isSelected = expandedWhyCard === idx;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setExpandedWhyCard(idx)}
+                  style={{
+                    background: palette.cardBg,
+                    border: `2px solid ${isSelected ? card.color : palette.cardBorder}`,
+                    borderRadius: "18px",
+                    padding: "1.25rem",
+                    boxShadow: isSelected
+                      ? `0 22px 45px -12px ${card.color}33`
+                      : palette.cardShadow,
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                    transform: isSelected ? "translateY(-4px)" : "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "0.75rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        padding: "0.25rem 0.7rem",
+                        borderRadius: "999px",
+                        background: `${card.color}18`,
+                        color: card.color,
+                        fontWeight: 900,
+                        fontSize: "0.78rem",
+                      }}
+                    >
+                      PILLAR {card.num}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.74rem",
+                        fontWeight: 800,
+                        color: card.color,
+                      }}
+                    >
+                      {isSelected ? "● Active Spotlight" : "Click to Expand ➔"}
+                    </span>
+                  </div>
+
+                  <h3
+                    style={{
+                      fontSize: "1.22rem",
+                      fontWeight: 900,
+                      color: palette.headingColor,
+                      margin: "0 0 0.45rem 0",
+                    }}
+                  >
+                    {card.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: "0.92rem",
+                      color: palette.bodyColor,
+                      lineHeight: 1.5,
+                      margin: 0,
+                    }}
+                  >
+                    {card.short}
+                  </p>
+
+                  {isSelected && (
+                    <div
+                      style={{
+                        marginTop: "0.9rem",
+                        paddingTop: "0.85rem",
+                        borderTop: `1px solid ${palette.cardBorder}`,
+                        fontSize: "0.86rem",
+                        color: "#1E293B",
+                        fontWeight: 600,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {card.example}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <PresentationMediaFrame
+            src={slideMeta.heroImage}
+            alt="Mechatronics and Robotics Engineering"
+            caption={slideMeta.imageCaption}
+            fallbackVariant="robot-arm"
+            height="220px"
+            accentColor="#2563EB"
+            onZoom={handleZoom}
+          />
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 04: WHAT IS YOUR INTEREST & FUTURE GOAL? (Theme: electric-indigo | Layout: interactive-grid)
+         ===================================================================== */}
+      {currentSlide === 3 && (
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              flexWrap: "wrap",
+              gap: "1rem",
+              marginBottom: "1.4rem",
+            }}
+          >
+            <div>
+              <h2
+                style={{
+                  fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                  fontWeight: 900,
+                  color: palette.headingColor,
+                  margin: "0 0 0.35rem 0",
+                }}
+              >
+                Student Icebreaker: What Is Your Future Goal?
+              </h2>
+              <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+                Raise your hand for the builder persona that excites you most! Instructor clicks{" "}
+                <strong style={{ color: "#00F5D4" }}>+1 Vote</strong> to tally the room live:
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setPollVotes([0, 0, 0, 0])}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                padding: "0.45rem 0.9rem",
+                borderRadius: "999px",
+                background: "rgba(255, 255, 255, 0.1)",
+                border: "1px solid rgba(255, 255, 255, 0.22)",
+                color: "#E0E7FF",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              <RotateCcw size={14} /> Reset Classroom Tally
+            </button>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "1.15rem",
+            }}
+          >
+            {[
+              {
+                path: "PATH A",
+                title: "Combat & Sumo Builder",
+                quote:
+                  "“I want to build fast Mini-Sumo Bots, Robo-Soccer machines, and win tournament trophies!”",
+                focus: "High-torque gear motors, armor CAD & tactical sensors",
+                accent: "#00F5D4",
+              },
+              {
+                path: "PATH B",
+                title: "Autonomous AI Coder",
+                quote:
+                  "“I want to make robots see with cameras, solve mazes, and navigate on their own!”",
+                focus: "PID Line Followers, Ultrasonic mapping & Computer Vision",
+                accent: "#38BDF8",
+              },
+              {
+                path: "PATH C",
+                title: "Smart System Inventor",
+                quote:
+                  "“I want to build automated farming systems, medical arms, and smart IoT machines!”",
+                focus: "ESP32 Wi-Fi dashboards, servo robotic arms & environmental sensors",
+                accent: "#FBBF24",
+              },
+              {
+                path: "PATH D",
+                title: "Curious First-Timer",
+                quote:
+                  "“I have zero experience, and I want to see how electronics and code come alive!”",
+                focus: "Step-by-step breadboard circuits, LEDs & your first Arduino C++ sketch",
+                accent: "#F472B6",
+              },
+            ].map((item, idx) => {
+              const totalVotes = Math.max(
+                1,
+                pollVotes.reduce((a, b) => a + b, 0)
+              );
+              const pct = Math.round((pollVotes[idx] / totalVotes) * 100);
+              const isHighlighted = selectedPollCard === idx;
+
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setSelectedPollCard(idx)}
+                  style={{
+                    background: palette.cardBg,
+                    border: `2px solid ${isHighlighted ? item.accent : palette.cardBorder}`,
+                    backdropFilter: "blur(16px)",
+                    borderRadius: "20px",
+                    padding: "1.35rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    boxShadow: isHighlighted
+                      ? `0 0 32px ${item.accent}44`
+                      : palette.cardShadow,
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "0.75rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          padding: "0.25rem 0.7rem",
+                          borderRadius: "999px",
+                          background: `${item.accent}22`,
+                          color: item.accent,
+                          fontWeight: 900,
+                          fontSize: "0.76rem",
+                          border: `1px solid ${item.accent}`,
+                        }}
+                      >
+                        {item.path}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: "1.15rem",
+                          fontWeight: 900,
+                          color: item.accent,
+                        }}
+                      >
+                        {pollVotes[idx]} Hands ({pct}%)
+                      </span>
                     </div>
 
-                    <div style={{ marginTop: "0.75rem" }}>
-                      {!isRevealed ? (
-                        <div>
-                          <div style={{ fontSize: "0.72rem", color: "#F5B800", fontWeight: 700, marginBottom: "0.35rem" }}>
-                            Class Vote:
-                          </div>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.35rem" }}>
-                            <button
-                              onClick={() => setGuess(idx, "robot")}
-                              style={{
-                                background: guess === "robot" ? "#10b981" : "rgba(255,255,255,0.06)",
-                                color: "#ffffff",
-                                border: "none",
-                                borderRadius: "6px",
-                                padding: "0.35rem 0.5rem",
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                cursor: "pointer"
-                              }}
-                            >
-                              🤖 Robot
-                            </button>
-                            <button
-                              onClick={() => setGuess(idx, "not")}
-                              style={{
-                                background: guess === "not" ? "#ef4444" : "rgba(255,255,255,0.06)",
-                                color: "#ffffff",
-                                border: "none",
-                                borderRadius: "6px",
-                                padding: "0.35rem 0.5rem",
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                cursor: "pointer"
-                              }}
-                            >
-                              ⚙️ Not
-                            </button>
-                          </div>
-                          <button
-                            onClick={() => toggleVerdict(idx)}
-                            style={{
-                              width: "100%",
-                              marginTop: "0.45rem",
-                              background: "rgba(245, 184, 0, 0.15)",
-                              color: "#F5B800",
-                              border: "1px solid rgba(245, 184, 0, 0.3)",
-                              borderRadius: "6px",
-                              padding: "0.35rem 0.5rem",
-                              fontSize: "0.72rem",
-                              fontWeight: 800,
-                              cursor: "pointer"
-                            }}
-                          >
-                            Reveal Verdict ➔
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: "0.72rem", color: "#cbd5e1", background: "rgba(0,0,0,0.3)", padding: "0.6rem", borderRadius: "6px", lineHeight: "1.4" }}>
-                          <div style={{ marginBottom: "0.35rem", color: "#F5B800", fontWeight: 700 }}>
-                            {isCorrect ? "🎯 Class Prediction Correct!" : "💡 Engineering Analysis:"}
-                          </div>
-                          <div><strong>S:</strong> {card.senses}</div>
-                          <div><strong>D:</strong> {card.decides}</div>
-                          <div><strong>A:</strong> {card.acts}</div>
-                          <div style={{ marginTop: "0.35rem", fontStyle: "italic", color: "#94a3b8" }}>
-                            {card.verdict}
-                          </div>
-                          <button
-                            onClick={() => toggleVerdict(idx)}
-                            style={{
-                              marginTop: "0.35rem",
-                              background: "transparent",
-                              border: "none",
-                              color: "#94a3b8",
-                              fontSize: "0.65rem",
-                              cursor: "pointer",
-                              textDecoration: "underline"
-                            }}
-                          >
-                            Hide Details
-                          </button>
-                        </div>
-                      )}
+                    <h3
+                      style={{
+                        fontSize: "1.28rem",
+                        fontWeight: 900,
+                        color: "#FFFFFF",
+                        margin: "0 0 0.5rem 0",
+                      }}
+                    >
+                      {item.title}
+                    </h3>
+
+                    <p
+                      style={{
+                        fontSize: "0.95rem",
+                        color: "#E0E7FF",
+                        fontStyle: "italic",
+                        lineHeight: 1.5,
+                        margin: "0 0 0.85rem 0",
+                      }}
+                    >
+                      {item.quote}
+                    </p>
+
+                    <div
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "#A5B4FC",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      <strong style={{ color: "#FFFFFF" }}>Core Tech:</strong> {item.focus}
                     </div>
+                  </div>
+
+                  <div>
+                    {/* Progress Bar */}
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "8px",
+                        borderRadius: "999px",
+                        background: "rgba(255, 255, 255, 0.12)",
+                        overflow: "hidden",
+                        marginBottom: "0.85rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${pct}%`,
+                          height: "100%",
+                          background: item.accent,
+                          transition: "width 0.3s ease",
+                        }}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPollCard(idx);
+                        setPollVotes((prev) =>
+                          prev.map((v, i) => (i === idx ? v + 1 : v))
+                        );
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "0.65rem",
+                        borderRadius: "12px",
+                        border: `1px solid ${item.accent}`,
+                        background: `${item.accent}26`,
+                        color: "#FFFFFF",
+                        fontWeight: 800,
+                        fontSize: "0.88rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "0.4rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Plus size={16} color={item.accent} /> +1 Student Hand Tally
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 05: WHAT ACTUALLY IS A ROBOT? (Theme: daylight-studio | Layout: split-media + Quiz)
+         ===================================================================== */}
+      {currentSlide === 4 && (
+        <div>
+          <div style={{ marginBottom: "1.35rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              What Actually IS a Robot?
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              {slideMeta.subtitle}
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: "1.6rem",
+              alignItems: "start",
+            }}
+          >
+            {/* Left: Visual Definition + High-Res Comparison Photo */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  border: "2px solid #2563EB",
+                  borderRadius: "18px",
+                  padding: "1.2rem 1.35rem",
+                  boxShadow: palette.cardShadow,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 900,
+                    color: "#2563EB",
+                    letterSpacing: "0.08em",
+                    marginBottom: "0.3rem",
+                  }}
+                >
+                  THE GOLDEN ENGINEERING DEFINITION
+                </div>
+                <div
+                  style={{
+                    fontSize: "1.12rem",
+                    fontWeight: 800,
+                    color: "#0F172A",
+                    lineHeight: 1.45,
+                  }}
+                >
+                  A true robot is an{" "}
+                  <span style={{ color: "#2563EB" }}>autonomous or semi-autonomous machine</span>{" "}
+                  that Senses its environment, Thinks with programmed logic, and Acts physically.
+                </div>
+              </div>
+
+              <PresentationMediaFrame
+                src={slideMeta.heroImage}
+                alt="Autonomous Robot vs Regular Machine"
+                caption={slideMeta.imageCaption}
+                fallbackVariant="rover"
+                height="280px"
+                accentColor="#2563EB"
+                onZoom={handleZoom}
+              />
+            </div>
+
+            {/* Right: Interactive 3-Card Classroom Flip Quiz */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.95rem" }}>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 900,
+                  color: "#7C3AED",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                🎯 Interactive Classroom Quiz — Click Each Card to Reveal Verdict!
+              </div>
+
+              {[
+                {
+                  name: "1. Kitchen Blender / Washing Machine",
+                  prompt: "Spins a high-speed motor when you press a button or set a fixed timer.",
+                  isRobot: false,
+                  verdictTitle: "REGULAR MACHINE (NOT A ROBOT)",
+                  verdictReason:
+                    "It follows a blind mechanical timer—it cannot sense obstacles or make autonomous decisions.",
+                },
+                {
+                  name: "2. Standard Remote-Controlled (RC) Toy Car",
+                  prompt: "Drives fast when a human pushes the wireless joystick left or right.",
+                  isRobot: false,
+                  verdictTitle: "REMOTE-CONTROLLED MACHINE",
+                  verdictReason:
+                    "A human brain makes 100% of the steering decisions. Without onboard sensors and autonomous code, it's an extension of your fingers!",
+                },
+                {
+                  name: "3. Autonomous Line Follower / Obstacle Rover",
+                  prompt: "Reads IR & Ultrasonic sensors, calculates path error in C++, and steers motors automatically.",
+                  isRobot: true,
+                  verdictTitle: "TRUE AUTONOMOUS ROBOT!",
+                  verdictReason:
+                    "It Senses lines/walls, Thinks with an onboard microcontroller, and Acts via motor drivers with zero human hands!",
+                },
+              ].map((q, idx) => {
+                const isRevealed = !!revealedQuizCards[idx];
+                const burstColor = q.isRobot ? "#10B981" : "#F43F5E";
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() =>
+                      setRevealedQuizCards((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                    }
+                    style={{
+                      background: isRevealed
+                        ? q.isRobot
+                          ? "#ECFDF5"
+                          : "#FFF1F2"
+                        : "#FFFFFF",
+                      border: `2px solid ${isRevealed ? burstColor : "#C7D2FE"}`,
+                      borderRadius: "18px",
+                      padding: "1.1rem 1.25rem",
+                      boxShadow: palette.cardShadow,
+                      cursor: "pointer",
+                      transition: "all 0.25s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "1.08rem",
+                          fontWeight: 900,
+                          color: "#0F172A",
+                        }}
+                      >
+                        {q.name}
+                      </div>
+                      <span
+                        style={{
+                          padding: "0.25rem 0.7rem",
+                          borderRadius: "999px",
+                          fontSize: "0.74rem",
+                          fontWeight: 900,
+                          background: isRevealed ? burstColor : "#EEF2FF",
+                          color: isRevealed ? "#FFFFFF" : "#2563EB",
+                        }}
+                      >
+                        {isRevealed ? q.verdictTitle : "Click to Flip Verdict"}
+                      </span>
+                    </div>
+
+                    <p
+                      style={{
+                        fontSize: "0.9rem",
+                        color: "#334155",
+                        margin: "0.35rem 0 0 0",
+                      }}
+                    >
+                      {q.prompt}
+                    </p>
+
+                    {isRevealed && (
+                      <div
+                        style={{
+                          marginTop: "0.65rem",
+                          paddingTop: "0.65rem",
+                          borderTop: `1px solid ${burstColor}44`,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          fontSize: "0.88rem",
+                          fontWeight: 700,
+                          color: q.isRobot ? "#065F46" : "#9F1239",
+                        }}
+                      >
+                        {q.isRobot ? (
+                          <CheckCircle2 size={18} color="#10B981" />
+                        ) : (
+                          <XCircle size={18} color="#F43F5E" />
+                        )}
+                        <span>{q.verdictReason}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* =====================================================================
-          SLIDE 4: THE CORE LAW OF ROBOTICS (SENSE → DECIDE → ACT)
-          ===================================================================== */}
-      {currentSlide === 3 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 4 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              The Universal Law of Robotics: Sense ➔ Decide ➔ Act
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Every autonomous machine on Earth and beyond executes this closed-loop feedback cycle continuously.
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            {/* Interactive Stage Filter Tabs */}
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              {[
-                { id: "all", label: "Full 3-Stage Diagram" },
-                { id: "sense", label: "Stage 1: SENSE (Inputs)" },
-                { id: "decide", label: "Stage 2: DECIDE (Controller)" },
-                { id: "act", label: "Stage 3: ACT (Outputs)" },
-                { id: "feedback", label: "Closed-Loop Feedback" }
-              ].map(st => (
-                <button
-                  key={st.id}
-                  onClick={() => setActiveStage(st.id as any)}
-                  style={{
-                    background: activeStage === st.id ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                    color: activeStage === st.id ? "#ffffff" : "#cbd5e1",
-                    border: activeStage === st.id ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "20px",
-                    padding: "0.4rem 0.8rem",
-                    fontSize: "0.8rem",
-                    fontWeight: 700,
-                    cursor: "pointer"
-                  }}
-                >
-                  {st.label}
-                </button>
-              ))}
-            </div>
-
-            {/* SVG Visual Presentation */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "1.25rem", alignItems: "center" }}>
-              <div style={{ background: "#0b0f19", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Image
-                  src="/illustrations/class1-sense-decide-act.svg"
-                  alt="Sense Decide Act Engineering Architecture"
-                  width={680}
-                  height={380}
-                  style={{ width: "100%", height: "auto", borderRadius: "10px" }}
-                />
-                <div style={{ marginTop: "0.5rem", fontSize: "0.72rem", color: "#F5B800", fontWeight: 700 }}>
-                  RoboBEE Reference Illustration — Verify Hardware Before Powering
-                </div>
-              </div>
-
-              {/* Stage Context Breakdown Card */}
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {activeStage === "all" && (
-                  <div>
-                    <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "1rem", marginBottom: "0.4rem" }}>
-                      The Complete Closed Feedback Loop
-                    </div>
-                    <p style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: "1.6" }}>
-                      A robot does not simply execute static steps like a kitchen toaster. It samples environmental energy (light, ultrasound, pressure) through sensors, computes the error between its current state and target state using the microcontroller, and drives physical actuators. The environment changes, and the loop repeats immediately!
-                    </p>
-                    <div style={{ marginTop: "0.75rem", background: "rgba(245, 184, 0, 0.08)", padding: "0.75rem", borderRadius: "8px", borderLeft: "3px solid #F5B800", fontSize: "0.8rem", color: "#fef3c7" }}>
-                      <strong>Today&apos;s Lab Loop:</strong> You become the intelligent programmer configuring the DECIDE stage (Arduino Pin 13) to command the ACT stage (LED light emissions)!
-                    </div>
-                  </div>
-                )}
-
-                {activeStage === "sense" && (
-                  <div>
-                    <span style={{ background: "rgba(245, 184, 0, 0.15)", color: "#F5B800", padding: "0.2rem 0.5rem", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 800 }}>
-                      STAGE 1: SENSE
-                    </span>
-                    <h3 style={{ fontSize: "1.15rem", color: "#ffffff", margin: "0.4rem 0" }}>Sensory Transduction</h3>
-                    <p style={{ fontSize: "0.82rem", color: "#cbd5e1", lineHeight: "1.5" }}>
-                      Sensors convert non-electrical physical phenomena into proportional electrical voltages:
-                    </p>
-                    <ul style={{ paddingLeft: "1.1rem", fontSize: "0.8rem", color: "#94a3b8", lineHeight: "1.6", marginTop: "0.3rem" }}>
-                      <li><strong>Ultrasonic (HC-SR04):</strong> Echo time-of-flight to distance (cm)</li>
-                      <li><strong>Infrared Photodiode:</strong> Reflected photons to binary LOW/HIGH</li>
-                      <li><strong>Tactile Pushbutton:</strong> Mechanical spring closure to 0V/5V logic</li>
-                    </ul>
-                  </div>
-                )}
-
-                {activeStage === "decide" && (
-                  <div>
-                    <span style={{ background: "rgba(107, 15, 36, 0.3)", color: "#fca5a5", padding: "0.2rem 0.5rem", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 800 }}>
-                      STAGE 2: DECIDE
-                    </span>
-                    <h3 style={{ fontSize: "1.15rem", color: "#ffffff", margin: "0.4rem 0" }}>Microcontroller Computation</h3>
-                    <p style={{ fontSize: "0.82rem", color: "#cbd5e1", lineHeight: "1.5" }}>
-                      The ATmega328P 8-bit RISC chip evaluates sensor inputs against programmatic rules stored in flash memory:
-                    </p>
-                    <ul style={{ paddingLeft: "1.1rem", fontSize: "0.8rem", color: "#94a3b8", lineHeight: "1.6", marginTop: "0.3rem" }}>
-                      <li>Clock speed: 16,000,000 instructions per second</li>
-                      <li>Executes <code>if / else</code> threshold comparison in real-time</li>
-                      <li>Writes digital register values to drive GPIO pin states</li>
-                    </ul>
-                  </div>
-                )}
-
-                {activeStage === "act" && (
-                  <div>
-                    <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#6ee7b7", padding: "0.2rem 0.5rem", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 800 }}>
-                      STAGE 3: ACT
-                    </span>
-                    <h3 style={{ fontSize: "1.15rem", color: "#ffffff", margin: "0.4rem 0" }}>Physical Actuation</h3>
-                    <p style={{ fontSize: "0.82rem", color: "#cbd5e1", lineHeight: "1.5" }}>
-                      Actuators convert electrical energy into physical changes in the real world:
-                    </p>
-                    <ul style={{ paddingLeft: "1.1rem", fontSize: "0.8rem", color: "#94a3b8", lineHeight: "1.6", marginTop: "0.3rem" }}>
-                      <li><strong>LED:</strong> Electron recombination emits visible light photons</li>
-                      <li><strong>DC Motor:</strong> Magnetic fields create torque and wheel rotation</li>
-                      <li><strong>Servo:</strong> PWM signals hold precise angular positions (0°–180°)</li>
-                      <li><strong>Buzzer:</strong> Piezoelectric crystal vibration creates sound pressure</li>
-                    </ul>
-                  </div>
-                )}
-
-                {activeStage === "feedback" && (
-                  <div>
-                    <span style={{ background: "rgba(6, 182, 212, 0.15)", color: "#67e8f9", padding: "0.2rem 0.5rem", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 800 }}>
-                      CLOSED-LOOP FEEDBACK
-                    </span>
-                    <h3 style={{ fontSize: "1.15rem", color: "#ffffff", margin: "0.4rem 0" }}>Environment Response</h3>
-                    <p style={{ fontSize: "0.82rem", color: "#cbd5e1", lineHeight: "1.5" }}>
-                      When actuators alter the environment (the robot moves 10 cm forward), the sensors immediately detect the new distance on the very next clock cycle. This creates a perpetual, adaptive self-correcting system!
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 5: INSIDE YOUR ROBOTICS KIT (12-PART HARDWARE GALLERY)
-          ===================================================================== */}
-      {currentSlide === 4 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 5 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Inside Your Robotics Kit: 12-Part Hardware Inventory
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Every component on your lab bench serves an essential role in either sensing, deciding, actuating, or protecting.
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "0.75rem" }}>
-            {/* Category Filter Pills */}
-            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 700 }}>Filter by Role:</span>
-              {["ALL", "DECIDE", "SENSE", "ACT", "PROTOTYPE", "POWER"].map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setGalleryFilter(cat)}
-                  style={{
-                    background: galleryFilter === cat ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                    color: galleryFilter === cat ? "#ffffff" : "#cbd5e1",
-                    border: galleryFilter === cat ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "16px",
-                    padding: "0.25rem 0.65rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    cursor: "pointer"
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            {/* 12-Item Interactive Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", maxHeight: "430px", overflowY: "auto", paddingRight: "0.25rem" }}>
-              {filteredKit.map((item, idx) => (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedPartIdx(selectedPartIdx === idx ? null : idx)}
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: selectedPartIdx === idx ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "10px",
-                    padding: "0.85rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease"
-                  }}
-                >
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
-                      <span style={{
-                        background: item.category === "DECIDE" ? "rgba(107, 15, 36, 0.4)" :
-                                   item.category === "SENSE" ? "rgba(245, 184, 0, 0.2)" :
-                                   item.category === "ACT" ? "rgba(16, 185, 129, 0.2)" :
-                                   item.category === "POWER" ? "rgba(239, 68, 68, 0.2)" : "rgba(59, 130, 246, 0.2)",
-                        color: item.category === "DECIDE" ? "#fca5a5" :
-                               item.category === "SENSE" ? "#F5B800" :
-                               item.category === "ACT" ? "#6ee7b7" :
-                               item.category === "POWER" ? "#fca5a5" : "#93c5fd",
-                        fontSize: "0.65rem",
-                        fontWeight: 800,
-                        padding: "0.15rem 0.45rem",
-                        borderRadius: "8px"
-                      }}>
-                        {item.category}
-                      </span>
-                      <span style={{ fontSize: "0.7rem", color: "#64748b" }}>#{idx + 1}</span>
-                    </div>
-                    <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#ffffff" }}>
-                      {item.name}
-                    </div>
-                    <div style={{ fontSize: "0.75rem", color: "#F5B800", marginTop: "0.15rem" }}>
-                      {item.role}
-                    </div>
-                    <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: "0.35rem", lineHeight: "1.4" }}>
-                      {item.specs}
-                    </p>
-                  </div>
-
-                  <div style={{ marginTop: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.4rem" }}>
-                    <div style={{ fontSize: "0.68rem", color: "#ef4444", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                      <AlertTriangle size={12} />
-                      <span>{item.safety}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 6: MEET THE BRAIN: INTERACTIVE ARDUINO UNO R3 BOARD TOUR
-          ===================================================================== */}
+          SLIDE 06: THE FASCINATING HISTORY OF ROBOTICS (Theme: daylight-studio | Layout: timeline-stepper)
+         ===================================================================== */}
       {currentSlide === 5 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 6 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Meet the Brain: Interactive Arduino Uno R3 Board Tour
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Explore the 12 functional zones of the ATmega328P microcontroller development board.
+        <div>
+          <div style={{ marginBottom: "1.25rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              The Fascinating History of Robotics
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              Click each historical milestone on the timeline stepper below:
             </p>
           </div>
 
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: "1.25rem" }}>
-              {/* Left: Embedded Clickable Pinout Visualizer */}
-              <div style={{ background: "#0b0f19", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "0.75rem", overflow: "hidden" }}>
-                <ArduinoUnoPinout />
-              </div>
+          {(() => {
+            const eras = [
+              {
+                year: "1206",
+                title: "Al-Jazari’s Programmable Automata",
+                tag: "Golden Age Mechanical Engineering",
+                summary:
+                  "Muslim polymath Ismail al-Jazari invented water-powered mechanical peacocks, hand-washing automata, and a programmable musical boat using pegged camshafts.",
+                milestone: "First recorded programmable mechanical machine in human history.",
+                image:
+                  "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80",
+                caption: "1206 CE • Camshaft-Driven Programmable Mechanical Automata",
+              },
+              {
+                year: "1920",
+                title: "Karel Čapek Coins the Word 'Robot'",
+                tag: "Origin of the Term 'Robota'",
+                summary:
+                  "Czech writer Karel Čapek (with his brother Josef) introduced the word 'Robot'—from the Slavic word 'Robota' meaning 'forced labor'—in his famous sci-fi play R.U.R.",
+                milestone: "Gave humanity the universal name for artificial autonomous workers.",
+                image:
+                  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80",
+                caption: "1920 • Rossum's Universal Robots (R.U.R.) Introduces 'Robot'",
+              },
+              {
+                year: "1961",
+                title: "Unimate — First Industrial Robot Arm",
+                tag: "Factory Automation Revolution",
+                summary:
+                  "Invented by George Devol and Joseph Engelberger, 'Unimate' was installed on a General Motors assembly line to handle red-hot die-cast metal car parts safely.",
+                milestone: "Launched modern industrial manufacturing and multi-axis servo arms.",
+                image:
+                  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80",
+                caption: "1961 • Unimate Industrial Robotic Arm Transforms Manufacturing",
+              },
+              {
+                year: "Today",
+                title: "Mars Rovers, Agile Quadrupeds & AI Vision",
+                tag: "Autonomous Intelligence Era",
+                summary:
+                  "From NASA’s Perseverance Rover navigating Martian craters autonomously to Boston Dynamics quadrupeds and AI-guided surgical & agricultural robots.",
+                milestone: "Real-time SLAM, embedded microcontrollers, and onboard AI perception.",
+                image:
+                  "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=1200&q=80",
+                caption: "1997–Today • Autonomous Planetary Rovers & AI Vision Systems",
+              },
+            ];
+            const activeEra = eras[historyEraIdx];
 
-              {/* Right: 12-Zone Inspection Tabs & Critical Pin 13 Highlight */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", maxHeight: "480px", overflowY: "auto" }}>
-                <div style={{ background: "linear-gradient(135deg, rgba(245, 184, 0, 0.15), rgba(11, 15, 25, 0.8))", border: "1px solid #F5B800", borderRadius: "12px", padding: "0.85rem" }}>
-                  <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Sparkles size={16} /> Key Revelation: Onboard Pin 13 &apos;L&apos; LED
-                  </div>
-                  <p style={{ fontSize: "0.78rem", color: "#fef3c7", marginTop: "0.3rem", lineHeight: "1.4", margin: 0 }}>
-                    Notice the tiny orange surface-mount LED labeled <strong>&apos;L&apos;</strong> near the digital header. It is internally hardwired through a buffer to <strong>Digital Pin 13</strong>! This allows you to verify your code logic without wiring a single breadboard component!
-                  </p>
-                </div>
-
-                {/* 12-Zone Selector Tabs */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  {boardZones.map((z, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => setActiveBoardZone(idx)}
-                      style={{
-                        background: activeBoardZone === idx ? "rgba(107, 15, 36, 0.25)" : "rgba(255,255,255,0.02)",
-                        border: activeBoardZone === idx ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.06)",
-                        borderRadius: "8px",
-                        padding: "0.6rem 0.8rem",
-                        cursor: "pointer",
-                        transition: "all 0.15s ease"
-                      }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: "0.82rem", fontWeight: 800, color: activeBoardZone === idx ? "#F5B800" : "#ffffff" }}>
-                          {z.title}
-                        </span>
-                        <span style={{ fontSize: "0.65rem", color: "#94a3b8", fontWeight: 700 }}>
-                          {z.tag}
-                        </span>
-                      </div>
-                      {activeBoardZone === idx && (
-                        <p style={{ fontSize: "0.75rem", color: "#cbd5e1", marginTop: "0.35rem", lineHeight: "1.4", margin: 0 }}>
-                          {z.desc}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 7: HOW BREADBOARDS, LEDS & RESISTORS WORK (OHM'S LAW)
-          ===================================================================== */}
-      {currentSlide === 6 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 7 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              How Breadboards, LEDs &amp; Resistors Work
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Master internal spring metal clip architecture, LED polarity, and Ohm&apos;s Law current limiting.
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            {/* View Mode Toggle */}
-            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <button
-                onClick={() => setBreadboardView("surface")}
-                style={{
-                  background: breadboardView === "surface" ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                  color: breadboardView === "surface" ? "#ffffff" : "#cbd5e1",
-                  border: breadboardView === "surface" ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "20px",
-                  padding: "0.4rem 0.85rem",
-                  fontSize: "0.8rem",
-                  fontWeight: 700,
-                  cursor: "pointer"
-                }}
-              >
-                1. Breadboard Internal Clips (X-Ray View)
-              </button>
-              <button
-                onClick={() => setBreadboardView("xray")}
-                style={{
-                  background: breadboardView === "xray" ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                  color: breadboardView === "xray" ? "#ffffff" : "#cbd5e1",
-                  border: breadboardView === "xray" ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "20px",
-                  padding: "0.4rem 0.85rem",
-                  fontSize: "0.8rem",
-                  fontWeight: 700,
-                  cursor: "pointer"
-                }}
-              >
-                2. LED Anatomy &amp; Ohm&apos;s Law Math
-              </button>
-            </div>
-
-            {/* Display Diagram & Step-by-Step Breakdown */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "1.25rem", alignItems: "center" }}>
-              <div style={{ background: "#0b0f19", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Image
-                  src={breadboardView === "surface" ? "/illustrations/class1-breadboard-anatomy.svg" : "/illustrations/class1-led-polarity-resistor.svg"}
-                  alt="Breadboard and LED Anatomy"
-                  width={680}
-                  height={380}
-                  style={{ width: "100%", height: "auto", borderRadius: "10px" }}
-                />
-                <div style={{ marginTop: "0.5rem", fontSize: "0.72rem", color: "#F5B800", fontWeight: 700 }}>
-                  RoboBEE Reference Illustration — Verify Hardware Before Powering
-                </div>
-              </div>
-
-              {/* Explanatory Cards */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {breadboardView === "surface" ? (
-                  <>
-                    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "1rem" }}>
-                      <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
-                        Horizontal 5-Hole Terminal Strips
-                      </div>
-                      <p style={{ fontSize: "0.8rem", color: "#cbd5e1", lineHeight: "1.5", margin: 0 }}>
-                        Beneath columns <code>a-b-c-d-e</code> and <code>f-g-h-i-j</code>, spring-loaded metal clips connect all 5 holes in a row together. Any components inserted into holes in the same 5-hole group are electrically connected!
-                      </p>
-                    </div>
-
-                    <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "12px", padding: "1rem" }}>
-                      <div style={{ color: "#fca5a5", fontWeight: 800, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
-                        ⚠️ The Center DIP Isolation Ravine
-                      </div>
-                      <p style={{ fontSize: "0.8rem", color: "#cbd5e1", lineHeight: "1.5", margin: 0 }}>
-                        Notice the trench running down the middle. It creates an electrical barrier between columns <code>e</code> and <code>f</code> so you can straddle ICs or components without shorting their opposite pins together!
-                      </p>
-                    </div>
-
-                    <div style={{ background: "rgba(59, 130, 246, 0.08)", border: "1px solid rgba(59, 130, 246, 0.3)", borderRadius: "12px", padding: "1rem" }}>
-                      <div style={{ color: "#93c5fd", fontWeight: 800, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
-                        Continuous Vertical Power Rails (+ / -)
-                      </div>
-                      <p style={{ fontSize: "0.8rem", color: "#cbd5e1", lineHeight: "1.5", margin: 0 }}>
-                        The outer red (<code>+</code>) and blue (<code>-</code>) tracks run vertically along the edges, distributing 5V and GND along the entire board length for easy access.
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "1rem" }}>
-                      <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
-                        LED Polarity: Anode (+) vs Cathode (-)
-                      </div>
-                      <ul style={{ paddingLeft: "1.1rem", fontSize: "0.8rem", color: "#cbd5e1", lineHeight: "1.6", margin: 0 }}>
-                        <li><strong>Anode (+):</strong> Longer lead wire. Connects toward Pin 13 (5V).</li>
-                        <li><strong>Cathode (-):</strong> Shorter lead wire + flat collar edge. Connects toward GND (0V).</li>
-                        <li><em>Reversed LED? It won&apos;t explode, but current cannot flow and it stays dark.</em></li>
-                      </ul>
-                    </div>
-
-                    <div style={{ background: "linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(11, 15, 25, 0.8))", border: "1px solid #10b981", borderRadius: "12px", padding: "1rem" }}>
-                      <div style={{ color: "#6ee7b7", fontWeight: 800, fontSize: "0.9rem", marginBottom: "0.3rem" }}>
-                        Ohm&apos;s Law Current Limiting Calculation
-                      </div>
-                      <div style={{ fontFamily: "monospace", fontSize: "0.82rem", color: "#ffffff", lineHeight: "1.6" }}>
-                        <div>V_supply = 5.0V (Pin 13 HIGH)</div>
-                        <div>V_LED = 2.0V (Red LED forward drop)</div>
-                        <div>V_resistor = 5.0V - 2.0V = <strong>3.0V</strong></div>
-                        <div>Target Current I = 13.6 mA = 0.0136 A</div>
-                        <div style={{ color: "#F5B800", fontWeight: 800, marginTop: "0.2rem" }}>
-                          R = 3.0V / 0.0136A ≈ 220.5 Ω ➔ 220 Ω (Red-Red-Brown)
-                        </div>
-                      </div>
-                      <p style={{ fontSize: "0.75rem", color: "#fca5a5", marginTop: "0.4rem", margin: 0 }}>
-                        ⚠️ Without this resistor, current exceeds 80mA, instantly burning the LED junction and damaging ATmega328P output transistors!
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 8: LAB PART A: FIRST LIGHT WITH LED_BUILTIN
-          ===================================================================== */}
-      {currentSlide === 7 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 8 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Lab Part A: First Light with <code>LED_BUILTIN</code>
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Zero wiring required! Test your development toolchain and celebrate your first uploaded C++ program.
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "1.25rem" }}>
-              {/* Step-by-Step Visual Workflow */}
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "1.25rem" }}>
-                <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.95rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                  <CheckSquare size={18} /> Step-by-Step First Flash Sequence
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {[
-                    { step: 1, title: "Bench Inspection", desc: "Ensure desk is clear of loose wire clippings and conductive metal shavings before setting down the board." },
-                    { step: 2, title: "Connect USB Cable", desc: "Firmly insert USB Type-B plug into the Arduino. The green 'ON' power LED will illuminate steadily." },
-                    { step: 3, title: "Select Board & Port", desc: "In Arduino IDE: Tools ➔ Board ➔ 'Arduino Uno', then Tools ➔ Port ➔ select 'COMx' (Windows) or '/dev/cu.usbmodem...' (Mac)." },
-                    { step: 4, title: "Open RoboBEE Blink", desc: "Open File ➔ Examples ➔ 01.Basics ➔ Blink, or paste the certified RoboBEE Stage A sketch." },
-                    { step: 5, title: "Click Upload (➔)", desc: "Click the Right Arrow upload button. Observe the TX and RX LEDs flashing furiously during memory write." },
-                    { step: 6, title: "Verify 'L' Pulse", desc: "Look at the orange 'L' LED. It should now pulse: 1 second ON, 1 second OFF!" }
-                  ].map(s => (
-                    <div key={s.step} style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", background: "rgba(0,0,0,0.25)", padding: "0.65rem", borderRadius: "8px" }}>
-                      <span style={{ background: "#F5B800", color: "#161B26", width: "22px", height: "22px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 900, minWidth: "22px" }}>
-                        {s.step}
-                      </span>
-                      <div>
-                        <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#ffffff" }}>{s.title}</div>
-                        <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.15rem", lineHeight: "1.4" }}>{s.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Troubleshooting Callout Card for Part A */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                <div style={{ background: "rgba(107, 15, 36, 0.2)", border: "1px solid rgba(107, 15, 36, 0.5)", borderRadius: "14px", padding: "1.25rem" }}>
-                  <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <AlertTriangle size={16} /> Port Greyed Out in Arduino IDE?
-                  </div>
-                  <p style={{ fontSize: "0.78rem", color: "#fca5a5", marginTop: "0.35rem", lineHeight: "1.5" }}>
-                    The #1 rookie workshop trap: Using a <strong>charge-only USB cable</strong> from a phone or toy. Charge cables lack the internal D+ and D- data conductors. Swap to the blue RoboBEE certified USB 2.0 data cable!
-                  </p>
-                </div>
-
-                <div style={{ background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "14px", padding: "1.25rem" }}>
-                  <div style={{ color: "#6ee7b7", fontWeight: 800, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <CheckCircle size={16} /> Stage A Sign-Off Criteria
-                  </div>
-                  <ul style={{ paddingLeft: "1.1rem", fontSize: "0.78rem", color: "#cbd5e1", lineHeight: "1.6", marginTop: "0.35rem", margin: 0 }}>
-                    <li>Green <strong>ON</strong> LED is steady and bright.</li>
-                    <li>Orange <strong>L</strong> LED blinks with exact 1-second cadence.</li>
-                    <li>Arduino IDE bottom console reports: <em>&ldquo;Done uploading. Global variables use 9 bytes...&rdquo;</em></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 9: LAB PART B: EXTERNAL BREADBOARD LED CIRCUIT BUILD
-          ===================================================================== */}
-      {currentSlide === 8 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 9 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Lab Part B: External Breadboard Circuit Build
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Unplug USB! Wire Pin 13 ➔ 220 Ω Resistor ➔ LED Anode ➔ Cathode ➔ GND, then complete peer safety checklist.
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.3fr", gap: "1.25rem" }}>
-              {/* Wiring SVG Diagram */}
-              <div style={{ background: "#0b0f19", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Image
-                  src="/illustrations/class1-external-blink-wiring.svg"
-                  alt="External Blink Breadboard Wiring"
-                  width={680}
-                  height={380}
-                  style={{ width: "100%", height: "auto", borderRadius: "10px" }}
-                />
-                <div style={{ marginTop: "0.5rem", fontSize: "0.72rem", color: "#F5B800", fontWeight: 700 }}>
-                  RoboBEE Reference Illustration — Verify Hardware Before Powering
-                </div>
-              </div>
-
-              {/* Wire Table & Interactive Safety Checklist */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {/* 6-Row Wire Table */}
-                <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "0.85rem" }}>
-                  <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.85rem", marginBottom: "0.5rem" }}>
-                    Wire-by-Wire Connection Table
-                  </div>
-                  <table style={{ width: "100%", fontSize: "0.75rem", borderCollapse: "collapse", color: "#cbd5e1" }}>
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", textAlign: "left", color: "#94a3b8" }}>
-                        <th style={{ padding: "0.3rem" }}>#</th>
-                        <th style={{ padding: "0.3rem" }}>From</th>
-                        <th style={{ padding: "0.3rem" }}>To</th>
-                        <th style={{ padding: "0.3rem" }}>Note</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(lesson.physicalBuildPack?.wireTable || []).map((w, idx) => (
-                        <tr key={idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                          <td style={{ padding: "0.35rem", color: "#F5B800", fontWeight: 800 }}>{idx + 1}</td>
-                          <td style={{ padding: "0.35rem", fontFamily: "monospace" }}>{w.from}</td>
-                          <td style={{ padding: "0.35rem", fontFamily: "monospace" }}>{w.to}</td>
-                          <td style={{ padding: "0.35rem", fontSize: "0.7rem", color: "#94a3b8" }}>{w.wireOrPolarityNote}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Partner Pre-Power Safety Checklist */}
-                <div style={{ background: allSafetyChecked ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 184, 0, 0.08)", border: allSafetyChecked ? "1px solid #10b981" : "1px solid rgba(245, 184, 0, 0.3)", borderRadius: "12px", padding: "0.85rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                    <span style={{ color: allSafetyChecked ? "#10b981" : "#F5B800", fontWeight: 800, fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                      <Shield size={15} /> Partner Pre-Power Safety Checklist
-                    </span>
-                    <span style={{ fontSize: "0.72rem", color: allSafetyChecked ? "#34d399" : "#F5B800", fontWeight: 800 }}>
-                      {allSafetyChecked ? "✅ Safe to Connect USB Power!" : "⚠️ Check All 4 Before USB Plug"}
-                    </span>
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                    {[
-                      "USB cable was completely disconnected during all component wiring.",
-                      "220 Ω resistor bridges Row 10 to Row 15 (never plugged into the same row).",
-                      "LED Anode (long leg) is in Row 15; LED Cathode (short leg) is in Row 16.",
-                      "Black jumper wire connects Row 16 directly to an Arduino GND pin."
-                    ].map((text, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => toggleSafetyCheck(idx)}
+            return (
+              <>
+                {/* Horizontal Timeline Stepper */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: "0.85rem",
+                    marginBottom: "1.4rem",
+                  }}
+                >
+                  {eras.map((e, idx) => {
+                    const active = historyEraIdx === idx;
+                    return (
+                      <button
+                        key={e.year}
+                        type="button"
+                        onClick={() => setHistoryEraIdx(idx)}
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          fontSize: "0.75rem",
-                          color: safetyChecks[idx] ? "#6ee7b7" : "#cbd5e1",
-                          cursor: "pointer"
+                          padding: "0.95rem 1rem",
+                          borderRadius: "16px",
+                          border: `2px solid ${active ? "#2563EB" : "#C7D2FE"}`,
+                          background: active ? "#2563EB" : "#FFFFFF",
+                          color: active ? "#FFFFFF" : "#0F172A",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          boxShadow: palette.cardShadow,
+                          transition: "all 0.2s ease",
                         }}
                       >
-                        <input
-                          type="checkbox"
-                          checked={safetyChecks[idx]}
-                          onChange={() => {}}
-                          style={{ cursor: "pointer", accentColor: "#10b981" }}
-                        />
-                        <span>{text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 10: INSIDE THE CODE: LINE-BY-LINE C++ WALKTHROUGH
-          ===================================================================== */}
-      {currentSlide === 9 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 10 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Inside the Code: Line-by-Line C++ Engineering Walkthrough
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Every single line of C++ has a precise hardware consequence on the silicon gates of the ATmega328P.
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.3fr", gap: "1.25rem" }}>
-              {/* Left: Syntax Highlighted C++ Code Box */}
-              <div style={{ background: "#020617", border: "1px solid #1e293b", borderRadius: "14px", padding: "1.25rem", fontFamily: "'JetBrains Mono', 'Fira Code', monospace", fontSize: "0.82rem", lineHeight: "1.7", overflowY: "auto", maxHeight: "460px" }}>
-                <div style={{ color: "#64748b", fontStyle: "italic", marginBottom: "0.5rem" }}>
-                  // RoboBEE Certified Stage B External Blink Sketch
-                </div>
-                {[
-                  { line: 1, text: "const int LED_PIN = 13;", block: 0 },
-                  { line: 2, text: "const int ON_TIME_MS = 1000;", block: 1 },
-                  { line: 3, text: "const int OFF_TIME_MS = 1000;", block: 1 },
-                  { line: 4, text: "", block: -1 },
-                  { line: 5, text: "void setup() {", block: 2 },
-                  { line: 6, text: "  pinMode(LED_PIN, OUTPUT);", block: 3 },
-                  { line: 7, text: "}", block: 2 },
-                  { line: 8, text: "", block: -1 },
-                  { line: 9, text: "void loop() {", block: 4 },
-                  { line: 10, text: "  digitalWrite(LED_PIN, HIGH);", block: 5 },
-                  { line: 11, text: "  delay(ON_TIME_MS);", block: 6 },
-                  { line: 12, text: "  digitalWrite(LED_PIN, LOW);", block: 7 },
-                  { line: 13, text: "  delay(OFF_TIME_MS);", block: 6 },
-                  { line: 14, text: "}", block: 4 }
-                ].map((l, idx) => {
-                  const isActive = l.block === activeCodeBlockIdx;
-                  return (
-                    <div 
-                      key={idx}
-                      onClick={() => l.block >= 0 && setActiveCodeBlockIdx(l.block)}
-                      style={{
-                        display: "flex",
-                        gap: "0.75rem",
-                        padding: "0.15rem 0.5rem",
-                        borderRadius: "4px",
-                        background: isActive ? "rgba(245, 184, 0, 0.15)" : "transparent",
-                        borderLeft: isActive ? "3px solid #F5B800" : "3px solid transparent",
-                        cursor: l.block >= 0 ? "pointer" : "default"
-                      }}
-                    >
-                      <span style={{ color: "#475569", width: "22px", textAlign: "right", userSelect: "none" }}>{l.line}</span>
-                      <span style={{ color: l.text.includes("void") ? "#c084fc" : l.text.includes("const") ? "#38bdf8" : l.text.includes("HIGH") || l.text.includes("LOW") ? "#F5B800" : "#f1f5f9" }}>
-                        {l.text}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Right: Clickable 8-Block Engineering Explanations */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxHeight: "460px", overflowY: "auto", paddingRight: "0.25rem" }}>
-                {[
-                  { id: 0, title: "1. const int LED_PIN = 13;", subtitle: "Pin Constant Alias", desc: "Replaces magic numbers with meaningful names. Stored in flash memory with zero runtime RAM consumption. If you move your wire from Pin 13 to Pin 9, you only modify this one line!" },
-                  { id: 1, title: "2. const int ON_TIME_MS / OFF_TIME_MS;", subtitle: "Timing Parameters", desc: "Defines blink duration in milliseconds. Separating ON and OFF parameters unlocks asymmetric duty cycles (like emergency beacons and lighthouse strobes)." },
-                  { id: 2, title: "3. void setup() { ... }", subtitle: "One-Time Initialization", desc: "Runs exactly once when the ATmega328P powers on or after the reset button is pressed. Used to configure pin modes, initialize serial communications, and setup peripherals." },
-                  { id: 3, title: "4. pinMode(LED_PIN, OUTPUT);", subtitle: "Tri-State Register Configuration", desc: "Configures the internal Data Direction Register (DDRB) for Pin 13. Lowers output impedance so the pin can source up to 20mA to drive external circuits." },
-                  { id: 4, title: "5. void loop() { ... }", subtitle: "Infinite Execution Loop", desc: "Runs continuously for as long as power is connected. As soon as the CPU finishes the last line inside the closing brace, it wraps back to the top in less than a microsecond." },
-                  { id: 5, title: "6. digitalWrite(LED_PIN, HIGH);", subtitle: "Applying 5V Output Potential", desc: "Connects Pin 13 internally to the 5V power bus via a low-resistance MOSFET. Electric potential pushes current through the 220 Ω resistor and LED to illuminate photons." },
-                  { id: 6, title: "7. delay(ON_TIME_MS);", subtitle: "Millisecond CPU Hardware Pause", desc: "Halts sketch execution for specified milliseconds (1000ms = 1 sec). The CPU cycles through 16,000,000 idle ticks per second while the LED maintains its illumination state." },
-                  { id: 7, title: "8. digitalWrite(LED_PIN, LOW);", subtitle: "Collapsing Potential to 0V (GND)", desc: "Pulls Pin 13 internally to 0V ground potential. The voltage difference across the LED drops to zero, terminating current flow and extinguishing the light." }
-                ].map(block => (
-                  <div
-                    key={block.id}
-                    onClick={() => setActiveCodeBlockIdx(block.id)}
-                    style={{
-                      background: activeCodeBlockIdx === block.id ? "rgba(107, 15, 36, 0.25)" : "rgba(255,255,255,0.02)",
-                      border: activeCodeBlockIdx === block.id ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "10px",
-                      padding: "0.65rem 0.85rem",
-                      cursor: "pointer",
-                      transition: "all 0.15s ease"
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontFamily: "monospace", fontSize: "0.82rem", fontWeight: 800, color: activeCodeBlockIdx === block.id ? "#F5B800" : "#ffffff" }}>
-                        {block.title}
-                      </span>
-                      <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 700 }}>
-                        {block.subtitle}
-                      </span>
-                    </div>
-                    {activeCodeBlockIdx === block.id && (
-                      <p style={{ fontSize: "0.78rem", color: "#cbd5e1", marginTop: "0.35rem", lineHeight: "1.4", margin: 0 }}>
-                        {block.desc}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 11: LIVE SYNCHRONIZED BLINK SIMULATOR & TIMING LAB
-          ===================================================================== */}
-      {currentSlide === 10 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 11 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Live Synchronized Blink Simulator &amp; Timing Lab
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Experiment with timing variables in-browser before modifying your physical Arduino sketch.
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "1rem" }}>
-            {/* Top Software Simulator Badge */}
-            <div style={{ background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.3)", borderRadius: "8px", padding: "0.4rem 0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "0.75rem", color: "#67e8f9", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                <Activity size={14} /> RoboBEE Virtual Hardware Simulator — Test In-Browser Before Flashing Board
-              </span>
-              <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
-                Synchronized with Physical Pin 13 Logic
-              </span>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "1.25rem" }}>
-              {/* Left: Interactive Simulated Board & Breadboard */}
-              <div style={{ background: "#0b0f19", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "1.5rem", display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center" }}>
-                {/* Visual LED Hardware Rendering */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", width: "100%", padding: "1rem 0" }}>
-                  {/* Onboard Pin 13 LED */}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
-                    <div style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "6px",
-                      background: simLedState ? "#f59e0b" : "#451a03",
-                      boxShadow: simLedState ? "0 0 25px #f59e0b, 0 0 45px rgba(245, 158, 11, 0.6)" : "none",
-                      border: "2px solid #78350f",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#ffffff",
-                      fontWeight: 900,
-                      fontSize: "0.85rem",
-                      transition: "all 0.05s ease"
-                    }}>
-                      L
-                    </div>
-                    <span style={{ fontSize: "0.72rem", color: "#94a3b8", fontWeight: 700 }}>
-                      Onboard Pin 13 &apos;L&apos; LED
-                    </span>
-                  </div>
-
-                  {/* External 5mm Red LED on Breadboard */}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
-                    <div style={{
-                      width: "56px",
-                      height: "56px",
-                      borderRadius: "50%",
-                      background: simLedState ? "radial-gradient(circle, #ff4d4d 0%, #cc0000 70%, #660000 100%)" : "#3b0707",
-                      boxShadow: simLedState ? "0 0 40px #ff3333, 0 0 70px rgba(255, 51, 51, 0.7)" : "none",
-                      border: "2px solid #550505",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#ffffff",
-                      transition: "all 0.05s ease"
-                    }}>
-                      <Zap size={22} color={simLedState ? "#ffffff" : "#660000"} />
-                    </div>
-                    <span style={{ fontSize: "0.75rem", color: simLedState ? "#ff6b6b" : "#94a3b8", fontWeight: 800 }}>
-                      External Red 5mm LED ({simLedState ? "HIGH (5V)" : "LOW (0V)"})
-                    </span>
-                  </div>
+                        <div
+                          style={{
+                            fontSize: "1.35rem",
+                            fontWeight: 900,
+                            color: active ? "#FFFFFF" : "#F97316",
+                          }}
+                        >
+                          {e.year}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.85rem",
+                            fontWeight: 800,
+                            marginTop: "0.2rem",
+                          }}
+                        >
+                          {e.title}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Real-Time Duty Cycle & Frequency Calculations */}
-                <div style={{ width: "100%", background: "rgba(0,0,0,0.4)", borderRadius: "10px", padding: "0.85rem", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.5rem", textAlign: "center" }}>
-                  <div>
-                    <div style={{ fontSize: "0.68rem", color: "#94a3b8", textTransform: "uppercase" }}>Total Period (T)</div>
-                    <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#ffffff", fontFamily: "monospace" }}>
-                      {simOnTime + simOffTime} ms
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: "0.68rem", color: "#94a3b8", textTransform: "uppercase" }}>Frequency (f)</div>
-                    <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#F5B800", fontFamily: "monospace" }}>
-                      {(1000 / (simOnTime + simOffTime)).toFixed(2)} Hz
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: "0.68rem", color: "#94a3b8", textTransform: "uppercase" }}>Duty Cycle</div>
-                    <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#10b981", fontFamily: "monospace" }}>
-                      {((simOnTime / (simOnTime + simOffTime)) * 100).toFixed(0)}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Sliders & 4 Experiment Presets */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-                {/* 4 One-Click Presets */}
-                <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "1rem" }}>
-                  <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.85rem", marginBottom: "0.6rem" }}>
-                    4 Predict ➔ Modify ➔ Test Experiments
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
-                    <button
-                      onClick={() => applyPreset("Fast Strobe (200/200ms)", 200, 200)}
-                      style={{
-                        background: activePreset === "Fast Strobe (200/200ms)" ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                        color: "#ffffff",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: "8px",
-                        padding: "0.5rem",
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        textAlign: "left"
-                      }}
-                    >
-                      <div>⚡ 1. Fast Strobe</div>
-                      <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>200ms ON / 200ms OFF</div>
-                    </button>
-
-                    <button
-                      onClick={() => applyPreset("Lighthouse Beacon (100/900ms)", 100, 900)}
-                      style={{
-                        background: activePreset === "Lighthouse Beacon (100/900ms)" ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                        color: "#ffffff",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: "8px",
-                        padding: "0.5rem",
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        textAlign: "left"
-                      }}
-                    >
-                      <div>🚨 2. Lighthouse Beacon</div>
-                      <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>100ms ON / 900ms OFF (10%)</div>
-                    </button>
-
-                    <button
-                      onClick={() => applyPreset("Cardiac Rhythm / Heartbeat (Double Pulse)", 150, 150)}
-                      style={{
-                        background: activePreset === "Cardiac Rhythm / Heartbeat (Double Pulse)" ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                        color: "#ffffff",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: "8px",
-                        padding: "0.5rem",
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        textAlign: "left"
-                      }}
-                    >
-                      <div>💓 3. Cardiac Heartbeat</div>
-                      <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>Double pulse Lub-Dub</div>
-                    </button>
-
-                    <button
-                      onClick={() => applyPreset("Persistence of Vision (10/10ms)", 10, 10)}
-                      style={{
-                        background: activePreset === "Persistence of Vision (10/10ms)" ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                        color: "#ffffff",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: "8px",
-                        padding: "0.5rem",
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        textAlign: "left"
-                      }}
-                    >
-                      <div>👁️ 4. Optical POV Trick</div>
-                      <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>10ms ON / 10ms OFF (50Hz)</div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Timing Sliders */}
-                <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.25rem" }}>
-                      <span>ON_TIME_MS (High Pulse):</span>
-                      <span style={{ color: "#F5B800", fontFamily: "monospace" }}>{simOnTime} ms</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={10}
-                      max={2500}
-                      step={10}
-                      value={simOnTime}
-                      onChange={(e) => {
-                        setActivePreset("Custom Timing");
-                        setSimOnTime(Number(e.target.value));
-                      }}
-                      style={{ width: "100%", accentColor: "#F5B800" }}
-                    />
-                  </div>
-
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.25rem" }}>
-                      <span>OFF_TIME_MS (Low Pause):</span>
-                      <span style={{ color: "#38bdf8", fontFamily: "monospace" }}>{simOffTime} ms</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={10}
-                      max={2500}
-                      step={10}
-                      value={simOffTime}
-                      onChange={(e) => {
-                        setActivePreset("Custom Timing");
-                        setSimOffTime(Number(e.target.value));
-                      }}
-                      style={{ width: "100%", accentColor: "#38bdf8" }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =====================================================================
-          SLIDE 12: TROUBLESHOOTING, CLASS QUIZ & EXIT TICKET
-          ===================================================================== */}
-      {currentSlide === 11 && (
-        <>
-          <div className={styles.slideHeader}>
-            <div className={styles.slideNumberBadge}>ROBOBEE INNOVATORS ACADEMY • WORKSHOP SLIDE 12 OF 12</div>
-            <h1 className={styles.slideTitle} style={{ color: "#ffffff", fontSize: "2.1rem" }}>
-              Troubleshooting Matrix, Class Quiz &amp; Exit Mastery
-            </h1>
-            <p className={styles.slideSubtitle} style={{ color: "#F5B800", fontSize: "1.05rem" }}>
-              Debugging is 80% of real engineering. Verify your understanding and prepare for Class 2!
-            </p>
-          </div>
-
-          <div className={styles.slideBody} style={{ gap: "0.85rem" }}>
-            {/* Slide 12 Sub-Tabs */}
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              {[
-                { id: "troubleshoot", label: "🔧 Field Troubleshooting Matrix (6 Cases)" },
-                { id: "quiz", label: "🎯 5-Question Interactive Class Quiz" },
-                { id: "exit", label: "📋 4-Part Exit Ticket & Class 2 Teaser" }
-              ].map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setSlide12Tab(t.id as any)}
+                {/* Active Era Spotlight Split View */}
+                <div
                   style={{
-                    background: slide12Tab === t.id ? "#6B0F24" : "rgba(255,255,255,0.04)",
-                    color: slide12Tab === t.id ? "#ffffff" : "#cbd5e1",
-                    border: slide12Tab === t.id ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "20px",
-                    padding: "0.4rem 0.85rem",
-                    fontSize: "0.8rem",
-                    fontWeight: 700,
-                    cursor: "pointer"
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+                    gap: "1.6rem",
+                    alignItems: "center",
                   }}
                 >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {/* TAB 1: Troubleshooting Accordion */}
-            {slide12Tab === "troubleshoot" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", maxHeight: "440px", overflowY: "auto", paddingRight: "0.25rem" }}>
-                {(lesson.troubleshooting || []).map((t, idx) => {
-                  const isExpanded = expandedTroubleIdx === idx;
-                  return (
-                    <div
-                      key={idx}
-                      style={{
-                        background: "rgba(255,255,255,0.02)",
-                        border: isExpanded ? "1px solid #F5B800" : "1px solid rgba(255,255,255,0.06)",
-                        borderRadius: "10px",
-                        padding: "0.75rem 1rem",
-                        cursor: "pointer"
-                      }}
-                      onClick={() => setExpandedTroubleIdx(isExpanded ? null : idx)}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <span style={{ color: "#ef4444", fontWeight: 800, fontSize: "0.8rem" }}>Case {idx + 1}:</span>
-                          <span style={{ color: "#ffffff", fontWeight: 800, fontSize: "0.88rem" }}>{t.symptom}</span>
-                        </div>
-                        {isExpanded ? <ChevronUp size={16} color="#F5B800" /> : <ChevronDown size={16} color="#94a3b8" />}
-                      </div>
-
-                      {isExpanded && (
-                        <div style={{ marginTop: "0.6rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.6rem", display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: "1rem" }}>
-                          <div>
-                            <div style={{ color: "#fca5a5", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase" }}>Diagnostic Checks</div>
-                            <ul style={{ paddingLeft: "1.1rem", fontSize: "0.78rem", color: "#cbd5e1", margin: "0.2rem 0 0 0", lineHeight: "1.4" }}>
-                              {t.checks.map((c, cIdx) => (
-                                <li key={cIdx}>{c}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <div style={{ color: "#6ee7b7", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase" }}>Engineering Explanation</div>
-                            <div style={{ fontSize: "0.8rem", color: "#cbd5e1", marginTop: "0.2rem", lineHeight: "1.4" }}>{t.explanation}</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* TAB 2: Interactive Class Quiz */}
-            {slide12Tab === "quiz" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", maxHeight: "440px", overflowY: "auto", paddingRight: "0.25rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.85rem", color: "#F5B800", fontWeight: 800 }}>
-                    5 Multiple-Choice Mastery Questions
-                  </span>
-                  <button
-                    onClick={() => setQuizSubmitted(true)}
+                  <div
                     style={{
-                      background: "#6B0F24",
-                      color: "#ffffff",
-                      border: "1px solid #F5B800",
-                      borderRadius: "8px",
-                      padding: "0.35rem 0.75rem",
-                      fontSize: "0.75rem",
-                      fontWeight: 800,
-                      cursor: "pointer"
+                      background: "#FFFFFF",
+                      border: "2px solid #C7D2FE",
+                      borderRadius: "20px",
+                      padding: "1.6rem",
+                      boxShadow: palette.cardShadow,
                     }}
                   >
-                    Reveal Class Answers ➔
-                  </button>
-                </div>
-
-                {class1QuizQuestions.map((q, qIdx) => {
-                  const selectedOpt = quizAnswers[qIdx];
-                  const isCorrect = selectedOpt === q.correctOptionIndex;
-
-                  return (
-                    <div key={q.id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "0.85rem" }}>
-                      <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "#ffffff", marginBottom: "0.5rem" }}>
-                        {qIdx + 1}. {q.prompt}
-                      </div>
-
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
-                        {q.options.map((opt, optIdx) => {
-                          let optBg = "rgba(255,255,255,0.04)";
-                          let optBorder = "1px solid rgba(255,255,255,0.1)";
-
-                          if (quizSubmitted) {
-                            if (optIdx === q.correctOptionIndex) {
-                              optBg = "rgba(16, 185, 129, 0.25)";
-                              optBorder = "1px solid #10b981";
-                            } else if (selectedOpt === optIdx) {
-                              optBg = "rgba(239, 68, 68, 0.25)";
-                              optBorder = "1px solid #ef4444";
-                            }
-                          } else if (selectedOpt === optIdx) {
-                            optBg = "rgba(245, 184, 0, 0.2)";
-                            optBorder = "1px solid #F5B800";
-                          }
-
-                          return (
-                            <button
-                              key={optIdx}
-                              onClick={() => handleSelectQuizOption(qIdx, optIdx)}
-                              style={{
-                                background: optBg,
-                                border: optBorder,
-                                color: "#ffffff",
-                                borderRadius: "6px",
-                                padding: "0.45rem 0.65rem",
-                                fontSize: "0.75rem",
-                                textAlign: "left",
-                                cursor: "pointer"
-                              }}
-                            >
-                              <span style={{ fontWeight: 800, marginRight: "0.35rem", color: "#F5B800" }}>
-                                {String.fromCharCode(65 + optIdx)}.
-                              </span>
-                              <span>{opt}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {quizSubmitted && (
-                        <div style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: isCorrect ? "#6ee7b7" : "#cbd5e1", background: "rgba(0,0,0,0.3)", padding: "0.5rem 0.75rem", borderRadius: "6px" }}>
-                          <strong>Engineering Explanation:</strong> {q.explanation}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* TAB 3: 4-Part Exit Ticket & Class 2 Teaser */}
-            {slide12Tab === "exit" && (
-              <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "1.25rem", maxHeight: "440px", overflowY: "auto" }}>
-                {/* 4-Part Exit Ticket Reflections */}
-                <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "1.25rem" }}>
-                  <div style={{ color: "#F5B800", fontWeight: 800, fontSize: "0.92rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <BookOpen size={16} /> 4-Question Mastery Exit Ticket
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                    {(lesson.exitTicket || []).map((ticket, idx) => (
-                      <div key={idx} style={{ background: "rgba(0,0,0,0.25)", padding: "0.65rem 0.85rem", borderRadius: "8px" }}>
-                        <div style={{ fontSize: "0.8rem", fontWeight: 800, color: "#ffffff" }}>
-                          {idx + 1}. {ticket.question}
-                        </div>
-                        <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.25rem" }}>
-                          💡 <em>Rubric:</em> {ticket.rubricOrSampleReasoning}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right: Teaser for Class 2 & Official Reference Sources */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  {/* Next Class Teaser */}
-                  <div style={{ background: "linear-gradient(135deg, rgba(107, 15, 36, 0.3), rgba(11, 15, 25, 0.8))", border: "1px solid #6B0F24", borderRadius: "14px", padding: "1.25rem" }}>
-                    <span style={{ background: "rgba(245, 184, 0, 0.2)", color: "#F5B800", padding: "0.2rem 0.5rem", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 800 }}>
-                      NEXT WORKSHOP TEASER
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "0.3rem 0.85rem",
+                        borderRadius: "999px",
+                        background: "rgba(124, 58, 237, 0.12)",
+                        color: "#7C3AED",
+                        fontWeight: 900,
+                        fontSize: "0.78rem",
+                        marginBottom: "0.75rem",
+                      }}
+                    >
+                      ERA {activeEra.year} • {activeEra.tag}
                     </span>
-                    <h3 style={{ fontSize: "1.2rem", color: "#ffffff", fontWeight: 800, margin: "0.5rem 0 0.3rem 0" }}>
-                      Class 2 (beg-02): Multiple LEDs &amp; Traffic Light Sequencer
+
+                    <h3
+                      style={{
+                        fontSize: "1.75rem",
+                        fontWeight: 900,
+                        color: "#0F172A",
+                        margin: "0 0 0.75rem 0",
+                      }}
+                    >
+                      {activeEra.title}
                     </h3>
-                    <p style={{ fontSize: "0.78rem", color: "#cbd5e1", lineHeight: "1.5", margin: 0 }}>
-                      Next session we scale from 1 LED to 3 synchronized LEDs (Red, Yellow, Green) and write deterministic state machine timing loops modeling a real city traffic intersection!
+
+                    <p
+                      style={{
+                        fontSize: "1.02rem",
+                        color: "#334155",
+                        lineHeight: 1.6,
+                        margin: "0 0 1.1rem 0",
+                      }}
+                    >
+                      {activeEra.summary}
                     </p>
+
+                    <div
+                      style={{
+                        padding: "0.9rem 1.1rem",
+                        borderRadius: "14px",
+                        background: "#EEF2FF",
+                        borderLeft: "4px solid #2563EB",
+                        color: "#1E293B",
+                        fontWeight: 700,
+                        fontSize: "0.92rem",
+                      }}
+                    >
+                      🏆 Engineering Breakthrough: {activeEra.milestone}
+                    </div>
                   </div>
 
-                  {/* Primary Reference Links */}
-                  <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "1rem" }}>
-                    <div style={{ fontSize: "0.8rem", color: "#F5B800", fontWeight: 800, marginBottom: "0.4rem" }}>
-                      Official Engineering Documentation
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "0.75rem" }}>
-                      {(lesson.sources || []).slice(0, 4).map((link, idx) => (
-                        <a
-                          key={idx}
-                          href={link.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: "#38bdf8", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.3rem" }}
+                  <PresentationMediaFrame
+                    src={activeEra.image}
+                    alt={activeEra.title}
+                    caption={activeEra.caption}
+                    fallbackVariant="robot-arm"
+                    height="330px"
+                    accentColor="#2563EB"
+                    onZoom={handleZoom}
+                  />
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 07: HOW ROBOTS WORK: SENSE ➔ THINK ➔ ACT (Theme: cyber-blueprint | Layout: timeline-stepper)
+         ===================================================================== */}
+      {currentSlide === 6 && (
+        <div>
+          <div style={{ marginBottom: "1.25rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              How Robots Work: The &ldquo;Sense ➔ Think ➔ Act&rdquo; Loop
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              Click each stage of the blueprint pipeline to compare Human Biology vs. Robot Architecture:
+            </p>
+          </div>
+
+          {(() => {
+            const stages = [
+              {
+                step: "STAGE 01",
+                name: "SENSE (Input & Perception)",
+                human: "Human Eyes, Ears & Skin nerve endings detect light, sound, and touch.",
+                robot:
+                  "Ultrasonic Sonar (HC-SR04), Infrared (IR) Photodiodes, LiDAR, and AI Cameras measure distance, reflectance, and objects as electrical voltages.",
+                examples: ["Ultrasonic Distance Sensor", "8-Channel IR Line Array", "MPU-6050 Gyroscope"],
+                accent: "#38BDF8",
+              },
+              {
+                step: "STAGE 02",
+                name: "THINK (Processing & Control)",
+                human: "The Human Brain analyzes sensory signals and decides which way to move.",
+                robot:
+                  "The Microcontroller (Arduino Uno, ESP32, STM32) reads sensor voltages, runs C++ / Python algorithms at millions of cycles per second, and outputs control commands.",
+                examples: ["if (distance < 20cm) turnRight();", "PID Error Calculation", "State Machine Logic"],
+                accent: "#F59E0B",
+              },
+              {
+                step: "STAGE 03",
+                name: "ACT (Physical Output & Motion)",
+                human: "Human Muscles contract to move arms, legs, and vocal cords.",
+                robot:
+                  "Motor Drivers (L298N / TB6612FNG), DC Gear Motors, Servo Motors, and LEDs convert electrical signals into real-world torque, speed, and light!",
+                examples: ["DC Gear Motors + Wheels", "SG90 / MG996R Servo Gripper", "High-Brightness Status LEDs"],
+                accent: "#10B981",
+              },
+            ];
+            const current = stages[loopStageIdx];
+
+            return (
+              <>
+                {/* 3-Stage Stepper Header */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "1rem",
+                    marginBottom: "1.4rem",
+                  }}
+                >
+                  {stages.map((st, idx) => {
+                    const isSelected = loopStageIdx === idx;
+                    return (
+                      <button
+                        key={st.step}
+                        type="button"
+                        onClick={() => setLoopStageIdx(idx)}
+                        style={{
+                          padding: "1.1rem 1.25rem",
+                          borderRadius: "18px",
+                          background: isSelected
+                            ? "rgba(15, 23, 42, 0.9)"
+                            : palette.cardBg,
+                          border: `2px solid ${isSelected ? st.accent : "rgba(255,255,255,0.2)"}`,
+                          color: "#FFFFFF",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          boxShadow: isSelected ? `0 0 28px ${st.accent}55` : "none",
+                          transition: "all 0.25s ease",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "0.74rem",
+                            fontWeight: 900,
+                            color: st.accent,
+                            letterSpacing: "0.08em",
+                          }}
                         >
-                          <ExternalLink size={12} />
-                          <span>{link.title}</span>
-                        </a>
+                          {st.step}
+                        </div>
+                        <div style={{ fontSize: "1.22rem", fontWeight: 900, marginTop: "0.2rem" }}>
+                          {st.name}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Comparison Cards + Blueprint Diagram */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+                    gap: "1.5rem",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: palette.cardBg,
+                      border: `2px solid ${current.accent}`,
+                      borderRadius: "20px",
+                      padding: "1.5rem",
+                      backdropFilter: "blur(14px)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.78rem",
+                        fontWeight: 900,
+                        color: current.accent,
+                        letterSpacing: "0.08em",
+                        marginBottom: "0.4rem",
+                      }}
+                    >
+                      {current.step} • HUMAN BIOLOGY VS. ROBOT ARCHITECTURE
+                    </div>
+                    <h3 style={{ fontSize: "1.6rem", fontWeight: 900, color: "#FFFFFF", margin: "0 0 1rem 0" }}>
+                      {current.name}
+                    </h3>
+
+                    <div
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "14px",
+                        background: "rgba(255, 255, 255, 0.07)",
+                        marginBottom: "0.85rem",
+                      }}
+                    >
+                      <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#67E8F9" }}>
+                        🧬 HUMAN BODY ANALOGY
+                      </div>
+                      <div style={{ fontSize: "0.95rem", color: "#FFFFFF", marginTop: "0.2rem" }}>
+                        {current.human}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "14px",
+                        background: "rgba(16, 185, 129, 0.12)",
+                        border: `1px solid ${current.accent}`,
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      <div style={{ fontSize: "0.75rem", fontWeight: 800, color: current.accent }}>
+                        🤖 ROBOT HARDWARE EQUIVALENT
+                      </div>
+                      <div style={{ fontSize: "0.95rem", color: "#FFFFFF", marginTop: "0.2rem" }}>
+                        {current.robot}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                      {current.examples.map((ex, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            padding: "0.3rem 0.7rem",
+                            borderRadius: "999px",
+                            background: "rgba(56, 189, 248, 0.16)",
+                            border: "1px solid #38BDF8",
+                            color: "#67E8F9",
+                            fontSize: "0.78rem",
+                            fontWeight: 700,
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {ex}
+                        </span>
                       ))}
                     </div>
                   </div>
+
+                  <PresentationMediaFrame
+                    src="/illustrations/class1-sense-decide-act.svg"
+                    alt="Sense Think Act Blueprint Diagram"
+                    caption="Closed-Loop Engineering Architecture: Sense ➔ Think ➔ Act"
+                    fallbackVariant="rover"
+                    height="335px"
+                    accentColor={current.accent}
+                    onZoom={handleZoom}
+                  />
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 08: THE 5 MAIN PARTS OF EVERY ROBOT (Theme: cyber-blueprint | Layout: interactive-hotspot)
+         ===================================================================== */}
+      {currentSlide === 7 && (
+        <div>
+          <div style={{ marginBottom: "1.25rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              The 5 Main Parts of Every Robot
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              {slideMeta.subtitle}
+            </p>
+          </div>
+
+          {(() => {
+            const hotspots = [
+              {
+                num: 1,
+                title: "1. The Brain (Controller)",
+                top: "44%",
+                left: "48%",
+                role: "Executes embedded C++/Python logic and coordinates all sensors & motors.",
+                hardware: "Arduino Uno / Nano, ESP32 Dual-Core, STM32 Black Pill, Raspberry Pi Pico",
+                specs: "5V / 3.3V Digital Logic, PWM Speed Channels, ADC Inputs, UART/I2C/SPI Buses",
+              },
+              {
+                num: 2,
+                title: "2. The Eyes & Ears (Sensors)",
+                top: "20%",
+                left: "26%",
+                role: "Measures physical distance, reflected infrared light, tilt, and visual targets.",
+                hardware: "Ultrasonic HC-SR04, 8-Channel IR Array, VL53L0X Laser ToF, HuskyLens AI Camera",
+                specs: "Converts physical world phenomena into analog voltages or digital pulses",
+              },
+              {
+                num: 3,
+                title: "3. The Muscles (Actuators & Drivers)",
+                top: "68%",
+                left: "24%",
+                role: "Amplifies low-current logic signals into high-current motor rotation and gripper motion.",
+                hardware: "N20 / TT DC Gear Motors, SG90 / MG996R Servos, L298N, TB6612FNG & BTS7960 Drivers",
+                specs: "H-Bridge bidirectional direction control + PWM duty-cycle speed modulation",
+              },
+              {
+                num: 4,
+                title: "4. The Heart (Power System)",
+                top: "30%",
+                left: "76%",
+                role: "Supplies high-discharge current to motors and clean regulated 5V to the microcontroller.",
+                hardware: "2S/3S LiPo Batteries (7.4V–11.1V), 18650 Li-Ion Pack, LM2596 Buck Converter",
+                specs: "Mandatory Common Ground (GND) shared between battery pack and logic board",
+              },
+              {
+                num: 5,
+                title: "5. The Skeleton (Chassis & Mechanics)",
+                top: "74%",
+                left: "73%",
+                role: "Holds motors, sensors, and circuit boards in rigid alignment during high-speed turns.",
+                hardware: "3D-Printed PLA/PETG Frames, Laser-Cut Acrylic, Anodized Aluminum, Silicone Tires",
+                specs: "Low center of gravity, precision M3 standoffs, and vibration-isolated sensor mounts",
+              },
+            ];
+            const activeSpot = hotspots[robotPartHotspot];
+
+            return (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+                  gap: "1.6rem",
+                  alignItems: "stretch",
+                }}
+              >
+                {/* Left: Interactive Anatomical Blueprint with 5 Pulsing Numbered Pins */}
+                <div
+                  style={{
+                    position: "relative",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    border: "2px solid #38BDF8",
+                    minHeight: "370px",
+                    background: "#091526",
+                    boxShadow: palette.cardShadow,
+                  }}
+                >
+                  <img
+                    src={slideMeta.heroImage}
+                    alt="Robot Anatomy Diagram"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      opacity: 0.45,
+                      position: "absolute",
+                      inset: 0,
+                    }}
+                  />
+
+                  {/* Blueprint Vector Overlay */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background:
+                        "radial-gradient(circle at center, rgba(12, 74, 110, 0.35) 0%, rgba(15, 23, 42, 0.85) 100%)",
+                    }}
+                  />
+
+                  {/* 5 Pulsing Numbered Pins */}
+                  {hotspots.map((spot, idx) => {
+                    const isSelected = robotPartHotspot === idx;
+                    return (
+                      <button
+                        key={spot.num}
+                        type="button"
+                        onClick={() => setRobotPartHotspot(idx)}
+                        style={{
+                          position: "absolute",
+                          top: spot.top,
+                          left: spot.left,
+                          transform: "translate(-50%, -50%)",
+                          width: isSelected ? "54px" : "44px",
+                          height: isSelected ? "54px" : "44px",
+                          borderRadius: "999px",
+                          background: isSelected ? "#F59E0B" : "#0F172A",
+                          border: `3px solid ${isSelected ? "#FFFFFF" : "#38BDF8"}`,
+                          color: "#FFFFFF",
+                          fontWeight: 900,
+                          fontSize: "1.1rem",
+                          cursor: "pointer",
+                          boxShadow: isSelected
+                            ? "0 0 0 8px rgba(245, 158, 11, 0.35), 0 0 25px #F59E0B"
+                            : "0 0 0 6px rgba(56, 189, 248, 0.25)",
+                          transition: "all 0.2s ease",
+                          zIndex: 5,
+                        }}
+                        title={spot.title}
+                      >
+                        {spot.num}
+                      </button>
+                    );
+                  })}
+
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "14px",
+                      left: "14px",
+                      right: "14px",
+                      padding: "0.6rem 0.9rem",
+                      borderRadius: "12px",
+                      background: "rgba(15, 23, 42, 0.85)",
+                      border: "1px solid rgba(56, 189, 248, 0.4)",
+                      color: "#67E8F9",
+                      fontSize: "0.78rem",
+                      fontWeight: 700,
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>Click numbered pins (1–5) to inspect subsystem</span>
+                    <button
+                      type="button"
+                      onClick={() => handleZoom(slideMeta.heroImage, slideMeta.imageCaption)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#FBBF24",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        fontSize: "0.76rem",
+                      }}
+                    >
+                      Zoom Photo ➔
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right: Subsystem Selector Pills + Active Specification Card */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                    {hotspots.map((spot, idx) => (
+                      <button
+                        key={spot.num}
+                        type="button"
+                        onClick={() => setRobotPartHotspot(idx)}
+                        style={{
+                          padding: "0.45rem 0.85rem",
+                          borderRadius: "10px",
+                          border: `1px solid ${
+                            robotPartHotspot === idx ? "#F59E0B" : "rgba(255,255,255,0.2)"
+                          }`,
+                          background:
+                            robotPartHotspot === idx
+                              ? "rgba(245, 158, 11, 0.22)"
+                              : "rgba(15, 23, 42, 0.6)",
+                          color: "#FFFFFF",
+                          fontWeight: 800,
+                          fontSize: "0.8rem",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {spot.title}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      background: palette.cardBg,
+                      border: "2px solid #F59E0B",
+                      borderRadius: "20px",
+                      padding: "1.5rem",
+                      backdropFilter: "blur(16px)",
+                      boxShadow: palette.cardShadow,
+                      flex: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 900,
+                        color: "#FBBF24",
+                        letterSpacing: "0.08em",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      SUBSYSTEM HOTSPOT #{activeSpot.num} OF 5
+                    </div>
+                    <h3
+                      style={{
+                        fontSize: "1.6rem",
+                        fontWeight: 900,
+                        color: "#FFFFFF",
+                        margin: "0 0 0.7rem 0",
+                      }}
+                    >
+                      {activeSpot.title}
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: "1rem",
+                        color: "#E0F2FE",
+                        lineHeight: 1.55,
+                        margin: "0 0 1rem 0",
+                      }}
+                    >
+                      {activeSpot.role}
+                    </p>
+
+                    <div
+                      style={{
+                        padding: "0.85rem 1rem",
+                        borderRadius: "12px",
+                        background: "rgba(56, 189, 248, 0.12)",
+                        border: "1px solid rgba(56, 189, 248, 0.35)",
+                        marginBottom: "0.75rem",
+                      }}
+                    >
+                      <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "#67E8F9" }}>
+                        VERIFIED ROBOBEE LAB HARDWARE
+                      </div>
+                      <div style={{ fontSize: "0.92rem", color: "#FFFFFF", fontWeight: 700, marginTop: "0.2rem" }}>
+                        {activeSpot.hardware}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "0.85rem 1rem",
+                        borderRadius: "12px",
+                        background: "rgba(245, 158, 11, 0.12)",
+                        border: "1px solid rgba(245, 158, 11, 0.35)",
+                      }}
+                    >
+                      <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "#FBBF24" }}>
+                        KEY ENGINEERING SPECIFICATION
+                      </div>
+                      <div style={{ fontSize: "0.88rem", color: "#FEF3C7", marginTop: "0.2rem" }}>
+                        {activeSpot.specs}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            );
+          })()}
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 09: TYPES OF MICROCONTROLLERS (THE BRAINS) (Theme: arduino-teal | Layout: interactive-grid)
+         ===================================================================== */}
+      {currentSlide === 8 && (
+        <div>
+          <div style={{ marginBottom: "1.3rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              Types of Microcontrollers — Choosing the Right Brain
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              Click any microcontroller family below to compare clock speeds, connectivity, and competition use-cases:
+            </p>
           </div>
-        </>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(255px, 1fr))",
+              gap: "1.1rem",
+            }}
+          >
+            {[
+              {
+                name: "Arduino Uno / Nano",
+                chip: "ATmega328P (8-bit AVR)",
+                clock: "16 MHz",
+                voltage: "5V Logic",
+                wireless: "USB Serial (UART)",
+                bestFor:
+                  "Best for learning electronics fundamentals, breadboard sensor interfacing, and starter autonomous rovers.",
+                badge: "STARTER KING",
+                accent: "#FBBF24",
+              },
+              {
+                name: "ESP8266 & ESP32",
+                chip: "Xtensa Dual-Core 32-bit",
+                clock: "Up to 240 MHz",
+                voltage: "3.3V Logic",
+                wireless: "Built-in Wi-Fi + Bluetooth BLE",
+                bestFor:
+                  "Best for IoT cloud dashboards, wireless smartphone Robo-Soccer bots, and smart home/agriculture automation.",
+                badge: "WIRELESS & IOT",
+                accent: "#5EEAD4",
+              },
+              {
+                name: "STM32 'Black Pill'",
+                chip: "ARM Cortex-M4 (STM32F411)",
+                clock: "100 MHz 32-bit",
+                voltage: "3.3V (5V-tolerant I/O)",
+                wireless: "High-Speed SPI/I2C/USART",
+                bestFor:
+                  "Best for ultra-fast PID Line Follower robots and Mini-Sumo bots requiring high-resolution PWM & fast ADC reads.",
+                badge: "COMPETITION SPEED",
+                accent: "#38BDF8",
+              },
+              {
+                name: "Raspberry Pi Pico",
+                chip: "RP2040 Dual Cortex-M0+",
+                clock: "133 MHz Dual-Core",
+                voltage: "3.3V Logic",
+                wireless: "PIO State Machines (Pico W Wi-Fi)",
+                bestFor:
+                  "Best for flexible embedded control running either MicroPython or C/C++ with programmable I/O hardware.",
+                badge: "PYTHON + C/C++",
+                accent: "#F472B6",
+              },
+            ].map((mcu, idx) => {
+              const active = selectedMcuIdx === idx;
+              return (
+                <div
+                  key={mcu.name}
+                  onClick={() => setSelectedMcuIdx(idx)}
+                  style={{
+                    background: active
+                      ? "rgba(4, 47, 46, 0.88)"
+                      : palette.cardBg,
+                    border: `2px solid ${active ? mcu.accent : palette.cardBorder}`,
+                    backdropFilter: "blur(16px)",
+                    borderRadius: "20px",
+                    padding: "1.3rem",
+                    boxShadow: active ? `0 0 30px ${mcu.accent}44` : palette.cardShadow,
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "0.65rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        padding: "0.22rem 0.65rem",
+                        borderRadius: "999px",
+                        background: `${mcu.accent}22`,
+                        border: `1px solid ${mcu.accent}`,
+                        color: mcu.accent,
+                        fontSize: "0.72rem",
+                        fontWeight: 900,
+                      }}
+                    >
+                      {mcu.badge}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: "0.82rem",
+                        fontWeight: 900,
+                        color: "#FEF3C7",
+                      }}
+                    >
+                      ⚡ {mcu.clock}
+                    </span>
+                  </div>
+
+                  <h3
+                    style={{
+                      fontSize: "1.3rem",
+                      fontWeight: 900,
+                      color: "#FFFFFF",
+                      margin: "0 0 0.25rem 0",
+                    }}
+                  >
+                    {mcu.name}
+                  </h3>
+                  <div
+                    style={{
+                      fontSize: "0.8rem",
+                      fontFamily: "monospace",
+                      color: "#5EEAD4",
+                      marginBottom: "0.85rem",
+                    }}
+                  >
+                    {mcu.chip}
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.35rem",
+                      fontSize: "0.82rem",
+                      color: "#F0FDF4",
+                      marginBottom: "0.9rem",
+                      padding: "0.65rem 0.8rem",
+                      borderRadius: "12px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                    }}
+                  >
+                    <div>
+                      <strong style={{ color: "#FBBF24" }}>Operating Logic:</strong> {mcu.voltage}
+                    </div>
+                    <div>
+                      <strong style={{ color: "#5EEAD4" }}>Interface:</strong> {mcu.wireless}
+                    </div>
+                  </div>
+
+                  <p
+                    style={{
+                      fontSize: "0.88rem",
+                      color: "#FEF3C7",
+                      lineHeight: 1.5,
+                      margin: 0,
+                    }}
+                  >
+                    {mcu.bestFor}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 10: WHY WE START WITH ARDUINO! (Theme: arduino-teal | Layout: split-media)
+         ===================================================================== */}
+      {currentSlide === 9 && (
+        <div>
+          <div style={{ marginBottom: "1.4rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              Why We Start With Arduino!
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              {slideMeta.subtitle}
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: "1.75rem",
+              alignItems: "stretch",
+            }}
+          >
+            {/* Left: 3 High-Impact Visual Bento Points */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {[
+                {
+                  badge: "01 • HARDWARE RESILIENCE",
+                  title: "Forgiving 5V Plug-and-Play Pins",
+                  desc: "Rugged 5V logic headers, socketed replaceable ATmega328P chip, effortless USB upload, and direct compatibility with 99% of classroom sensors.",
+                },
+                {
+                  badge: "02 • OPEN-SOURCE ECOSYSTEM",
+                  title: "Massive Global Sensor Library",
+                  desc: "Millions of engineers share open-source drivers for ultrasonic sonar, OLED screens, servos, and motor controllers—you never get stuck alone!",
+                },
+                {
+                  badge: "03 • UNIVERSAL EMBEDDED CODE",
+                  title: "C/C++ Foundation for All Boards",
+                  desc: "Mastering setup(), loop(), pinMode(), and digitalWrite() on Arduino transfers directly to ESP32, STM32 Black Pill, and industrial robotics.",
+                },
+              ].map((pt, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: palette.cardBg,
+                    border: `1px solid ${palette.cardBorder}`,
+                    backdropFilter: "blur(16px)",
+                    borderRadius: "18px",
+                    padding: "1.2rem 1.35rem",
+                    boxShadow: palette.cardShadow,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 900,
+                      color: "#FBBF24",
+                      letterSpacing: "0.08em",
+                      marginBottom: "0.25rem",
+                    }}
+                  >
+                    {pt.badge}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "1.2rem",
+                      fontWeight: 900,
+                      color: "#FFFFFF",
+                      marginBottom: "0.3rem",
+                    }}
+                  >
+                    {pt.title}
+                  </div>
+                  <div style={{ fontSize: "0.95rem", color: "#F0FDF4", lineHeight: 1.5 }}>
+                    {pt.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right: High-Res Glowing Arduino Close-Up */}
+            <PresentationMediaFrame
+              src={slideMeta.heroImage}
+              alt="Arduino Uno R3 Close-up"
+              caption={slideMeta.imageCaption}
+              fallbackVariant="arduino"
+              height="100%"
+              accentColor="#FBBF24"
+              onZoom={handleZoom}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 11: INTERACTIVE ANATOMY OF AN ARDUINO UNO (Theme: arduino-teal | Layout: interactive-hotspot)
+         ===================================================================== */}
+      {currentSlide === 10 && (
+        <div>
+          <div style={{ marginBottom: "1.25rem" }}>
+            <h2
+              style={{
+                fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+                fontWeight: 900,
+                color: palette.headingColor,
+                margin: "0 0 0.35rem 0",
+              }}
+            >
+              Interactive Anatomy of an Arduino Uno
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: palette.bodyColor, margin: 0 }}>
+              {slideMeta.subtitle}
+            </p>
+          </div>
+
+          {(() => {
+            const pins = [
+              {
+                num: 1,
+                name: "1. USB Port & DC Power Barrel",
+                top: "38%",
+                left: "16%",
+                summary:
+                  "The Type-B USB port uploads compiled C++ code from your computer and supplies 5V power (up to 500mA). The DC Barrel Jack accepts 7V–12V battery power for untethered mobile robots.",
+                rule: "Always unplug the USB cable while wiring or modifying your breadboard circuit!",
+              },
+              {
+                num: 2,
+                name: "2. Digital PWM Pins (D0–D13 & ~)",
+                top: "18%",
+                left: "60%",
+                summary:
+                  "14 bidirectional digital pins that read or output HIGH (5V) or LOW (0V). Pins marked with a tilde (~3, ~5, ~6, ~9, ~10, ~11) generate PWM signals for motor speed and LED dimming.",
+                rule: "Pin 13 is wired to the onboard orange 'L' test LED! Max safe current per pin is 20mA.",
+              },
+              {
+                num: 3,
+                name: "3. Analog Input Pins (A0–A5)",
+                top: "82%",
+                left: "74%",
+                summary:
+                  "6 channels connected to a 10-bit Analog-to-Digital Converter (ADC). Instead of just ON/OFF, they measure continuous sensor voltages from 0V to 5V as numbers between 0 and 1023!",
+                rule: "Used for IR reflectance sensors, potentiometers, and battery voltage dividers.",
+              },
+              {
+                num: 4,
+                name: "4. Power Rails (5V, 3.3V, GND, VIN)",
+                top: "82%",
+                left: "40%",
+                summary:
+                  "Provides regulated 5V and 3.3V power to breadboard sensors, plus Ground (GND) return pins. Every circuit MUST form a complete closed loop back to GND.",
+                rule: "Never short-circuit the 5V pin directly to GND—that triggers the polyfuse and shuts down the board!",
+              },
+              {
+                num: 5,
+                name: "5. ATmega328P Microchip (The Brain)",
+                top: "58%",
+                left: "64%",
+                summary:
+                  "The 28-pin black silicon microcontroller running at 16 Million clock cycles per second (16 MHz). Contains 32KB Flash memory (stores your sketch) and 2KB SRAM.",
+                rule: "Your code stays saved inside Flash memory even when battery power is turned off!",
+              },
+            ];
+            const activePin = pins[arduinoPinHotspot];
+
+            return (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+                  gap: "1.6rem",
+                  alignItems: "stretch",
+                }}
+              >
+                {/* Left: Interactive Visual Diagram of the Arduino Uno with 5 Pulsing Pins */}
+                <div
+                  style={{
+                    position: "relative",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    border: "2px solid #2DD4BF",
+                    background: "#042F2E",
+                    minHeight: "365px",
+                    boxShadow: palette.cardShadow,
+                  }}
+                >
+                  <FallbackHardwareArtwork
+                    variant="arduino"
+                    caption="Interactive Arduino Uno R3 Pinout Map — Click Pins 1 to 5"
+                  />
+
+                  {pins.map((p, idx) => {
+                    const isSelected = arduinoPinHotspot === idx;
+                    return (
+                      <button
+                        key={p.num}
+                        type="button"
+                        onClick={() => setArduinoPinHotspot(idx)}
+                        style={{
+                          position: "absolute",
+                          top: p.top,
+                          left: p.left,
+                          transform: "translate(-50%, -50%)",
+                          width: isSelected ? "52px" : "42px",
+                          height: isSelected ? "52px" : "42px",
+                          borderRadius: "999px",
+                          background: isSelected ? "#FBBF24" : "#0F172A",
+                          border: `3px solid ${isSelected ? "#FFFFFF" : "#5EEAD4"}`,
+                          color: isSelected ? "#0F172A" : "#FFFFFF",
+                          fontWeight: 900,
+                          fontSize: "1.05rem",
+                          cursor: "pointer",
+                          boxShadow: isSelected
+                            ? "0 0 0 8px rgba(251, 191, 36, 0.38), 0 0 25px #FBBF24"
+                            : "0 0 0 6px rgba(94, 234, 212, 0.28)",
+                          transition: "all 0.2s ease",
+                          zIndex: 5,
+                        }}
+                        title={p.name}
+                      >
+                        {p.num}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Right: Pin Selector + Specification Card */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
+                    {pins.map((p, idx) => (
+                      <button
+                        key={p.num}
+                        type="button"
+                        onClick={() => setArduinoPinHotspot(idx)}
+                        style={{
+                          padding: "0.45rem 0.8rem",
+                          borderRadius: "10px",
+                          border: `1px solid ${
+                            arduinoPinHotspot === idx ? "#FBBF24" : "rgba(255,255,255,0.2)"
+                          }`,
+                          background:
+                            arduinoPinHotspot === idx
+                              ? "rgba(251, 191, 36, 0.22)"
+                              : "rgba(4, 47, 46, 0.65)",
+                          color: "#FFFFFF",
+                          fontWeight: 800,
+                          fontSize: "0.78rem",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Pin {p.num}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      background: palette.cardBg,
+                      border: "2px solid #FBBF24",
+                      borderRadius: "20px",
+                      padding: "1.5rem",
+                      backdropFilter: "blur(16px)",
+                      boxShadow: palette.cardShadow,
+                      flex: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 900,
+                        color: "#FBBF24",
+                        letterSpacing: "0.08em",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      ARDUINO HARDWARE ZONE #{activePin.num} OF 5
+                    </div>
+                    <h3
+                      style={{
+                        fontSize: "1.55rem",
+                        fontWeight: 900,
+                        color: "#FFFFFF",
+                        margin: "0 0 0.75rem 0",
+                      }}
+                    >
+                      {activePin.name}
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: "1rem",
+                        color: "#F0FDF4",
+                        lineHeight: 1.6,
+                        margin: "0 0 1.1rem 0",
+                      }}
+                    >
+                      {activePin.summary}
+                    </p>
+
+                    <div
+                      style={{
+                        padding: "0.9rem 1rem",
+                        borderRadius: "14px",
+                        background: "rgba(251, 191, 36, 0.16)",
+                        border: "1px solid #FBBF24",
+                        color: "#FEF3C7",
+                        fontSize: "0.9rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      ⚡ Lab Golden Rule: {activePin.rule}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* =====================================================================
+          SLIDE 12: YOUR ROBOTICS JOURNEY STARTS TODAY! (Theme: electric-indigo | Layout: hero-title + Roadmap)
+         ===================================================================== */}
+      {currentSlide === 11 && (
+        <div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: "1.8rem",
+              alignItems: "center",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.45rem",
+                  padding: "0.4rem 0.95rem",
+                  borderRadius: "999px",
+                  background: "rgba(0, 245, 212, 0.16)",
+                  border: "1px solid #00F5D4",
+                  color: "#00F5D4",
+                  fontSize: "0.78rem",
+                  fontWeight: 900,
+                  marginBottom: "0.9rem",
+                }}
+              >
+                <Award size={15} /> ROBOBEE INNOVATORS ACTION ROADMAP
+              </div>
+
+              <h2
+                style={{
+                  fontSize: "clamp(2rem, 3.6vw, 3rem)",
+                  fontWeight: 900,
+                  color: "#FFFFFF",
+                  lineHeight: 1.1,
+                  margin: "0 0 0.75rem 0",
+                }}
+              >
+                Your Robotics Journey Starts Today!
+              </h2>
+
+              <p
+                style={{
+                  fontSize: "1.08rem",
+                  color: "#E0E7FF",
+                  lineHeight: 1.55,
+                  margin: "0 0 1.2rem 0",
+                }}
+              >
+                You now know what separates a true autonomous robot from an ordinary machine,
+                how the <strong>Sense ➔ Think ➔ Act</strong> loop operates, and what every pin on
+                your Arduino Uno does. Here is what we will build together:
+              </p>
+            </div>
+
+            <PresentationMediaFrame
+              src={slideMeta.heroImage}
+              alt="Combat robots, line followers, and robotic arms"
+              caption={slideMeta.imageCaption}
+              fallbackVariant="team"
+              height="270px"
+              accentColor="#00F5D4"
+              onZoom={handleZoom}
+            />
+          </div>
+
+          {/* 3-Step Visual Roadmap */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "1.15rem",
+            }}
+          >
+            {[
+              {
+                phase: "PHASE 01 • ELECTRONICS & C++",
+                title: "Learn Electronics & Arduino",
+                desc: "Wire solderless breadboards, LEDs, pushbuttons, ultrasonic sonar sensors, and motor drivers with clean C++ code.",
+                color: "#00F5D4",
+              },
+              {
+                phase: "PHASE 02 • AUTONOMOUS BUILD",
+                title: "Build Your First Autonomous Bot",
+                desc: "Assemble your 2WD/4WD chassis, calibrate IR & sonar arrays, and program closed-loop obstacle avoidance and line tracking.",
+                color: "#38BDF8",
+              },
+              {
+                phase: "PHASE 03 • TOURNAMENT ARENA",
+                title: "Compete with RoboBee Innovators",
+                desc: "Join specialized RoboBee Competition Squads for National Line Follower, Mini-Sumo, Robo-Soccer, and Invention Olympiads!",
+                color: "#FBBF24",
+              },
+            ].map((step, idx) => (
+              <div
+                key={idx}
+                style={{
+                  background: palette.cardBg,
+                  border: `2px solid ${step.color}`,
+                  backdropFilter: "blur(16px)",
+                  borderRadius: "20px",
+                  padding: "1.35rem",
+                  boxShadow: palette.cardShadow,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "0.74rem",
+                    fontWeight: 900,
+                    color: step.color,
+                    letterSpacing: "0.08em",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  {step.phase}
+                </div>
+                <h3
+                  style={{
+                    fontSize: "1.28rem",
+                    fontWeight: 900,
+                    color: "#FFFFFF",
+                    margin: "0 0 0.45rem 0",
+                  }}
+                >
+                  {step.title}
+                </h3>
+                <p style={{ fontSize: "0.92rem", color: "#E0E7FF", lineHeight: 1.5, margin: 0 }}>
+                  {step.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Image Lightbox Modal */}
+      {lightboxMedia && (
+        <div
+          onClick={() => setLightboxMedia(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(7, 11, 20, 0.94)",
+            backdropFilter: "blur(18px)",
+            zIndex: 1000000,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "2rem",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxMedia(null)}
+            style={{
+              position: "absolute",
+              top: "24px",
+              right: "28px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              padding: "0.55rem 1rem",
+              borderRadius: "999px",
+              background: "rgba(255,255,255,0.12)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              color: "#FFFFFF",
+              fontWeight: 800,
+              cursor: "pointer",
+            }}
+          >
+            <X size={18} /> Close Zoom (Esc)
+          </button>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "1100px",
+              width: "100%",
+              borderRadius: "20px",
+              overflow: "hidden",
+              border: "2px solid #00F5D4",
+              background: "#0F172A",
+              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            <PresentationMediaFrame
+              src={lightboxMedia.src}
+              alt={lightboxMedia.caption}
+              caption={lightboxMedia.caption}
+              height="72vh"
+              accentColor="#00F5D4"
+            />
+          </div>
+        </div>
       )}
     </div>
   );
