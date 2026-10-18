@@ -5,12 +5,17 @@ import { createPortal } from "react-dom";
 import styles from "./projectorView.module.css";
 import { RoboticsLesson } from "@/lib/curriculumData";
 import {
-  Class1WorkshopDeck,
-  CLASS_01_SLIDES,
   SlideColorTheme,
   THEME_PALETTE_CONFIG,
   PresentationMediaFrame,
 } from "./Class1WorkshopDeck";
+import {
+  EditableClassDeck,
+  loadDecksFromStorage,
+  SEED_CLASS_01_DECK,
+} from "@/lib/slideStudioStore";
+import { EditableSlideCanvas } from "./EditableSlideCanvas";
+import { HardwareLabDrawer } from "./HardwareLabDrawer";
 import {
   Play,
   Pause,
@@ -26,7 +31,8 @@ import {
   Crosshair,
   ZoomIn,
   LayoutGrid,
-  Sparkles,
+  Cpu,
+  Edit3,
 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -44,24 +50,33 @@ interface ProjectorViewProps {
   lesson: RoboticsLesson;
   onClose: () => void;
   initialSlide?: number;
+  customDeck?: EditableClassDeck;
+  onEditDeck?: (deck: EditableClassDeck, slideIdx: number) => void;
 }
 
 export function ProjectorView({
   lesson,
   onClose,
   initialSlide = 0,
+  customDeck,
+  onEditDeck,
 }: ProjectorViewProps) {
   const [mounted, setMounted] = useState<boolean>(false);
+  const [activeDeck, setActiveDeck] = useState<EditableClassDeck>(
+    customDeck || SEED_CLASS_01_DECK
+  );
   const [currentSlide, setCurrentSlide] = useState<number>(initialSlide);
-  const totalSlides = CLASS_01_SLIDES.length; // 12 Interactive Slides
 
   // Dynamic Multi-Palette Theme Override ('auto' or one of the 4 curated themes)
   const [themeOverride, setThemeOverride] = useState<SlideColorTheme | "auto">(
     "auto"
   );
 
-  // Slide Thumbnail Filmstrip / Grid Overview Modal (triggered by clicking Slide Counter 04 / 12)
+  // Slide Thumbnail Filmstrip / Grid Overview Modal
   const [showThumbnailStrip, setShowThumbnailStrip] = useState<boolean>(false);
+
+  // Interactive Hardware Lab & Simulation Drawer ('H' key or Dock button)
+  const [showHardwareLab, setShowHardwareLab] = useState<boolean>(false);
 
   // Laser Pointer Mode ('L' key or Dock button)
   const [laserActive, setLaserActive] = useState<boolean>(false);
@@ -77,7 +92,8 @@ export function ProjectorView({
   } | null>(null);
 
   // Rhythm duration mode: 90m vs 60m
-  const defaultDuration = lesson.durationMinutes || 90;
+  const defaultDuration =
+    activeDeck.durationMinutes || lesson.durationMinutes || 90;
   const [isCompactMode, setIsCompactMode] = useState<boolean>(false);
   const [timerSeconds, setTimerSeconds] = useState<number>(defaultDuration * 60);
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
@@ -100,17 +116,31 @@ export function ProjectorView({
     useState<ScheduledClassSession | null>(null);
   const [clubMembers, setClubMembers] = useState<any[]>([]);
 
-  const activeSlideMeta =
-    CLASS_01_SLIDES[currentSlide] || CLASS_01_SLIDES[0];
+  useEffect(() => {
+    if (customDeck) {
+      setActiveDeck(customDeck);
+    } else {
+      const stored = loadDecksFromStorage();
+      const matched = stored.find((d) => d.id === lesson.id);
+      if (matched) {
+        setActiveDeck(matched);
+      }
+    }
+  }, [customDeck, lesson.id]);
+
+  const slides = activeDeck.slides.length > 0 ? activeDeck.slides : SEED_CLASS_01_DECK.slides;
+  const totalSlides = slides.length;
+  const safeSlideIndex = Math.min(Math.max(0, currentSlide), totalSlides - 1);
+  const activeSlide = slides[safeSlideIndex] || slides[0];
+
   const effectiveTheme: SlideColorTheme =
-    themeOverride === "auto" ? activeSlideMeta.theme : themeOverride;
+    themeOverride === "auto" ? activeSlide.theme : themeOverride;
   const activePalette = THEME_PALETTE_CONFIG[effectiveTheme];
 
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
 
-    // Read initial ?slide=N query parameter if present and initialSlide wasn't explicitly set
     if (initialSlide === 0) {
       try {
         const params = new URLSearchParams(window.location.search);
@@ -132,7 +162,7 @@ export function ProjectorView({
     const unsubSessions = onSnapshot(collection(db, "sessions"), (snap) => {
       const match = snap.docs
         .map((d) => ({ id: d.id, ...d.data() } as ScheduledClassSession))
-        .find((s) => s.lessonId === lesson.id || s.status === "active");
+        .find((s) => s.lessonId === activeDeck.id || s.lessonId === lesson.id || s.status === "active");
       setActiveSession(match || null);
     });
     const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
@@ -145,17 +175,17 @@ export function ProjectorView({
       unsubSessions();
       unsubUsers();
     };
-  }, [lesson.id, totalSlides, initialSlide]);
+  }, [activeDeck.id, lesson.id, totalSlides, initialSlide]);
 
   // Sync currentSlide to URL query parameter (?slide=N)
   useEffect(() => {
     if (!mounted) return;
     try {
       const url = new URL(window.location.href);
-      url.searchParams.set("slide", String(currentSlide + 1));
+      url.searchParams.set("slide", String(safeSlideIndex + 1));
       window.history.replaceState({}, "", url.toString());
     } catch {}
-  }, [currentSlide, mounted]);
+  }, [safeSlideIndex, mounted]);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev < totalSlides - 1 ? prev + 1 : prev));
@@ -178,15 +208,21 @@ export function ProjectorView({
       prev
         ? null
         : {
-            src: activeSlideMeta.heroImage,
-            caption: activeSlideMeta.imageCaption,
+            src: activeSlide.heroImage,
+            caption: activeSlide.imageCaption,
           }
     );
-  }, [activeSlideMeta]);
+  }, [activeSlide]);
 
-  // Keyboard navigation: ArrowRight/Space (Next), ArrowLeft (Prev), L (Laser), Z (Zoom), F (Fullscreen), N (Notes), Escape
+  // Keyboard navigation: ArrowRight/Space (Next), ArrowLeft (Prev), L (Laser), Z (Zoom), H (Hardware Lab), F (Fullscreen), N (Notes), Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (showHardwareLab) {
+        if (e.key === "Escape") {
+          setShowHardwareLab(false);
+        }
+        return;
+      }
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
         nextSlide();
@@ -209,6 +245,8 @@ export function ProjectorView({
         toggleZoomCurrentSlide();
       } else if (e.key.toLowerCase() === "n") {
         setShowSpeakerNotes((prev) => !prev);
+      } else if (e.key.toLowerCase() === "h") {
+        setShowHardwareLab((prev) => !prev);
       } else if (e.key.toLowerCase() === "t") {
         setTimerRunning((r) => !r);
       }
@@ -223,6 +261,7 @@ export function ProjectorView({
     toggleZoomCurrentSlide,
     zoomedMedia,
     showThumbnailStrip,
+    showHardwareLab,
   ]);
 
   // Rhythm timer countdown
@@ -259,7 +298,7 @@ export function ProjectorView({
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const progressPercentage = ((currentSlide + 1) / totalSlides) * 100;
+  const progressPercentage = ((safeSlideIndex + 1) / totalSlides) * 100;
 
   if (!mounted) return null;
 
@@ -319,7 +358,7 @@ export function ProjectorView({
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0.65rem 1.5rem",
-          background: "rgba(15, 23, 42, 0.82)",
+          background: "rgba(15, 23, 42, 0.85)",
           backdropFilter: "blur(16px)",
           borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
           flexWrap: "wrap",
@@ -340,7 +379,7 @@ export function ProjectorView({
               letterSpacing: "0.06em",
             }}
           >
-            CLASS 01 • LIVE DECK
+            {activeDeck.classCode} • LIVE DECK
           </span>
           <span
             style={{
@@ -349,7 +388,7 @@ export function ProjectorView({
               fontSize: "0.95rem",
             }}
           >
-            Introduction to Robotics &amp; Future Engineering
+            {activeDeck.title}
           </span>
         </div>
 
@@ -437,6 +476,40 @@ export function ProjectorView({
             ))}
           </div>
 
+          {onEditDeck && (
+            <button
+              type="button"
+              onClick={() => onEditDeck(activeDeck, safeSlideIndex)}
+              className={styles.actionBtn}
+              style={{
+                background: "rgba(56, 189, 248, 0.16)",
+                border: "1px solid #38BDF8",
+                color: "#38BDF8",
+                fontWeight: 800,
+              }}
+              title="Customize this slide in Slide Studio"
+            >
+              <Edit3 size={14} />
+              <span>Edit Slide</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowHardwareLab(true)}
+            className={styles.actionBtn}
+            style={{
+              background: "rgba(16, 185, 129, 0.16)",
+              border: "1px solid #10B981",
+              color: "#10B981",
+              fontWeight: 800,
+            }}
+            title="Open Interactive Hardware Lab & Circuit Simulator (H)"
+          >
+            <Cpu size={14} />
+            <span>Hardware Lab (H)</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setShowPresenterConsole((prev) => !prev)}
@@ -486,14 +559,18 @@ export function ProjectorView({
           alignItems: "center",
         }}
       >
-        <div style={{ width: "100%", maxWidth: "1360px" }}>
-          <Class1WorkshopDeck
-            lesson={lesson}
-            currentSlide={currentSlide}
-            setCurrentSlide={setCurrentSlide}
-            fontScale={fontScale}
-            activeThemeOverride={themeOverride}
-            onOpenZoom={(src, caption) => setZoomedMedia({ src, caption })}
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "1360px",
+            fontSize: `${fontScale}%`,
+          }}
+        >
+          <EditableSlideCanvas
+            slide={activeSlide}
+            themeOverride={themeOverride}
+            onNextSlide={nextSlide}
+            onZoomImage={(src, caption) => setZoomedMedia({ src, caption })}
           />
 
           {/* Collapsible Speaker Notes Drawer */}
@@ -519,11 +596,17 @@ export function ProjectorView({
                   marginBottom: "0.35rem",
                 }}
               >
-                🎙️ Instructor Teaching Prompt — Slide {activeSlideMeta.numberLabel}:{" "}
-                {activeSlideMeta.title}
+                🎙️ Instructor Teaching Prompt — Slide {activeSlide.numberLabel}:{" "}
+                {activeSlide.title}
               </div>
-              <div style={{ fontSize: "0.95rem", lineHeight: 1.55, color: "#E2E8F0" }}>
-                {activeSlideMeta.speakerNotes}
+              <div
+                style={{
+                  fontSize: "0.95rem",
+                  lineHeight: 1.55,
+                  color: "#E2E8F0",
+                }}
+              >
+                {activeSlide.speakerNotes}
               </div>
             </div>
           )}
@@ -559,12 +642,18 @@ export function ProjectorView({
                     marginBottom: "0.35rem",
                   }}
                 >
-                  ⏭ Up Next in Deck (URL Synced: ?slide={currentSlide + 1})
+                  ⏭ Up Next in Deck (URL Synced: ?slide={safeSlideIndex + 1})
                 </div>
-                <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#FFFFFF" }}>
-                  {currentSlide + 1 < totalSlides
-                    ? `Slide ${CLASS_01_SLIDES[currentSlide + 1].numberLabel}: ${
-                        CLASS_01_SLIDES[currentSlide + 1].title
+                <div
+                  style={{
+                    fontSize: "0.92rem",
+                    fontWeight: 800,
+                    color: "#FFFFFF",
+                  }}
+                >
+                  {safeSlideIndex + 1 < totalSlides
+                    ? `Slide ${slides[safeSlideIndex + 1].numberLabel}: ${
+                        slides[safeSlideIndex + 1].title
                       }`
                     : "End of Deck — Final Action Roadmap"}
                 </div>
@@ -599,7 +688,9 @@ export function ProjectorView({
                   }}
                 >
                   {verifyLessonBOMStock(
-                    lesson.physicalBuildPack?.componentList || [],
+                    activeDeck.hardwareKit ||
+                      lesson.physicalBuildPack?.componentList ||
+                      [],
                     inventoryItems
                   )
                     .slice(0, 5)
@@ -663,7 +754,8 @@ export function ProjectorView({
                 </div>
                 {!activeSession ? (
                   <div style={{ fontSize: "0.76rem", color: "#94A3B8" }}>
-                    Activate a session in Attendance Manager to toggle live roll call here.
+                    Activate a session in Attendance Manager to toggle live roll
+                    call here.
                   </div>
                 ) : (
                   <div
@@ -775,7 +867,8 @@ export function ProjectorView({
                     fontSize: "1.05rem",
                   }}
                 >
-                  Class 01 Visual Slide Filmstrip (12 Interactive Slides)
+                  {activeDeck.classCode} Visual Slide Filmstrip ({totalSlides}{" "}
+                  Interactive Slides)
                 </span>
               </div>
               <button
@@ -804,15 +897,15 @@ export function ProjectorView({
                 overflowY: "auto",
               }}
             >
-              {CLASS_01_SLIDES.map((s) => {
+              {slides.map((s, idx) => {
                 const sTheme = THEME_PALETTE_CONFIG[s.theme];
-                const isCurrent = currentSlide === s.index;
+                const isCurrent = safeSlideIndex === idx;
                 return (
                   <button
-                    key={s.index}
+                    key={s.id}
                     type="button"
                     onClick={() => {
-                      setCurrentSlide(s.index);
+                      setCurrentSlide(idx);
                       setShowThumbnailStrip(false);
                     }}
                     style={{
@@ -868,7 +961,7 @@ export function ProjectorView({
           zIndex: 1000002,
           display: "flex",
           alignItems: "center",
-          gap: "0.6rem",
+          gap: "0.55rem",
           padding: "0.55rem 1rem",
           borderRadius: "999px",
           background: "rgba(15, 23, 42, 0.88)",
@@ -884,7 +977,7 @@ export function ProjectorView({
         <button
           type="button"
           onClick={prevSlide}
-          disabled={currentSlide === 0}
+          disabled={safeSlideIndex === 0}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -893,23 +986,23 @@ export function ProjectorView({
             borderRadius: "999px",
             border: "1px solid rgba(255,255,255,0.18)",
             background:
-              currentSlide === 0
+              safeSlideIndex === 0
                 ? "rgba(255,255,255,0.04)"
                 : "rgba(255,255,255,0.12)",
-            color: currentSlide === 0 ? "#64748B" : "#FFFFFF",
+            color: safeSlideIndex === 0 ? "#64748B" : "#FFFFFF",
             fontWeight: 800,
             fontSize: "0.8rem",
-            cursor: currentSlide === 0 ? "not-allowed" : "pointer",
+            cursor: safeSlideIndex === 0 ? "not-allowed" : "pointer",
           }}
         >
           <ArrowLeft size={15} /> Prev
         </button>
 
-        {/* Slide Counter Pill (Clicks open the 12-Slide Visual Thumbnail Strip) */}
+        {/* Slide Counter Pill */}
         <button
           type="button"
           onClick={() => setShowThumbnailStrip((prev) => !prev)}
-          title="Click to open 12-Slide Visual Filmstrip"
+          title="Click to open Visual Slide Filmstrip"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -927,7 +1020,8 @@ export function ProjectorView({
         >
           <LayoutGrid size={14} />
           <span>
-            Slide {activeSlideMeta.numberLabel} / 12
+            Slide {activeSlide.numberLabel} /{" "}
+            {String(totalSlides).padStart(2, "0")}
           </span>
         </button>
 
@@ -935,7 +1029,7 @@ export function ProjectorView({
         <button
           type="button"
           onClick={nextSlide}
-          disabled={currentSlide === totalSlides - 1}
+          disabled={safeSlideIndex === totalSlides - 1}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -944,14 +1038,14 @@ export function ProjectorView({
             borderRadius: "999px",
             border: "none",
             background:
-              currentSlide === totalSlides - 1
+              safeSlideIndex === totalSlides - 1
                 ? "rgba(255,255,255,0.06)"
                 : "linear-gradient(90deg, #00F5D4, #38BDF8)",
-            color: currentSlide === totalSlides - 1 ? "#64748B" : "#0F172A",
+            color: safeSlideIndex === totalSlides - 1 ? "#64748B" : "#0F172A",
             fontWeight: 900,
             fontSize: "0.8rem",
             cursor:
-              currentSlide === totalSlides - 1 ? "not-allowed" : "pointer",
+              safeSlideIndex === totalSlides - 1 ? "not-allowed" : "pointer",
           }}
         >
           Next <ArrowRight size={15} />
@@ -1011,7 +1105,29 @@ export function ProjectorView({
           })}
         </div>
 
-        {/* Interactive Classroom Tools: Laser Pointer (L), Image Zoom (Z), Speaker Notes (N) */}
+        {/* Interactive Classroom Tools: Hardware Lab (H), Laser Pointer (L), Image Zoom (Z), Speaker Notes (N) */}
+        <button
+          type="button"
+          onClick={() => setShowHardwareLab(true)}
+          title="Open Virtual Breadboard & Circuit Simulator (Key: H)"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.35rem",
+            padding: "0.42rem 0.8rem",
+            borderRadius: "999px",
+            border: "1px solid #10B981",
+            background: "rgba(16, 185, 129, 0.2)",
+            color: "#6EE7B7",
+            fontSize: "0.76rem",
+            fontWeight: 800,
+            cursor: "pointer",
+          }}
+        >
+          <Cpu size={14} color="#10B981" />
+          <span>Lab Sim (H)</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setLaserActive((prev) => !prev)}
@@ -1163,6 +1279,15 @@ export function ProjectorView({
             />
           </div>
         </div>
+      )}
+
+      {/* Non-Overlapping Hardware Lab & Circuit Simulator Drawer */}
+      {showHardwareLab && (
+        <HardwareLabDrawer
+          deck={activeDeck}
+          lesson={lesson}
+          onClose={() => setShowHardwareLab(false)}
+        />
       )}
     </div>
   );
