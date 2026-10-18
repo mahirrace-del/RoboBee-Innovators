@@ -15,6 +15,12 @@ import {
   ScheduledClassSession, 
   calculateScheduleProgression 
 } from "@/lib/scheduleAttendance";
+import {
+  normalizeInventoryItem,
+  verifyLessonBOMStock,
+  RelationalInventoryItem,
+  CustomSlideBlock,
+} from "@/lib/portalRelations";
 import { CurriculumSimulator } from "@/components/curriculum/CurriculumSimulator";
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
 import { useAuth } from "@/context/AuthContext";
@@ -65,6 +71,27 @@ export default function MemberCurriculumPage() {
 
   // Projector preview
   const [projectorMode, setProjectorMode] = useState<boolean>(false);
+
+  // Live Lab Inventory & Custom Slide Blocks
+  const [inventoryItems, setInventoryItems] = useState<RelationalInventoryItem[]>([]);
+  const [customBlocks, setCustomBlocks] = useState<CustomSlideBlock[]>([]);
+
+  useEffect(() => {
+    try {
+      const unsubInv = onSnapshot(collection(db, "inventory"), (snap) => {
+        setInventoryItems(snap.docs.map(d => normalizeInventoryItem(d.id, d.data())));
+      });
+      const unsubBlocks = onSnapshot(collection(db, "curriculum_custom_blocks"), (snap) => {
+        const blocks = snap.docs.map(d => ({ id: d.id, ...d.data() } as CustomSlideBlock));
+        blocks.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setCustomBlocks(blocks);
+      });
+      return () => {
+        unsubInv();
+        unsubBlocks();
+      };
+    } catch {}
+  }, []);
 
   // Listen to Firestore class status updates
   useEffect(() => {
@@ -811,6 +838,36 @@ export default function MemberCurriculumPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Custom Instructor Slide Blocks (Admin CMS) */}
+                  {customBlocks.filter(b => b.lessonId === activeLesson.id).length > 0 && (
+                    <div style={{ marginTop: '1.5rem', background: '#111827', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(245, 184, 0, 0.35)' }}>
+                      <div style={{ fontWeight: 800, color: '#F5B800', fontSize: '0.95rem', marginBottom: '0.85rem' }}>
+                        📌 Instructor Supplemental Slide Blocks (Live Lab CMS)
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {customBlocks.filter(b => b.lessonId === activeLesson.id).map((block) => (
+                          <div key={block.id} style={{ background: '#090e18', padding: '0.95rem', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                              <strong style={{ color: '#F9FAFB', fontSize: '0.9rem' }}>{block.title}</strong>
+                              <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: '#F5B800', fontWeight: 800 }}>
+                                {block.blockType}
+                              </span>
+                            </div>
+                            {block.blockType === 'code' ? (
+                              <pre style={{ background: '#050811', padding: '0.75rem', borderRadius: '6px', color: '#38BDF8', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', overflowX: 'auto', margin: 0 }}>
+                                {block.content}
+                              </pre>
+                            ) : (
+                              <div style={{ fontSize: '0.84rem', color: '#CBD5E1', lineHeight: '1.55' }}>
+                                {block.content}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1045,11 +1102,11 @@ export default function MemberCurriculumPage() {
 
                       {/* Hardware BOM & Schematic */}
                       <div className={styles.buildPackGrid}>
-                        {/* Component BOM */}
+                        {/* Component BOM with Live Lab Inventory Stock Verification */}
                         <div className={styles.buildPackCard}>
                           <div className={styles.buildPackTitle}>
                             <Wrench size={16} />
-                            <span>Bill of Materials (Exact Hardware Variants)</span>
+                            <span>Bill of Materials &amp; Live Lab Bench Stock</span>
                           </div>
                           <div className={styles.tableWrapper}>
                             <table className={styles.dataTable}>
@@ -1058,16 +1115,40 @@ export default function MemberCurriculumPage() {
                                   <th>Component</th>
                                   <th>Exact Variant</th>
                                   <th>Qty</th>
+                                  <th>Live Lab Stock</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {activeLesson.physicalBuildPack.componentList.map((comp, idx) => (
-                                  <tr key={idx}>
-                                    <td style={{ fontWeight: 700, color: '#f1f5f9' }}>{comp.name}</td>
-                                    <td style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{comp.exactVariant}</td>
-                                    <td style={{ color: '#F5B800', fontWeight: 800 }}>{comp.quantity}</td>
-                                  </tr>
-                                ))}
+                                {(() => {
+                                  const stockStatuses = verifyLessonBOMStock(
+                                    activeLesson.physicalBuildPack.componentList,
+                                    inventoryItems
+                                  );
+                                  return activeLesson.physicalBuildPack.componentList.map((comp, idx) => {
+                                    const st = stockStatuses[idx];
+                                    return (
+                                      <tr key={idx}>
+                                        <td style={{ fontWeight: 700, color: '#f1f5f9' }}>{comp.name}</td>
+                                        <td style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{comp.exactVariant}</td>
+                                        <td style={{ color: '#F5B800', fontWeight: 800 }}>{comp.quantity}</td>
+                                        <td>
+                                          <span style={{
+                                            display: 'inline-block',
+                                            padding: '0.15rem 0.5rem',
+                                            borderRadius: '999px',
+                                            fontSize: '0.72rem',
+                                            fontWeight: 700,
+                                            fontFamily: 'var(--font-mono)',
+                                            background: st?.status === 'in_stock' ? 'rgba(16, 185, 129, 0.16)' : st?.status === 'low_stock' ? 'rgba(245, 184, 0, 0.16)' : 'rgba(239, 68, 68, 0.15)',
+                                            color: st?.status === 'in_stock' ? '#10B981' : st?.status === 'low_stock' ? '#F5B800' : '#F87171',
+                                          }}>
+                                            {st && st.availableInLab > 0 ? `${st.availableInLab} in lab` : 'Verify Locker'}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    );
+                                  });
+                                })()}
                               </tbody>
                             </table>
                           </div>

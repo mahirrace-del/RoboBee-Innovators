@@ -1,139 +1,360 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.taskCard {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  border-left: 4px solid var(--accent-primary);
-}
-
-.taskHeader {
-  display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
 }
 
-.taskTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
+.viewToggleGroup {
+  display: inline-flex;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  padding: 0.25rem;
+  gap: 0.25rem;
 }
 
-.statusBadge {
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+.viewToggleBtn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #9CA3AF;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
 }
 
-.statusPending {
-  background: rgba(255, 170, 0, 0.1);
-  color: #ffaa00;
-  border: 1px solid rgba(255, 170, 0, 0.2);
-}
-
-.statusCompleted {
-  background: rgba(46, 204, 113, 0.1);
-  color: #2ecc71;
-  border: 1px solid rgba(46, 204, 113, 0.2);
-}
-
-.taskDesc {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  flex-grow: 1;
-}
-
-.metaInfo {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-.completeBtn {
-  margin-top: 0.5rem;
-  width: 100%;
-  padding: 0.8rem;
-  background: var(--accent-primary);
-  color: var(--bg-primary);
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
-}
-
-.completeBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+.viewToggleBtnActive {
+  background: #6B0F24;
+  color: #F5B800;
+  border: 1px solid rgba(245, 184, 0, 0.4);
 }
 
 .formCard {
-  padding: 2rem;
+  padding: 1.5rem;
   margin-bottom: 2rem;
-  border: 1px solid rgba(0, 210, 255, 0.2);
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 14px;
 }
 
 .formGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .input {
-  padding: 0.8rem 1rem;
-  border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  font-family: inherit;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: #0B0F17;
+  border: 1px solid #374151;
+  color: #F9FAFB;
+  font-size: 0.88rem;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--accent-primary);
+  border-color: #F5B800;
 }
 
 .submitBtn {
-  grid-column: 1 / -1;
-  padding: 1rem;
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
+  padding: 0.72rem 1.35rem;
+  border-radius: 8px;
+  background: #F5B800;
+  color: #0B0F17;
+  font-weight: 800;
+  font-size: 0.88rem;
+  transition: all 0.15s ease;
 }
 
 .submitBtn:hover {
-  background: #ccc;
+  background: #F59E0B;
+}
+
+/* Filter Bar */
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1.15rem;
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 12px;
+}
+
+/* Kanban Board 4-Column Layout */
+.kanbanBoard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(260px, 1fr));
+  gap: 1.1rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+.kanbanColumn {
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+}
+
+.kanbanColHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.kanbanColTitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.kanbanCount {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #1F2937;
+  color: #F9FAFB;
+}
+
+.kanbanCards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+}
+
+.taskCard {
+  background: #1F2937;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 4px solid #F5B800;
+  border-radius: 11px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.taskCard:hover {
+  transform: translateY(-2px);
+}
+
+.taskHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.taskTitle {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #F9FAFB;
+  line-height: 1.35;
+}
+
+.priorityBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.taskDesc {
+  font-size: 0.82rem;
+  color: #9CA3AF;
+  line-height: 1.45;
+}
+
+.relationTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.relChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(245, 184, 0, 0.12);
+  color: #F5B800;
+  border: 1px solid rgba(245, 184, 0, 0.3);
+}
+
+.relChipHardware {
+  background: rgba(6, 182, 212, 0.14);
+  color: #06B6D4;
+  border-color: rgba(6, 182, 212, 0.35);
+}
+
+.metaInfo {
+  font-size: 0.76rem;
+  color: #9CA3AF;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stageActions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.stageBtn {
+  padding: 0.32rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  color: #F9FAFB;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.15s ease;
+}
+
+.stageBtn:hover {
+  border-color: #F5B800;
+  color: #F5B800;
+}
+
+.completeBtn {
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: rgba(16, 185, 129, 0.18);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.completeBtn:hover {
+  background: #10B981;
+  color: #0B0F17;
+}
+
+/* Gantt Milestone Timeline View */
+.ganttContainer {
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 14px;
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ganttGroup {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ganttGroupHeader {
+  background: #1F2937;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #F5B800;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ganttRow {
+  padding: 0.85rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ganttBarTrack {
+  width: 100%;
+  height: 22px;
+  background: #0B0F17;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #374151;
+}
+
+.ganttBarFill {
+  height: 100%;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #0B0F17;
+  transition: width 0.25s ease;
+}
+
+@media (max-width: 1023px) {
+  .kanbanBoard {
+    grid-template-columns: repeat(2, minmax(250px, 1fr));
+  }
+  .ganttRow {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .kanbanBoard {
+    grid-template-columns: 1fr;
+  }
 }

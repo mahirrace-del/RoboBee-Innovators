@@ -6,10 +6,34 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { Logo } from "@/components/Logo";
-import { auth, db } from "@/lib/firebase";
-import { deleteDoc, doc } from "firebase/firestore";
-import { Menu, X, Home, Package, Trophy, User as UserIcon, LayoutGrid, LogOut, Shield, DollarSign, CalendarCheck, CheckSquare, Layers } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import {
+  Menu,
+  X,
+  Home,
+  Package,
+  Trophy,
+  User as UserIcon,
+  LogOut,
+  Shield,
+  DollarSign,
+  CalendarCheck,
+  CheckSquare,
+  BookOpen,
+  Compass,
+  Cpu,
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  Radio,
+  Wrench,
+  Globe,
+  Users,
+} from "lucide-react";
 import { getUserRoleBadge } from "@/lib/permissions";
+import { normalizeCheckout, normalizeInventoryItem } from "@/lib/portalRelations";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, role, signOut, userData, canManage } = useAuth();
@@ -17,6 +41,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [isDeleting, setIsDeleting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Live relational alerts for top contextual bar & nav badges
+  const [overdueCheckoutsCount, setOverdueCheckoutsCount] = useState(0);
+  const [lowStockCount, setLowStockCount] = useState(0);
+  const [hasLiveClass, setHasLiveClass] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,13 +55,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [user, loading, router]);
 
   useEffect(() => {
-    const handleToggle = () => setSidebarOpen(prev => !prev);
-    window.addEventListener('toggle-portal-sidebar', handleToggle);
-    return () => window.removeEventListener('toggle-portal-sidebar', handleToggle);
+    const handleToggle = () => setSidebarOpen((prev) => !prev);
+    window.addEventListener("toggle-portal-sidebar", handleToggle);
+    return () => window.removeEventListener("toggle-portal-sidebar", handleToggle);
   }, []);
 
+  // Subscribe to relational alerts (Overdue Checkouts, Low Stock, Active Session)
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubCheckouts = onSnapshot(
+      collection(db, "checkouts"),
+      (snap) => {
+        const items = snap.docs.map((d) => normalizeCheckout({ id: d.id, ...d.data() }));
+        const relevant =
+          role === "admin" || canManage("manage_store")
+            ? items
+            : items.filter((c) => c.checkedOutBy === user.email || c.userId === user.uid);
+        setOverdueCheckoutsCount(relevant.filter((c) => c.isOverdue).length);
+      },
+      () => {}
+    );
+
+    const unsubInventory = onSnapshot(
+      collection(db, "inventory"),
+      (snap) => {
+        const items = snap.docs.map((d) => normalizeInventoryItem({ id: d.id, ...d.data() }));
+        setLowStockCount(items.filter((i) => i.quantity <= i.minThreshold).length);
+      },
+      () => {}
+    );
+
+    const unsubSessions = onSnapshot(
+      collection(db, "sessions"),
+      (snap) => {
+        const active = snap.docs.some((d) => d.data().status === "active");
+        setHasLiveClass(active);
+      },
+      () => {}
+    );
+
+    return () => {
+      unsubCheckouts();
+      unsubInventory();
+      unsubSessions();
+    };
+  }, [user, role, canManage]);
+
   if (loading || !user) {
-    return <div className={styles.loader}>Loading your dashboard...</div>;
+    return <div className={styles.loader}>Loading RoboBEE Portal Engine...</div>;
   }
 
   const handleSignOut = async () => {
@@ -47,16 +119,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsDeleting(true);
     try {
       if (user) {
-        // Delete Firestore document first
         await deleteDoc(doc(db, "users", user.uid));
-        // Delete Firebase Auth account
         await user.delete();
       }
       router.push("/portal");
     } catch (error: any) {
       console.error("Error deleting account:", error);
-      // If it requires recent login to delete, catch and ask them to re-login or just sign out
-      if (error.code === 'auth/requires-recent-login') {
+      if (error.code === "auth/requires-recent-login") {
         alert("For security, please sign out and sign in again before deleting your application.");
       } else {
         alert("Failed to delete application. Please contact admin.");
@@ -68,17 +137,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Lockdown screen for pending users
   if (role === "pending") {
     return (
-      <div className={styles.dashboardContainer} style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', maxWidth: '500px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+      <div className={styles.dashboardContainer} style={{ justifyContent: "center", alignItems: "center" }}>
+        <div className="glass-panel" style={{ padding: "3rem", textAlign: "center", maxWidth: "500px" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
             <Logo width={60} height={60} />
           </div>
-          <h2 style={{ color: '#F4B304', marginBottom: '1rem' }}>Application Under Review</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
+          <h2 style={{ color: "#F5B800", marginBottom: "1rem" }}>Application Under Review</h2>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: "1.6" }}>
             Your membership application has been received and is currently in a <strong>Pending</strong> state.
             An admin must approve your application before you can access the member portal.
           </p>
-          <button onClick={handleSignOut} className={styles.submitBtn} style={{ width: '100%' }}>
+          <button onClick={handleSignOut} className={styles.submitBtn} style={{ width: "100%" }}>
             Sign Out
           </button>
         </div>
@@ -89,17 +158,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Lockdown screen for declined users
   if (role === "declined") {
     return (
-      <div className={styles.dashboardContainer} style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', maxWidth: '500px', borderTop: '4px solid #ff5555' }}>
-          <h2 style={{ color: '#ff5555', marginBottom: '1rem' }}>Application Declined</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
+      <div className={styles.dashboardContainer} style={{ justifyContent: "center", alignItems: "center" }}>
+        <div className="glass-panel" style={{ padding: "3rem", textAlign: "center", maxWidth: "500px", borderTop: "4px solid #EF4444" }}>
+          <h2 style={{ color: "#EF4444", marginBottom: "1rem" }}>Application Declined</h2>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: "1.6" }}>
             Unfortunately, your membership application was not approved. You can delete this application to start over or use a different email address.
           </p>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <button onClick={handleDeleteDeclinedAccount} className={styles.submitBtn} style={{ flex: 1, background: 'rgba(255, 85, 85, 0.2)', color: '#ff5555' }} disabled={isDeleting}>
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <button
+              onClick={handleDeleteDeclinedAccount}
+              className={styles.submitBtn}
+              style={{ flex: 1, background: "rgba(239, 68, 68, 0.2)", color: "#EF4444" }}
+              disabled={isDeleting}
+            >
               {isDeleting ? "Deleting..." : "Delete Application"}
             </button>
-            <button onClick={handleSignOut} className={styles.submitBtn} style={{ flex: 1, background: 'rgba(255, 255, 255, 0.1)' }}>
+            <button
+              onClick={handleSignOut}
+              className={styles.submitBtn}
+              style={{ flex: 1, background: "rgba(255, 255, 255, 0.1)", color: "#F9FAFB" }}
+            >
               Sign Out
             </button>
           </div>
@@ -108,172 +186,359 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  const isAct = (href: string) => pathname === href ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
+  const isAct = (href: string) =>
+    pathname === href ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
+
+  const getBreadcrumbLabel = () => {
+    if (pathname === "/dashboard") return role === "admin" ? "Command Dashboard & Hub" : "Member Central Hub";
+    if (pathname === "/dashboard/curriculum") return "Learning Deck & Classroom Engine";
+    if (pathname === "/dashboard/curriculum/reference") return "Field Guide & Pinout Reference";
+    if (pathname === "/dashboard/tasks") return "Task & Milestone Pipeline";
+    if (pathname === "/dashboard/attendance") return "Class Schedule & Attendance";
+    if (pathname === "/dashboard/competitions") return "Competition Arena & Workbench";
+    if (pathname === "/dashboard/checkout") return "Lab Requisition & Checkout Tracker";
+    if (pathname === "/dashboard/inventory") return "Hardware & Lab Component Ledger";
+    if (pathname === "/dashboard/bom") return "Project Budgets & Bill of Materials";
+    if (pathname === "/dashboard/finance") return "Member Dues & Expense Requisitions";
+    if (pathname === "/dashboard/profile") return "Member Profile & Credentials";
+    if (pathname.startsWith("/dashboard/admin/curriculum")) return "Admin • Curriculum & Classroom Studio";
+    if (pathname.startsWith("/dashboard/admin/competitions")) return "Admin • Competition Command Center";
+    if (pathname.startsWith("/dashboard/admin/finance")) return "Admin • Treasury & Expense Ledger";
+    if (pathname.startsWith("/dashboard/admin/attendance")) return "Admin • Session & Attendance Roster";
+    if (pathname.startsWith("/dashboard/admin/requests")) return "Admin • Lab Parts Requisition Queue";
+    if (pathname.startsWith("/dashboard/members")) return "Admin • Team Member Directory & RBAC";
+    return "RoboBEE Portal";
+  };
+
+  const badge = getUserRoleBadge(userData);
 
   return (
     <div className={styles.dashboardContainer}>
-      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 0.5rem 1.25rem 0.5rem',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-          marginBottom: '0.75rem'
-        }}>
-          <span style={{
-            fontSize: '0.72rem',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '2px',
-            color: 'var(--accent-primary)',
-            background: 'rgba(244, 179, 4, 0.1)',
-            padding: '0.35rem 0.75rem',
-            borderRadius: '6px',
-            border: '1px solid rgba(244, 179, 4, 0.25)',
-            display: 'inline-block'
-          }}>
-            Team Portal
-          </span>
+      {/* Left Navigation Sidebar Rail (260px Desktop / Collapsible 76px / Off-Canvas Drawer Mobile) */}
+      <aside
+        className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ""} ${
+          sidebarOpen ? styles.sidebarOpen : ""
+        }`}
+      >
+        <div className={styles.sidebarHeader}>
+          {!sidebarCollapsed && <span className={styles.portalBadge}>RoboBEE OS</span>}
+          <button
+            onClick={() => setSidebarCollapsed((prev) => !prev)}
+            className={styles.collapseRailBtn}
+            title={sidebarCollapsed ? "Expand sidebar rail" : "Collapse sidebar rail"}
+            aria-label="Toggle sidebar rail width"
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
           <button
             onClick={closeSidebar}
             className={styles.sidebarCloseBtn}
             aria-label="Close sidebar navigation"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
-        <div style={{ marginTop: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
-          CORE
-        </div>
-        <Link href="/dashboard" className={isAct("/dashboard")} onClick={closeSidebar}>
-          Dashboard Overview
+
+        {/* SECTION 1: MEMBER PORTAL & LEARNING DECK */}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>MEMBER PORTAL</div>}
+        <Link href="/dashboard" className={isAct("/dashboard")} onClick={closeSidebar} title="Central Hub">
+          <Home size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && <span className={styles.navLabel}>Central Hub</span>}
         </Link>
-        <Link href="/dashboard/curriculum" className={isAct("/dashboard/curriculum")} onClick={closeSidebar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span>Robotics Curriculum</span>
-          <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.15rem 0.45rem', borderRadius: '10px', fontWeight: 800 }}>
-            36 Classes
-          </span>
+        <Link
+          href="/dashboard/curriculum"
+          className={isAct("/dashboard/curriculum")}
+          onClick={closeSidebar}
+          title="Learning Deck (36 Classes)"
+        >
+          <BookOpen size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && (
+            <>
+              <span className={styles.navLabel}>Learning Deck</span>
+              <span className={styles.navPill}>36 Classes</span>
+            </>
+          )}
         </Link>
-        <Link href="/dashboard/curriculum/reference" className={isAct("/dashboard/curriculum/reference")} onClick={closeSidebar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#F5B800' }}>
-          <span>Field Guide &amp; Library</span>
-          <span style={{ fontSize: '0.65rem', background: 'rgba(107, 15, 36, 0.4)', color: '#F5B800', border: '1px solid #F5B800', padding: '0.15rem 0.45rem', borderRadius: '10px', fontWeight: 800 }}>
-            Reference
-          </span>
-        </Link>
-        <Link href="/dashboard/profile" className={isAct("/dashboard/profile")} onClick={closeSidebar}>
-          My Profile
+        <Link
+          href="/dashboard/curriculum/reference"
+          className={isAct("/dashboard/curriculum/reference")}
+          onClick={closeSidebar}
+          title="Field Guide & Pinouts"
+        >
+          <Compass size={18} className={styles.navIcon} color="#F5B800" />
+          {!sidebarCollapsed && (
+            <>
+              <span className={styles.navLabel} style={{ color: "#F5B800" }}>
+                Field Guide
+              </span>
+              <span className={styles.navPill}>22 Docs</span>
+            </>
+          )}
         </Link>
 
-        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
-          ACTIVITIES
-        </div>
-        <Link href="/dashboard/tasks" className={isAct("/dashboard/tasks")} onClick={closeSidebar}>
-          My Tasks
+        {/* SECTION 2: SPRINT & ARENA */}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>SPRINTS &amp; ARENA</div>}
+        <Link
+          href="/dashboard/tasks"
+          className={isAct("/dashboard/tasks")}
+          onClick={closeSidebar}
+          title="Task & Sprint Board"
+        >
+          <CheckSquare size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && <span className={styles.navLabel}>Task &amp; Sprint Board</span>}
         </Link>
-        <Link href="/dashboard/attendance" className={isAct("/dashboard/attendance")} onClick={closeSidebar}>
-          Attendance
+        <Link
+          href="/dashboard/competitions"
+          className={isAct("/dashboard/competitions")}
+          onClick={closeSidebar}
+          title="Competition Arena & Workbench"
+        >
+          <Trophy size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && <span className={styles.navLabel}>Competition Arena</span>}
         </Link>
-        <Link href="/dashboard/competitions" className={isAct("/dashboard/competitions")} onClick={closeSidebar}>
-          Competitions
+        <Link
+          href="/dashboard/attendance"
+          className={isAct("/dashboard/attendance")}
+          onClick={closeSidebar}
+          title="Class Schedule & Attendance"
+        >
+          <CalendarCheck size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && (
+            <>
+              <span className={styles.navLabel}>Schedule &amp; Routine</span>
+              {hasLiveClass && <span className={styles.navPill}>LIVE</span>}
+            </>
+          )}
         </Link>
 
-        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
-          RESOURCES
-        </div>
-        <Link href="/dashboard/lab" className={isAct("/dashboard/lab")} onClick={closeSidebar}>
-          Lab Status
+        {/* SECTION 3: HARDWARE & LAB LOGISTICS */}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>HARDWARE &amp; LAB</div>}
+        <Link
+          href="/dashboard/checkout"
+          className={isAct("/dashboard/checkout")}
+          onClick={closeSidebar}
+          title="Lab Requisition & Checkout"
+        >
+          <Cpu size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && (
+            <>
+              <span className={styles.navLabel}>Lab Requisition</span>
+              {overdueCheckoutsCount > 0 && (
+                <span className={`${styles.navPill} ${styles.navPillAlert}`}>
+                  {overdueCheckoutsCount} Overdue
+                </span>
+              )}
+            </>
+          )}
         </Link>
-        <Link href="/dashboard/inventory" className={isAct("/dashboard/inventory")} onClick={closeSidebar}>
-          Inventory
+        <Link
+          href="/dashboard/inventory"
+          className={isAct("/dashboard/inventory")}
+          onClick={closeSidebar}
+          title="Component Ledger & Inventory"
+        >
+          <Package size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && (
+            <>
+              <span className={styles.navLabel}>Component Ledger</span>
+              {(role === "admin" || canManage("manage_store")) && lowStockCount > 0 && (
+                <span className={`${styles.navPill} ${styles.navPillAlert}`}>{lowStockCount} Low</span>
+              )}
+            </>
+          )}
         </Link>
-        <Link href="/dashboard/checkout" className={isAct("/dashboard/checkout")} onClick={closeSidebar}>
-          Hardware Checkout
+        <Link
+          href="/dashboard/bom"
+          className={isAct("/dashboard/bom")}
+          onClick={closeSidebar}
+          title="Project BOM & Budgets"
+        >
+          <Layers size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && <span className={styles.navLabel}>Project BOM</span>}
         </Link>
-        <Link href="/dashboard/bom" className={isAct("/dashboard/bom")} onClick={closeSidebar}>
-          Project BOM
+        <Link
+          href="/dashboard/lab"
+          className={isAct("/dashboard/lab")}
+          onClick={closeSidebar}
+          title="Lab Telemetry & Status"
+        >
+          <Wrench size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && <span className={styles.navLabel}>Lab Status</span>}
         </Link>
 
-        <div style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
-          FINANCE
-        </div>
-        <Link href="/dashboard/finance" className={isAct("/dashboard/finance")} onClick={closeSidebar}>
-          Finance & bKash
+        {/* SECTION 4: TREASURY & PROFILE */}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>TREASURY &amp; ACCOUNT</div>}
+        <Link
+          href="/dashboard/finance"
+          className={isAct("/dashboard/finance")}
+          onClick={closeSidebar}
+          title="Dues & Expense Requisitions"
+        >
+          <DollarSign size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && <span className={styles.navLabel}>Dues &amp; Claims</span>}
+        </Link>
+        <Link
+          href="/dashboard/profile"
+          className={isAct("/dashboard/profile")}
+          onClick={closeSidebar}
+          title="My Profile"
+        >
+          <UserIcon size={18} className={styles.navIcon} />
+          {!sidebarCollapsed && <span className={styles.navLabel}>My Profile</span>}
         </Link>
 
-        {/* Admin Controls */}
+        {/* SECTION 5: ADMIN / INSTRUCTOR COMMAND CONTROLS */}
         {role === "admin" ? (
           <>
-            <div style={{ marginTop: '1.5rem', color: '#ff5555', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
-              ADMIN CONTROLS
-            </div>
-            <Link href="/dashboard/admin/curriculum" className={isAct("/dashboard/admin/curriculum")} onClick={closeSidebar} style={{ color: '#f59e0b', fontWeight: 700 }}>
-              Curriculum & Classroom
+            {!sidebarCollapsed && (
+              <div className={`${styles.sectionHeading} ${styles.sectionHeadingAdmin}`}>
+                ADMIN COMMAND
+              </div>
+            )}
+            <Link
+              href="/dashboard/admin/curriculum"
+              className={isAct("/dashboard/admin/curriculum")}
+              onClick={closeSidebar}
+              title="Curriculum & Classroom Studio"
+              style={{ color: "#F59E0B", fontWeight: 700 }}
+            >
+              <Radio size={18} className={styles.navIcon} />
+              {!sidebarCollapsed && <span className={styles.navLabel}>Classroom Studio</span>}
             </Link>
-            <Link href="/dashboard/members" className={isAct("/dashboard/members")} onClick={closeSidebar}>
-              Manage Members
+            <Link
+              href="/dashboard/admin/competitions"
+              className={isAct("/dashboard/admin/competitions")}
+              onClick={closeSidebar}
+              title="Competition Command Center"
+            >
+              <Trophy size={18} className={styles.navIcon} />
+              {!sidebarCollapsed && <span className={styles.navLabel}>Competition Command</span>}
             </Link>
-            <Link href="/dashboard/admin/finance" className={isAct("/dashboard/admin/finance")} onClick={closeSidebar}>
-              Manage Finances
+            <Link
+              href="/dashboard/admin/finance"
+              className={isAct("/dashboard/admin/finance")}
+              onClick={closeSidebar}
+              title="Treasury & Expense Ledger"
+            >
+              <DollarSign size={18} className={styles.navIcon} />
+              {!sidebarCollapsed && <span className={styles.navLabel}>Treasury &amp; Ledger</span>}
             </Link>
-            <Link href="/dashboard/admin/attendance" className={isAct("/dashboard/admin/attendance")} onClick={closeSidebar}>
-              Manage Attendance
+            <Link
+              href="/dashboard/admin/attendance"
+              className={isAct("/dashboard/admin/attendance")}
+              onClick={closeSidebar}
+              title="Attendance & Routine Command"
+            >
+              <CalendarCheck size={18} className={styles.navIcon} />
+              {!sidebarCollapsed && <span className={styles.navLabel}>Manage Attendance</span>}
             </Link>
-            <Link href="/dashboard/admin/requests" className={isAct("/dashboard/admin/requests")} onClick={closeSidebar}>
-              Parts Requests
+            <Link
+              href="/dashboard/admin/requests"
+              className={isAct("/dashboard/admin/requests")}
+              onClick={closeSidebar}
+              title="Parts Requisition Queue"
+            >
+              <Package size={18} className={styles.navIcon} />
+              {!sidebarCollapsed && <span className={styles.navLabel}>Parts Requisitions</span>}
             </Link>
-            <Link href="/dashboard/admin/public-site" className={isAct("/dashboard/admin/public-site")} onClick={closeSidebar}>
-              Public Site Content
+            <Link
+              href="/dashboard/members"
+              className={isAct("/dashboard/members")}
+              onClick={closeSidebar}
+              title="Manage Members & RBAC"
+            >
+              <Users size={18} className={styles.navIcon} />
+              {!sidebarCollapsed && <span className={styles.navLabel}>Members &amp; RBAC</span>}
             </Link>
-            <Link href="/dashboard/admin/competitions" className={isAct("/dashboard/admin/competitions")} onClick={closeSidebar}>
-              Manage Competitions
+            <Link
+              href="/dashboard/admin/public-site"
+              className={isAct("/dashboard/admin/public-site")}
+              onClick={closeSidebar}
+              title="Public Site CMS"
+            >
+              <Globe size={18} className={styles.navIcon} />
+              {!sidebarCollapsed && <span className={styles.navLabel}>Public Site CMS</span>}
             </Link>
           </>
         ) : (
-          /* Delegated Staff / Specialized Role Controls */
-          (canManage("manage_curriculum") || canManage("manage_store") || canManage("manage_achievements") || canManage("manage_competitions") || canManage("manage_finance") || canManage("manage_attendance") || canManage("manage_members")) && (
+          (canManage("manage_curriculum") ||
+            canManage("manage_store") ||
+            canManage("manage_achievements") ||
+            canManage("manage_competitions") ||
+            canManage("manage_finance") ||
+            canManage("manage_attendance") ||
+            canManage("manage_members")) && (
             <>
-              <div style={{ marginTop: '1.5rem', color: '#a855f7', fontSize: '0.75rem', paddingLeft: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>
-                STAFF CONTROLS
-              </div>
+              {!sidebarCollapsed && (
+                <div className={`${styles.sectionHeading} ${styles.sectionHeadingAdmin}`}>
+                  STAFF CONTROLS
+                </div>
+              )}
               {canManage("manage_curriculum") && (
-                <Link href="/dashboard/admin/curriculum" className={isAct("/dashboard/admin/curriculum")} onClick={closeSidebar} style={{ color: '#f59e0b', fontWeight: 700 }}>
-                  Curriculum & Classroom
+                <Link
+                  href="/dashboard/admin/curriculum"
+                  className={isAct("/dashboard/admin/curriculum")}
+                  onClick={closeSidebar}
+                  style={{ color: "#F59E0B", fontWeight: 700 }}
+                >
+                  <Radio size={18} className={styles.navIcon} />
+                  {!sidebarCollapsed && <span className={styles.navLabel}>Classroom Studio</span>}
                 </Link>
               )}
               {canManage("manage_members") && (
                 <Link href="/dashboard/members" className={isAct("/dashboard/members")} onClick={closeSidebar}>
-                  Manage Members
+                  <Users size={18} className={styles.navIcon} />
+                  {!sidebarCollapsed && <span className={styles.navLabel}>Manage Members</span>}
                 </Link>
               )}
               {canManage("manage_store") && (
-                <>
-                  <Link href="/dashboard/inventory" className={isAct("/dashboard/inventory")} onClick={closeSidebar}>
-                    Store Management
-                  </Link>
-                  <Link href="/dashboard/admin/requests" className={isAct("/dashboard/admin/requests")} onClick={closeSidebar}>
-                    Parts Requests
-                  </Link>
-                </>
+                <Link
+                  href="/dashboard/admin/requests"
+                  className={isAct("/dashboard/admin/requests")}
+                  onClick={closeSidebar}
+                >
+                  <Package size={18} className={styles.navIcon} />
+                  {!sidebarCollapsed && <span className={styles.navLabel}>Parts Requisitions</span>}
+                </Link>
               )}
               {canManage("manage_competitions") && (
-                <Link href="/dashboard/admin/competitions" className={isAct("/dashboard/admin/competitions")} onClick={closeSidebar}>
-                  Manage Competitions
+                <Link
+                  href="/dashboard/admin/competitions"
+                  className={isAct("/dashboard/admin/competitions")}
+                  onClick={closeSidebar}
+                >
+                  <Trophy size={18} className={styles.navIcon} />
+                  {!sidebarCollapsed && <span className={styles.navLabel}>Competition Command</span>}
                 </Link>
               )}
               {canManage("manage_achievements") && (
-                <Link href="/dashboard/admin/public-site" className={isAct("/dashboard/admin/public-site")} onClick={closeSidebar}>
-                  Public Site Content
+                <Link
+                  href="/dashboard/admin/public-site"
+                  className={isAct("/dashboard/admin/public-site")}
+                  onClick={closeSidebar}
+                >
+                  <Globe size={18} className={styles.navIcon} />
+                  {!sidebarCollapsed && <span className={styles.navLabel}>Public Site CMS</span>}
                 </Link>
               )}
               {canManage("manage_finance") && (
-                <Link href="/dashboard/admin/finance" className={isAct("/dashboard/admin/finance")} onClick={closeSidebar}>
-                  Manage Finances
+                <Link
+                  href="/dashboard/admin/finance"
+                  className={isAct("/dashboard/admin/finance")}
+                  onClick={closeSidebar}
+                >
+                  <DollarSign size={18} className={styles.navIcon} />
+                  {!sidebarCollapsed && <span className={styles.navLabel}>Treasury &amp; Ledger</span>}
                 </Link>
               )}
               {canManage("manage_attendance") && (
-                <Link href="/dashboard/admin/attendance" className={isAct("/dashboard/admin/attendance")} onClick={closeSidebar}>
-                  Manage Attendance
+                <Link
+                  href="/dashboard/admin/attendance"
+                  className={isAct("/dashboard/admin/attendance")}
+                  onClick={closeSidebar}
+                >
+                  <CalendarCheck size={18} className={styles.navIcon} />
+                  {!sidebarCollapsed && <span className={styles.navLabel}>Manage Attendance</span>}
                 </Link>
               )}
             </>
@@ -281,63 +546,126 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
 
         <div className={styles.userInfo}>
-          <span className={styles.userEmail}>{user.email}</span>
-          {(() => {
-            const badge = getUserRoleBadge(userData);
-            return (
-              <span style={{
-                fontSize: '0.75rem',
+          {!sidebarCollapsed && <span className={styles.userEmail}>{user.email}</span>}
+          {!sidebarCollapsed && (
+            <span
+              style={{
+                fontSize: "0.7rem",
                 color: badge.color,
                 background: badge.background,
-                padding: '0.2rem 0.6rem',
-                borderRadius: '4px',
-                fontWeight: '600',
-                display: 'inline-block',
-                marginTop: '0.3rem',
-                textTransform: 'uppercase',
-                border: `1px solid ${badge.color}33`
-              }}>
-                {badge.label}
-              </span>
-            );
-          })()}
-          <button onClick={handleSignOut} className={styles.logoutBtn}>
-            Sign Out
+                padding: "0.2rem 0.55rem",
+                borderRadius: "4px",
+                fontWeight: 700,
+                display: "inline-block",
+                textTransform: "uppercase",
+                border: `1px solid ${badge.color}33`,
+                width: "fit-content",
+              }}
+            >
+              {badge.label}
+            </span>
+          )}
+          <button onClick={handleSignOut} className={styles.logoutBtn} title="Sign Out">
+            <LogOut size={15} />
+            {!sidebarCollapsed && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
 
-      {/* Overlay to close sidebar on mobile */}
-      {sidebarOpen && (
-        <div className={styles.sidebarOverlay} onClick={closeSidebar}></div>
-      )}
+      {/* Mobile Off-Canvas Drawer Overlay */}
+      {sidebarOpen && <div className={styles.sidebarOverlay} onClick={closeSidebar} />}
 
-      <main className={styles.mainContent}>
-        {children}
-      </main>
+      {/* Main Fluid Content Area + Sticky Contextual Top Header Bar */}
+      <div className={`${styles.mainWrapper} ${sidebarCollapsed ? styles.mainWrapperExpanded : ""}`}>
+        <header className={styles.contextTopBar}>
+          <div className={styles.contextLeft}>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className={styles.mobileDrawerTrigger}
+              aria-label="Open Portal Navigation Drawer"
+            >
+              <Menu size={20} />
+            </button>
+            <div className={styles.breadcrumbGroup}>
+              <span>RoboBEE Portal</span>
+              <span>/</span>
+              <span className={styles.breadcrumbCurrent}>{getBreadcrumbLabel()}</span>
+            </div>
+          </div>
 
-      {/* Dedicated Mobile Bottom App Bar */}
+          <div className={styles.contextRight}>
+            {hasLiveClass && (
+              <Link href="/dashboard/attendance" className={`${styles.alertChip} ${styles.alertChipSuccess}`}>
+                <Radio size={13} />
+                <span>Class Live Now</span>
+              </Link>
+            )}
+            {overdueCheckoutsCount > 0 && (
+              <Link href="/dashboard/checkout" className={`${styles.alertChip} ${styles.alertChipDanger}`}>
+                <AlertTriangle size={13} />
+                <span>{overdueCheckoutsCount} Overdue Gear</span>
+              </Link>
+            )}
+            {(role === "admin" || canManage("manage_store")) && lowStockCount > 0 && (
+              <Link href="/dashboard/inventory" className={`${styles.alertChip} ${styles.alertChipWarning}`}>
+                <Package size={13} />
+                <span>{lowStockCount} Low Stock</span>
+              </Link>
+            )}
+            <span
+              style={{
+                fontSize: "0.72rem",
+                color: badge.color,
+                background: badge.background,
+                padding: "0.25rem 0.65rem",
+                borderRadius: "999px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                border: `1px solid ${badge.color}33`,
+              }}
+            >
+              <Shield size={11} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />
+              {badge.label}
+            </span>
+          </div>
+        </header>
+
+        <main className={styles.mainContent}>{children}</main>
+      </div>
+
+      {/* Fixed Bottom Glassmorphic Navigation Bar (Dashboard, Tasks, Class, Lab, Profile) */}
       <nav className={styles.mobileBottomNav} aria-label="Mobile Navigation">
         <Link
           href="/dashboard"
           className={`${styles.bottomNavItem} ${pathname === "/dashboard" ? styles.bottomNavItemActive : ""}`}
         >
           <Home size={20} />
-          <span>Overview</span>
+          <span>Dashboard</span>
         </Link>
         <Link
-          href="/dashboard/inventory"
-          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/inventory") ? styles.bottomNavItemActive : ""}`}
+          href="/dashboard/tasks"
+          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/tasks") ? styles.bottomNavItemActive : ""}`}
         >
-          <Package size={20} />
-          <span>Store</span>
+          <CheckSquare size={20} />
+          <span>Tasks</span>
         </Link>
         <Link
-          href="/dashboard/competitions"
-          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/competitions") ? styles.bottomNavItemActive : ""}`}
+          href="/dashboard/curriculum"
+          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/curriculum") ? styles.bottomNavItemActive : ""}`}
         >
-          <Trophy size={20} />
-          <span>Events</span>
+          <BookOpen size={20} />
+          <span>Class</span>
+        </Link>
+        <Link
+          href="/dashboard/checkout"
+          className={`${styles.bottomNavItem} ${
+            pathname.startsWith("/dashboard/checkout") || pathname.startsWith("/dashboard/inventory")
+              ? styles.bottomNavItemActive
+              : ""
+          }`}
+        >
+          <Cpu size={20} />
+          <span>Lab</span>
         </Link>
         <Link
           href="/dashboard/profile"
@@ -346,14 +674,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <UserIcon size={20} />
           <span>Profile</span>
         </Link>
-        <button
-          onClick={() => setSidebarOpen(prev => !prev)}
-          className={`${styles.bottomNavItem} ${sidebarOpen ? styles.bottomNavItemActive : ""}`}
-          aria-label="Toggle All Menus"
-        >
-          <LayoutGrid size={20} />
-          <span>Menu</span>
-        </button>
       </nav>
     </div>
   );

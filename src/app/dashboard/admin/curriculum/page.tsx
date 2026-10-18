@@ -14,15 +14,16 @@ import {
 import { ProjectorView } from "@/components/curriculum/ProjectorView";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, doc, onSnapshot, setDoc, query, orderBy, limit } from "firebase/firestore";
+import { collection, doc, onSnapshot, setDoc, addDoc, deleteDoc, query, orderBy, limit } from "firebase/firestore";
 import { 
-  Tv, Lock, Unlock, Eye, CheckCircle, Clock, 
-  Layers, Users, Award, AlertTriangle, ArrowRight, Radio, Sparkles, BookOpen, Calendar
+  Tv, Lock, Unlock, Eye, Clock, 
+  Users, Award, Radio, BookOpen, Calendar, PlusCircle, Trash2, Layers
 } from "lucide-react";
+import { CustomSlideBlock, SlideBlockType } from "@/lib/portalRelations";
 
 export default function AdminCurriculumPage() {
-  const { role, canManage } = useAuth();
-  const [activeTab, setActiveTab] = useState<'classes' | 'submissions'>('classes');
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'classes' | 'builder' | 'submissions'>('classes');
   const [selectedTier, setSelectedTier] = useState<CourseTier | 'all'>('all');
 
   const [classStatuses, setClassStatuses] = useState<{ [id: string]: ClassStatus }>({
@@ -41,6 +42,16 @@ export default function AdminCurriculumPage() {
   // Submissions list from Firestore
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loadingSubs, setLoadingSubs] = useState<boolean>(true);
+
+  // Slide Block Builder (Admin CMS) state
+  const [customBlocks, setCustomBlocks] = useState<CustomSlideBlock[]>([]);
+  const [builderLessonId, setBuilderLessonId] = useState<string>("beg-01");
+  const [blockType, setBlockType] = useState<SlideBlockType>("text");
+  const [blockTitle, setBlockTitle] = useState<string>("");
+  const [blockContent, setBlockContent] = useState<string>("");
+  const [blockCodeLang, setBlockCodeLang] = useState<"cpp" | "python">("cpp");
+  const [blockMediaUrl, setBlockMediaUrl] = useState<string>("");
+  const [savingBlock, setSavingBlock] = useState<boolean>(false);
 
   // Load real-time class status overrides from Firestore
   useEffect(() => {
@@ -63,11 +74,11 @@ export default function AdminCurriculumPage() {
     }
   }, []);
 
-  // Load submissions from Firestore
+  // Load submissions & custom slide blocks from Firestore
   useEffect(() => {
     try {
       const q = query(collection(db, "curriculum_submissions"), orderBy("submittedAt", "desc"), limit(50));
-      const unsub = onSnapshot(q, (snapshot) => {
+      const unsubSubs = onSnapshot(q, (snapshot) => {
         const subs: any[] = [];
         snapshot.forEach((doc) => {
           subs.push({ id: doc.id, ...doc.data() });
@@ -78,8 +89,18 @@ export default function AdminCurriculumPage() {
         console.warn("Could not load curriculum submissions:", err);
         setLoadingSubs(false);
       });
-      return () => unsub();
-    } catch (e) {
+
+      const unsubBlocks = onSnapshot(collection(db, "curriculum_custom_blocks"), (snap) => {
+        const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as CustomSlideBlock));
+        list.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setCustomBlocks(list);
+      });
+
+      return () => {
+        unsubSubs();
+        unsubBlocks();
+      };
+    } catch {
       setLoadingSubs(false);
     }
   }, []);
@@ -118,6 +139,44 @@ export default function AdminCurriculumPage() {
     setClassStatuses(newStatuses);
   };
 
+  const handleAddSlideBlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!blockTitle.trim() || !blockContent.trim()) return;
+    setSavingBlock(true);
+    const existingForLesson = customBlocks.filter(b => b.lessonId === builderLessonId);
+    try {
+      await addDoc(collection(db, "curriculum_custom_blocks"), {
+        lessonId: builderLessonId,
+        blockType,
+        title: blockTitle.trim(),
+        content: blockContent.trim(),
+        codeLang: blockType === "code" ? blockCodeLang : null,
+        mediaUrl: blockMediaUrl.trim() || null,
+        order: existingForLesson.length + 1,
+        createdBy: user?.email || "Instructor",
+        updatedAt: new Date().toISOString(),
+      });
+      setBlockTitle("");
+      setBlockContent("");
+      setBlockMediaUrl("");
+      alert("Modular Slide Block added to Lesson Deck!");
+    } catch (err) {
+      console.error("Failed to add slide block:", err);
+      alert("Error saving custom slide block.");
+    } finally {
+      setSavingBlock(false);
+    }
+  };
+
+  const handleDeleteBlock = async (blockId: string) => {
+    if (!confirm("Remove this custom slide block?")) return;
+    try {
+      await deleteDoc(doc(db, "curriculum_custom_blocks", blockId));
+    } catch (err) {
+      console.error("Error deleting block:", err);
+    }
+  };
+
   const publishedCount = Object.values(classStatuses).filter(s => s === 'published').length;
   const liveCount = Object.values(classStatuses).filter(s => s === 'live_in_class').length;
 
@@ -132,7 +191,7 @@ export default function AdminCurriculumPage() {
           </h1>
           <p>
             RoboBEE Innovators Academy Master Portal: Launch full-screen live projector slides,
-            publish physical build packs &amp; code labs to members, and evaluate student exit tickets.
+            author modular slide blocks in the CMS, publish build packs, and evaluate student exit tickets.
           </p>
         </div>
 
@@ -195,6 +254,12 @@ export default function AdminCurriculumPage() {
           className={`${styles.tabBtn} ${activeTab === 'classes' ? styles.tabBtnActive : ''}`}
         >
           Curriculum Classes ({ALL_ROBOTICS_LESSONS.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('builder')}
+          className={`${styles.tabBtn} ${activeTab === 'builder' ? styles.tabBtnActive : ''}`}
+        >
+          Slide Block Builder CMS ({customBlocks.length})
         </button>
         <button
           onClick={() => setActiveTab('submissions')}
@@ -345,7 +410,162 @@ export default function AdminCurriculumPage() {
         </>
       )}
 
-      {/* TAB 2: SUBMISSIONS LOG */}
+      {/* TAB 2: SLIDE BLOCK BUILDER (ADMIN CMS) */}
+      {activeTab === 'builder' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+          <div className={styles.submissionsCard}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <PlusCircle size={18} color="#F5B800" /> Modular Slide Block Builder (Admin CMS)
+            </h2>
+            <p style={{ fontSize: '0.84rem', color: '#94a3b8', marginBottom: '1.25rem' }}>
+              Author supplemental modular content blocks (Concept Text, Pinout Diagram, Code Block, Safety Warning, Quiz Check, or Video) for any of the 36 classes.
+            </p>
+            <form onSubmit={handleAddSlideBlock} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.3rem', fontWeight: 700 }}>
+                  Target Curriculum Lesson
+                </label>
+                <select
+                  value={builderLessonId}
+                  onChange={(e) => setBuilderLessonId(e.target.value)}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#090e18', border: '1px solid #1e293b', color: '#f1f5f9' }}
+                >
+                  {ALL_ROBOTICS_LESSONS.map(l => (
+                    <option key={l.id} value={l.id}>{l.code}: {l.title}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.3rem', fontWeight: 700 }}>
+                    Block Type
+                  </label>
+                  <select
+                    value={blockType}
+                    onChange={(e) => setBlockType(e.target.value as SlideBlockType)}
+                    style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#090e18', border: '1px solid #1e293b', color: '#f1f5f9' }}
+                  >
+                    <option value="text">Concept Text &amp; Bullet</option>
+                    <option value="diagram">Circuit / Pinout Diagram</option>
+                    <option value="code">Code Lab Block (C++ / Python)</option>
+                    <option value="warning">Hardware Safety Alert</option>
+                    <option value="quiz">Interactive Knowledge Check</option>
+                    <option value="video">Lab Demonstration Video</option>
+                  </select>
+                </div>
+                {blockType === 'code' && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.3rem', fontWeight: 700 }}>
+                      Code Language
+                    </label>
+                    <select
+                      value={blockCodeLang}
+                      onChange={(e) => setBlockCodeLang(e.target.value as "cpp" | "python")}
+                      style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#090e18', border: '1px solid #1e293b', color: '#f1f5f9' }}
+                    >
+                      <option value="cpp">Arduino C++ (.ino)</option>
+                      <option value="python">MicroPython / ROS2 (.py)</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.3rem', fontWeight: 700 }}>
+                  Slide Block Heading
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Why Common Ground Between L298N and Arduino is Mandatory"
+                  value={blockTitle}
+                  onChange={(e) => setBlockTitle(e.target.value)}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#090e18', border: '1px solid #1e293b', color: '#f1f5f9' }}
+                />
+              </div>
+
+              {(blockType === 'diagram' || blockType === 'video') && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.3rem', fontWeight: 700 }}>
+                    SVG Illustration Path or Video URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="/illustrations/class1-breadboard-led-circuit.svg"
+                    value={blockMediaUrl}
+                    onChange={(e) => setBlockMediaUrl(e.target.value)}
+                    style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#090e18', border: '1px solid #1e293b', color: '#f1f5f9' }}
+                  />
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.3rem', fontWeight: 700 }}>
+                  {blockType === 'code' ? 'Source Code Snippet' : 'Teaching Content / Speaker Notes'}
+                </label>
+                <textarea
+                  rows={5}
+                  required
+                  placeholder={blockType === 'code' ? 'void setup() {\n  pinMode(13, OUTPUT);\n}' : 'Enter detailed explanation or safety checklist items...'}
+                  value={blockContent}
+                  onChange={(e) => setBlockContent(e.target.value)}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#090e18', border: '1px solid #1e293b', color: '#f1f5f9', fontFamily: blockType === 'code' ? 'var(--font-mono)' : 'inherit' }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingBlock}
+                className={styles.projectorBtn}
+                style={{ justifyContent: 'center', marginTop: '0.25rem' }}
+              >
+                <Layers size={16} />
+                <span>{savingBlock ? 'Saving Block...' : 'Add Modular Block to Lesson'}</span>
+              </button>
+            </form>
+          </div>
+
+          <div className={styles.submissionsCard}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '0.85rem' }}>
+              Published Custom Blocks for {ALL_ROBOTICS_LESSONS.find(l => l.id === builderLessonId)?.code}
+            </h2>
+            {customBlocks.filter(b => b.lessonId === builderLessonId).length === 0 ? (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.86rem' }}>
+                No custom blocks added to this lesson yet. All standard built-in slides and diagrams are active.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {customBlocks.filter(b => b.lessonId === builderLessonId).map((block) => (
+                  <div key={block.id} style={{ background: '#090e18', border: '1px solid #1e293b', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                      <div>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', marginRight: '0.5rem' }}>
+                          [{block.blockType}]
+                        </span>
+                        <strong style={{ color: '#f1f5f9', fontSize: '0.94rem' }}>{block.title}</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBlock(block.id)}
+                        style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                        title="Delete Block"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: '#cbd5e1', whiteSpace: 'pre-wrap', fontFamily: block.blockType === 'code' ? 'var(--font-mono)' : 'inherit' }}>
+                      {block.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: SUBMISSIONS LOG */}
       {activeTab === 'submissions' && (
         <div className={styles.submissionsCard}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '1rem' }}>

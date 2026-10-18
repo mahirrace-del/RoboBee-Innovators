@@ -1,28 +1,56 @@
 "use client";
 
 import { db } from "@/lib/firebase";
-import { collection, query, onSnapshot, doc, updateDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { collection, query, onSnapshot, doc, updateDoc, addDoc } from "firebase/firestore";
+import { useEffect, useState, useMemo } from "react";
 import styles from "./admin-finance.module.css";
 import { useAuth } from "@/context/AuthContext";
+import { BUDGET_LINE_CATEGORIES, BudgetLineCategory } from "@/lib/portalRelations";
+import { Wallet, Receipt, Trophy, Cpu, PlusCircle } from "lucide-react";
 
 export default function AdminFinancePage() {
-  const { user, role, canManage } = useAuth();
+  const { user, userData, role, canManage } = useAuth();
   const canAccess = role === "admin" || canManage("manage_finance");
+
+  const [activeTab, setActiveTab] = useState<"dues" | "ledger">("dues");
   const [payments, setPayments] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [competitions, setCompetitions] = useState<any[]>([]);
+
+  // Direct Admin Ledger Entry state
+  const [entryTitle, setEntryTitle] = useState("");
+  const [entryType, setEntryType] = useState<"expense" | "income">("expense");
+  const [entryCategory, setEntryCategory] = useState<BudgetLineCategory>("Lab Requisitions & Sensors");
+  const [entryAmount, setEntryAmount] = useState("");
+  const [entryCompId, setEntryCompId] = useState("");
+  const [entryNotes, setEntryNotes] = useState("");
+  const [submittingEntry, setSubmittingEntry] = useState(false);
 
   useEffect(() => {
     if (!canAccess) return;
     const q = query(collection(db, "payments"));
-    
-    const unsub = onSnapshot(q, (snapshot) => {
+    const unsubPay = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
-      data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      data.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
       setPayments(data);
     });
 
-    return () => unsub();
-  }, []);
+    const unsubExp = onSnapshot(collection(db, "treasury_expenses"), (snapshot) => {
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as any));
+      data.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+      setExpenses(data);
+    });
+
+    const unsubComp = onSnapshot(collection(db, "competitions"), (snapshot) => {
+      setCompetitions(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    return () => {
+      unsubPay();
+      unsubExp();
+      unsubComp();
+    };
+  }, [canAccess]);
 
   const handleVerify = async (paymentId: string) => {
     try {
@@ -49,7 +77,70 @@ export default function AdminFinancePage() {
     }
   };
 
-  const pendingCount = payments.filter(p => p.status === 'pending_verification').length;
+  const handleExpenseDecision = async (expenseId: string, status: "approved" | "rejected") => {
+    try {
+      await updateDoc(doc(db, "treasury_expenses", expenseId), {
+        status,
+        verifiedBy: user?.email,
+      });
+    } catch (err) {
+      console.error("Error updating expense:", err);
+      alert("Failed to update expense claim.");
+    }
+  };
+
+  const handleLogDirectLedgerEntry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!entryTitle.trim() || !entryAmount) return;
+    setSubmittingEntry(true);
+    const compObj = competitions.find(c => c.id === entryCompId);
+    try {
+      await addDoc(collection(db, "treasury_expenses"), {
+        title: entryTitle.trim(),
+        type: entryType,
+        category: entryCategory,
+        amount: Number(entryAmount),
+        status: "approved",
+        submittedByUid: user?.uid || "admin",
+        submittedByName: userData?.name || user?.email || "Admin",
+        verifiedBy: user?.email,
+        competitionId: entryCompId || null,
+        competitionName: compObj ? compObj.name : null,
+        notes: entryNotes.trim() || null,
+        date: new Date().toISOString(),
+      });
+      setEntryTitle("");
+      setEntryAmount("");
+      setEntryCompId("");
+      setEntryNotes("");
+    } catch (err) {
+      console.error("Error logging ledger entry:", err);
+      alert("Failed to log ledger entry.");
+    } finally {
+      setSubmittingEntry(false);
+    }
+  };
+
+  const treasuryMetrics = useMemo(() => {
+    const verifiedDuesIncome = payments
+      .filter(p => p.status === "verified")
+      .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+    const approvedSponsorIncome = expenses
+      .filter(e => e.status === "approved" && e.type === "income")
+      .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
+    const approvedExpenses = expenses
+      .filter(e => e.status === "approved" && e.type !== "income")
+      .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
+    const pendingExpenseClaims = expenses.filter(e => e.status === "pending").length;
+    const pendingPaymentCount = payments.filter(p => p.status === "pending_verification").length;
+    return {
+      totalIncome: verifiedDuesIncome + approvedSponsorIncome,
+      approvedExpenses,
+      netBalance: verifiedDuesIncome + approvedSponsorIncome - approvedExpenses,
+      pendingExpenseClaims,
+      pendingPaymentCount,
+    };
+  }, [payments, expenses]);
 
   if (!canAccess) {
     return (
@@ -62,129 +153,359 @@ export default function AdminFinancePage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      <div className={styles.header} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
         <div>
-          <h1 style={{ fontSize: '2rem', color: 'var(--text-primary)' }}>Finance Management</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Review all member payments and verifications.</p>
+          <h1 style={{ fontSize: '2rem', color: 'var(--text-primary)', margin: 0 }}>Financial Treasury &amp; Requisition Ledger</h1>
+          <p style={{ color: 'var(--text-secondary)', marginTop: "0.25rem" }}>
+            Verify member bKash dues, approve hardware/competition expense claims, and track allocated budget lines.
+          </p>
+        </div>
+        <div style={{ display: "flex", background: "#111827", padding: "0.3rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab("dues")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.45rem",
+              padding: "0.5rem 0.95rem",
+              borderRadius: "7px",
+              border: "none",
+              background: activeTab === "dues" ? "rgba(245, 184, 0, 0.16)" : "transparent",
+              color: activeTab === "dues" ? "#F5B800" : "#94A3B8",
+              fontWeight: 700,
+              fontSize: "0.84rem",
+              cursor: "pointer",
+            }}
+          >
+            <Wallet size={15} /> Member Dues ({treasuryMetrics.pendingPaymentCount} pending)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("ledger")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.45rem",
+              padding: "0.5rem 0.95rem",
+              borderRadius: "7px",
+              border: "none",
+              background: activeTab === "ledger" ? "rgba(245, 184, 0, 0.16)" : "transparent",
+              color: activeTab === "ledger" ? "#F5B800" : "#94A3B8",
+              fontWeight: 700,
+              fontSize: "0.84rem",
+              cursor: "pointer",
+            }}
+          >
+            <Receipt size={15} /> Expense Queue &amp; Ledger ({treasuryMetrics.pendingExpenseClaims} pending)
+          </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-        <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid #F4B304' }}>
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Pending Verifications</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#F4B304' }}>{pendingCount}</div>
+      {/* KPI Summary Strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+        <div className="glass-panel" style={{ padding: '1.35rem', borderLeft: '4px solid #10B981' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Net Treasury Balance</h3>
+          <div style={{ fontSize: '2.1rem', fontWeight: 'bold', color: '#10B981', fontFamily: 'var(--font-mono)' }}>
+            ৳{treasuryMetrics.netBalance.toLocaleString()}
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.25rem" }}>
+            Inflow: ৳{treasuryMetrics.totalIncome.toLocaleString()} • Outflow: ৳{treasuryMetrics.approvedExpenses.toLocaleString()}
+          </div>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid #2ecc71' }}>
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Total Verified Payments</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#2ecc71' }}>{payments.filter(p => p.status === 'verified').length}</div>
+        <div className="glass-panel" style={{ padding: '1.35rem', borderLeft: '4px solid #F5B800' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Pending Member Dues</h3>
+          <div style={{ fontSize: '2.1rem', fontWeight: 'bold', color: '#F5B800', fontFamily: 'var(--font-mono)' }}>
+            {treasuryMetrics.pendingPaymentCount}
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.25rem" }}>
+            {payments.filter(p => p.status === 'verified').length} total verified payments
+          </div>
+        </div>
+        <div className="glass-panel" style={{ padding: '1.35rem', borderLeft: '4px solid #EF4444' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Pending Requisition Claims</h3>
+          <div style={{ fontSize: '2.1rem', fontWeight: 'bold', color: '#EF4444', fontFamily: 'var(--font-mono)' }}>
+            {treasuryMetrics.pendingExpenseClaims}
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.25rem" }}>
+            Linked to Lab Inventory &amp; Competitions
+          </div>
         </div>
       </div>
 
-      <div className={`glass-panel ${styles.panel}`}>
-        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Payment Submissions</h2>
-        
-        {payments.length === 0 ? (
-          <div className={styles.emptyState}>No payments recorded yet.</div>
-        ) : (
-          <>
-            {/* Desktop View Table */}
-            <div className={styles.desktopTable}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Member ID</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Method & Txn</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map(payment => (
-                    <tr key={payment.id}>
-                      <td>{new Date(payment.date).toLocaleDateString()}</td>
-                      <td>
-                        <div style={{ fontWeight: '500', fontSize: '0.85rem' }}>{payment.userId}</div>
-                      </td>
-                      <td style={{ textTransform: 'capitalize' }}>
-                        {payment.type} {payment.month ? `(${payment.month})` : ''}
-                      </td>
-                      <td style={{ fontWeight: '600' }}>{payment.amount} BDT</td>
-                      <td>
-                        {payment.method}
-                        <br/>
-                        <span style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                          {payment.txnId || 'N/A'}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`${styles.statusBadge} ${
-                          payment.status === 'verified' ? styles.statusApproved : 
-                          payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
-                        }`}>
-                          {payment.status === 'pending_verification' ? 'pending' : payment.status}
-                        </span>
-                      </td>
-                      <td>
-                        {payment.status === 'pending_verification' && (
-                          <div className={styles.actions}>
-                            <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>Verify</button>
-                            <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>Reject</button>
-                          </div>
-                        )}
-                      </td>
+      {activeTab === "dues" ? (
+        <div className={`glass-panel ${styles.panel}`}>
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Member bKash &amp; Cash Payment Submissions</h2>
+          
+          {payments.length === 0 ? (
+            <div className={styles.emptyState}>No payments recorded yet.</div>
+          ) : (
+            <>
+              {/* Desktop View Table */}
+              <div className={styles.desktopTable}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Member ID</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Method &amp; Txn</th>
+                      <th>Status</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {payments.map(payment => (
+                      <tr key={payment.id}>
+                        <td>{new Date(payment.date).toLocaleDateString()}</td>
+                        <td>
+                          <div style={{ fontWeight: '500', fontSize: '0.85rem' }}>{payment.userId}</div>
+                        </td>
+                        <td style={{ textTransform: 'capitalize' }}>
+                          {payment.type} {payment.month ? `(${payment.month})` : ''}
+                        </td>
+                        <td style={{ fontWeight: '600', fontFamily: 'var(--font-mono)' }}>৳{payment.amount}</td>
+                        <td>
+                          {payment.method}
+                          <br/>
+                          <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                            {payment.txnId || 'N/A'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`${styles.statusBadge} ${
+                            payment.status === 'verified' ? styles.statusApproved : 
+                            payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
+                          }`}>
+                            {payment.status === 'pending_verification' ? 'pending' : payment.status}
+                          </span>
+                        </td>
+                        <td>
+                          {payment.status === 'pending_verification' && (
+                            <div className={styles.actions}>
+                              <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>Verify</button>
+                              <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>Reject</button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Mobile View: Transaction Stream Cards */}
-            <div className={styles.mobileCardList}>
-              {payments.map(payment => (
-                <div key={payment.id} className={styles.paymentCard}>
-                  <div className={styles.paymentCardHeader}>
-                    <div>
-                      <div className={styles.paymentAmount}>{payment.amount} BDT</div>
-                      <div className={styles.paymentType}>
-                        {payment.type} {payment.month ? `(${payment.month})` : ''}
+              {/* Mobile View: Transaction Stream Cards */}
+              <div className={styles.mobileCardList}>
+                {payments.map(payment => (
+                  <div key={payment.id} className={styles.paymentCard}>
+                    <div className={styles.paymentCardHeader}>
+                      <div>
+                        <div className={styles.paymentAmount}>৳{payment.amount}</div>
+                        <div className={styles.paymentType}>
+                          {payment.type} {payment.month ? `(${payment.month})` : ''}
+                        </div>
                       </div>
+                      <span className={`${styles.statusBadge} ${
+                        payment.status === 'verified' ? styles.statusApproved : 
+                        payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
+                      }`}>
+                        {payment.status === 'pending_verification' ? 'pending' : payment.status}
+                      </span>
                     </div>
-                    <span className={`${styles.statusBadge} ${
-                      payment.status === 'verified' ? styles.statusApproved : 
-                      payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
-                    }`}>
-                      {payment.status === 'pending_verification' ? 'pending' : payment.status}
-                    </span>
-                  </div>
 
-                  <div className={styles.paymentMeta}>
-                    <div>Date: <strong>{new Date(payment.date).toLocaleDateString()}</strong></div>
-                    <div>User: <strong>{payment.userId}</strong></div>
-                    <div>Method: <strong>{payment.method}</strong></div>
-                    {payment.txnId && (
-                      <div>Txn ID: <code style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>{payment.txnId}</code></div>
+                    <div className={styles.paymentMeta}>
+                      <div>Date: <strong>{new Date(payment.date).toLocaleDateString()}</strong></div>
+                      <div>User: <strong>{payment.userId}</strong></div>
+                      <div>Method: <strong>{payment.method}</strong></div>
+                      {payment.txnId && (
+                        <div>Txn ID: <code style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>{payment.txnId}</code></div>
+                      )}
+                    </div>
+
+                    {payment.status === 'pending_verification' && (
+                      <div className={styles.mobileActionRow}>
+                        <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>
+                          ✓ Verify
+                        </button>
+                        <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>
+                          ✕ Reject
+                        </button>
+                      </div>
                     )}
                   </div>
-
-                  {payment.status === 'pending_verification' && (
-                    <div className={styles.mobileActionRow}>
-                      <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>
-                        ✓ Verify
-                      </button>
-                      <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>
-                        ✕ Reject
-                      </button>
-                    </div>
-                  )}
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+          {/* Direct Admin Ledger Entry Form */}
+          <div className={`glass-panel ${styles.panel}`}>
+            <h2 style={{ fontSize: "1.15rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
+              <PlusCircle size={18} color="#F5B800" /> Log Treasury Entry (Sponsorship / Direct Expense)
+            </h2>
+            <form onSubmit={handleLogDirectLedgerEntry} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Title / Description</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. TechFest Sponsorship Grant or PCB Fabrication Batch"
+                  value={entryTitle}
+                  onChange={(e) => setEntryTitle(e.target.value)}
+                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Flow Type</label>
+                  <select
+                    value={entryType}
+                    onChange={(e) => setEntryType(e.target.value as "expense" | "income")}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                  >
+                    <option value="expense">Expense Outflow (-)</option>
+                    <option value="income">Sponsorship / Grant Inflow (+)</option>
+                  </select>
                 </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Amount (BDT)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={entryAmount}
+                    onChange={(e) => setEntryAmount(e.target.value)}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB", fontFamily: "var(--font-mono)" }}
+                  />
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Budget Pool</label>
+                  <select
+                    value={entryCategory}
+                    onChange={(e) => setEntryCategory(e.target.value as BudgetLineCategory)}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                  >
+                    {BUDGET_LINE_CATEGORIES.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Competition Link</label>
+                  <select
+                    value={entryCompId}
+                    onChange={(e) => setEntryCompId(e.target.value)}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                  >
+                    <option value="">General Lab Pool</option>
+                    {competitions.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Memo / Invoice Reference</label>
+                <input
+                  type="text"
+                  placeholder="Optional receipt or sponsor reference..."
+                  value={entryNotes}
+                  onChange={(e) => setEntryNotes(e.target.value)}
+                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                />
+              </div>
+              <button type="submit" disabled={submittingEntry} className={styles.approveBtn} style={{ padding: "0.7rem 1rem", fontWeight: 700 }}>
+                {submittingEntry ? "Recording..." : "Record Approved Ledger Entry"}
+              </button>
+            </form>
+          </div>
+
+          {/* Expense Approval Queue & Ledger Stream */}
+          <div className={`glass-panel ${styles.panel}`}>
+            <h2 style={{ fontSize: "1.15rem", marginBottom: "0.75rem" }}>Relational Expense Approval Queue &amp; Ledger</h2>
+            {expenses.length === 0 ? (
+              <div className={styles.emptyState}>No expense claims or requisitions logged yet.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                {expenses.map((exp) => (
+                  <div
+                    key={exp.id}
+                    style={{
+                      padding: "0.9rem 1rem",
+                      borderRadius: "10px",
+                      background: "rgba(15, 23, 42, 0.75)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "0.75rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#F9FAFB", fontSize: "0.95rem" }}>{exp.title}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", fontSize: "0.75rem", color: "#94A3B8" }}>
+                        <span>{exp.category}</span>
+                        <span>• By {exp.submittedByName || exp.submittedByUid}</span>
+                        {exp.competitionName && (
+                          <span style={{ color: "#F5B800", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                            <Trophy size={11} /> {exp.competitionName}
+                          </span>
+                        )}
+                        {exp.inventoryItemName && (
+                          <span style={{ color: "#60A5FA", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                            <Cpu size={11} /> {exp.inventoryItemName}
+                          </span>
+                        )}
+                      </div>
+                      {exp.notes && (
+                        <div style={{ fontSize: "0.75rem", color: "#64748B", marginTop: "0.25rem" }}>{exp.notes}</div>
+                      )}
+                    </div>
+
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: 800,
+                        fontSize: "1.02rem",
+                        color: exp.type === "income" ? "#10B981" : "#F5B800",
+                      }}>
+                        {exp.type === "income" ? "+" : "-"}৳{Number(exp.amount || 0).toLocaleString()}
+                      </div>
+                      <div style={{ marginTop: "0.35rem", display: "flex", gap: "0.4rem", justifyContent: "flex-end", alignItems: "center" }}>
+                        <span className={`${styles.statusBadge} ${
+                          exp.status === "approved"
+                            ? styles.statusApproved
+                            : exp.status === "rejected"
+                            ? styles.statusRejected
+                            : styles.statusPending
+                        }`}>
+                          {exp.status}
+                        </span>
+                        {exp.status === "pending" && (
+                          <>
+                            <button onClick={() => handleExpenseDecision(exp.id, "approved")} className={styles.approveBtn}>
+                              Approve
+                            </button>
+                            <button onClick={() => handleExpenseDecision(exp.id, "rejected")} className={styles.rejectBtn}>
+                              Reject
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

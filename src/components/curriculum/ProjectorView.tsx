@@ -9,8 +9,12 @@ import { Class1WorkshopDeck } from "./Class1WorkshopDeck";
 import { 
   Play, Pause, RotateCcw, Maximize, X, ArrowLeft, ArrowRight,
   Clock, Shield, CheckCircle, Code, Eye, HelpCircle, Phone, MapPin,
-  Cpu, Wrench, Zap, ChevronLeft, ChevronRight, Sparkles, BookOpen, Layers
+  Cpu, Wrench, Zap, ChevronLeft, ChevronRight, Sparkles, BookOpen, Layers, Users
 } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
+import { normalizeInventoryItem, verifyLessonBOMStock, RelationalInventoryItem } from "@/lib/portalRelations";
+import { saveSessionAttendance, ScheduledClassSession } from "@/lib/scheduleAttendance";
 
 interface ProjectorViewProps {
   lesson: RoboticsLesson;
@@ -66,8 +70,14 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
 
   // Font scaling controls (100%, 125%, 150%)
   const [fontScale, setFontScale] = useState<number>(100);
-  // Collapsible Instructor Speaker Notes Drawer
+  // Collapsible Instructor Speaker Notes Drawer & Dual-Screen Presenter Console
   const [showSpeakerNotes, setShowSpeakerNotes] = useState<boolean>(false);
+  const [showPresenterConsole, setShowPresenterConsole] = useState<boolean>(false);
+
+  // Live Lab Inventory & Student Attendance for Presenter Console
+  const [inventoryItems, setInventoryItems] = useState<RelationalInventoryItem[]>([]);
+  const [activeSession, setActiveSession] = useState<ScheduledClassSession | null>(null);
+  const [clubMembers, setClubMembers] = useState<any[]>([]);
 
   // Exit Ticket reveal state for instructor
   const [revealedHints, setRevealedHints] = useState<{ [key: number]: boolean }>({});
@@ -75,12 +85,50 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
 
   useEffect(() => {
     setMounted(true);
-    // Lock background scroll while projector view is active
     document.body.style.overflow = "hidden";
+
+    // Read initial ?slide=N query parameter if present
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const slideParam = params.get("slide");
+      if (slideParam !== null) {
+        const parsed = parseInt(slideParam, 10);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= totalSlides) {
+          setCurrentSlide(parsed - 1);
+        }
+      }
+    } catch {}
+
+    const unsubInv = onSnapshot(collection(db, "inventory"), (snap) => {
+      setInventoryItems(snap.docs.map(d => normalizeInventoryItem(d.id, d.data())));
+    });
+    const unsubSessions = onSnapshot(collection(db, "sessions"), (snap) => {
+      const match = snap.docs
+        .map(d => ({ id: d.id, ...d.data() } as ScheduledClassSession))
+        .find(s => s.lessonId === lesson.id || s.status === "active");
+      setActiveSession(match || null);
+    });
+    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
+      setClubMembers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
     return () => {
       document.body.style.overflow = "";
+      unsubInv();
+      unsubSessions();
+      unsubUsers();
     };
-  }, []);
+  }, [lesson.id, totalSlides]);
+
+  // Sync currentSlide to URL query parameter (?slide=N) for bookmarking/sharing
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("slide", String(currentSlide + 1));
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+  }, [currentSlide, mounted]);
 
   // Slide navigation
   const nextSlide = useCallback(() => {
@@ -288,6 +336,17 @@ export function ProjectorView({ lesson, onClose }: ProjectorViewProps) {
               150%
             </button>
           </div>
+
+          {/* Dual-Screen Presenter Console Toggle */}
+          <button
+            onClick={() => setShowPresenterConsole(prev => !prev)}
+            className={styles.actionBtn}
+            style={{ background: showPresenterConsole ? '#F5B800' : 'rgba(255,255,255,0.06)', color: showPresenterConsole ? '#0B0F17' : '#fff', fontWeight: 700 }}
+            title="Toggle Dual-Screen Presenter Console (Next Slide + Live BOM Stock + Attendance)"
+          >
+            <Layers size={14} />
+            <span>Presenter Console</span>
+          </button>
 
           {/* Speaker Notes Toggle */}
           <button 
@@ -1334,6 +1393,106 @@ delay(50); // Rapid blink`}
                       </div>
                     )}
                   </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Dual-Screen Presenter Console (Next Slide + Live BOM Stock + Attendance Checklist) */}
+          {showPresenterConsole && (
+            <div style={{
+              marginTop: '1rem',
+              background: 'rgba(11, 15, 23, 0.96)',
+              border: '1px solid rgba(245, 184, 0, 0.45)',
+              borderRadius: '12px',
+              padding: '1rem 1.25rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '1rem'
+            }}>
+              {/* Next Slide & URL Sync */}
+              <div style={{ background: '#111827', padding: '0.85rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#F5B800', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                  ⏭ Up Next in Deck (URL Synced: ?slide={currentSlide + 1})
+                </div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#F9FAFB' }}>
+                  {currentSlide + 1 < totalSlides
+                    ? (isClass1 ? class1SlideTitles : standardSlideTitles)[currentSlide + 1]
+                    : 'End of Deck — Final Exit Reflection & Pack-Up'}
+                </div>
+                <div style={{ fontSize: '0.76rem', color: '#94A3B8', marginTop: '0.35rem' }}>
+                  Active Phase: <strong style={{ color: '#10B981' }}>{getActiveRhythmSegment()}</strong>
+                </div>
+              </div>
+
+              {/* Lab Bench Kit BOM Live Stock Check */}
+              <div style={{ background: '#111827', padding: '0.85rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#38BDF8', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                  🔧 Lab Bench Kit Live Stock Check
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.28rem', maxHeight: '110px', overflowY: 'auto' }}>
+                  {verifyLessonBOMStock(lesson.physicalBuildPack?.componentList || [], inventoryItems).slice(0, 6).map((item, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#E2E8F0' }}>
+                      <span>{item.partName}</span>
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700,
+                        color: item.status === 'in_stock' ? '#10B981' : item.status === 'low_stock' ? '#F5B800' : '#EF4444'
+                      }}>
+                        {item.availableInLab > 0 ? `${item.availableInLab} in lab` : 'Check Locker'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Live Student Attendance Checklist */}
+              <div style={{ background: '#111827', padding: '0.85rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#10B981', textTransform: 'uppercase', marginBottom: '0.35rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>✅ Live Student Attendance</span>
+                  <span>{activeSession ? `${(activeSession.attendees || []).length} Present` : 'No Active Session'}</span>
+                </div>
+                {!activeSession ? (
+                  <div style={{ fontSize: '0.76rem', color: '#94A3B8' }}>
+                    Schedule or activate a session for {lesson.code} in Attendance Manager to toggle live roll call here.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', maxHeight: '110px', overflowY: 'auto' }}>
+                    {clubMembers.slice(0, 12).map((m) => {
+                      const uidOrEmail = m.id;
+                      const isPresent = (activeSession.attendees || []).includes(uidOrEmail);
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={async () => {
+                            const currentList = activeSession.attendees || [];
+                            const nextList = isPresent
+                              ? currentList.filter(a => a !== uidOrEmail)
+                              : [...currentList, uidOrEmail];
+                            try {
+                              await saveSessionAttendance(activeSession.id, activeSession, nextList, clubMembers);
+                            } catch (e) {
+                              console.error("Failed to save attendance:", e);
+                            }
+                          }}
+                          style={{
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            borderColor: isPresent ? '#10B981' : 'rgba(255,255,255,0.12)',
+                            background: isPresent ? 'rgba(16, 185, 129, 0.18)' : 'rgba(255,255,255,0.04)',
+                            color: isPresent ? '#10B981' : '#94A3B8'
+                          }}
+                        >
+                          {isPresent ? '✓ ' : ''}{m.name || m.email?.split('@')[0] || 'Student'}
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </div>

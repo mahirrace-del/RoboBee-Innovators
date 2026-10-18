@@ -1,28 +1,44 @@
 :root {
-  /* Premium Dark Theme Core */
-  --bg-primary: #0a0306;
-  --bg-secondary: #170711;
-  --bg-glass: rgba(43, 12, 35, 0.4);
-  --bg-glass-hover: rgba(43, 12, 35, 0.7);
-  
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  
-  /* Accents */
-  --accent-primary: #F4B304;
-  --accent-secondary: #2B0C23;
-  
+  /* Standardized Engineering & RoboBEE Design Token Architecture */
+  --bg-primary: #0B0F17;
+  --bg-secondary: #111827;
+  --bg-elevated: #1F2937;
+  --bg-glass: rgba(17, 24, 39, 0.78);
+  --bg-glass-hover: rgba(31, 41, 55, 0.9);
+
+  /* Brand Identity */
+  --brand-burgundy: #6B0F24;
+  --brand-gold: #F5B800;
+  --accent-primary: #F5B800;
+  --accent-amber: #F59E0B;
+  --accent-amber-dark: #D97706;
+  --accent-secondary: #6B0F24;
+
+  /* Text & Borders */
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --border-subtle: #374151;
+  --border-glass: rgba(255, 255, 255, 0.08);
+
+  /* Status Colors */
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error: #EF4444;
+  --status-info: #06B6D4;
+
+  /* Typography */
+  --font-mono: "JetBrains Mono", "Fira Code", Consolas, Monaco, monospace;
+
   /* Gradients */
-  --gradient-glow: linear-gradient(135deg, rgba(244, 179, 4, 0.2) 0%, rgba(43, 12, 35, 0) 100%);
-  --gradient-border: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
-  
-  /* Utils */
+  --gradient-glow: linear-gradient(135deg, rgba(245, 184, 0, 0.18) 0%, rgba(107, 15, 36, 0.08) 100%);
+  --gradient-border: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02));
+
+  /* Radii & Transitions */
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 20px;
-  
+  --radius-lg: 18px;
   --transition-fast: 0.15s ease-out;
-  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -34,17 +50,24 @@
 html {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: rgba(244, 179, 4, 0.3) var(--bg-primary);
+  scrollbar-color: rgba(245, 184, 0, 0.35) var(--bg-primary);
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
   width: 100%;
-  font-family: var(--font-inter), sans-serif;
+  max-width: 100vw;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
   overflow-x: hidden;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
 }
 
 /* Single Modern Scrollbar Styling */
@@ -58,7 +81,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(244, 179, 4, 0.3);
+  background: rgba(245, 184, 0, 0.3);
   border-radius: 4px;
 }
 
@@ -87,11 +110,11 @@ button {
 /* Base Glassmorphism Class */
 .glass-panel {
   background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
 }
 
 /* Reusable glow effect */
