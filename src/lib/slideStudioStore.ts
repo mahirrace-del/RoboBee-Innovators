@@ -2668,13 +2668,165 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
   // 4. Content Area Layout
   const cards = slide.cards || [];
   const hasHeroImage = Boolean(slide.heroImage);
+  const isHotspotSlide = slide.layout === "interactive-hotspot" || (slide.hotspots && slide.hotspots.length > 0);
+  const hasQuizCards = cards.some((c) => c.isQuizCard);
+  const hasPollCards = cards.some((c) => c.isPollCard);
+  const isTimelineSlide = slide.layout === "timeline-stepper";
 
-  if (hasHeroImage) {
-    // 2-Column Split: Cards on left (or code/pinout), Image on right
+  // CASE A: Interactive Hardware Hotspot / Diagram Slide (Pins 1–5 on Rover or Arduino)
+  if (isHotspotSlide || (hasHeroImage && cards.length === 0)) {
+    elements.push({
+      id: `${slide.id}-migrated-hotspot-img`,
+      type: "image",
+      x: 80,
+      y: 195,
+      width: 1120,
+      height: 475,
+      zIndex: zCounter++,
+      content: slide.heroImage || "/illustrations/class1-arduino-uno-anatomy.svg",
+      caption: slide.imageCaption || "Click Pins 1–5 on diagram to inspect subsystems",
+      hotspotPins: slide.hotspots && slide.hotspots.length > 0 ? slide.hotspots : undefined,
+      style: {
+        borderRadius: 20,
+        borderColor: palette.cardBorder,
+        borderWidth: 2,
+        boxShadow: palette.cardShadow,
+        objectFit: "contain",
+        backgroundColor: palette.isLight ? "#F8FAFC" : "rgba(10, 15, 28, 0.65)",
+      },
+    });
+  }
+  // CASE B: Interactive Quiz Challenge Slide (e.g. Robot vs. Machine — 3 side-by-side cards)
+  else if (hasQuizCards && cards.length === 3) {
+    const cardW = 370;
+    const cardH = 460;
+    const gap = 25;
+    cards.forEach((c, idx) => {
+      elements.push({
+        id: `${c.id || `${slide.id}-c${idx}`}`,
+        type: "callout",
+        x: 60 + idx * (cardW + gap),
+        y: 200,
+        width: cardW,
+        height: cardH,
+        zIndex: zCounter++,
+        badgeText: c.badge || `CHALLENGE 0${idx + 1}`,
+        isQuizCard: true,
+        quizVerdict: c.quizVerdict,
+        quizIsPositive: c.quizIsPositive,
+        content: `### ${c.title}\n\n${c.body}`,
+        style: {
+          backgroundColor: palette.cardBg,
+          borderColor: c.accentColor || palette.cardBorder,
+          borderWidth: 2,
+          borderRadius: 18,
+          padding: "24px 22px",
+          color: palette.bodyColor,
+          boxShadow: palette.cardShadow,
+        },
+      });
+    });
+  }
+  // CASE C: Interactive Classroom Poll Slide or 4-Path Grid (e.g. 4 Builder Personas — 2x2 grid)
+  else if ((hasPollCards || cards.length === 4) && !isTimelineSlide) {
+    const colW = 560;
+    const rowH = 220;
+    const gapX = 40;
+    const gapY = 18;
+    cards.slice(0, 4).forEach((c, idx) => {
+      const col = idx % 2;
+      const row = Math.floor(idx / 2);
+      elements.push({
+        id: `${c.id || `${slide.id}-c${idx}`}`,
+        type: "callout",
+        x: 60 + col * (colW + gapX),
+        y: 200 + row * (rowH + gapY),
+        width: colW,
+        height: rowH,
+        zIndex: zCounter++,
+        badgeText: c.badge,
+        isPollCard: c.isPollCard,
+        pollInitialVotes: c.pollInitialVotes,
+        isQuizCard: c.isQuizCard,
+        quizVerdict: c.quizVerdict,
+        quizIsPositive: c.quizIsPositive,
+        content: `### ${c.title}\n${c.body}${c.detail ? `\n\n*${c.detail}*` : ""}`,
+        style: {
+          backgroundColor: palette.cardBg,
+          borderColor: c.accentColor || palette.cardBorder,
+          borderWidth: 1.5,
+          borderRadius: 18,
+          padding: "18px 22px",
+          color: palette.bodyColor,
+          boxShadow: palette.cardShadow,
+        },
+      });
+    });
+  }
+  // CASE D: Timeline Stepper / Closed-Loop Sense->Think->Act Slide
+  else if (isTimelineSlide) {
+    if (cards.length === 4) {
+      // 4 horizontal era cards across the screen
+      const cardW = 275;
+      const cardH = 460;
+      const gap = 20;
+      cards.forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: 60 + idx * (cardW + gap),
+          y: 200,
+          width: cardW,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          content: `### ${c.title}\n\n**${c.subtitle || ""}**\n\n${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1.5,
+            borderRadius: 16,
+            padding: "20px 18px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    } else {
+      // 3 connected stage cards across the screen (Sense ➔ Think ➔ Act)
+      const cardW = 370;
+      const cardH = 460;
+      const gap = 25;
+      cards.slice(0, 3).forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: 60 + idx * (cardW + gap),
+          y: 200,
+          width: cardW,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          content: `### ${c.title}\n\n*${c.subtitle || ""}*\n\n${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 2,
+            borderRadius: 18,
+            padding: "24px 22px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    }
+  }
+  // CASE E: Split Media with Hero Image on right and 1-3 cards on left
+  else if (hasHeroImage && cards.length > 0 && cards.length <= 3) {
     const imgX = 660;
-    const imgY = 208;
+    const imgY = 200;
     const imgW = 560;
-    const imgH = 440;
+    const imgH = 460;
 
     elements.push({
       id: `${slide.id}-migrated-hero-img`,
@@ -2688,19 +2840,18 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
       caption: slide.imageCaption || "",
       hotspotPins: slide.hotspots && slide.hotspots.length > 0 ? slide.hotspots : undefined,
       style: {
-        borderRadius: 16,
+        borderRadius: 18,
         borderColor: palette.cardBorder,
-        borderWidth: 1,
+        borderWidth: 1.5,
         boxShadow: palette.cardShadow,
         objectFit: slide.heroImage.endsWith(".svg") ? "contain" : "cover",
-        backgroundColor: "rgba(0,0,0,0.25)",
+        backgroundColor: palette.isLight ? "#F8FAFC" : "rgba(0,0,0,0.25)",
       },
     });
 
-    // Left Column Cards
     const leftX = 60;
-    const startY = 208;
-    const colW = 570;
+    const startY = 200;
+    const colW = 560;
 
     if (cards.length === 1) {
       elements.push({
@@ -2709,7 +2860,7 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
         x: leftX,
         y: startY,
         width: colW,
-        height: 440,
+        height: 460,
         zIndex: zCounter++,
         badgeText: cards[0].badge,
         isQuizCard: cards[0].isQuizCard,
@@ -2721,15 +2872,15 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
         style: {
           backgroundColor: palette.cardBg,
           borderColor: cards[0].accentColor || palette.cardBorder,
-          borderWidth: 1,
-          borderRadius: 16,
-          padding: "24px",
+          borderWidth: 1.5,
+          borderRadius: 18,
+          padding: "26px",
           color: palette.bodyColor,
           boxShadow: palette.cardShadow,
         },
       });
     } else if (cards.length === 2) {
-      const cardH = 210;
+      const cardH = 215;
       const gap = 20;
       cards.forEach((c, idx) => {
         elements.push({
@@ -2750,7 +2901,7 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           style: {
             backgroundColor: palette.cardBg,
             borderColor: c.accentColor || palette.cardBorder,
-            borderWidth: 1,
+            borderWidth: 1.5,
             borderRadius: 16,
             padding: "18px 22px",
             color: palette.bodyColor,
@@ -2759,11 +2910,10 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
         });
       });
     } else {
-      // 3 or more cards: stacked compact cards
-      const visibleCards = cards.slice(0, 3);
-      const cardH = 135;
+      // 3 cards stacked
+      const cardH = 138;
       const gap = 16;
-      visibleCards.forEach((c, idx) => {
+      cards.slice(0, 3).forEach((c, idx) => {
         elements.push({
           id: `${c.id || `${slide.id}-c${idx}`}`,
           type: "callout",
@@ -2782,7 +2932,7 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           style: {
             backgroundColor: palette.cardBg,
             borderColor: c.accentColor || palette.cardBorder,
-            borderWidth: 1,
+            borderWidth: 1.5,
             borderRadius: 14,
             padding: "14px 18px",
             color: palette.bodyColor,
@@ -2791,18 +2941,19 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
         });
       });
     }
-  } else {
-    // No hero image: Full-width Grid
+  }
+  // CASE F: Full-width Grid without Hero Image
+  else {
     if (cards.length === 3) {
-      const cardW = 360;
-      const cardH = 450;
-      const gap = 40;
+      const cardW = 370;
+      const cardH = 460;
+      const gap = 25;
       cards.forEach((c, idx) => {
         elements.push({
           id: `${c.id || `${slide.id}-c${idx}`}`,
           type: "callout",
           x: 60 + idx * (cardW + gap),
-          y: 208,
+          y: 200,
           width: cardW,
           height: cardH,
           zIndex: zCounter++,
@@ -2816,9 +2967,9 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           style: {
             backgroundColor: palette.cardBg,
             borderColor: c.accentColor || palette.cardBorder,
-            borderWidth: 1,
-            borderRadius: 16,
-            padding: "24px",
+            borderWidth: 1.5,
+            borderRadius: 18,
+            padding: "24px 22px",
             color: palette.bodyColor,
             boxShadow: palette.cardShadow,
           },
@@ -2826,14 +2977,14 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
       });
     } else if (cards.length === 2) {
       const cardW = 560;
-      const cardH = 450;
+      const cardH = 460;
       const gap = 40;
       cards.forEach((c, idx) => {
         elements.push({
           id: `${c.id || `${slide.id}-c${idx}`}`,
           type: "callout",
           x: 60 + idx * (cardW + gap),
-          y: 208,
+          y: 200,
           width: cardW,
           height: cardH,
           zIndex: zCounter++,
@@ -2847,20 +2998,19 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           style: {
             backgroundColor: palette.cardBg,
             borderColor: c.accentColor || palette.cardBorder,
-            borderWidth: 1,
-            borderRadius: 16,
-            padding: "28px",
+            borderWidth: 1.5,
+            borderRadius: 18,
+            padding: "26px",
             color: palette.bodyColor,
             boxShadow: palette.cardShadow,
           },
         });
       });
-    } else if (cards.length >= 4) {
-      // 2x2 grid
+    } else {
       const colW = 560;
-      const rowH = 210;
+      const rowH = 220;
       const gapX = 40;
-      const gapY = 20;
+      const gapY = 18;
       cards.slice(0, 4).forEach((c, idx) => {
         const col = idx % 2;
         const row = Math.floor(idx / 2);
@@ -2868,7 +3018,7 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           id: `${c.id || `${slide.id}-c${idx}`}`,
           type: "callout",
           x: 60 + col * (colW + gapX),
-          y: 208 + row * (rowH + gapY),
+          y: 200 + row * (rowH + gapY),
           width: colW,
           height: rowH,
           zIndex: zCounter++,
@@ -2882,9 +3032,9 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           style: {
             backgroundColor: palette.cardBg,
             borderColor: c.accentColor || palette.cardBorder,
-            borderWidth: 1,
-            borderRadius: 14,
-            padding: "16px 20px",
+            borderWidth: 1.5,
+            borderRadius: 16,
+            padding: "18px 22px",
             color: palette.bodyColor,
             boxShadow: palette.cardShadow,
           },

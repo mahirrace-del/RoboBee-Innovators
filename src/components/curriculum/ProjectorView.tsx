@@ -85,15 +85,12 @@ export function ProjectorView({
 
   // Dynamic Theme Override ('auto' or one of the curated themes)
   const [themeOverride, setThemeOverride] = useState<SlideColorTheme | "auto">("auto");
-  const [showThemeMenu, setShowThemeMenu] = useState<boolean>(false);
+
+  // Zen Cinema Mode: Hides bars for clean presentation projection
+  const [isZenMode, setIsZenMode] = useState<boolean>(false);
 
   // Classroom Sound Effects (Web Audio synth toggle)
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-
-  // Auto-hiding Dock State
-  const [dockVisible, setDockVisible] = useState<boolean>(true);
-  const [dockPinned, setDockPinned] = useState<boolean>(false);
-  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Slide Thumbnail Filmstrip / Grid Overview Modal
   const [showThumbnailStrip, setShowThumbnailStrip] = useState<boolean>(false);
@@ -162,20 +159,6 @@ export function ProjectorView({
     themeOverride === "auto" ? activeSlide.theme : themeOverride;
   const activePalette = THEME_PALETTE_CONFIG[effectiveTheme] || THEME_PALETTE_CONFIG["robobee-dark"];
 
-  // Reset idle timer for dock auto-hide
-  const resetIdleTimer = useCallback(() => {
-    setDockVisible(true);
-    if (idleTimerRef.current) {
-      clearTimeout(idleTimerRef.current);
-    }
-    if (!dockPinned) {
-      idleTimerRef.current = setTimeout(() => {
-        setDockVisible(false);
-        setShowThemeMenu(false);
-      }, 3500);
-    }
-  }, [dockPinned]);
-
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
@@ -218,7 +201,6 @@ export function ProjectorView({
 
     return () => {
       document.body.style.overflow = "";
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       unsubInv();
       unsubSessions();
       unsubUsers();
@@ -309,8 +291,6 @@ export function ProjectorView({
   // Keyboard navigation shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      resetIdleTimer();
-
       if (showHardwareLab) {
         if (e.key === "Escape") {
           setShowHardwareLab(false);
@@ -326,8 +306,8 @@ export function ProjectorView({
       } else if (e.key === "Escape") {
         if (zoomedMedia) {
           setZoomedMedia(null);
-        } else if (showThemeMenu) {
-          setShowThemeMenu(false);
+        } else if (isZenMode) {
+          setIsZenMode(false);
         } else if (showThumbnailStrip) {
           setShowThumbnailStrip(false);
         } else if (showSpeakerNotes) {
@@ -352,7 +332,8 @@ export function ProjectorView({
       } else if (e.key.toLowerCase() === "m") {
         toggleSound();
       } else if (e.key.toLowerCase() === "z") {
-        toggleZoomCurrentSlide();
+        setIsZenMode((prev) => !prev);
+        playPop(soundEnabled);
       } else if (e.key.toLowerCase() === "n") {
         setShowSpeakerNotes((prev) => !prev);
       } else if (e.key.toLowerCase() === "h") {
@@ -368,12 +349,10 @@ export function ProjectorView({
     handleStepBackOrSlide,
     onClose,
     toggleFullScreen,
-    toggleZoomCurrentSlide,
     handleCelebrate,
     toggleSound,
-    resetIdleTimer,
+    isZenMode,
     zoomedMedia,
-    showThemeMenu,
     showThumbnailStrip,
     showHardwareLab,
     showSpeakerNotes,
@@ -424,11 +403,9 @@ export function ProjectorView({
       className={styles.projectorOverlay}
       onMouseMove={(e) => {
         setLaserPos({ x: e.clientX, y: e.clientY });
-        resetIdleTimer();
       }}
       onTouchStart={(e) => {
         touchStartX.current = e.touches[0]?.clientX ?? null;
-        resetIdleTimer();
       }}
       onTouchEnd={(e) => {
         if (touchStartX.current === null) return;
@@ -443,7 +420,7 @@ export function ProjectorView({
       }}
     >
       {/* Top Glowing Progress Bar */}
-      <div className={styles.topProgressBar}>
+      <div className={`${styles.topProgressBar} ${isZenMode ? styles.zenHidden : ""}`}>
         <div
           className={styles.topProgressBarFill}
           style={{
@@ -454,7 +431,7 @@ export function ProjectorView({
       </div>
 
       {/* Top Glassmorphic Studio Bar */}
-      <header className={styles.topBar}>
+      <header className={`${styles.topBar} ${isZenMode ? styles.zenHidden : ""}`}>
         <div className={styles.brandGroup}>
           <span className={styles.classCodeTag}>
             {activeDeck.classCode} • LIVE PRESENTATION
@@ -1023,246 +1000,189 @@ export function ProjectorView({
         </div>
       )}
 
-      {/* Hover Trigger Zone at very bottom of screen */}
-      <div
-        className={styles.dockHoverTrigger}
-        onMouseEnter={() => {
-          setDockVisible(true);
-        }}
-      />
+      {/* Dedicated Non-Overlapping Bottom Presenter Bar */}
+      <footer className={`${styles.bottomBar} ${isZenMode ? styles.zenHidden : ""}`}>
+        {/* Navigation Group (Left) */}
+        <div className={styles.barNavGroup}>
+          <button
+            type="button"
+            onClick={handleStepBackOrSlide}
+            disabled={safeSlideIndex === 0 && stepRevealCount === 0}
+            className={styles.barNavBtn}
+            title="Previous Step or Slide (ArrowLeft)"
+          >
+            <ArrowLeft size={14} />
+            <span>Prev</span>
+          </button>
 
-      {/* Floating Presenter Control Dock (Bottom) */}
-      <footer
-        className={`${styles.floatingDock} ${!dockVisible && !dockPinned ? styles.floatingDockHidden : ""}`}
-        onMouseEnter={() => {
-          if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-          setDockVisible(true);
-        }}
-        onMouseLeave={resetIdleTimer}
-      >
-        {/* Prev Slide Button */}
-        <button
-          type="button"
-          onClick={handleStepBackOrSlide}
-          disabled={safeSlideIndex === 0 && stepRevealCount === 0}
-          className={styles.dockNavBtn}
-          title="Previous Step or Slide (ArrowLeft)"
-        >
-          <ArrowLeft size={14} />
-          <span>Prev</span>
-        </button>
-
-        {/* Slide Counter Pill */}
-        <button
-          type="button"
-          onClick={() => {
-            setShowThumbnailStrip((prev) => !prev);
-            playPop(soundEnabled);
-          }}
-          className={styles.dockPillBtn}
-          style={{
-            borderColor: "#00F5D4",
-            background: "rgba(0, 245, 212, 0.16)",
-            color: "#00F5D4",
-            fontFamily: "monospace",
-            fontWeight: 900,
-          }}
-          title="Open Visual Slide Filmstrip"
-        >
-          <LayoutGrid size={13} />
-          <span>
-            {String(safeSlideIndex + 1).padStart(2, "0")} / {String(totalSlides).padStart(2, "0")}
-          </span>
-        </button>
-
-        {/* Next Slide / Step Button */}
-        <button
-          type="button"
-          onClick={handleAdvanceStepOrSlide}
-          disabled={safeSlideIndex === totalSlides - 1 && stepRevealCount >= stepRevealElements.length}
-          className={styles.dockNextBtn}
-          title="Advance Step or Slide (Space / ArrowRight)"
-        >
-          <span>Next</span>
-          <ArrowRight size={14} />
-        </button>
-
-        <div className={styles.dockDivider} />
-
-        {/* Compact Theme Popover Trigger */}
-        <div style={{ position: "relative" }}>
           <button
             type="button"
             onClick={() => {
-              setShowThemeMenu((prev) => !prev);
+              setShowThumbnailStrip((prev) => !prev);
               playPop(soundEnabled);
             }}
-            className={`${styles.dockPillBtn} ${showThemeMenu ? styles.dockPillBtnActive : ""}`}
-            title="Choose Slide Color Palette"
+            className={styles.barSlideCounterPill}
+            title="Open Visual Slide Filmstrip"
           >
-            <Palette size={13} color="#38BDF8" />
-            <span style={{ maxWidth: "110px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {themeOverride === "auto" ? "Theme: Auto" : activePalette.name}
+            <LayoutGrid size={13} />
+            <span>
+              {String(safeSlideIndex + 1).padStart(2, "0")} / {String(totalSlides).padStart(2, "0")}
             </span>
           </button>
 
-          {/* Floating Theme Popover */}
-          {showThemeMenu && (
-            <div className={styles.themePopover}>
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 900,
-                  color: "#94A3B8",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  padding: "4px 8px",
-                  borderBottom: "1px solid rgba(255,255,255,0.08)",
-                  marginBottom: "4px",
-                }}
-              >
-                🎨 Slide Theme Palette
-              </div>
-              {[
-                { id: "auto", name: "Auto Dynamic Theme", color: "#00F5D4" },
-                { id: "daylight-studio", name: "Apple Keynote Pure Light", color: "#2563EB" },
-                { id: "robobee-dark", name: "RoboBee Solar Dark", color: "#F5B800" },
-                { id: "electric-indigo", name: "Cyber Twilight High Energy", color: "#818CF8" },
-                { id: "arduino-teal", name: "Hardware Lab Emerald", color: "#2DD4BF" },
-                { id: "cyber-blueprint", name: "Arcade Blueprint Neon", color: "#FB923C" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => {
-                    setThemeOverride(t.id as SlideColorTheme | "auto");
-                    setShowThemeMenu(false);
-                    playPop(soundEnabled);
-                  }}
-                  className={`${styles.themeOptionBtn} ${themeOverride === t.id ? styles.themeOptionBtnActive : ""}`}
-                >
-                  <span
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      background: t.color,
-                      flexShrink: 0,
-                      boxShadow: `0 0 8px ${t.color}`,
-                    }}
-                  />
-                  <span style={{ flex: 1 }}>{t.name}</span>
-                  {themeOverride === t.id && <Check size={14} color="#00F5D4" />}
-                </button>
-              ))}
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={handleAdvanceStepOrSlide}
+            disabled={safeSlideIndex === totalSlides - 1 && stepRevealCount >= stepRevealElements.length}
+            className={styles.barNextBtn}
+            title="Advance Step or Slide (Space / ArrowRight)"
+          >
+            <span>Next</span>
+            <ArrowRight size={14} />
+          </button>
         </div>
 
-        {/* Classroom Sound Effects Toggle */}
-        <button
-          type="button"
-          onClick={toggleSound}
-          className={`${styles.dockPillBtn} ${soundEnabled ? styles.dockPillBtnActive : ""}`}
-          title={soundEnabled ? "Mute classroom sound effects (Key: M)" : "Enable classroom sound effects (Key: M)"}
-        >
-          {soundEnabled ? <Volume2 size={13} color="#00F5D4" /> : <VolumeX size={13} color="#94A3B8" />}
-          <span>{soundEnabled ? "Sound ON" : "Muted"}</span>
-        </button>
+        {/* Center Theme Palette Selector (Inline Chips — Zero Overlap!) */}
+        <div className={styles.themeSelectorGroup}>
+          <span className={styles.themeLabel}>Theme</span>
+          {[
+            { id: "auto", name: "Auto", color: "#00F5D4" },
+            { id: "daylight-studio", name: "Pure Light", color: "#2563EB" },
+            { id: "robobee-dark", name: "Solar Dark", color: "#F5B800" },
+            { id: "electric-indigo", name: "Cyber Twilight", color: "#818CF8" },
+            { id: "arduino-teal", name: "Lab Emerald", color: "#2DD4BF" },
+            { id: "cyber-blueprint", name: "Neon Quest", color: "#FB923C" },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                setThemeOverride(t.id as SlideColorTheme | "auto");
+                playPop(soundEnabled);
+              }}
+              className={`${styles.themeChip} ${themeOverride === t.id ? styles.themeChipActive : ""}`}
+              title={`Switch presentation theme to ${t.name}`}
+            >
+              <span
+                className={styles.themeChipDot}
+                style={{
+                  background: t.color,
+                  boxShadow: `0 0 6px ${t.color}`,
+                }}
+              />
+              <span>{t.name}</span>
+            </button>
+          ))}
+        </div>
 
-        {/* Celebration Confetti Cannon */}
-        <button
-          type="button"
-          onClick={handleCelebrate}
-          className={styles.dockPillBtn}
-          style={{
-            background: "linear-gradient(90deg, rgba(245, 184, 0, 0.2), rgba(244, 63, 94, 0.2))",
-            border: "1px solid rgba(245, 184, 0, 0.45)",
-            color: "#FBBF24",
-          }}
-          title="Celebrate student achievement with Confetti & Fanfare! (Key: C)"
-        >
-          <Sparkles size={13} color="#FBBF24" />
-          <span>Celebrate (C)</span>
-        </button>
+        {/* Tools Group (Right) */}
+        <div className={styles.barToolsGroup}>
+          {/* Laser Pointer (L) */}
+          <button
+            type="button"
+            onClick={() => {
+              setLaserActive((prev) => !prev);
+              setSpotlightActive(false);
+              playPop(soundEnabled);
+            }}
+            className={`${styles.barToolBtn} ${laserActive ? styles.barToolBtnActive : ""}`}
+            style={
+              laserActive
+                ? { background: "rgba(244, 63, 94, 0.25)", borderColor: "#F43F5E", color: "#FDA4AF" }
+                : undefined
+            }
+            title="Toggle Glowing Laser Pointer (Key: L)"
+          >
+            <Crosshair size={13} color={laserActive ? "#F43F5E" : "#00F5D4"} />
+            <span>Laser (L)</span>
+          </button>
 
-        <div className={styles.dockDivider} />
+          {/* Spotlight Tool (S) */}
+          <button
+            type="button"
+            onClick={() => {
+              setSpotlightActive((prev) => !prev);
+              setLaserActive(false);
+              playPop(soundEnabled);
+            }}
+            className={`${styles.barToolBtn} ${spotlightActive ? styles.barToolBtnActive : ""}`}
+            title="Toggle Focused Spotlight on Stage (Key: S)"
+          >
+            <Sun size={13} color={spotlightActive ? "#00F5D4" : "#E2E8F0"} />
+            <span>Spotlight (S)</span>
+          </button>
 
-        {/* Glowing Laser Pointer (L) */}
-        <button
-          type="button"
-          onClick={() => {
-            setLaserActive((prev) => !prev);
-            setSpotlightActive(false);
-            playPop(soundEnabled);
-          }}
-          className={`${styles.dockPillBtn} ${laserActive ? styles.dockPillBtnActive : ""}`}
-          style={
-            laserActive
-              ? { background: "rgba(244, 63, 94, 0.25)", borderColor: "#F43F5E", color: "#FDA4AF" }
-              : undefined
-          }
-          title="Toggle Glowing Laser Pointer (Key: L)"
-        >
-          <Crosshair size={13} color={laserActive ? "#F43F5E" : "#00F5D4"} />
-          <span>Laser (L)</span>
-        </button>
+          {/* Celebration Confetti Cannon (C) */}
+          <button
+            type="button"
+            onClick={handleCelebrate}
+            className={styles.barToolBtn}
+            style={{
+              background: "linear-gradient(90deg, rgba(245, 184, 0, 0.2), rgba(244, 63, 94, 0.2))",
+              border: "1px solid rgba(245, 184, 0, 0.45)",
+              color: "#FBBF24",
+            }}
+            title="Celebrate student achievement with Confetti & Fanfare! (Key: C)"
+          >
+            <Sparkles size={13} color="#FBBF24" />
+            <span>Celebrate (C)</span>
+          </button>
 
-        {/* Focused Spotlight Tool (S) */}
-        <button
-          type="button"
-          onClick={() => {
-            setSpotlightActive((prev) => !prev);
-            setLaserActive(false);
-            playPop(soundEnabled);
-          }}
-          className={`${styles.dockPillBtn} ${spotlightActive ? styles.dockPillBtnActive : ""}`}
-          title="Toggle Focused Spotlight on Stage (Key: S)"
-        >
-          <Sun size={13} color={spotlightActive ? "#00F5D4" : "#E2E8F0"} />
-          <span>Spotlight (S)</span>
-        </button>
+          {/* Sound Toggle (M) */}
+          <button
+            type="button"
+            onClick={toggleSound}
+            className={`${styles.barToolBtn} ${soundEnabled ? styles.barToolBtnActive : ""}`}
+            title={soundEnabled ? "Mute classroom sound effects (Key: M)" : "Enable classroom sound effects (Key: M)"}
+          >
+            {soundEnabled ? <Volume2 size={13} color="#00F5D4" /> : <VolumeX size={13} color="#94A3B8" />}
+            <span>{soundEnabled ? "Sound ON" : "Muted"}</span>
+          </button>
 
-        {/* Hardware Lab Simulator (H) */}
-        <button
-          type="button"
-          onClick={() => {
-            setShowHardwareLab(true);
-            playPop(soundEnabled);
-          }}
-          className={styles.dockPillBtn}
-          style={{
-            background: "rgba(16, 185, 129, 0.16)",
-            border: "1px solid #10B981",
-            color: "#6EE7B7",
-          }}
-          title="Open Virtual Breadboard & Circuit Simulator (Key: H)"
-        >
-          <Cpu size={13} color="#10B981" />
-          <span>Lab Sim (H)</span>
-        </button>
+          {/* Hardware Lab Simulator (H) */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowHardwareLab(true);
+              playPop(soundEnabled);
+            }}
+            className={styles.barToolBtn}
+            style={{
+              background: "rgba(16, 185, 129, 0.16)",
+              border: "1px solid #10B981",
+              color: "#6EE7B7",
+            }}
+            title="Open Virtual Breadboard & Circuit Simulator (Key: H)"
+          >
+            <Cpu size={13} color="#10B981" />
+            <span>Lab Sim (H)</span>
+          </button>
 
-        {/* Speaker Notes Toggle (N) */}
-        <button
-          type="button"
-          onClick={() => setShowSpeakerNotes((prev) => !prev)}
-          className={`${styles.dockPillBtn} ${showSpeakerNotes ? styles.dockPillBtnActive : ""}`}
-          title="Toggle Speaker Notes Prompt Drawer (Key: N)"
-        >
-          <BookOpen size={13} color="#38BDF8" />
-          <span>Notes (N)</span>
-        </button>
+          {/* Speaker Notes (N) */}
+          <button
+            type="button"
+            onClick={() => setShowSpeakerNotes((prev) => !prev)}
+            className={`${styles.barToolBtn} ${showSpeakerNotes ? styles.barToolBtnActive : ""}`}
+            title="Toggle Speaker Notes Prompt Drawer (Key: N)"
+          >
+            <BookOpen size={13} color="#38BDF8" />
+            <span>Notes (N)</span>
+          </button>
 
-        {/* Dock Pin / Auto-Hide Mode Toggle */}
-        <button
-          type="button"
-          onClick={() => setDockPinned((prev) => !prev)}
-          className={`${styles.dockPillBtn} ${dockPinned ? styles.dockPillBtnActive : ""}`}
-          title={dockPinned ? "Dock is Pinned Permanently (Click for Auto-Hide)" : "Click to Pin Dock Permanently"}
-        >
-          {dockPinned ? <Pin size={12} color="#00F5D4" /> : <PinOff size={12} color="#94A3B8" />}
-          <span>{dockPinned ? "Pinned" : "Auto-Hide"}</span>
-        </button>
+          {/* Zen Cinema Mode (Z) */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsZenMode((prev) => !prev);
+              playPop(soundEnabled);
+            }}
+            className={`${styles.barToolBtn} ${isZenMode ? styles.barToolBtnActive : ""}`}
+            title="Zen Cinema Mode — Hide Top & Bottom Bars (Key: Z / Esc to exit)"
+          >
+            <Maximize size={13} color={isZenMode ? "#00F5D4" : "#E2E8F0"} />
+            <span>Zen (Z)</span>
+          </button>
+        </div>
       </footer>
 
       {/* Glowing Laser Pointer Particle */}

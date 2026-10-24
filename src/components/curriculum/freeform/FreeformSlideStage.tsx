@@ -475,6 +475,7 @@ export function FreeformSlideStage({
                 {/* Element Render Body */}
                 <ElementRenderer
                   element={el}
+                  palette={palette}
                   isEditorMode={isEditor}
                   isSelected={isSelected}
                   isEditing={isEditing}

@@ -28,11 +28,12 @@
 
 /* Top Header Bar */
 .topBar {
+  height: 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.65rem 1.4rem;
-  background: rgba(11, 15, 25, 0.88);
+  padding: 0 1.25rem;
+  background: rgba(11, 15, 25, 0.94);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
@@ -43,48 +44,48 @@
 .brandGroup {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .classCodeTag {
   background: rgba(0, 245, 212, 0.16);
   color: #00F5D4;
   border: 1px solid rgba(0, 245, 212, 0.35);
-  padding: 0.28rem 0.75rem;
+  padding: 0.22rem 0.65rem;
   border-radius: 999px;
   font-weight: 900;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .classTitleText {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 380px;
+  max-width: 320px;
 }
 
 /* Rhythm Timer Widget */
 .timerWidget {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 0.28rem 0.65rem;
+  padding: 0.24rem 0.6rem;
   border-radius: 999px;
 }
 
 .timerClock {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 900;
   color: #00F5D4;
-  min-width: 48px;
+  min-width: 44px;
   text-align: center;
 }
 
@@ -92,8 +93,8 @@
   background: transparent;
   border: none;
   color: #cbd5e1;
-  padding: 3px 6px;
-  border-radius: 6px;
+  padding: 2px 5px;
+  border-radius: 5px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -107,9 +108,9 @@
 }
 
 .timerDurationPill {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 999px;
   cursor: pointer;
   border: none;
@@ -120,7 +121,7 @@
 .controlsGroup {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
 }
 
 .actionBtn {
@@ -128,13 +129,13 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #e2e8f0;
   border-radius: 8px;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -155,7 +156,10 @@
   color: #ffffff;
 }
 
-/* Main Presentation Area: Reserves 5.5rem bottom margin so stage never touches dock! */
+/* Main Presentation Area:
+   Guarantees 100% NON-OVERLAPPING presentation stage!
+   The slide canvas scales smoothly within this exact container,
+   which is bounded strictly between topBar and bottomBar. */
 .presentationStageArea {
   flex: 1;
   min-height: 0;
@@ -165,58 +169,42 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem 5.5rem 1.5rem;
+  padding: 0.5rem 1.25rem;
   overflow: hidden;
   box-sizing: border-box;
 }
 
-/* Subtle trigger zone at bottom of screen to restore dock if hidden */
-.dockHoverTrigger {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 35px;
-  z-index: 1000000;
-  pointer-events: auto;
+/* Dedicated Non-Overlapping Bottom Presenter Bar */
+.bottomBar {
+  height: 58px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  background: rgba(11, 15, 25, 0.96);
+  backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 1000;
+  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.6);
+  gap: 0.75rem;
 }
 
-/* Floating Presenter Control Dock (Bottom Center) */
-.floatingDock {
-  position: fixed;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
-  z-index: 1000002;
+/* Navigation Group (Left) */
+.barNavGroup {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.45rem 0.85rem;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(24px);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 24px rgba(0, 245, 212, 0.12);
-  max-width: 96vw;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: auto;
 }
 
-.floatingDockHidden {
-  opacity: 0;
-  transform: translateX(-50%) translateY(28px);
-  pointer-events: none;
-}
-
-/* Dock Buttons */
-.dockNavBtn {
+.barNavBtn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.42rem 0.85rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.09);
   color: #ffffff;
   font-weight: 800;
   font-size: 0.78rem;
@@ -224,38 +212,60 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dockNavBtn:hover:not(:disabled) {
+.barNavBtn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
-.dockNavBtn:disabled {
+.barNavBtn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-.dockNextBtn {
+.barSlideCounterPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 245, 212, 0.4);
+  background: rgba(0, 245, 212, 0.14);
+  color: #00F5D4;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.barSlideCounterPill:hover {
+  background: rgba(0, 245, 212, 0.24);
+  border-color: #00F5D4;
+  transform: translateY(-1px);
+}
+
+.barNextBtn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.42rem 0.95rem;
+  padding: 0.42rem 1rem;
   border-radius: 999px;
   border: none;
   background: linear-gradient(90deg, #00F5D4, #38BDF8);
   color: #0F172A;
   font-weight: 900;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 245, 212, 0.35);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dockNextBtn:hover:not(:disabled) {
+.barNextBtn:hover:not(:disabled) {
   box-shadow: 0 6px 20px rgba(0, 245, 212, 0.55);
   transform: translateY(-1px);
 }
 
-.dockNextBtn:disabled {
+.barNextBtn:disabled {
   opacity: 0.35;
   background: rgba(255, 255, 255, 0.12);
   color: #64748B;
@@ -263,106 +273,128 @@
   cursor: not-allowed;
 }
 
-.dockPillBtn {
+/* Center Horizontal Theme Palette Selector (Zero Overlap!) */
+.themeSelectorGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 3px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.themeLabel {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-right: 2px;
+  padding-left: 6px;
+}
+
+.themeChip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.42rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
-  font-size: 0.76rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dockPillBtn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-}
-
-.dockPillBtnActive {
-  background: rgba(0, 245, 212, 0.22);
-  border-color: #00F5D4;
-  color: #00F5D4;
-}
-
-.dockDivider {
-  width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.16);
-  margin: 0 2px;
-}
-
-/* Floating Theme Popover */
-.themePopover {
-  position: absolute;
-  bottom: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(255, 255, 255, 0.22);
-  border-radius: 20px;
-  padding: 0.85rem;
-  display: flex;
-  flex-direction: column;
   gap: 0.35rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-  min-width: 260px;
-  z-index: 1000003;
-}
-
-.themeOptionBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 12px;
+  padding: 0.26rem 0.55rem;
+  border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
   color: #cbd5e1;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
-  text-align: left;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.themeOptionBtn:hover {
-  background: rgba(255, 255, 255, 0.08);
+.themeChip:hover {
+  background: rgba(255, 255, 255, 0.09);
   color: #ffffff;
 }
 
-.themeOptionBtnActive {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: #38BDF8;
-  color: #38BDF8;
+.themeChipActive {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
   font-weight: 900;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.12);
+}
+
+.themeChipDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Tools Group (Right) */
+.barToolsGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.barToolBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.barToolBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.barToolBtnActive {
+  background: rgba(0, 245, 212, 0.2);
+  border-color: #00F5D4;
+  color: #00F5D4;
 }
 
 /* Glowing Laser Dot */
 .laserDot {
   position: fixed;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffffff 15%, #f43f5e 65%);
+  background: radial-gradient(circle, #ffffff 20%, #f43f5e 70%);
   box-shadow: 0 0 20px 8px rgba(244, 63, 94, 0.9), 0 0 45px 15px rgba(0, 245, 212, 0.45);
   pointer-events: none;
   z-index: 1000005;
   transform: translate(-50%, -50%);
 }
 
+/* Zen Mode: Hide Header & Footer for Borderless Cinema Screen */
+.zenHidden {
+  display: none !important;
+}
+
 /* Responsive adjustments */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .classTitleText {
     display: none;
   }
-  .floatingDock {
-    gap: 0.35rem;
-    padding: 0.35rem 0.6rem;
+  .themeLabel {
+    display: none;
+  }
+  .themeChip span:not(.themeChipDot) {
+    display: none;
+  }
+  .themeChip {
+    padding: 0.35rem 0.45rem;
   }
 }
