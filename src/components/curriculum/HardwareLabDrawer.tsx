@@ -26,7 +26,10 @@ interface HardwareLabDrawerProps {
   lesson?: RoboticsLesson;
   onClose: () => void;
   onLaunchProjector?: () => void;
-  onSubmitExitTicket?: (answers: Record<number, string>) => Promise<void>;
+  onSubmitExitTicket?: (
+    answers: Record<number, string>,
+    meta?: { studentName: string; studentEmail: string }
+  ) => Promise<void>;
 }
 
 export function HardwareLabDrawer({
@@ -62,6 +65,8 @@ export function HardwareLabDrawer({
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
 
   // Exit check state
+  const [studentName, setStudentName] = useState<string>("");
+  const [studentEmail, setStudentEmail] = useState<string>("");
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
   const [revealedRubric, setRevealedRubric] = useState<Record<number, boolean>>({});
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -855,39 +860,163 @@ export function HardwareLabDrawer({
                     </div>
                   ))}
 
-                  {onSubmitExitTicket && (
-                    <button
-                      type="button"
-                      disabled={submitting}
-                      onClick={async () => {
-                        setSubmitting(true);
-                        try {
-                          await onSubmitExitTicket(quizAnswers);
-                          setSubmittedSuccess(true);
-                        } finally {
-                          setSubmitting(false);
-                        }
-                      }}
-                      style={{
-                        background: submittedSuccess
-                          ? "#10B981"
-                          : "linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)",
-                        color: "#090D16",
-                        border: "none",
-                        borderRadius: "12px",
-                        padding: "0.75rem 1.25rem",
-                        fontSize: "0.9rem",
-                        fontWeight: 900,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {submittedSuccess
-                        ? "✓ Exit Check Submitted (+100 RoboXP)!"
-                        : submitting
-                        ? "Submitting..."
-                        : "Submit Exit Check (+100 RoboXP)"}
-                    </button>
-                  )}
+                  {/* Student Attribution & Submit Action */}
+                  <div
+                    style={{
+                      background: "#090D16",
+                      border: "1px solid #1E293B",
+                      borderRadius: "14px",
+                      padding: "1.1rem 1.25rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.85rem",
+                      marginTop: "0.5rem",
+                    }}
+                  >
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#CBD5E1", marginBottom: "0.3rem" }}>
+                          Student Name / Call-Sign
+                        </label>
+                        <input
+                          type="text"
+                          value={studentName}
+                          onChange={(e) => setStudentName(e.target.value)}
+                          placeholder="e.g. Aarav Sharma"
+                          style={{
+                            width: "100%",
+                            padding: "0.55rem 0.75rem",
+                            borderRadius: "8px",
+                            background: "#0F172A",
+                            border: "1px solid #334155",
+                            color: "#FFFFFF",
+                            fontSize: "0.82rem",
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#CBD5E1", marginBottom: "0.3rem" }}>
+                          Student Email / ID
+                        </label>
+                        <input
+                          type="email"
+                          value={studentEmail}
+                          onChange={(e) => setStudentEmail(e.target.value)}
+                          placeholder="e.g. student@robobee.academy"
+                          style={{
+                            width: "100%",
+                            padding: "0.55rem 0.75rem",
+                            borderRadius: "8px",
+                            background: "#0F172A",
+                            border: "1px solid #334155",
+                            color: "#FFFFFF",
+                            fontSize: "0.82rem",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {submittedSuccess ? (
+                      <div
+                        style={{
+                          padding: "0.9rem 1.1rem",
+                          borderRadius: "10px",
+                          background: "rgba(16, 185, 129, 0.15)",
+                          border: "1px solid #10B981",
+                          color: "#34D399",
+                          fontSize: "0.88rem",
+                          fontWeight: 800,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "0.75rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <CheckCircle2 size={18} color="#10B981" />
+                          <span>
+                            Exit Check Submitted Successfully (+100 RoboXP)! Reflection logged for{" "}
+                            <strong>{studentName || "Student"}</strong>.
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSubmittedSuccess(false)}
+                          style={{
+                            padding: "0.35rem 0.75rem",
+                            borderRadius: "6px",
+                            background: "#0F172A",
+                            border: "1px solid #10B981",
+                            color: "#FFFFFF",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Submit Another
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={submitting}
+                        onClick={async () => {
+                          setSubmitting(true);
+                          try {
+                            if (onSubmitExitTicket) {
+                              await onSubmitExitTicket(quizAnswers, {
+                                studentName: studentName.trim() || "Student Member",
+                                studentEmail: studentEmail.trim() || "student@robobee.academy",
+                              });
+                            } else {
+                              // Local storage fallback
+                              const newSub = {
+                                id: `sub-local-${Date.now()}`,
+                                classCode: deck.classCode,
+                                lessonId: deck.id,
+                                userId: studentName.trim() || "Student Member",
+                                userEmail: studentEmail.trim() || "student@robobee.academy",
+                                answers: quizAnswers,
+                                submittedAt: new Date().toISOString(),
+                              };
+                              try {
+                                const stored = JSON.parse(
+                                  localStorage.getItem("robobee_curriculum_submissions_v1") || "[]"
+                                );
+                                localStorage.setItem(
+                                  "robobee_curriculum_submissions_v1",
+                                  JSON.stringify([newSub, ...stored])
+                                );
+                              } catch {}
+                            }
+                            setSubmittedSuccess(true);
+                          } catch (err) {
+                            console.error("Failed to submit exit ticket:", err);
+                          } finally {
+                            setSubmitting(false);
+                          }
+                        }}
+                        style={{
+                          background: "linear-gradient(135deg, #F5B800 0%, #D97706 100%)",
+                          color: "#090D16",
+                          border: "none",
+                          borderRadius: "12px",
+                          padding: "0.8rem 1.4rem",
+                          fontSize: "0.92rem",
+                          fontWeight: 900,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "0.5rem",
+                          boxShadow: "0 4px 15px rgba(245, 184, 0, 0.3)",
+                        }}
+                      >
+                        <Sparkles size={16} />
+                        {submitting ? "Submitting Reflection..." : "Submit Student Exit Check (+100 RoboXP)"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

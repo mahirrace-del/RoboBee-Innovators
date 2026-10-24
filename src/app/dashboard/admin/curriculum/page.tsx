@@ -24,6 +24,10 @@ import {
 } from "@/lib/slideStudioStore";
 import { SlideStudioEditor } from "@/components/curriculum/SlideStudioEditor";
 import { HardwareLabDrawer } from "@/components/curriculum/HardwareLabDrawer";
+import { AttendanceQuickModal } from "@/components/curriculum/AttendanceQuickModal";
+import { FieldGuideModal } from "@/components/curriculum/FieldGuideModal";
+import { LessonPlanModal } from "@/components/curriculum/LessonPlanModal";
+import { ClassProgressionRoadmap } from "@/components/curriculum/ClassProgressionRoadmap";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import {
@@ -31,6 +35,8 @@ import {
   doc,
   onSnapshot,
   setDoc,
+  addDoc,
+  serverTimestamp,
   query,
   orderBy,
   limit,
@@ -55,19 +61,29 @@ import {
   X,
   MoreHorizontal,
   Settings,
+  RefreshCw,
+  GitMerge,
+  LayoutGrid,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  Sparkles,
 } from "lucide-react";
 
 export default function AdminCurriculumPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"library" | "submissions">(
-    "library"
+
+  // Primary View Mode: Progression Roadmap vs. Grid Library vs. Submissions
+  const [viewMode, setViewMode] = useState<"roadmap" | "grid" | "submissions">(
+    "roadmap"
   );
 
-  // All 36 Canonical Lessons + Any Custom Created Decks
+  // All Canonical Lessons + Any Custom Created Decks
   const [decks, setDecks] = useState<EditableClassDeck[]>([]);
 
-  // Course Pathway Filter ('beginner' default so instructors immediately see Beginner 01–10, or switch across all 4 courses)
-  const [courseFilter, setCourseFilter] = useState<"ALL" | CourseTier>("beginner");
+  // Course Pathway Filter ('ALL' by default so instructors immediately see all 36 classes across all 4 pathways)
+  const [courseFilter, setCourseFilter] = useState<"ALL" | CourseTier>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Header "Data & Backup" Dropdown & Per-Card "•••" Menu State
@@ -75,13 +91,27 @@ export default function AdminCurriculumPage() {
   const [openCardMenuId, setOpenCardMenuId] = useState<string | null>(null);
 
   // Active Modals / Drawers
-  const [projectorDeck, setProjectorDeck] = useState<EditableClassDeck | null>(
-    null
-  );
+  const [projectorDeck, setProjectorDeck] = useState<EditableClassDeck | null>(null);
   const [projectorInitialSlide, setProjectorInitialSlide] = useState<number>(0);
   const [studioDeck, setStudioDeck] = useState<EditableClassDeck | null>(null);
-  const [hardwareLabDeck, setHardwareLabDeck] =
-    useState<EditableClassDeck | null>(null);
+  const [hardwareLabDeck, setHardwareLabDeck] = useState<EditableClassDeck | null>(null);
+
+  // Quick modals for Attendance, Field Guide, and Lesson Plan
+  const [showAttendanceModal, setShowAttendanceModal] = useState<boolean>(false);
+  const [showFieldGuideModal, setShowFieldGuideModal] = useState<boolean>(false);
+  const [selectedLessonPlanDeck, setSelectedLessonPlanDeck] = useState<EditableClassDeck | null>(null);
+
+  // Student submission detailed inspection & manual recording modals
+  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  const [showLogSubmissionModal, setShowLogSubmissionModal] = useState<boolean>(false);
+  const [logSubClassCode, setLogSubClassCode] = useState<string>("BEGINNER 01");
+  const [logSubStudentName, setLogSubStudentName] = useState<string>("");
+  const [logSubStudentEmail, setLogSubStudentEmail] = useState<string>("");
+  const [logSubQ1, setLogSubQ1] = useState<string>("");
+  const [logSubQ2, setLogSubQ2] = useState<string>("");
+  const [logSubQ3, setLogSubQ3] = useState<string>("");
+  const [logSubQ4, setLogSubQ4] = useState<string>("");
+  const [loggingSub, setLoggingSub] = useState<boolean>(false);
 
   // "+ Create New Class Presentation" Modal State
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
@@ -89,8 +119,7 @@ export default function AdminCurriculumPage() {
   const [newClassTitle, setNewClassTitle] = useState<string>("");
   const [newClassSubtitle, setNewClassSubtitle] = useState<string>("");
   const [newClassCourse, setNewClassCourse] = useState<CourseTier>("beginner");
-  const [newClassTrack, setNewClassTrack] =
-    useState<ClassTrackCategory>("Foundation Track");
+  const [newClassTrack, setNewClassTrack] = useState<ClassTrackCategory>("Foundation Track");
   const [newClassCover, setNewClassCover] = useState<string>(
     "/illustrations/class1-external-blink-wiring.svg"
   );
@@ -136,14 +165,28 @@ export default function AdminCurriculumPage() {
             }
           });
           setClassStatuses((prev) => ({ ...prev, ...updates }));
+        },
+        (error) => {
+          console.warn("Firestore status listener note (using local status map):", error);
         }
       );
       return () => unsub();
     } catch {}
   }, []);
 
-  // Load submissions from Firestore
+  // Load submissions from LocalStorage + Firestore
   useEffect(() => {
+    // Initial local submissions fallback
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("robobee_curriculum_submissions_v1") || "[]"
+      );
+      if (Array.isArray(stored) && stored.length > 0) {
+        setSubmissions(stored);
+        setLoadingSubs(false);
+      }
+    } catch {}
+
     try {
       const q = query(
         collection(db, "curriculum_submissions"),
@@ -157,10 +200,16 @@ export default function AdminCurriculumPage() {
           snapshot.forEach((docSnap) => {
             subs.push({ id: docSnap.id, ...docSnap.data() });
           });
-          setSubmissions(subs);
+          if (subs.length > 0) {
+            setSubmissions(subs);
+            try {
+              localStorage.setItem("robobee_curriculum_submissions_v1", JSON.stringify(subs));
+            } catch {}
+          }
           setLoadingSubs(false);
         },
-        () => {
+        (error) => {
+          console.warn("Firestore submissions listener note (using local cache):", error);
           setLoadingSubs(false);
         }
       );
@@ -169,6 +218,42 @@ export default function AdminCurriculumPage() {
       setLoadingSubs(false);
     }
   }, []);
+
+  // Submit student exit check reflection
+  const handleSubmitExitTicket = async (data: {
+    classCode: string;
+    lessonId: string;
+    userId: string;
+    userEmail: string;
+    answers: Record<number, string>;
+  }) => {
+    const newSub = {
+      id: `sub-${Date.now()}`,
+      ...data,
+      submittedAt: new Date().toISOString(),
+    };
+    setSubmissions((prev) => [newSub, ...prev]);
+
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("robobee_curriculum_submissions_v1") || "[]"
+      );
+      localStorage.setItem(
+        "robobee_curriculum_submissions_v1",
+        JSON.stringify([newSub, ...stored])
+      );
+    } catch {}
+
+    try {
+      await addDoc(collection(db, "curriculum_submissions"), {
+        ...data,
+        submittedAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.warn("Saved exit ticket locally (Firestore sync error):", err);
+    }
+  };
 
   const updateStatus = async (classId: string, newStatus: ClassStatus) => {
     setClassStatuses((prev) => ({ ...prev, [classId]: newStatus }));
@@ -349,6 +434,24 @@ export default function AdminCurriculumPage() {
     e.target.value = "";
   };
 
+  // Reset to default seed decks
+  const handleResetToDefaults = () => {
+    setShowDataMenu(false);
+    if (
+      !confirm(
+        "Reset all classes to the canonical 36 curriculum workshops with default 12-slide structured decks?"
+      )
+    ) {
+      return;
+    }
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("robobee_curriculum_decks_v2");
+    }
+    const fresh = loadDecksFromStorage();
+    setDecks(fresh);
+    alert("Curriculum reset to canonical 36 classes (432 slides).");
+  };
+
   // Resolve courseId for each deck
   const resolveDeckCourseId = (deck: EditableClassDeck): CourseTier => {
     if (deck.courseId) return deck.courseId;
@@ -358,7 +461,7 @@ export default function AdminCurriculumPage() {
     return "beginner";
   };
 
-  // Filtered Decks
+  // Filtered Decks for Grid View
   const filteredDecks = decks.filter((d) => {
     const cId = resolveDeckCourseId(d);
     const matchesCourse = courseFilter === "ALL" || cId === courseFilter;
@@ -376,14 +479,20 @@ export default function AdminCurriculumPage() {
     0
   );
 
+  const unlockedCount = decks.filter(
+    (d) => (classStatuses[d.id] || d.status || "published") !== "locked"
+  ).length;
+
+  const lockedCount = decks.filter(
+    (d) => (classStatuses[d.id] || d.status || "published") === "locked"
+  ).length;
+
   return (
     <div
       className={styles.pageContainer}
       style={{
         background: "#161B26",
         color: "#FFFFFF",
-        minHeight: "100vh",
-        padding: "1.75rem",
       }}
       onClick={() => {
         if (openCardMenuId) setOpenCardMenuId(null);
@@ -399,370 +508,240 @@ export default function AdminCurriculumPage() {
         style={{ display: "none" }}
       />
 
-      {/* Editorial Engineering Header */}
-      <div
-        className={styles.headerRow}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-          gap: "1rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <div className={styles.titleArea} style={{ maxWidth: "720px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.25rem 0.7rem",
-              borderRadius: "6px",
-              background: "rgba(107, 15, 36, 0.45)",
-              border: "1px solid #6B0F24",
-              color: "#F5B800",
-              fontSize: "0.72rem",
-              fontWeight: 800,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              marginBottom: "0.5rem",
-            }}
-          >
+      {/* Modern High-End Engineering Header */}
+      <div className={styles.headerRow}>
+        <div className={styles.titleArea}>
+          <div className={styles.titleBadge}>
             ROBOBEE INNOVATORS • INSTRUCTOR &amp; ADMIN STUDIO
           </div>
-          <h1
-            style={{
-              margin: "0 0 0.4rem 0",
-              fontSize: "1.75rem",
-              fontWeight: 800,
-              color: "#FFFFFF",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.6rem",
-            }}
-          >
-            <Radio size={24} color="#F5B800" />
+          <h1 className={styles.titleHeading}>
+            <Radio size={26} color="#F5B800" />
             Curriculum &amp; Classroom Studio
           </h1>
-          <p style={{ margin: 0, color: "#94A3B8", fontSize: "0.92rem", lineHeight: 1.55 }}>
-            36 proposed 120-minute (2-hour) robotics lessons across 4 course pathways. Launch{" "}
-            <strong style={{ color: "#FFFFFF" }}>Present Class</strong> for classroom delivery or{" "}
-            <strong style={{ color: "#FFFFFF" }}>Edit / Manage</strong> to customize slides, diagrams, and bench tools.
+          <p className={styles.titleDesc}>
+            Comprehensive 120-minute hands-on robotics curriculum across 4 progressive course pathways.
+            Launch live presentation decks, simulate circuits, and manage lab bench progress.
           </p>
         </div>
 
-        {/* Clean Top Header Actions (including tucked Data & Backup menu) */}
-        <div
-          style={{
-            display: "flex",
-            gap: "0.6rem",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Link
-            href="/dashboard/admin/attendance"
-            style={{
-              padding: "0.55rem 0.9rem",
-              fontSize: "0.8rem",
-              fontWeight: 700,
-              borderRadius: "8px",
-              background: "#1E2533",
-              color: "#E2E8F0",
-              border: "1px solid #2E374B",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
+        {/* Clean Top Header Actions */}
+        <div className={styles.headerActions} onClick={(e) => e.stopPropagation()}>
+          {/* Quick Attendance Modal Button */}
+          <button
+            type="button"
+            onClick={() => setShowAttendanceModal(true)}
+            className={styles.actionBtn}
           >
-            <Calendar size={14} color="#F5B800" />
+            <Calendar size={15} color="#F5B800" />
             Attendance
-          </Link>
+          </button>
 
-          <Link
-            href="/dashboard/curriculum/reference"
-            style={{
-              padding: "0.55rem 0.9rem",
-              fontSize: "0.8rem",
-              fontWeight: 700,
-              borderRadius: "8px",
-              background: "#1E2533",
-              color: "#E2E8F0",
-              border: "1px solid #2E374B",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
+          {/* Quick Exit Check Submission Button */}
+          <button
+            type="button"
+            onClick={() => setShowLogSubmissionModal(true)}
+            className={styles.actionBtn}
           >
-            <BookOpen size={14} color="#F5B800" />
-            Field Guide
-          </Link>
+            <Sparkles size={15} color="#38BDF8" />
+            Submit Exit Check
+          </button>
 
-          {/* Admin Settings: Data & Backup Dropdown (Export/Import JSON moved out of search bar) */}
+          {/* Quick Field Guide Reference Button */}
+          <button
+            type="button"
+            onClick={() => setShowFieldGuideModal(true)}
+            className={styles.actionBtn}
+          >
+            <BookOpen size={15} color="#F5B800" />
+            Field Guide
+          </button>
+
+          {/* Admin Settings: Data & Backup Dropdown */}
           <div style={{ position: "relative" }}>
             <button
               type="button"
               onClick={() => setShowDataMenu((prev) => !prev)}
-              style={{
-                padding: "0.55rem 0.9rem",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                borderRadius: "8px",
-                background: "#1E2533",
-                color: "#E2E8F0",
-                border: "1px solid #2E374B",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-              }}
+              className={styles.actionBtn}
             >
-              <Settings size={14} color="#94A3B8" />
+              <Settings size={15} color="#94A3B8" />
               Data &amp; Backup
             </button>
 
             {showDataMenu && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "calc(100% + 6px)",
-                  width: "220px",
-                  background: "#1E2533",
-                  border: "1px solid #2E374B",
-                  borderRadius: "10px",
-                  padding: "0.4rem",
-                  boxShadow: "0 16px 36px rgba(0, 0, 0, 0.55)",
-                  zIndex: 50,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.25rem",
-                }}
-              >
+              <div className={styles.dropdownMenu}>
                 <button
                   type="button"
                   onClick={() => handleExportDecks()}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: "0.5rem 0.65rem",
-                    borderRadius: "6px",
-                    background: "transparent",
-                    border: "none",
-                    color: "#E2E8F0",
-                    fontSize: "0.78rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.45rem",
-                  }}
+                  className={styles.dropdownItem}
                 >
                   <Download size={14} color="#F5B800" /> Export All JSON
                 </button>
                 <button
                   type="button"
                   onClick={() => jsonImportRef.current?.click()}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: "0.5rem 0.65rem",
-                    borderRadius: "6px",
-                    background: "transparent",
-                    border: "none",
-                    color: "#E2E8F0",
-                    fontSize: "0.78rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.45rem",
-                  }}
+                  className={styles.dropdownItem}
                 >
                   <Upload size={14} color="#F5B800" /> Import JSON Backup
+                </button>
+                <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
+                <button
+                  type="button"
+                  onClick={handleResetToDefaults}
+                  className={styles.dropdownItem}
+                  style={{ color: "#F87171" }}
+                >
+                  <RefreshCw size={14} /> Reset Canonical Decks
                 </button>
               </div>
             )}
           </div>
 
+          {/* Create New Class Action */}
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
-            style={{
-              padding: "0.58rem 1rem",
-              fontSize: "0.82rem",
-              fontWeight: 800,
-              borderRadius: "8px",
-              background: "#6B0F24",
-              color: "#FFFFFF",
-              border: "1px solid #F5B800",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
+            className={styles.primaryActionBtn}
           >
-            <Plus size={15} color="#F5B800" /> Create New Class
+            <Plus size={16} color="#F5B800" /> Create New Class
           </button>
         </div>
       </div>
 
-      {/* Accurate 36-Lesson KPI Summary Strip */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "1rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <div
-          style={{
-            background: "#1E2533",
-            border: "1px solid #2E374B",
-            borderRadius: "12px",
-            padding: "1rem 1.2rem",
-          }}
-        >
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
-            Total Curriculum Scope
-          </div>
-          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#FFFFFF", marginTop: "0.2rem" }}>
-            36 Total Lessons
-          </div>
-          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+      {/* 5 KPI Summary Strip */}
+      <div className={styles.statsGrid}>
+        {/* 1. Total Lessons */}
+        <div className={styles.kpiCard}>
+          <div className={styles.kpiLabel}>Total Curriculum Scope</div>
+          <div className={styles.kpiValue}>{decks.length} Total Lessons</div>
+          <div className={styles.kpiSub}>
             4 Explorers + 10 Beginner + 10 Intermediate + 12 Advanced
           </div>
         </div>
 
-        <div
-          style={{
-            background: "#1E2533",
-            border: "1px solid #2E374B",
-            borderRadius: "12px",
-            padding: "1rem 1.2rem",
-          }}
-        >
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
-            Standard Session Pacing
-          </div>
-          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#F5B800", marginTop: "0.2rem" }}>
+        {/* 2. 120-Minute Session Pacing */}
+        <div className={styles.kpiCard}>
+          <div className={styles.kpiLabel}>Standard Session Pacing</div>
+          <div className={styles.kpiValue} style={{ color: "#F5B800" }}>
             120 Min / Class
           </div>
-          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+          <div className={styles.kpiSub}>
             72 Total Workshop Hours (60m compact supported)
           </div>
         </div>
 
-        <div
-          style={{
-            background: "#1E2533",
-            border: "1px solid #2E374B",
-            borderRadius: "12px",
-            padding: "1rem 1.2rem",
-          }}
-        >
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
-            Projector Slide Decks
-          </div>
-          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#FFFFFF", marginTop: "0.2rem" }}>
+        {/* 3. Total Slides Across All Classes */}
+        <div className={styles.kpiCard}>
+          <div className={styles.kpiLabel}>Projector Slide Decks</div>
+          <div className={styles.kpiValue}>
             {totalSlidesAcrossAllClasses} Slides
           </div>
-          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+          <div className={styles.kpiSub}>
             12 structured slides per class • Daylight &amp; Dark Studio
           </div>
         </div>
 
-        <div
-          style={{
-            background: "#1E2533",
-            border: "1px solid #2E374B",
-            borderRadius: "12px",
-            padding: "1rem 1.2rem",
-          }}
-        >
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
-            Exit Check Submissions
+        {/* 4. Unlocked vs Locked Counter */}
+        <div className={styles.kpiCard}>
+          <div className={styles.kpiLabel}>Student Access Status</div>
+          <div
+            className={styles.kpiValue}
+            style={{ color: lockedCount === 0 ? "#10B981" : "#F5B800" }}
+          >
+            {unlockedCount} Unlocked • {lockedCount} Locked
           </div>
-          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "#10B981", marginTop: "0.2rem" }}>
+          <div className={styles.kpiSub}>
+            {lockedCount === 0 ? "Zero locked classes • Open access" : "Configured via admin controls"}
+          </div>
+        </div>
+
+        {/* 5. Exit Check Submissions */}
+        <div className={styles.kpiCard}>
+          <div className={styles.kpiLabel}>Exit Check Submissions</div>
+          <div className={styles.kpiValue} style={{ color: "#38BDF8" }}>
             {submissions.length} Logged
           </div>
-          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.15rem" }}>
-            4-question student exit reflections
+          <div className={styles.kpiSub}>
+            4-question student exit reflections recorded
           </div>
         </div>
       </div>
 
-      {/* Primary View Switcher: Course Library vs. Student Exit Check Submissions */}
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          borderBottom: "1px solid #2E374B",
-          marginBottom: "1.25rem",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setActiveTab("library")}
-          style={{
-            padding: "0.65rem 1.15rem",
-            background: activeTab === "library" ? "#1E2533" : "transparent",
-            color: activeTab === "library" ? "#F5B800" : "#94A3B8",
-            border: "1px solid",
-            borderColor: activeTab === "library" ? "#2E374B" : "transparent",
-            borderBottom: activeTab === "library" ? "2px solid #F5B800" : "none",
-            borderRadius: "8px 8px 0 0",
-            fontWeight: 800,
-            fontSize: "0.84rem",
-            cursor: "pointer",
-          }}
-        >
-          Course Pathways &amp; Class Library ({decks.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("submissions")}
-          style={{
-            padding: "0.65rem 1.15rem",
-            background: activeTab === "submissions" ? "#1E2533" : "transparent",
-            color: activeTab === "submissions" ? "#F5B800" : "#94A3B8",
-            border: "1px solid",
-            borderColor: activeTab === "submissions" ? "#2E374B" : "transparent",
-            borderBottom: activeTab === "submissions" ? "2px solid #F5B800" : "none",
-            borderRadius: "8px 8px 0 0",
-            fontWeight: 800,
-            fontSize: "0.84rem",
-            cursor: "pointer",
-          }}
-        >
-          Student Exit Check Submissions ({submissions.length})
-        </button>
+      {/* Primary View Mode Switcher */}
+      <div className={styles.viewSwitcherBar}>
+        <div className={styles.viewTabs}>
+          {/* Mode 1: Sequence & Progression Roadmap */}
+          <button
+            type="button"
+            onClick={() => setViewMode("roadmap")}
+            className={`${styles.viewTabBtn} ${
+              viewMode === "roadmap" ? styles.viewTabBtnActive : ""
+            }`}
+          >
+            <GitMerge size={15} /> Class Progression Roadmap
+          </button>
+
+          {/* Mode 2: Grid Library */}
+          <button
+            type="button"
+            onClick={() => setViewMode("grid")}
+            className={`${styles.viewTabBtn} ${
+              viewMode === "grid" ? styles.viewTabBtnActive : ""
+            }`}
+          >
+            <LayoutGrid size={15} /> Class Grid Library ({decks.length})
+          </button>
+
+          {/* Mode 3: Student Exit Submissions */}
+          <button
+            type="button"
+            onClick={() => setViewMode("submissions")}
+            className={`${styles.viewTabBtn} ${
+              viewMode === "submissions" ? styles.viewTabBtnActive : ""
+            }`}
+          >
+            <FileText size={15} /> Student Exit Check Submissions ({submissions.length})
+          </button>
+        </div>
+
+        {/* Real-time Search Box */}
+        {viewMode !== "submissions" && (
+          <div className={styles.searchBox}>
+            <Search size={14} className={styles.searchIcon} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search class code, topic, sensor..."
+              className={styles.searchInput}
+            />
+          </div>
+        )}
       </div>
 
-      {/* TAB 1: COURSE PATHWAYS & CLEAN CLASS GRID */}
-      {activeTab === "library" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          {/* 4 Course Pathway Tabs + Search Bar */}
-          <div
-            style={{
-              background: "#1E2533",
-              border: "1px solid #2E374B",
-              borderRadius: "12px",
-              padding: "0.85rem 1rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "0.85rem",
-            }}
-          >
-            {/* 4 Course Pathway Tabs */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "wrap" }}>
+      {/* Course Pathway Selector (Rendered for Roadmap & Grid Views) */}
+      {viewMode !== "submissions" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.25rem" }}>
+          <div className={styles.pathwayBar}>
+            <div className={styles.pathwayTabs}>
+              <button
+                type="button"
+                onClick={() => setCourseFilter("ALL")}
+                className={`${styles.pathwayBtn} ${
+                  courseFilter === "ALL" ? styles.pathwayBtnActive : ""
+                }`}
+              >
+                <span>All Classes</span>
+                <span
+                  className={styles.pathwayBadgePill}
+                  style={{
+                    background: courseFilter === "ALL" ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
+                    color: courseFilter === "ALL" ? "#F5B800" : "#94A3B8",
+                  }}
+                >
+                  {decks.length}
+                </span>
+              </button>
+
               {COURSE_SPACES.map((cs) => {
                 const count = decks.filter((d) => resolveDeckCourseId(d) === cs.id).length;
                 const isSelected = courseFilter === cs.id;
@@ -771,28 +750,16 @@ export default function AdminCurriculumPage() {
                     key={cs.id}
                     type="button"
                     onClick={() => setCourseFilter(cs.id)}
-                    style={{
-                      padding: "0.48rem 0.85rem",
-                      borderRadius: "8px",
-                      border: `1px solid ${isSelected ? "#F5B800" : "#2E374B"}`,
-                      background: isSelected ? "#6B0F24" : "#161B26",
-                      color: isSelected ? "#FFFFFF" : "#94A3B8",
-                      fontSize: "0.78rem",
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                    }}
+                    className={`${styles.pathwayBtn} ${
+                      isSelected ? styles.pathwayBtnActive : ""
+                    }`}
                   >
                     <span>{cs.title}</span>
                     <span
+                      className={styles.pathwayBadgePill}
                       style={{
-                        padding: "0.1rem 0.4rem",
-                        borderRadius: "999px",
                         background: isSelected ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
                         color: isSelected ? "#F5B800" : "#94A3B8",
-                        fontSize: "0.7rem",
                       }}
                     >
                       {count}
@@ -800,77 +767,21 @@ export default function AdminCurriculumPage() {
                   </button>
                 );
               })}
-
-              <button
-                type="button"
-                onClick={() => setCourseFilter("ALL")}
-                style={{
-                  padding: "0.48rem 0.85rem",
-                  borderRadius: "8px",
-                  border: `1px solid ${courseFilter === "ALL" ? "#F5B800" : "#2E374B"}`,
-                  background: courseFilter === "ALL" ? "#6B0F24" : "#161B26",
-                  color: courseFilter === "ALL" ? "#FFFFFF" : "#94A3B8",
-                  fontSize: "0.78rem",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
-              >
-                All 36 Classes
-              </button>
-            </div>
-
-            {/* Clean Search Input */}
-            <div style={{ position: "relative", minWidth: "240px", flex: "0 1 300px" }}>
-              <Search
-                size={14}
-                color="#94A3B8"
-                style={{
-                  position: "absolute",
-                  left: "11px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                }}
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search class code, topic, sensor..."
-                style={{
-                  width: "100%",
-                  padding: "0.48rem 0.75rem 0.48rem 2.1rem",
-                  borderRadius: "8px",
-                  background: "#161B26",
-                  border: "1px solid #2E374B",
-                  color: "#FFFFFF",
-                  fontSize: "0.8rem",
-                }}
-              />
             </div>
           </div>
 
-          {/* Selected Course Pathway Banner */}
+          {/* Selected Pathway Info Banner */}
           {courseFilter !== "ALL" && (() => {
             const activeSpace = COURSE_SPACES.find((c) => c.id === courseFilter);
             if (!activeSpace) return null;
             return (
               <div
-                style={{
-                  background: "#1E2533",
-                  border: "1px solid #2E374B",
-                  borderLeft: "4px solid #F5B800",
-                  borderRadius: "10px",
-                  padding: "0.9rem 1.15rem",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "0.75rem",
-                }}
+                className={styles.pathwayBanner}
+                style={{ borderLeftColor: activeSpace.accentColor || "#F5B800" }}
               >
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
-                    <strong style={{ fontSize: "0.95rem", color: "#FFFFFF" }}>
+                    <strong style={{ fontSize: "1rem", color: "#FFFFFF" }}>
                       {activeSpace.title}
                     </strong>
                     <span
@@ -880,502 +791,589 @@ export default function AdminCurriculumPage() {
                         padding: "0.15rem 0.5rem",
                         borderRadius: "6px",
                         background: "rgba(245, 184, 0, 0.14)",
-                        color: "#F5B800",
+                        color: activeSpace.accentColor || "#F5B800",
                       }}
                     >
                       {activeSpace.badge}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
+                  <div style={{ fontSize: "0.82rem", color: "#94A3B8" }}>
                     {activeSpace.description}
                   </div>
                 </div>
-                <div style={{ fontSize: "0.76rem", color: "#E2E8F0", fontWeight: 700 }}>
-                  Hardware: <span style={{ color: "#94A3B8", fontWeight: 500 }}>{activeSpace.recommendedHardware}</span>
+                <div style={{ fontSize: "0.78rem", color: "#E2E8F0", fontWeight: 700 }}>
+                  Bench Hardware:{" "}
+                  <span style={{ color: "#38BDF8", fontWeight: 600 }}>
+                    {activeSpace.recommendedHardware}
+                  </span>
                 </div>
               </div>
             );
           })()}
-
-          {/* De-Cluttered 3-Column Class Cards Grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-              gap: "1.25rem",
-            }}
-          >
-            {filteredDecks.map((deck) => {
-              const status = classStatuses[deck.id] || deck.status || "published";
-              const cId = resolveDeckCourseId(deck);
-              const space = COURSE_SPACES.find((c) => c.id === cId);
-              const proposedLabel = deck.proposedAudience || space?.badge || "Proposed • Classes 5–8";
-              const isMenuOpen = openCardMenuId === deck.id;
-
-              return (
-                <div
-                  key={deck.id}
-                  style={{
-                    background: "#1E2533",
-                    border: "1px solid #2E374B",
-                    borderRadius: "14px",
-                    padding: "1.2rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    position: "relative",
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
-                    {/* 1.3.1: Maximum 2 Metadata Pills at Top of Card */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      <span
-                        style={{
-                          padding: "0.24rem 0.65rem",
-                          borderRadius: "6px",
-                          background: "rgba(245, 184, 0, 0.14)",
-                          border: "1px solid rgba(245, 184, 0, 0.35)",
-                          color: "#F5B800",
-                          fontSize: "0.72rem",
-                          fontWeight: 800,
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        {deck.classCode}
-                      </span>
-
-                      <span
-                        style={{
-                          padding: "0.24rem 0.65rem",
-                          borderRadius: "6px",
-                          background: "#161B26",
-                          border: "1px solid #2E374B",
-                          color: "#94A3B8",
-                          fontSize: "0.7rem",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {proposedLabel}
-                      </span>
-                    </div>
-
-                    {/* Clean Reference Illustration Thumbnail */}
-                    <PresentationMediaFrame
-                      src={deck.coverImage}
-                      alt={deck.title}
-                      caption={`Reference Illustration • ${deck.slides.length} Slides`}
-                      fallbackVariant={deck.id === "beg-02" ? "mcu" : "arduino"}
-                      accentColor="#F5B800"
-                      height="168px"
-                    />
-
-                    {/* Title & Concise Promise */}
-                    <div>
-                      <h3
-                        style={{
-                          margin: "0 0 0.35rem 0",
-                          fontSize: "1.08rem",
-                          fontWeight: 800,
-                          color: "#FFFFFF",
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {deck.title}
-                      </h3>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "0.82rem",
-                          color: "#94A3B8",
-                          lineHeight: 1.5,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {deck.subtitle}
-                      </p>
-                    </div>
-
-                    {/* Subtle Duration & Member Access Indicator */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        paddingTop: "0.5rem",
-                        borderTop: "1px solid #2E374B",
-                        fontSize: "0.74rem",
-                        color: "#94A3B8",
-                      }}
-                    >
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                        <Clock size={13} color="#F5B800" /> 120m Standard (60m Compact)
-                      </span>
-                      <span
-                        style={{
-                          color:
-                            status === "locked"
-                              ? "#EF4444"
-                              : status === "live_in_class"
-                              ? "#F5B800"
-                              : "#10B981",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {status === "locked"
-                          ? "Locked"
-                          : status === "live_in_class"
-                          ? "Live in Lab"
-                          : "Unlocked"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 1.3.1: 1 Primary Button (Present Class) + 1 Secondary Button (Edit / Manage) + ••• Menu */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr auto",
-                      gap: "0.5rem",
-                      alignItems: "center",
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProjectorInitialSlide(0);
-                        setProjectorDeck(normalizeDeckToFreeform(deck));
-                      }}
-                      style={{
-                        padding: "0.6rem 0.75rem",
-                        borderRadius: "8px",
-                        border: "1px solid #F5B800",
-                        background: "#6B0F24",
-                        color: "#FFFFFF",
-                        fontWeight: 800,
-                        fontSize: "0.78rem",
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "0.35rem",
-                      }}
-                    >
-                      <Tv size={14} color="#F5B800" /> Present Class
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setStudioDeck(normalizeDeckToFreeform(deck))}
-                      style={{
-                        padding: "0.6rem 0.75rem",
-                        borderRadius: "8px",
-                        border: "1px solid #2E374B",
-                        background: "#161B26",
-                        color: "#E2E8F0",
-                        fontWeight: 700,
-                        fontSize: "0.78rem",
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "0.35rem",
-                      }}
-                    >
-                      <Edit3 size={14} color="#94A3B8" /> Edit / Manage
-                    </button>
-
-                    {/* ••• Overflow Menu Button */}
-                    <div style={{ position: "relative" }}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setOpenCardMenuId((prev) =>
-                            prev === deck.id ? null : deck.id
-                          )
-                        }
-                        title="More class actions"
-                        style={{
-                          padding: "0.6rem 0.65rem",
-                          borderRadius: "8px",
-                          border: "1px solid #2E374B",
-                          background: "#161B26",
-                          color: "#94A3B8",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <MoreHorizontal size={15} />
-                      </button>
-
-                      {isMenuOpen && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            right: 0,
-                            bottom: "calc(100% + 6px)",
-                            width: "230px",
-                            background: "#161B26",
-                            border: "1px solid #2E374B",
-                            borderRadius: "10px",
-                            padding: "0.4rem",
-                            boxShadow: "0 18px 40px rgba(0, 0, 0, 0.65)",
-                            zIndex: 40,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.2rem",
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenCardMenuId(null);
-                              setHardwareLabDeck(deck);
-                            }}
-                            style={{
-                              width: "100%",
-                              textAlign: "left",
-                              padding: "0.48rem 0.6rem",
-                              borderRadius: "6px",
-                              background: "transparent",
-                              border: "none",
-                              color: "#FFFFFF",
-                              fontSize: "0.76rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.45rem",
-                            }}
-                          >
-                            <Cpu size={13} color="#F5B800" /> Open Hardware Simulator
-                          </button>
-
-                          <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
-
-                          <button
-                            type="button"
-                            onClick={() => updateStatus(deck.id, "published")}
-                            style={{
-                              width: "100%",
-                              textAlign: "left",
-                              padding: "0.45rem 0.6rem",
-                              borderRadius: "6px",
-                              background: "transparent",
-                              border: "none",
-                              color: status === "published" ? "#10B981" : "#E2E8F0",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.45rem",
-                            }}
-                          >
-                            <Unlock size={13} /> Unlock for Members
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => updateStatus(deck.id, "live_in_class")}
-                            style={{
-                              width: "100%",
-                              textAlign: "left",
-                              padding: "0.45rem 0.6rem",
-                              borderRadius: "6px",
-                              background: "transparent",
-                              border: "none",
-                              color: status === "live_in_class" ? "#F5B800" : "#E2E8F0",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.45rem",
-                            }}
-                          >
-                            <Radio size={13} /> Mark as Live in Lab
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => updateStatus(deck.id, "locked")}
-                            style={{
-                              width: "100%",
-                              textAlign: "left",
-                              padding: "0.45rem 0.6rem",
-                              borderRadius: "6px",
-                              background: "transparent",
-                              border: "none",
-                              color: status === "locked" ? "#EF4444" : "#E2E8F0",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.45rem",
-                            }}
-                          >
-                            <Lock size={13} /> Lock for Members
-                          </button>
-
-                          <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
-
-                          <button
-                            type="button"
-                            onClick={() => handleDuplicateDeck(deck)}
-                            style={{
-                              width: "100%",
-                              textAlign: "left",
-                              padding: "0.45rem 0.6rem",
-                              borderRadius: "6px",
-                              background: "transparent",
-                              border: "none",
-                              color: "#E2E8F0",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.45rem",
-                            }}
-                          >
-                            <Copy size={13} /> Duplicate Class
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleExportDecks(deck)}
-                            style={{
-                              width: "100%",
-                              textAlign: "left",
-                              padding: "0.45rem 0.6rem",
-                              borderRadius: "6px",
-                              background: "transparent",
-                              border: "none",
-                              color: "#E2E8F0",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.45rem",
-                            }}
-                          >
-                            <Download size={13} /> Export Class JSON
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteDeck(deck)}
-                            style={{
-                              width: "100%",
-                              textAlign: "left",
-                              padding: "0.45rem 0.6rem",
-                              borderRadius: "6px",
-                              background: "transparent",
-                              border: "none",
-                              color: "#EF4444",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.45rem",
-                            }}
-                          >
-                            <Trash2 size={13} /> Reset / Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
-      {/* TAB 2: STUDENT EXIT CHECK SUBMISSIONS */}
-      {activeTab === "submissions" && (
-        <div
-          className={styles.submissionsCard}
-          style={{
-            background: "#1E2533",
-            border: "1px solid #2E374B",
-            borderRadius: "14px",
-            padding: "1.5rem",
+      {/* VIEW 1: PROGRESSION ROADMAP (AFTER WHICH CLASS & WHICH CLASS) */}
+      {viewMode === "roadmap" && (
+        <ClassProgressionRoadmap
+          decks={decks}
+          courseFilter={courseFilter}
+          classStatuses={classStatuses}
+          searchQuery={searchQuery}
+          onOpenProjector={(deck) => {
+            setProjectorInitialSlide(0);
+            setProjectorDeck(normalizeDeckToFreeform(deck));
           }}
-        >
-          <h2
+          onOpenStudio={(deck) => {
+            setStudioDeck(normalizeDeckToFreeform(deck));
+          }}
+          onOpenHardwareSim={(deck) => {
+            setHardwareLabDeck(deck);
+          }}
+          onOpenLessonPlan={(deck) => {
+            setSelectedLessonPlanDeck(deck);
+          }}
+          onToggleStatus={(deckId, newStatus) => {
+            updateStatus(deckId, newStatus);
+          }}
+          onDuplicateDeck={(deck) => {
+            handleDuplicateDeck(deck);
+          }}
+          onExportDeck={(deck) => {
+            handleExportDecks(deck);
+          }}
+          onDeleteDeck={(deck) => {
+            handleDeleteDeck(deck);
+          }}
+        />
+      )}
+
+      {/* VIEW 2: MODULAR CLASS GRID LIBRARY */}
+      {viewMode === "grid" && (
+        <div className={styles.cardsGrid}>
+          {filteredDecks.map((deck) => {
+            const status = classStatuses[deck.id] || deck.status || "published";
+            const cId = resolveDeckCourseId(deck);
+            const space = COURSE_SPACES.find((c) => c.id === cId);
+            const proposedLabel =
+              deck.proposedAudience || space?.badge || "Proposed • Classes 5–8";
+            const isMenuOpen = openCardMenuId === deck.id;
+
+            return (
+              <div key={deck.id} className={styles.classCard}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                  {/* Top Metadata Pills */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        padding: "0.24rem 0.65rem",
+                        borderRadius: "6px",
+                        background: "rgba(245, 184, 0, 0.14)",
+                        border: "1px solid rgba(245, 184, 0, 0.35)",
+                        color: "#F5B800",
+                        fontSize: "0.72rem",
+                        fontWeight: 800,
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {deck.classCode}
+                    </span>
+
+                    <span
+                      style={{
+                        padding: "0.24rem 0.65rem",
+                        borderRadius: "6px",
+                        background: "#161B26",
+                        border: "1px solid #2E374B",
+                        color: "#94A3B8",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {proposedLabel}
+                    </span>
+                  </div>
+
+                  {/* Reference Illustration Thumbnail */}
+                  <PresentationMediaFrame
+                    src={deck.coverImage}
+                    alt={deck.title}
+                    caption={`Reference Illustration • ${deck.slides.length} Slides`}
+                    fallbackVariant={deck.id.startsWith("beg") ? "arduino" : "mcu"}
+                    accentColor="#F5B800"
+                    height="168px"
+                  />
+
+                  {/* Title & Concise Promise */}
+                  <div>
+                    <h3
+                      style={{
+                        margin: "0 0 0.35rem 0",
+                        fontSize: "1.08rem",
+                        fontWeight: 800,
+                        color: "#FFFFFF",
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {deck.title}
+                    </h3>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.82rem",
+                        color: "#94A3B8",
+                        lineHeight: 1.5,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {deck.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Duration & Access Status */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      paddingTop: "0.5rem",
+                      borderTop: "1px solid #2E374B",
+                      fontSize: "0.74rem",
+                      color: "#94A3B8",
+                    }}
+                  >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                      <Clock size={13} color="#F5B800" /> 120m Standard (60m Compact)
+                    </span>
+                    <span
+                      style={{
+                        color:
+                          status === "locked"
+                            ? "#EF4444"
+                            : status === "live_in_class"
+                            ? "#F5B800"
+                            : "#10B981",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {status === "locked"
+                        ? "Locked"
+                        : status === "live_in_class"
+                        ? "Live in Lab"
+                        : "Unlocked"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Primary Action Buttons Bar */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr auto",
+                    gap: "0.5rem",
+                    alignItems: "center",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProjectorInitialSlide(0);
+                      setProjectorDeck(normalizeDeckToFreeform(deck));
+                    }}
+                    style={{
+                      padding: "0.6rem 0.75rem",
+                      borderRadius: "8px",
+                      border: "1px solid #F5B800",
+                      background: "#6B0F24",
+                      color: "#FFFFFF",
+                      fontWeight: 800,
+                      fontSize: "0.78rem",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.35rem",
+                    }}
+                  >
+                    <Tv size={14} color="#F5B800" /> Present Class
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setStudioDeck(normalizeDeckToFreeform(deck))}
+                    style={{
+                      padding: "0.6rem 0.75rem",
+                      borderRadius: "8px",
+                      border: "1px solid #2E374B",
+                      background: "#161B26",
+                      color: "#E2E8F0",
+                      fontWeight: 700,
+                      fontSize: "0.78rem",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.35rem",
+                    }}
+                  >
+                    <Edit3 size={14} color="#94A3B8" /> Edit / Manage
+                  </button>
+
+                  {/* ••• Overflow Menu Button */}
+                  <div style={{ position: "relative" }}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenCardMenuId((prev) =>
+                          prev === deck.id ? null : deck.id
+                        )
+                      }
+                      title="More class actions"
+                      style={{
+                        padding: "0.6rem 0.65rem",
+                        borderRadius: "8px",
+                        border: "1px solid #2E374B",
+                        background: "#161B26",
+                        color: "#94A3B8",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <MoreHorizontal size={15} />
+                    </button>
+
+                    {isMenuOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          right: 0,
+                          bottom: "calc(100% + 6px)",
+                          width: "230px",
+                          background: "#161B26",
+                          border: "1px solid #2E374B",
+                          borderRadius: "10px",
+                          padding: "0.4rem",
+                          boxShadow: "0 18px 40px rgba(0, 0, 0, 0.65)",
+                          zIndex: 40,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "0.2rem",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenCardMenuId(null);
+                            setHardwareLabDeck(deck);
+                          }}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.48rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#FFFFFF",
+                            fontSize: "0.76rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Cpu size={13} color="#00F5D4" /> Open Hardware Sim
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenCardMenuId(null);
+                            setSelectedLessonPlanDeck(deck);
+                          }}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.48rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#FFFFFF",
+                            fontSize: "0.76rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <BookOpen size={13} color="#F5B800" /> View Lesson Plan
+                        </button>
+
+                        <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
+
+                        <button
+                          type="button"
+                          onClick={() => updateStatus(deck.id, "published")}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.45rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: status === "published" ? "#10B981" : "#E2E8F0",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Unlock size={13} /> Unlock for Students
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => updateStatus(deck.id, "live_in_class")}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.45rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: status === "live_in_class" ? "#F5B800" : "#E2E8F0",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Radio size={13} /> Mark Live in Lab
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => updateStatus(deck.id, "locked")}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.45rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: status === "locked" ? "#EF4444" : "#E2E8F0",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Lock size={13} /> Lock for Students
+                        </button>
+
+                        <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
+
+                        <button
+                          type="button"
+                          onClick={() => handleDuplicateDeck(deck)}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.45rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#E2E8F0",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Copy size={13} /> Duplicate Class
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleExportDecks(deck)}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.45rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#E2E8F0",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Download size={13} /> Export Class JSON
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDeck(deck)}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.45rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#EF4444",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Trash2 size={13} /> Reset / Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* VIEW 3: STUDENT EXIT CHECK SUBMISSIONS */}
+      {viewMode === "submissions" && (
+        <div className={styles.submissionsCard}>
+          <div
             style={{
-              fontSize: "1.2rem",
-              fontWeight: 800,
-              color: "#FFFFFF",
-              marginBottom: "1rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "1.25rem",
+              flexWrap: "wrap",
+              gap: "0.75rem",
             }}
           >
-            Student Exit Check Reflections
-          </h2>
+            <div>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
+                Student Exit Check Reflections &amp; Rubric Alignment
+              </h2>
+              <div style={{ fontSize: "0.8rem", color: "#94A3B8", marginTop: "0.2rem" }}>
+                Formative assessment responses submitted by students inside their interactive workbench.
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => setShowLogSubmissionModal(true)}
+                style={{
+                  background: "linear-gradient(135deg, #0284C7 0%, #0369A1 100%)",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "0.45rem 0.85rem",
+                  fontSize: "0.8rem",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                  boxShadow: "0 2px 8px rgba(2, 132, 199, 0.3)",
+                }}
+              >
+                <Plus size={14} /> Submit Student Reflection
+              </button>
+              <div style={{ fontSize: "0.82rem", color: "#F5B800", fontWeight: 700 }}>
+                {submissions.length} Total Student Reflections
+              </div>
+            </div>
+          </div>
 
           {loadingSubs ? (
-            <p style={{ color: "#94A3B8" }}>Loading submissions...</p>
+            <p style={{ color: "#94A3B8", padding: "1.5rem 0" }}>Loading reflections from lab database...</p>
           ) : submissions.length === 0 ? (
             <div className={styles.emptyState}>
-              <p style={{ color: "#94A3B8" }}>
-                No exit check submissions recorded yet. Have students complete
-                the 4-Question Exit Check inside their lesson workbench!
+              <AlertCircle size={36} color="#94A3B8" style={{ marginBottom: "0.75rem" }} />
+              <p style={{ color: "#FFFFFF", fontWeight: 700, margin: "0 0 0.35rem 0" }}>
+                No exit check submissions recorded yet.
+              </p>
+              <p style={{ color: "#94A3B8", margin: 0, fontSize: "0.82rem" }}>
+                Students complete the 4-question Exit Check inside their lesson workbench or Hardware Lab drawer.
               </p>
             </div>
           ) : (
             <table className={styles.subTable}>
               <thead>
                 <tr>
-                  <th>Student</th>
-                  <th>Class</th>
-                  <th>Reflection Answers</th>
-                  <th>Submitted</th>
+                  <th>Student Enrolled</th>
+                  <th>Class Module</th>
+                  <th>Reflection Responses</th>
+                  <th>Submitted At</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {submissions.map((sub) => (
                   <tr key={sub.id}>
-                    <td style={{ fontWeight: 700, color: "#F8FAFC" }}>
-                      {sub.userEmail || sub.userId || "Student"}
+                    <td style={{ fontWeight: 800, color: "#FFFFFF" }}>
+                      {sub.userEmail || sub.userId || "Student Member"}
                     </td>
                     <td>
-                      <span className={styles.classCode}>
-                        {sub.classCode || sub.classId}
+                      <span className={styles.classCodeTag}>
+                        {sub.classCode || sub.classId || "ROBO 01"}
                       </span>
                     </td>
                     <td>
                       {sub.answers && typeof sub.answers === "object" ? (
-                        <ul
-                          style={{
-                            margin: 0,
-                            paddingLeft: "1.1rem",
-                            color: "#CBD5E1",
-                            fontSize: "0.82rem",
-                          }}
-                        >
-                          {Object.entries(sub.answers).map(([k, v]) => (
-                            <li key={k}>{String(v)}</li>
+                        <div style={{ maxWidth: "480px" }}>
+                          {Object.entries(sub.answers).slice(0, 2).map(([k, v]) => (
+                            <div
+                              key={k}
+                              style={{
+                                fontSize: "0.78rem",
+                                color: "#CBD5E1",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              <strong style={{ color: "#F5B800" }}>Q{k}:</strong> {String(v)}
+                            </div>
                           ))}
-                        </ul>
+                          {Object.keys(sub.answers).length > 2 && (
+                            <div style={{ fontSize: "0.72rem", color: "#64748B" }}>
+                              +{Object.keys(sub.answers).length - 2} more answers...
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <span style={{ color: "#64748B" }}>Completed</span>
                       )}
@@ -1385,11 +1383,467 @@ export default function AdminCurriculumPage() {
                         ? new Date(sub.submittedAt).toLocaleString()
                         : "Recent"}
                     </td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSubmission(sub)}
+                        style={{
+                          padding: "0.35rem 0.7rem",
+                          borderRadius: "6px",
+                          background: "#161B26",
+                          border: "1px solid #2E374B",
+                          color: "#38BDF8",
+                          fontSize: "0.74rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Inspect Full
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {/* STUDENT SUBMISSION INSPECTOR MODAL */}
+      {selectedSubmission && (
+        <div
+          onClick={() => setSelectedSubmission(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(10, 14, 23, 0.88)",
+            backdropFilter: "blur(12px)",
+            zIndex: 99995,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.25rem",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "680px",
+              background: "#1E2533",
+              border: "1px solid #2E374B",
+              borderRadius: "16px",
+              padding: "1.5rem",
+              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.7)",
+              color: "#FFFFFF",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+                borderBottom: "1px solid #2E374B",
+                paddingBottom: "0.75rem",
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    padding: "0.2rem 0.55rem",
+                    borderRadius: "6px",
+                    background: "rgba(245, 184, 0, 0.15)",
+                    color: "#F5B800",
+                    fontSize: "0.72rem",
+                    fontWeight: 800,
+                  }}
+                >
+                  {selectedSubmission.classCode || "ROBOBEE WORKSHOP"}
+                </span>
+                <h3 style={{ margin: "0.3rem 0 0 0", fontSize: "1.15rem", fontWeight: 800 }}>
+                  Exit Reflection: {selectedSubmission.userEmail || selectedSubmission.userId}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSubmission(null)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#94A3B8",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gap: "0.85rem", maxHeight: "420px", overflowY: "auto" }}>
+              {selectedSubmission.answers && typeof selectedSubmission.answers === "object" ? (
+                Object.entries(selectedSubmission.answers).map(([key, val]) => (
+                  <div
+                    key={key}
+                    style={{
+                      background: "#161B26",
+                      border: "1px solid #2E374B",
+                      borderRadius: "10px",
+                      padding: "0.85rem 1rem",
+                    }}
+                  >
+                    <div style={{ fontSize: "0.74rem", fontWeight: 800, color: "#F5B800" }}>
+                      QUESTION {key}
+                    </div>
+                    <div style={{ fontSize: "0.85rem", color: "#FFFFFF", marginTop: "0.25rem", lineHeight: 1.45 }}>
+                      {String(val)}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p style={{ color: "#94A3B8" }}>No answer details recorded.</p>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: "1rem",
+                borderTop: "1px solid #2E374B",
+                paddingTop: "0.75rem",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedSubmission(null)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "8px",
+                  background: "#161B26",
+                  border: "1px solid #2E374B",
+                  color: "#E2E8F0",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Close Inspector
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MANUAL STUDENT EXIT REFLECTION SUBMISSION MODAL */}
+      {showLogSubmissionModal && (
+        <div
+          onClick={() => setShowLogSubmissionModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(10, 14, 23, 0.88)",
+            backdropFilter: "blur(12px)",
+            zIndex: 99996,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.25rem",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "640px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              background: "#1E2533",
+              border: "1px solid #2E374B",
+              borderRadius: "16px",
+              padding: "1.5rem",
+              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.75)",
+              color: "#FFFFFF",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1.25rem",
+                borderBottom: "1px solid #2E374B",
+                paddingBottom: "0.75rem",
+              }}
+            >
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Sparkles size={18} color="#F5B800" />
+                  <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800 }}>
+                    Submit Student Exit Check
+                  </h3>
+                </div>
+                <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.2rem" }}>
+                  Formative rubric assessment &amp; 100 RoboXP achievement recording.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLogSubmissionModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#94A3B8",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setLoggingSub(true);
+                try {
+                  const matchedDeck =
+                    decks.find((d) => d.classCode === logSubClassCode) || decks[0];
+                  await handleSubmitExitTicket({
+                    classCode: logSubClassCode,
+                    lessonId: matchedDeck ? matchedDeck.id : "beg-01",
+                    userId: logSubStudentName.trim() || "Student Member",
+                    userEmail: logSubStudentEmail.trim() || "student@robobee.academy",
+                    answers: {
+                      1:
+                        logSubQ1.trim() ||
+                        "Wired hardware circuit with proper pin assignments and polarity.",
+                      2:
+                        logSubQ2.trim() ||
+                        "Checked breadboard rails and debugged loose jumper connection.",
+                      3:
+                        logSubQ3.trim() ||
+                        "Applies foundational circuit concepts to next class in pathway.",
+                      4:
+                        logSubQ4.trim() ||
+                        "5/5 - Fully confident assembling hands-on robotics hardware.",
+                    },
+                  });
+                  setLogSubStudentName("");
+                  setLogSubStudentEmail("");
+                  setLogSubQ1("");
+                  setLogSubQ2("");
+                  setLogSubQ3("");
+                  setLogSubQ4("");
+                  setShowLogSubmissionModal(false);
+                } catch (err) {
+                  console.error("Failed to log exit reflection:", err);
+                } finally {
+                  setLoggingSub(false);
+                }
+              }}
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            >
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 800, color: "#CBD5E1", marginBottom: "0.35rem" }}>
+                  Class Module / Deck
+                </label>
+                <select
+                  value={logSubClassCode}
+                  onChange={(e) => setLogSubClassCode(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.55rem 0.75rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
+                    color: "#FFFFFF",
+                    fontSize: "0.84rem",
+                  }}
+                >
+                  {decks.map((d) => (
+                    <option key={d.id} value={d.classCode}>
+                      {d.classCode} — {d.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 800, color: "#CBD5E1", marginBottom: "0.35rem" }}>
+                    Student Name / Call-Sign
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={logSubStudentName}
+                    onChange={(e) => setLogSubStudentName(e.target.value)}
+                    placeholder="e.g. Aarav Sharma"
+                    style={{
+                      width: "100%",
+                      padding: "0.55rem 0.75rem",
+                      borderRadius: "8px",
+                      background: "#161B26",
+                      border: "1px solid #2E374B",
+                      color: "#FFFFFF",
+                      fontSize: "0.84rem",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 800, color: "#CBD5E1", marginBottom: "0.35rem" }}>
+                    Student Email / ID
+                  </label>
+                  <input
+                    type="email"
+                    value={logSubStudentEmail}
+                    onChange={(e) => setLogSubStudentEmail(e.target.value)}
+                    placeholder="e.g. aarav.s@kidsden.edu"
+                    style={{
+                      width: "100%",
+                      padding: "0.55rem 0.75rem",
+                      borderRadius: "8px",
+                      background: "#161B26",
+                      border: "1px solid #2E374B",
+                      color: "#FFFFFF",
+                      fontSize: "0.84rem",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                  Question 1: Hardware Component &amp; Circuit Function
+                </label>
+                <input
+                  type="text"
+                  value={logSubQ1}
+                  onChange={(e) => setLogSubQ1(e.target.value)}
+                  placeholder="e.g. Wired LED cathode to GND and anode through 220Ω resistor to digital pin 9."
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
+                    color: "#FFFFFF",
+                    fontSize: "0.82rem",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                  Question 2: Bench Debugging / Troubleshooting Step Solved
+                </label>
+                <input
+                  type="text"
+                  value={logSubQ2}
+                  onChange={(e) => setLogSubQ2(e.target.value)}
+                  placeholder="e.g. LED did not light up; rotated diode 180° to fix backwards polarity."
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
+                    color: "#FFFFFF",
+                    fontSize: "0.82rem",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                  Question 3: Connection to the Next Progressive Class
+                </label>
+                <input
+                  type="text"
+                  value={logSubQ3}
+                  onChange={(e) => setLogSubQ3(e.target.value)}
+                  placeholder="e.g. Digital output learned today will be used to switch relays in the next class."
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
+                    color: "#FFFFFF",
+                    fontSize: "0.82rem",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                  Question 4: Student Confidence &amp; Self-Rating
+                </label>
+                <input
+                  type="text"
+                  value={logSubQ4}
+                  onChange={(e) => setLogSubQ4(e.target.value)}
+                  placeholder="e.g. 5/5 — Successfully completed lab circuit independently."
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
+                    color: "#FFFFFF",
+                    fontSize: "0.82rem",
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "0.75rem",
+                  marginTop: "0.5rem",
+                  borderTop: "1px solid #2E374B",
+                  paddingTop: "0.85rem",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowLogSubmissionModal(false)}
+                  style={{
+                    padding: "0.55rem 1.1rem",
+                    borderRadius: "8px",
+                    background: "#161B26",
+                    border: "1px solid #2E374B",
+                    color: "#94A3B8",
+                    fontSize: "0.84rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loggingSub}
+                  style={{
+                    padding: "0.55rem 1.3rem",
+                    borderRadius: "8px",
+                    background: "linear-gradient(135deg, #F5B800 0%, #D97706 100%)",
+                    border: "none",
+                    color: "#090D16",
+                    fontSize: "0.86rem",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}
+                >
+                  <Sparkles size={15} />
+                  {loggingSub ? "Submitting..." : "Submit Exit Check (+100 RoboXP)"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -1652,6 +2106,45 @@ export default function AdminCurriculumPage() {
         </div>
       )}
 
+      {/* RAPID ATTENDANCE MANAGER MODAL */}
+      <AttendanceQuickModal
+        isOpen={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
+        decks={decks}
+      />
+
+      {/* FIELD GUIDE BENCH REFERENCE MODAL */}
+      <FieldGuideModal
+        isOpen={showFieldGuideModal}
+        onClose={() => setShowFieldGuideModal(false)}
+      />
+
+      {/* 120-MINUTE LESSON PLAN & WORKBENCH MODAL */}
+      {selectedLessonPlanDeck && (
+        <LessonPlanModal
+          isOpen={!!selectedLessonPlanDeck}
+          deck={selectedLessonPlanDeck}
+          lesson={resolveLessonForDeck(selectedLessonPlanDeck)}
+          onClose={() => setSelectedLessonPlanDeck(null)}
+          onLaunchProjector={() => {
+            const d = selectedLessonPlanDeck;
+            setSelectedLessonPlanDeck(null);
+            setProjectorInitialSlide(0);
+            setProjectorDeck(normalizeDeckToFreeform(d));
+          }}
+          onLaunchStudio={() => {
+            const d = selectedLessonPlanDeck;
+            setSelectedLessonPlanDeck(null);
+            setStudioDeck(normalizeDeckToFreeform(d));
+          }}
+          onLaunchHardwareSim={() => {
+            const d = selectedLessonPlanDeck;
+            setSelectedLessonPlanDeck(null);
+            setHardwareLabDeck(d);
+          }}
+        />
+      )}
+
       {/* LIVE PROJECTOR MODAL */}
       {projectorDeck && (
         <ProjectorView
@@ -1683,12 +2176,27 @@ export default function AdminCurriculumPage() {
         />
       )}
 
-      {/* CLEAN NON-OVERLAPPING HARDWARE LAB & CIRCUIT SIMULATOR DRAWER */}
+      {/* CLEAN HARDWARE LAB & CIRCUIT SIMULATOR DRAWER */}
       {hardwareLabDeck && (
         <HardwareLabDrawer
           deck={hardwareLabDeck}
           lesson={resolveLessonForDeck(hardwareLabDeck)}
           onClose={() => setHardwareLabDeck(null)}
+          onLaunchProjector={() => {
+            const d = hardwareLabDeck;
+            setHardwareLabDeck(null);
+            setProjectorInitialSlide(0);
+            setProjectorDeck(normalizeDeckToFreeform(d));
+          }}
+          onSubmitExitTicket={async (answers, meta) => {
+            await handleSubmitExitTicket({
+              classCode: hardwareLabDeck.classCode,
+              lessonId: hardwareLabDeck.id,
+              userId: meta?.studentName || user?.displayName || "Student Member",
+              userEmail: meta?.studentEmail || user?.email || "student@robobee.academy",
+              answers,
+            });
+          }}
         />
       )}
     </div>
