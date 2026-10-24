@@ -138,6 +138,14 @@ export default function AdminCurriculumPage() {
     "beg-02": "published",
     "beg-03": "published",
     "beg-04": "published",
+    "beg-05": "published",
+    "beg-06": "published",
+    "beg-07": "published",
+    "beg-08": "published",
+    "beg-09": "published",
+    "beg-10": "published",
+    "beg-11": "published",
+    "beg-12": "published",
   });
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loadingSubs, setLoadingSubs] = useState<boolean>(true);

@@ -20,6 +20,12 @@ import {
   Trophy,
   Zap,
   Award,
+  Activity,
+  Compass,
+  Radio,
+  Gauge,
+  Sliders,
+  Cpu,
 } from "lucide-react";
 import {
   playPop,
@@ -70,6 +76,13 @@ export function ElementRenderer({
 
   // Active Pinout Card state
   const [selectedPinIdx, setSelectedPinIdx] = useState<number | null>(null);
+
+  // Interactive Diagram & Circuit Simulation State
+  const [diagramRadarDist, setDiagramRadarDist] = useState<number>(24);
+  const [diagramLedOn, setDiagramLedOn] = useState<boolean>(true);
+  const [diagramServoAngle, setDiagramServoAngle] = useState<number>(90);
+  const [diagramMotorDir, setDiagramMotorDir] = useState<"forward" | "reverse" | "stop">("forward");
+  const [diagramIrSurface, setDiagramIrSurface] = useState<"white" | "black">("black");
 
   useEffect(() => {
     if (isEditing && textEditRef.current) {
@@ -261,12 +274,12 @@ export function ElementRenderer({
           ...baseInnerStyle,
           display: "flex",
           flexDirection: "column",
-          cursor: !isEditorMode && !pins.length ? "zoom-in" : "default",
+          cursor: !isEditorMode ? "zoom-in" : "default",
           position: "relative",
           overflow: "hidden",
         }}
         onClick={() => {
-          if (!isEditorMode && onZoomImage && content && !pins.length) {
+          if (!isEditorMode && onZoomImage && content) {
             onZoomImage(content, element.caption || "Image Preview");
           }
         }}
@@ -1068,15 +1081,41 @@ export function ElementRenderer({
     }
 
     return (
-      <div style={{ ...baseInnerStyle, backgroundColor: "#000000", borderRadius: style.borderRadius || 16 }}>
+      <div
+        style={{
+          ...baseInnerStyle,
+          backgroundColor: "#000000",
+          borderRadius: style.borderRadius || 16,
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
         {embedSrc ? (
-          <iframe
-            src={embedSrc}
-            title={element.caption || "Video Player"}
-            style={{ width: "100%", height: "100%", border: "none" }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          <>
+            <iframe
+              src={embedSrc}
+              title={element.caption || "Video Player"}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                pointerEvents: isEditorMode ? "none" : "auto",
+              }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            {isEditorMode && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  cursor: "move",
+                  zIndex: 10,
+                  background: "transparent",
+                }}
+              />
+            )}
+          </>
         ) : (
           <div
             style={{
@@ -1209,6 +1248,640 @@ export function ElementRenderer({
             <strong style={{ color: palette?.accentPrimary || "#00F5D4" }}>{activePin.pinName} Function:</strong> {activePin.note}
           </div>
         )}
+      </div>
+    );
+  }
+
+  // 10. DIAGRAM & SVG WIDGET ELEMENT (INTERACTIVE CIRCUIT & SENSOR ANIMATIONS)
+  if (type === "diagram" || type === "svg-widget") {
+    const activeDiag = element.diagramType || "ultrasonic-radar";
+
+    return (
+      <div
+        style={{
+          ...baseInnerStyle,
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: style.borderRadius || 18,
+          background: cardBackground,
+          borderColor: cardBorderColor,
+          borderWidth: "1.5px",
+          borderStyle: "solid",
+          boxShadow: "0 18px 45px rgba(0, 0, 0, 0.55)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Diagram Card Header with Switchable Hardware Modes */}
+        <div
+          style={{
+            padding: "10px 14px",
+            background: "rgba(255, 255, 255, 0.04)",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Activity size={15} color={palette?.accentPrimary || "#00F5D4"} />
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 900,
+                color: palette?.accentPrimary || "#00F5D4",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {element.caption || "Interactive Circuit & Sensor Model"}
+            </span>
+          </div>
+
+          {/* Quick Hardware Switcher */}
+          <div style={{ display: "flex", gap: "4px" }}>
+            {[
+              { id: "ultrasonic-radar", label: "Sonar" },
+              { id: "breadboard-circuit", label: "LED Breadboard" },
+              { id: "servo-gauge", label: "SG90 Servo" },
+              { id: "h-bridge-motor", label: "H-Bridge" },
+              { id: "ir-reflectance", label: "IR Sensor" },
+            ].map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => {
+                  onUpdateElement?.({ diagramType: d.id });
+                  playPop(soundEnabled);
+                }}
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 800,
+                  padding: "2px 7px",
+                  borderRadius: "6px",
+                  border: "1px solid",
+                  borderColor:
+                    activeDiag === d.id
+                      ? palette?.accentPrimary || "#00F5D4"
+                      : "rgba(255, 255, 255, 0.1)",
+                  background:
+                    activeDiag === d.id
+                      ? "rgba(0, 245, 212, 0.2)"
+                      : "transparent",
+                  color:
+                    activeDiag === d.id
+                      ? palette?.accentPrimary || "#00F5D4"
+                      : "#94A3B8",
+                  cursor: "pointer",
+                }}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Diagram Body */}
+        <div
+          style={{
+            flex: 1,
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          {/* 1. ULTRASONIC HC-SR04 SONAR RADAR MODEL */}
+          {activeDiag === "ultrasonic-radar" && (
+            <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: 800, color: textColor }}>
+                    HC-SR04 Ultrasonic Sonar Echolocation
+                  </div>
+                  <div style={{ fontSize: "11px", color: mutedTextColor }}>
+                    Sound Wave Velocity: 343 m/s (0.0343 cm/µs) • Speed of Sound Physics
+                  </div>
+                </div>
+                <div
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "999px",
+                    fontSize: "11px",
+                    fontWeight: 900,
+                    backgroundColor:
+                      diagramRadarDist < 10
+                        ? "rgba(239, 68, 68, 0.2)"
+                        : diagramRadarDist < 25
+                        ? "rgba(245, 183, 0, 0.2)"
+                        : "rgba(16, 185, 129, 0.2)",
+                    border: `1px solid ${
+                      diagramRadarDist < 10 ? "#EF4444" : diagramRadarDist < 25 ? "#F5B700" : "#10B981"
+                    }`,
+                    color: diagramRadarDist < 10 ? "#EF4444" : diagramRadarDist < 25 ? "#F5B700" : "#10B981",
+                  }}
+                >
+                  {diagramRadarDist < 10 ? "🚨 EMERGENCY BRAKE (<10cm)" : diagramRadarDist < 25 ? "⚠️ OBSTACLE NEAR (10-25cm)" : "✅ CLEAR PATH (>25cm)"}
+                </div>
+              </div>
+
+              {/* Graphic Stage */}
+              <div
+                style={{
+                  height: "140px",
+                  background: "#080B12",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 20px",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Ultrasonic Sensor Representation */}
+                <div
+                  style={{
+                    width: "80px",
+                    height: "64px",
+                    background: "#0055AA",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                    padding: "0 6px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+                    zIndex: 2,
+                    flexShrink: 0,
+                  }}
+                >
+                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#C0C0C0", border: "2px solid #333", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", fontWeight: 900, color: "#111" }}>
+                    T
+                  </div>
+                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#C0C0C0", border: "2px solid #333", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", fontWeight: 900, color: "#111" }}>
+                    R
+                  </div>
+                </div>
+
+                {/* Animated Sound Wave Arcs */}
+                <div style={{ flex: 1, position: "relative", height: "100%", display: "flex", alignItems: "center" }}>
+                  <svg width="100%" height="80" style={{ position: "absolute", left: 0 }}>
+                    <path
+                      d="M 20 40 Q 60 10 100 40 Q 60 70 20 40"
+                      fill="none"
+                      stroke="#00F5D4"
+                      strokeWidth="2"
+                      strokeDasharray="4 4"
+                      opacity="0.8"
+                    />
+                    <path
+                      d="M 60 40 Q 110 5 160 40 Q 110 75 60 40"
+                      fill="none"
+                      stroke="#38BDF8"
+                      strokeWidth="2"
+                      strokeDasharray="4 4"
+                      opacity="0.6"
+                    />
+                    <path
+                      d="M 120 40 Q 180 0 240 40 Q 180 80 120 40"
+                      fill="none"
+                      stroke="#818CF8"
+                      strokeWidth="2"
+                      strokeDasharray="4 4"
+                      opacity="0.4"
+                    />
+                  </svg>
+                </div>
+
+                {/* Target Obstacle (Positioned dynamically according to slider) */}
+                <div
+                  style={{
+                    position: "absolute",
+                    left: `${Math.min(88, Math.max(22, 22 + (diagramRadarDist / 100) * 66))}%`,
+                    top: "16px",
+                    bottom: "16px",
+                    width: "18px",
+                    background: "linear-gradient(180deg, #F43F5E 0%, #BE123C 100%)",
+                    borderRadius: "4px",
+                    boxShadow: "0 0 16px rgba(244, 63, 94, 0.6)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 3,
+                  }}
+                >
+                  <div style={{ writingMode: "vertical-rl", fontSize: "9px", fontWeight: 900, color: "#FFFFFF" }}>
+                    WALL
+                  </div>
+                </div>
+              </div>
+
+              {/* Slider & Formula Breakdown */}
+              <div style={{ marginTop: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: 700, color: textColor }}>
+                    Obstacle Distance: <strong style={{ color: "#00F5D4" }}>{diagramRadarDist} cm</strong>
+                  </label>
+                  <span style={{ fontSize: "11px", fontFamily: "monospace", color: "#38BDF8" }}>
+                    Flight Time (Echo): ~{Math.round((diagramRadarDist * 2) / 0.0343)} µs
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={2}
+                  max={100}
+                  value={diagramRadarDist}
+                  onChange={(e) => setDiagramRadarDist(Number(e.target.value))}
+                  style={{ width: "100%", accentColor: "#00F5D4", cursor: "pointer" }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: mutedTextColor, marginTop: "2px" }}>
+                  <span>2 cm (Min Range)</span>
+                  <span>Formula: cm = (duration * 0.0343) / 2</span>
+                  <span>100 cm</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2. BREADBOARD & LED CIRCUIT WITH OHM'S LAW */}
+          {activeDiag === "breadboard-circuit" && (
+            <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: 800, color: textColor }}>
+                    Breadboard Circuit & Current Limiting
+                  </div>
+                  <div style={{ fontSize: "11px", color: mutedTextColor }}>
+                    Ohm&apos;s Law: V = I × R • Safe Current = (5V - 2V) / 220Ω = 13.6 mA
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDiagramLedOn((prev) => !prev);
+                    playClick(soundEnabled);
+                  }}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "8px",
+                    fontWeight: 900,
+                    fontSize: "11px",
+                    cursor: "pointer",
+                    border: "none",
+                    backgroundColor: diagramLedOn ? "#F5B700" : "rgba(255, 255, 255, 0.1)",
+                    color: diagramLedOn ? "#0F172A" : "#FFFFFF",
+                    boxShadow: diagramLedOn ? "0 0 16px rgba(245, 183, 0, 0.5)" : "none",
+                  }}
+                >
+                  D13 Pin: {diagramLedOn ? "HIGH (5V ON)" : "LOW (0V OFF)"}
+                </button>
+              </div>
+
+              {/* Breadboard Visual Circuit Graphic */}
+              <div
+                style={{
+                  height: "140px",
+                  background: "#161B26",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-around",
+                  padding: "0 16px",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                {/* 5V Pin */}
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#FFF", fontSize: "12px" }}>
+                    5V
+                  </div>
+                  <span style={{ fontSize: "9px", color: "#F87171", fontWeight: 800 }}>D13 PIN</span>
+                </div>
+
+                {/* Resistor Wire */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{ width: "60px", height: "14px", background: "#D97706", borderRadius: "4px", border: "1px solid #78350F", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+                    <div style={{ width: "4px", height: "100%", background: "#DC2626" }} />
+                    <div style={{ width: "4px", height: "100%", background: "#DC2626" }} />
+                    <div style={{ width: "4px", height: "100%", background: "#92400E" }} />
+                    <div style={{ width: "4px", height: "100%", background: "#F59E0B" }} />
+                  </div>
+                  <span style={{ fontSize: "10px", color: "#FBBF24", fontWeight: 800, marginTop: "4px" }}>220 Ω</span>
+                </div>
+
+                {/* 5mm LED */}
+                <div style={{ textAlign: "center", position: "relative" }}>
+                  <div
+                    style={{
+                      width: "38px",
+                      height: "46px",
+                      borderRadius: "19px 19px 6px 6px",
+                      background: diagramLedOn ? "#FDE047" : "#4B5563",
+                      boxShadow: diagramLedOn ? "0 0 35px 12px rgba(250, 204, 21, 0.85)" : "none",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: diagramLedOn ? "2px solid #FEF08A" : "2px solid #374151",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <Zap size={18} color={diagramLedOn ? "#854D0E" : "#9CA3AF"} />
+                  </div>
+                  <span style={{ fontSize: "9px", color: diagramLedOn ? "#FDE047" : "#9CA3AF", fontWeight: 800 }}>5mm LED</span>
+                </div>
+
+                {/* Ground Return */}
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#3B82F6", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#FFF", fontSize: "12px" }}>
+                    GND
+                  </div>
+                  <span style={{ fontSize: "9px", color: "#60A5FA", fontWeight: 800 }}>COMMON 0V</span>
+                </div>
+              </div>
+
+              {/* Status explanation */}
+              <div style={{ fontSize: "11px", color: textColor, background: "rgba(255, 255, 255, 0.04)", padding: "8px 12px", borderRadius: "8px" }}>
+                {diagramLedOn
+                  ? "⚡ Circuit Closed: 13.6 mA flowing through LED Anode (+) to Cathode (-) and safely dropping 3.0V across 220Ω resistor."
+                  : "⚪ Circuit Open: Digital Pin D13 at LOW (0V). Zero current flow. Circuit is completely safe."}
+              </div>
+            </div>
+          )}
+
+          {/* 3. SG90 SERVO MOTOR PROTRACTOR GAUGE */}
+          {activeDiag === "servo-gauge" && (
+            <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: 800, color: textColor }}>
+                    SG90 Micro Servo 0°–180° Angle Controller
+                  </div>
+                  <div style={{ fontSize: "11px", color: mutedTextColor }}>
+                    50 Hz PWM Frequency (20 ms period) • Pulse Width: 1000 µs (0°) to 2000 µs (180°)
+                  </div>
+                </div>
+                <div style={{ fontSize: "16px", fontWeight: 900, color: "#F5B700", fontFamily: "monospace" }}>
+                  {diagramServoAngle}°
+                </div>
+              </div>
+
+              {/* Radial Protractor Arc */}
+              <div
+                style={{
+                  height: "140px",
+                  background: "#080B12",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    borderRadius: "50%",
+                    border: "2px dashed rgba(255, 255, 255, 0.15)",
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {/* Rotating Horn Arm */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      width: "60px",
+                      height: "8px",
+                      background: "#38BDF8",
+                      borderRadius: "999px",
+                      transformOrigin: "0% 50%",
+                      left: "50%",
+                      transform: `rotate(${diagramServoAngle - 90}deg)`,
+                      boxShadow: "0 0 12px #38BDF888",
+                      transition: "transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
+                  />
+                  {/* Motor Gear Hub */}
+                  <div
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      borderRadius: "50%",
+                      background: "#FFFFFF",
+                      border: "3px solid #0284C7",
+                      zIndex: 3,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Angle Stepper Slider */}
+              <div>
+                <input
+                  type="range"
+                  min={0}
+                  max={180}
+                  value={diagramServoAngle}
+                  onChange={(e) => setDiagramServoAngle(Number(e.target.value))}
+                  style={{ width: "100%", accentColor: "#38BDF8", cursor: "pointer" }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: mutedTextColor, marginTop: "2px" }}>
+                  <button type="button" onClick={() => setDiagramServoAngle(0)} style={{ background: "none", border: "none", color: "#38BDF8", cursor: "pointer" }}>0° (Close Lid)</button>
+                  <button type="button" onClick={() => setDiagramServoAngle(90)} style={{ background: "none", border: "none", color: "#38BDF8", cursor: "pointer" }}>90° (Neutral)</button>
+                  <button type="button" onClick={() => setDiagramServoAngle(180)} style={{ background: "none", border: "none", color: "#38BDF8", cursor: "pointer" }}>180° (Open Lid)</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 4. L298N H-BRIDGE MOTOR DIRECTION CONTROLLER */}
+          {activeDiag === "h-bridge-motor" && (
+            <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: 800, color: textColor }}>
+                    L298N Dual H-Bridge Motor Inverter
+                  </div>
+                  <div style={{ fontSize: "11px", color: mutedTextColor }}>
+                    Switches 4 Internal Transistors to Flip Voltage Polarity across DC Motor Terminals
+                  </div>
+                </div>
+                <div style={{ fontSize: "12px", fontWeight: 900, color: diagramMotorDir === "forward" ? "#10B981" : diagramMotorDir === "reverse" ? "#F5B700" : "#EF4444" }}>
+                  {diagramMotorDir.toUpperCase()}
+                </div>
+              </div>
+
+              {/* Motor Graphic */}
+              <div
+                style={{
+                  height: "130px",
+                  background: "#080B12",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-around",
+                  padding: "0 20px",
+                }}
+              >
+                {/* Driver Module */}
+                <div style={{ width: "80px", height: "70px", background: "#B91C1C", borderRadius: "8px", padding: "6px", color: "#FFF", fontSize: "10px", fontWeight: 900, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <span>L298N DRIVER</span>
+                  <div style={{ fontSize: "8px", color: "#FCA5A5" }}>IN1: {diagramMotorDir === "forward" ? "1" : "0"} • IN2: {diagramMotorDir === "reverse" ? "1" : "0"}</div>
+                </div>
+
+                {/* Spinning Motor Wheel */}
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      border: "4px solid #F5B700",
+                      background: "#1E293B",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transform: diagramMotorDir === "forward" ? "rotate(45deg)" : diagramMotorDir === "reverse" ? "rotate(-45deg)" : "none",
+                      transition: "transform 0.3s ease",
+                    }}
+                  >
+                    <RotateCcw size={24} color="#F5B700" />
+                  </div>
+                  <span style={{ fontSize: "10px", color: "#FBBF24", fontWeight: 800, marginTop: "4px", display: "block" }}>DC GEAR MOTOR</span>
+                </div>
+              </div>
+
+              {/* Mode Buttons */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setDiagramMotorDir("forward")}
+                  style={{
+                    padding: "6px",
+                    borderRadius: "8px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    border: "1px solid #10B981",
+                    background: diagramMotorDir === "forward" ? "rgba(16, 185, 129, 0.25)" : "transparent",
+                    color: diagramMotorDir === "forward" ? "#10B981" : "#94A3B8",
+                  }}
+                >
+                  Forward (IN1=1, IN2=0)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDiagramMotorDir("reverse")}
+                  style={{
+                    padding: "6px",
+                    borderRadius: "8px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    border: "1px solid #F5B700",
+                    background: diagramMotorDir === "reverse" ? "rgba(245, 183, 0, 0.25)" : "transparent",
+                    color: diagramMotorDir === "reverse" ? "#F5B700" : "#94A3B8",
+                  }}
+                >
+                  Reverse (IN1=0, IN2=1)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDiagramMotorDir("stop")}
+                  style={{
+                    padding: "6px",
+                    borderRadius: "8px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    border: "1px solid #EF4444",
+                    background: diagramMotorDir === "stop" ? "rgba(239, 68, 68, 0.25)" : "transparent",
+                    color: diagramMotorDir === "stop" ? "#EF4444" : "#94A3B8",
+                  }}
+                >
+                  Brake / Stop
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 5. IR TCRT5000 LINE TRACKING SENSOR */}
+          {activeDiag === "ir-reflectance" && (
+            <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: 800, color: textColor }}>
+                    TCRT5000 Infrared Reflectance Sensor
+                  </div>
+                  <div style={{ fontSize: "11px", color: mutedTextColor }}>
+                    940 nm Infrared Photodiode • White Surface Reflects Light, Matte Black Surface Absorbs
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDiagramIrSurface((s) => (s === "black" ? "white" : "black"))}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    fontSize: "11px",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                    border: "1px solid #38BDF8",
+                    background: diagramIrSurface === "black" ? "#0F172A" : "#FFFFFF",
+                    color: diagramIrSurface === "black" ? "#38BDF8" : "#0F172A",
+                  }}
+                >
+                  Surface: {diagramIrSurface === "black" ? "Black Tape (Absorbs)" : "White Tile (Reflects)"}
+                </button>
+              </div>
+
+              {/* Graphic Representation */}
+              <div
+                style={{
+                  height: "140px",
+                  background: diagramIrSurface === "black" ? "#0A0D14" : "#E2E8F0",
+                  borderRadius: "12px",
+                  border: "2px solid #38BDF8",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-around",
+                  transition: "background 0.3s ease",
+                  padding: "0 20px",
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#4338CA", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontSize: "10px", fontWeight: 900 }}>
+                    IR LED
+                  </div>
+                  <span style={{ fontSize: "9px", color: "#818CF8", fontWeight: 800 }}>EMITTER</span>
+                </div>
+
+                <div style={{ fontSize: "12px", fontWeight: 800, color: diagramIrSurface === "black" ? "#F43F5E" : "#10B981" }}>
+                  {diagramIrSurface === "black" ? "⬇ Rays Absorbed into Black Track (NO RETURN)" : "⬇ ⬆ Rays Bounced into Receiver"}
+                </div>
+
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: diagramIrSurface === "black" ? "#1E293B" : "#10B981", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontSize: "10px", fontWeight: 900 }}>
+                    PHOTO
+                  </div>
+                  <span style={{ fontSize: "9px", color: "#34D399", fontWeight: 800 }}>RECEIVER</span>
+                </div>
+              </div>
+
+              <div style={{ fontSize: "11px", color: textColor, background: "rgba(255, 255, 255, 0.04)", padding: "8px 12px", borderRadius: "8px" }}>
+                Comparator Output Pin: <strong>{diagramIrSurface === "black" ? "HIGH (1) — Over Line / Edge Alert" : "LOW (0) — Over White Safe Zone"}</strong>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

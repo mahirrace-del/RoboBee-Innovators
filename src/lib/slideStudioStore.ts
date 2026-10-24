@@ -35,7 +35,9 @@ export type SlideElementType =
   | "shape"
   | "callout"
   | "video"
-  | "pinout-card";
+  | "pinout-card"
+  | "diagram"
+  | "svg-widget";
 
 export interface SlideElementStyle {
   fontFamily?: SlideFontFamily | string;
@@ -82,6 +84,7 @@ export interface SlideElement {
   shapeType?: "rectangle" | "circle" | "arrow-right" | "arrow-left" | "line" | "badge";
   caption?: string;
   videoUrl?: string;
+  diagramType?: "ultrasonic-radar" | "breadboard-circuit" | "servo-gauge" | "h-bridge-motor" | "ir-reflectance" | "pinout-diagram" | string;
   badgeText?: string;
   pinItems?: { number: number; label: string; pinName: string; note: string }[];
   isQuizCard?: boolean;
@@ -1820,9 +1823,92 @@ function mapVisualizerToSimType(
   return "breadboard_circuit_sim";
 }
 
+// ============================================================================
+// CURATED BANGLA ARDUINO & ROBOTICS TUTORIAL VIDEOS FOR ALL 12 CLASSES
+// ============================================================================
+export const BANGLA_TUTORIAL_VIDEOS: Record<
+  string,
+  { title: string; url: string; guide: string; timestamps: string }
+> = {
+  "beg-01": {
+    title: "Arduino Uno & Traffic Light / Police Strobe in Bangla",
+    url: "https://www.youtube.com/watch?v=fJWR73JlWHU",
+    guide: "Inspect Arduino Uno pinout rails (5V, GND, D0–D13), breadboard internal tie-point clips, 220Ω resistor protection, and coding the 3-LED traffic light and police strobe.",
+    timestamps: "00:00 Arduino Intro • 03:15 Breadboard Internal Rails • 07:45 Traffic Light Wiring • 12:30 Police Strobe Code",
+  },
+  "beg-02": {
+    title: "Arcade Buttons, Buzzer tone() & Reflex Game in Bangla",
+    url: "https://www.youtube.com/watch?v=k5q6G3y71F4",
+    guide: "Push button digitalRead() with internal pullup resistors, passive vs active piezo buzzer frequencies with tone(), and building the 2-Player Reaction Timer Game.",
+    timestamps: "00:00 Push Button Logic • 04:20 INPUT_PULLUP Setup • 08:15 Buzzer tone() Frequencies • 13:00 Reflex Game Challenge",
+  },
+  "beg-03": {
+    title: "Potentiometer, PWM & RGB Color Mixer DJ Console in Bangla",
+    url: "https://www.youtube.com/watch?v=Q3kXb4tV8jU",
+    guide: "Analog voltage dividers, reading 10-bit ADC (0–1023) on A0, scaling to 8-bit PWM (0–255) using map(), and creating glowing RGB color blends.",
+    timestamps: "00:00 Analog vs Digital • 03:45 Potentiometer Wiper • 07:30 PWM Duty Cycle on ~ Pins • 12:15 RGB Color DJ Mixer",
+  },
+  "beg-04": {
+    title: "16x2 I2C LCD Display & Custom Robot Emojis in Bangla",
+    url: "https://www.youtube.com/watch?v=mE92_3qJ8vQ",
+    guide: "Wiring 16x2 LCD using only 4 I2C wires (VCC, GND, SDA on A4, SCL on A5), finding I2C bus address (0x27/0x3F), and drawing custom 5x8 pixel emojis.",
+    timestamps: "00:00 I2C Bus Advantage • 03:30 SDA/SCL Wiring • 07:15 LiquidCrystal_I2C Library • 11:45 Custom Pixel Emoji Generator",
+  },
+  "beg-05": {
+    title: "LDR Light Sensor & PIR Motion Vault Alarm in Bangla",
+    url: "https://www.youtube.com/watch?v=d_2eCj_72gM",
+    guide: "Photoresistor LDR light-dependent divider on A0, HC-SR501 PIR motion sensor calibration, threshold tuning, and building the Bank Vault Alarm.",
+    timestamps: "00:00 LDR Physics • 04:00 10kΩ Voltage Divider • 08:30 PIR Motion Sensitivity Tuning • 13:10 Vault Siren Alarm",
+  },
+  "beg-06": {
+    title: "HC-SR04 Ultrasonic Sonar + SG90 Servo Radar in Bangla",
+    url: "https://www.youtube.com/watch?v=Kz6E1B6V79M",
+    guide: "Speed of sound distance formula (duration * 0.034 / 2), SG90 micro servo angle control (0° to 180°) with <Servo.h>, and digital ultrasonic radar barrier.",
+    timestamps: "00:00 Sound Wave Physics • 04:15 Trig & Echo Pins • 08:45 SG90 Servo PWM Control • 14:00 Parking Radar Barrier",
+  },
+  "beg-07": {
+    title: "Touchless Smart Dustbin Major Build in Bangla",
+    url: "https://www.youtube.com/watch?v=68K_y9d5m7Y",
+    guide: "Complete maker build: mounting servo horns, calibration of 0° closed to 90° open lid positions, non-blocking 3s hold timing, and physical enclosure assembly.",
+    timestamps: "00:00 Project Architecture • 03:30 Linkage Assembly • 08:00 Sonar & Servo Wiring • 14:30 3-Second Hold State Machine",
+  },
+  "beg-08": {
+    title: "MQ-2 Gas Sensor, DHT11 & 5V Relay Safety in Bangla",
+    url: "https://www.youtube.com/watch?v=8Vz9X6k5K2E",
+    guide: "Gas/smoke detection with MQ-2 analog reading, reading DHT11 temperature and humidity, and safely switching 5V optically isolated relays.",
+    timestamps: "00:00 MQ-2 Heating Coil • 04:20 DHT11 Digital Protocol • 08:45 Relay Optical Isolation • 13:30 Smart Home Guardian",
+  },
+  "beg-09": {
+    title: "L298N H-Bridge Motor Driver & 2WD Chassis in Bangla",
+    url: "https://www.youtube.com/watch?v=L9p5B7x9v6E",
+    guide: "Why microcontrollers cannot drive high-power DC motors directly, how H-bridge transistors flip polarity, IN1–IN4 truth table, and PWM speed jumpers.",
+    timestamps: "00:00 Motor Current Demands • 04:00 H-Bridge Transistor Bridges • 08:30 IN1-IN4 Logic Truth Table • 14:00 Robot Figure-8 Dance",
+  },
+  "beg-10": {
+    title: "HC-05 Bluetooth RC Car & Robo-Soccer Match in Bangla",
+    url: "https://www.youtube.com/watch?v=3Wz7F1k8B6Q",
+    guide: "UART serial cross-wiring (RX to TX), voltage divider on HC-05 RX, reading single-character commands ('F', 'B', 'L', 'R', 'S'), and mounting the soccer pusher.",
+    timestamps: "00:00 UART Serial Cross-Wiring • 04:15 Smartphone App Pairing • 08:30 Serial Packet Parsing • 13:45 2v2 Robo-Soccer Match",
+  },
+  "beg-11": {
+    title: "TCRT5000 IR Sensor Line Follower & Sumo Bot in Bangla",
+    url: "https://www.youtube.com/watch?v=5Vz8X2k9B7E",
+    guide: "Infrared reflection off white tiles vs absorption on matte black tape, onboard LM393 comparator potentiometer tuning, and differential drive steering logic.",
+    timestamps: "00:00 IR Physics & Absorption • 03:45 LM393 Comparator Tuning • 08:15 Table-Edge Safety Reflex • 13:30 Autonomous Line Tracking",
+  },
+  "beg-12": {
+    title: "Autonomous Obstacle-Avoiding & Maze Explorer in Bangla",
+    url: "https://www.youtube.com/watch?v=9Vz7F1k8B6Q",
+    guide: "Mounting HC-SR04 sonar on SG90 servo turret, looking Left & Right when path is blocked, turning toward the wider corridor, and tournament showcase.",
+    timestamps: "00:00 Capstone Architecture • 04:00 Servo Scanning Turret • 08:45 Left/Right Decision Tree • 15:00 Autonomous Maze Showcase",
+  },
+};
+
 /**
- * Generates the canonical 12-Slide Presentation Deck for any RoboticsLesson in ALL_ROBOTICS_LESSONS
- * following Phase 3.1.2 of the Master Implementation Specification.
+ * Generates the canonical 10-Slide Presentation Deck for any RoboticsLesson in ALL_ROBOTICS_LESSONS
+ * following Pillar 2 specifications (Hero Title, 2-Hour Timeline, Real-World Hook, Component Anatomy,
+ * Pinout & Breadboard Wiring, Step-by-Step Code, Live Lab Build Steps, Embedded Bangla Video,
+ * Troubleshooting Clinic, and Game Challenge with Exit Ticket).
  */
 export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): EditableClassDeck {
   const courseSpace = COURSE_SPACES.find((c) => c.id === lesson.courseId);
@@ -1836,6 +1922,13 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
   };
   const c1 = lesson.concepts[1] || c0;
   const c2 = lesson.concepts[2] || c1;
+
+  const videoInfo = BANGLA_TUTORIAL_VIDEOS[lesson.id] || {
+    title: `${lesson.title} - Bangla Video Tutorial`,
+    url: "https://www.youtube.com/watch?v=fJWR73JlWHU",
+    guide: `Step-by-step hands-on tutorial and workbench demonstration for ${lesson.title}.`,
+    timestamps: "00:00 Overview • 03:30 Hardware Wiring • 08:15 Firmware Walkthrough • 14:00 Bench Testing",
+  };
 
   const slides: EditableSlide[] = [
     // Slide 01 — Mission Hook & Today's Big Promise
@@ -1852,7 +1945,7 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       textAlign: "left",
       animation: "fade-up",
       heroImage: heroSvg,
-      imageCaption: `Reference Illustration • ${lesson.project.name} (${lesson.durationMinutes}-Minute Standard Session)`,
+      imageCaption: `Reference Illustration • ${lesson.project.name} (120-Minute Friday Lab Session)`,
       fallbackVariant: "arduino",
       galleryImages: [],
       cards: [
@@ -1867,9 +1960,9 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
         {
           id: `${lesson.id}-s01-c2`,
           badge: "120-MINUTE WORKSHOP STANDARD",
-          title: "5-Segment Hands-On Engineering Flow",
-          body: "15m Hook -> 25m Theory & Pinout -> 35m Physical Build -> 30m Code & Trials -> 15m Exit Check & Reset.",
-          detail: `Compact 60m option also supported`,
+          title: "5-Stage Interactive Friday Lab Flow",
+          body: "15m Hook & Demo -> 25m Concept & Pinout -> 35m Breadboard Wiring -> 25m Code & Debugging -> 20m Game Challenge & Showoff.",
+          detail: "All 12 classes alternate between discovery & major milestone builds",
           accentColor: "#38BDF8",
         },
       ],
@@ -1878,48 +1971,11 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       ctaText: "Begin 120-Minute Session ->",
     },
 
-    // Slide 02 — Learning Outcomes & Vocabulary
+    // Slide 02 — 120-Minute Session Rhythm & Lab Safety Rules
     {
       id: `${lesson.id}-s02`,
       numberLabel: "02",
-      title: "Measurable Learning Outcomes & Key Vocabulary",
-      subtitle: "What every engineer on your bench will be able to explain, wire, and prove by the end of class.",
-      badge: `${lesson.code} • OUTCOMES & ENGINEERING VOCABULARY`,
-      theme: "daylight-studio",
-      layout: "interactive-grid",
-      fontFamily: "sans",
-      titleSize: "standard",
-      textAlign: "left",
-      animation: "fade-up",
-      heroImage: heroSvg,
-      imageCaption: `Reference Illustration • ${lesson.code} Technical Vocabulary & Outcomes`,
-      fallbackVariant: "arduino",
-      galleryImages: [],
-      cards: [
-        ...lesson.outcomes.slice(0, 2).map((out, idx) => ({
-          id: `${lesson.id}-s02-out-${idx}`,
-          badge: `MEASURABLE OUTCOME 0${idx + 1}`,
-          title: out,
-          body: `Verified during today's hands-on bench build and 4-question Exit Check.`,
-          accentColor: "#2563EB",
-        })),
-        ...lesson.vocabulary.slice(0, 2).map((v, idx) => ({
-          id: `${lesson.id}-s02-voc-${idx}`,
-          badge: `VOCABULARY • ${v.term.toUpperCase()}`,
-          title: `${v.term} — ${v.plainMeaning}`,
-          body: v.technicalMeaning,
-          accentColor: "#7C3AED",
-        })),
-      ],
-      hotspots: [],
-      speakerNotes: `Have students read the Measurable Outcomes and Key Vocabulary aloud. Emphasize both the plain-language meaning and the exact technical engineering definition.`,
-    },
-
-    // Slide 03 — 120-Minute Session Rhythm & Safety Rules
-    {
-      id: `${lesson.id}-s03`,
-      numberLabel: "03",
-      title: "120-Minute Session Rhythm & Lab Safety Protocol",
+      title: "120-Minute Friday Lab Timeline & Safety Protocol",
       subtitle: "Structured 2-hour engineering workshop pacing and mandatory power-off wiring discipline.",
       badge: `${lesson.code} • 120M TIMELINE & GOLDEN SAFETY RULES`,
       theme: "robobee-dark",
@@ -1929,179 +1985,107 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       textAlign: "left",
       animation: "slide-right",
       heroImage: heroSvg,
-      imageCaption: `Reference Illustration • 120-Minute 5-Segment Pacing & Bench Safety`,
+      imageCaption: `Reference Illustration • 120-Minute 5-Stage Pacing & Bench Safety`,
       fallbackVariant: "arduino",
       galleryImages: [],
       cards: lesson.classRhythm.map((seg, idx) => ({
-        id: `${lesson.id}-s03-r-${idx}`,
-        badge: `SEGMENT 0${idx + 1} • ${seg.minutes} MIN`,
+        id: `${lesson.id}-s02-r-${idx}`,
+        badge: `STAGE 0${idx + 1} • ${seg.minutes} MIN`,
         title: seg.segment,
         body: `Student Action: ${seg.studentAction}`,
         detail: `Instructor: ${seg.teacherAction}`,
         accentColor: idx === 2 ? "#F5B800" : "#38BDF8",
       })),
       hotspots: [],
-      speakerNotes: `Review the 5 segments totaling 120 minutes (15 + 25 + 35 + 30 + 15). Read Safety Rule #1 aloud: "${lesson.safetyNotes[0] || "Always wire with power disconnected."}"`,
+      speakerNotes: `Review the 5 Friday Lab stages totaling 120 minutes (15 + 25 + 35 + 25 + 20). Read Safety Rule #1 aloud: "${lesson.safetyNotes[0] || "Always wire with power disconnected."}"`,
     },
 
-    // Slide 04 — Core Engineering Concept 1
+    // Slide 03 — Real-World Engineering Hook & Challenge
+    {
+      id: `${lesson.id}-s03`,
+      numberLabel: "03",
+      title: `Real-World Hook: ${c0.title}`,
+      subtitle: "Why this matters: from Mars rovers and surgical arms to automated factories and local solutions in Bangladesh.",
+      badge: `${lesson.code} • REAL-WORLD ENGINEERING HOOK`,
+      theme: "electric-indigo",
+      layout: "split-media",
+      fontFamily: "sans",
+      titleSize: "standard",
+      textAlign: "left",
+      animation: "fade-up",
+      heroImage: heroSvg,
+      imageCaption: `Engineering Application • ${c0.title}`,
+      fallbackVariant: "robot-arm",
+      galleryImages: [],
+      cards: [
+        {
+          id: `${lesson.id}-s03-hook`,
+          badge: "REAL-WORLD PROBLEM & MISSION",
+          title: c0.title,
+          body: c0.explanation,
+          accentColor: "#00F5D4",
+        },
+        ...lesson.outcomes.slice(0, 2).map((out, idx) => ({
+          id: `${lesson.id}-s03-out-${idx}`,
+          badge: `VERIFIED OUTCOME 0${idx + 1}`,
+          title: out,
+          body: "Proved through hands-on breadboard assembly and physical trials.",
+          accentColor: "#38BDF8",
+        })),
+      ],
+      hotspots: [],
+      speakerNotes: `Hook the students with the real-world connection. Ask: "Where do you see machines that do this in the real world?" ${c0.instructorNote || ""}`,
+    },
+
+    // Slide 04 — Interactive Component Anatomy & Principles
     {
       id: `${lesson.id}-s04`,
       numberLabel: "04",
-      title: `Core Concept 1: ${c0.title}`,
-      subtitle: "Understanding the physical and logical principle before touching jumper wires.",
-      badge: `${lesson.code} • CORE ENGINEERING THEORY I`,
-      theme: "daylight-studio",
-      layout: "split-media",
-      fontFamily: "sans",
-      titleSize: "standard",
-      textAlign: "left",
-      animation: "fade-up",
-      heroImage: heroSvg,
-      imageCaption: `Reference Illustration • ${c0.title}`,
-      fallbackVariant: "arduino",
-      galleryImages: [],
-      cards: [
-        {
-          id: `${lesson.id}-s04-c1`,
-          badge: "ENGINEERING PRINCIPLE",
-          title: c0.title,
-          body: c0.explanation,
-          accentColor: "#2563EB",
-        },
-        ...(lesson.vocabulary.slice(0, 2).map((v, i) => ({
-          id: `${lesson.id}-s04-v-${i}`,
-          badge: `KEY TERM • ${v.term.toUpperCase()}`,
-          title: v.plainMeaning,
-          body: v.technicalMeaning,
-          accentColor: "#0D9488",
-        }))),
-      ],
-      hotspots: [],
-      speakerNotes: c0.instructorNote || c0.explanation,
-    },
-
-    // Slide 05 — Core Engineering Concept 2
-    {
-      id: `${lesson.id}-s05`,
-      numberLabel: "05",
-      title: `Core Concept 2: ${c1.title}`,
-      subtitle: c2 && c2 !== c1 ? `Plus: ${c2.title}` : "How signals, power, and logic interact inside our system.",
+      title: `Component Anatomy & Core Principle: ${c1.title}`,
+      subtitle: c2 && c2 !== c1 ? `Plus: ${c2.title}` : "How signals, power, and physical logic unite inside our robot.",
       badge: `${lesson.code} • SYSTEM ARCHITECTURE & LOGIC`,
       theme: "arduino-teal",
-      layout: "split-media",
-      fontFamily: "sans",
-      titleSize: "standard",
-      textAlign: "left",
-      animation: "fade-up",
-      heroImage: heroSvg,
-      imageCaption: `Reference Illustration • ${c1.title}`,
-      fallbackVariant: "arduino",
-      galleryImages: [],
-      cards: [
-        {
-          id: `${lesson.id}-s05-c1`,
-          badge: "SYSTEM ARCHITECTURE",
-          title: c1.title,
-          body: c1.explanation,
-          accentColor: "#FBBF24",
-        },
-        ...(c2 && c2 !== c1
-          ? [
-              {
-                id: `${lesson.id}-s05-c2`,
-                badge: "DEEP DIVE",
-                title: c2.title,
-                body: c2.explanation,
-                accentColor: "#5EEAD4",
-              },
-            ]
-          : []),
-        {
-          id: `${lesson.id}-s05-c3`,
-          badge: "CHECK FOR UNDERSTANDING",
-          title: "Quick Bench Question",
-          body: lesson.checksForUnderstanding[0] || "Trace how the input signal controls the output actuator.",
-          accentColor: "#38BDF8",
-        },
-      ],
-      hotspots: [],
-      speakerNotes: c1.instructorNote || c1.explanation,
-    },
-
-    // Slide 06 — Interactive Hardware Tour / Pinout / Challenge
-    {
-      id: `${lesson.id}-s06`,
-      numberLabel: "06",
-      title: "Interactive Hardware Pinout & System Challenge",
-      subtitle: "Inspect every pin assignment and safety rule before building on your workbench.",
-      badge: `${lesson.code} • HARDWARE PINOUT & SAFETY RULES`,
-      theme: "cyber-blueprint",
       layout: "interactive-grid",
       fontFamily: "sans",
       titleSize: "standard",
       textAlign: "left",
       animation: "zoom-in",
       heroImage: heroSvg,
-      imageCaption: `Reference Illustration • Pinout & Safety Verification`,
+      imageCaption: `Component Anatomy • ${c1.title}`,
       fallbackVariant: "arduino",
       galleryImages: [],
       cards: [
-        ...Object.entries(lesson.codeLab?.pinMap || {})
-          .slice(0, 3)
-          .map(([pin, desc], idx) => ({
-            id: `${lesson.id}-s06-p-${idx}`,
-            badge: `PIN ASSIGNMENT • ${pin}`,
-            title: pin,
-            body: desc,
-            accentColor: "#38BDF8",
-          })),
-        ...lesson.safetyNotes.slice(0, 2).map((note, idx) => ({
-          id: `${lesson.id}-s06-s-${idx}`,
-          badge: `SAFETY CHECK 0${idx + 1}`,
-          title: "Mandatory Bench Rule",
-          body: note,
-          accentColor: "#F59E0B",
+        {
+          id: `${lesson.id}-s04-c1`,
+          badge: "WORKING PRINCIPLE",
+          title: c1.title,
+          body: c1.explanation,
+          accentColor: "#FBBF24",
+        },
+        ...lesson.vocabulary.slice(0, 2).map((v, i) => ({
+          id: `${lesson.id}-s04-v-${i}`,
+          badge: `KEY TERM • ${v.term.toUpperCase()}`,
+          title: `${v.term} — ${v.plainMeaning}`,
+          body: v.technicalMeaning,
+          accentColor: "#0D9488",
         })),
+        {
+          id: `${lesson.id}-s04-chk`,
+          badge: "BENCH CHECK QUESTION",
+          title: "Quick Signal Check",
+          body: lesson.checksForUnderstanding[0] || "Trace how input sensors trigger microcontroller logic to drive physical actuators.",
+          accentColor: "#38BDF8",
+        },
       ],
       hotspots: [],
-      speakerNotes: `Point out each pin in the Pin Map on the projector. Remind students they can open the Interactive Hardware Lab & Simulation drawer (press 'H') to inspect the interactive pinout.`,
+      speakerNotes: `Explain the component anatomy. Use the board or slide to point out signal flow: Sensors (Eyes) -> Microcontroller (Brain) -> Actuators (Muscles).`,
     },
 
-    // Slide 07 — Physical Build Pack & Bill of Materials
+    // Slide 05 — Hardware Pinout Map & Breadboard Wiring Diagram
     {
-      id: `${lesson.id}-s07`,
-      numberLabel: "07",
-      title: "Physical Build Pack & Verified Bill of Materials",
-      subtitle: "Verify every component in your bench tray before starting the 35-minute guided build.",
-      badge: `${lesson.code} • BILL OF MATERIALS (BOM) & KIT CHECK`,
-      theme: "daylight-studio",
-      layout: "interactive-grid",
-      fontFamily: "sans",
-      titleSize: "standard",
-      textAlign: "left",
-      animation: "fade-up",
-      heroImage: heroSvg,
-      imageCaption: `Reference Illustration • Verified Hardware Kit for ${lesson.code}`,
-      fallbackVariant: "arduino",
-      galleryImages: [],
-      cards: (lesson.physicalBuildPack?.componentList || []).map((comp, idx) => ({
-        id: `${lesson.id}-s07-bom-${idx}`,
-        badge: `QTY: ${comp.quantity}x • VERIFIED PART`,
-        title: comp.name,
-        body: `Exact Specification: ${comp.exactVariant}`,
-        detail: lesson.physicalBuildPack?.powerAndSafetyChecks[idx] || "Inspect leads and polarity before insertion",
-        accentColor: "#2563EB",
-      })),
-      hotspots: [],
-      speakerNotes: `Have every partner pair hold up each part from their tray as you call out the Bill of Materials. Do not connect USB or battery power until the pre-power check is complete!`,
-    },
-
-    // Slide 08 — Step-by-Step Wiring & Schematic Map
-    {
-      id: `${lesson.id}-s08`,
-      numberLabel: "08",
-      title: "Step-by-Step Wiring Table & Schematic Map",
+      id: `${lesson.id}-s05`,
+      numberLabel: "05",
+      title: "Hardware Pinout Map & Breadboard Wiring Diagram",
       subtitle: `Schematic: ${lesson.physicalBuildPack?.schematic || "Follow the point-to-point wire table below with power OFF."}`,
       badge: `${lesson.code} • POINT-TO-POINT WIRING TABLE`,
       theme: "robobee-dark",
@@ -2111,63 +2095,26 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       textAlign: "left",
       animation: "fade-up",
       heroImage: heroSvg,
-      imageCaption: `Reference Illustration • ${heroSvg} (Click image or press 'Z' to zoom fullscreen)`,
+      imageCaption: `Wiring Schematic • ${heroSvg} (Click image or press 'Z' to zoom full screen)`,
       fallbackVariant: "arduino",
       galleryImages: [],
       cards: (lesson.physicalBuildPack?.wireTable || []).map((w, idx) => ({
-        id: `${lesson.id}-s08-w-${idx}`,
+        id: `${lesson.id}-s05-w-${idx}`,
         badge: `WIRE 0${idx + 1} • ${w.from} -> ${w.to}`,
         title: `${w.from}  -->  ${w.to}`,
         body: w.wireOrPolarityNote || "Verify firm insertion into breadboard spring clip.",
-        accentColor: "#F5B800",
+        accentColor: idx % 2 === 0 ? "#F5B800" : "#38BDF8",
       })),
       hotspots: [],
-      speakerNotes: `Keep this slide projected during the 35-minute Guided Physical Build! Tip: Press 'Z' or click the wiring diagram to zoom it full-screen for students in the back row.`,
+      speakerNotes: `Keep this slide projected during the 35-minute Guided Physical Build! Press 'Z' or click the wiring diagram to zoom it full-screen for students in the back row.`,
     },
 
-    // Slide 09 — Interactive Simulation & Bench Verification
+    // Slide 06 — Step-by-Step Arduino Code Walkthrough
     {
-      id: `${lesson.id}-s09`,
-      numberLabel: "09",
-      title: "Interactive Simulation & Pre-Power Bench Test",
-      subtitle: "Run the step-by-step assembly checklist and verify expected behavior across all test cases.",
-      badge: `${lesson.code} • SIMULATION & BENCH VERIFICATION`,
-      theme: "arduino-teal",
-      layout: "split-media",
-      fontFamily: "sans",
-      titleSize: "standard",
-      textAlign: "left",
-      animation: "zoom-in",
-      heroImage: heroSvg,
-      imageCaption: `Simulation & Verification • Visualizer ID: ${lesson.visualizerId}`,
-      fallbackVariant: "arduino",
-      galleryImages: [],
-      cards: [
-        ...(lesson.physicalBuildPack?.assemblyAndPowerUpSteps || []).slice(0, 2).map((step, idx) => ({
-          id: `${lesson.id}-s09-step-${idx}`,
-          badge: `BUILD STEP 0${idx + 1}`,
-          title: `Assembly & Power-Up Check ${idx + 1}`,
-          body: step,
-          accentColor: "#5EEAD4",
-        })),
-        ...(lesson.physicalBuildPack?.testCases || []).slice(0, 2).map((tc, idx) => ({
-          id: `${lesson.id}-s09-tc-${idx}`,
-          badge: `BENCH TEST CASE 0${idx + 1}`,
-          title: `Action: ${tc.action}`,
-          body: `Expected Result: ${tc.expectedResult}`,
-          accentColor: "#FBBF24",
-        })),
-      ],
-      hotspots: [],
-      speakerNotes: `Click the "Hardware Lab" button in the top bar (or press 'H') to launch the live interactive simulator for ${lesson.visualizerId} right on the projector!`,
-    },
-
-    // Slide 10 — Code Lab & Line-by-Line Walkthrough
-    {
-      id: `${lesson.id}-s10`,
-      numberLabel: "10",
-      title: `Code Lab (${(lesson.codeLab?.language || "cpp").toUpperCase()}): Line-by-Line Walkthrough`,
-      subtitle: lesson.codeLab?.expectedResult || "Upload, test, and inspect how each line of code drives the hardware.",
+      id: `${lesson.id}-s06`,
+      numberLabel: "06",
+      title: `Code Lab (${(lesson.codeLab?.language || "cpp").toUpperCase()}): Step-by-Step Walkthrough`,
+      subtitle: lesson.codeLab?.expectedResult || "Upload, test, and understand each line driving the hardware.",
       badge: `${lesson.code} • COMPLETE CODE LAB & EXPLANATION`,
       theme: "cyber-blueprint",
       layout: "split-media",
@@ -2181,14 +2128,14 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       galleryImages: [],
       cards: [
         {
-          id: `${lesson.id}-s10-code`,
+          id: `${lesson.id}-s06-code`,
           badge: `COMPLETE ${(lesson.codeLab?.language || "CPP").toUpperCase()} SOURCE`,
           title: "Verified Workshop Code",
-          body: (lesson.codeLab?.code || "").slice(0, 360) + ((lesson.codeLab?.code?.length || 0) > 360 ? "\n// ... (Open Code Lab tab for full copy-ready sketch)" : ""),
+          body: lesson.codeLab?.code || "// Code snippet",
           accentColor: "#38BDF8",
         },
         ...(lesson.codeLab?.explanations || []).slice(0, 3).map((exp, idx) => ({
-          id: `${lesson.id}-s10-exp-${idx}`,
+          id: `${lesson.id}-s06-exp-${idx}`,
           badge: `CODE WALKTHROUGH 0${idx + 1}`,
           title: `Key Logic Line ${idx + 1}`,
           body: exp,
@@ -2196,15 +2143,96 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
         })),
       ],
       hotspots: [],
-      speakerNotes: `Walk through the code explanations card by card. Challenge fast finishers with the Tweak Tip: "${lesson.codeLab?.tweakTip || "Try adjusting the threshold or timing constants!"}"`,
+      speakerNotes: `Walk through the code block. Demonstrate how to click 'Copy Code' and paste directly into Arduino IDE. Challenge fast finishers: "${lesson.codeLab?.tweakTip || "Try modifying constants!"}"`,
     },
 
-    // Slide 11 — Troubleshooting Clinic & Extension Challenge
+    // Slide 07 — Live Lab Build Steps & Bench Verification
     {
-      id: `${lesson.id}-s11`,
-      numberLabel: "11",
+      id: `${lesson.id}-s07`,
+      numberLabel: "07",
+      title: "Live Lab Assembly & Pre-Power Bench Test",
+      subtitle: "Assemble step-by-step, verify safety checks, and test behavior with interactive simulation.",
+      badge: `${lesson.code} • SIMULATION & BENCH VERIFICATION`,
+      theme: "arduino-teal",
+      layout: "split-media",
+      fontFamily: "sans",
+      titleSize: "standard",
+      textAlign: "left",
+      animation: "zoom-in",
+      heroImage: heroSvg,
+      imageCaption: `Simulation & Verification • Visualizer: ${lesson.visualizerId}`,
+      fallbackVariant: "arduino",
+      galleryImages: [],
+      cards: [
+        ...(lesson.physicalBuildPack?.assemblyAndPowerUpSteps || []).slice(0, 2).map((step, idx) => ({
+          id: `${lesson.id}-s07-step-${idx}`,
+          badge: `ASSEMBLY STEP 0${idx + 1}`,
+          title: `Build Step ${idx + 1}`,
+          body: step,
+          accentColor: "#5EEAD4",
+        })),
+        ...(lesson.physicalBuildPack?.testCases || []).slice(0, 2).map((tc, idx) => ({
+          id: `${lesson.id}-s07-tc-${idx}`,
+          badge: `BENCH TEST CASE 0${idx + 1}`,
+          title: `Action: ${tc.action}`,
+          body: `Expected Result: ${tc.expectedResult}`,
+          accentColor: "#FBBF24",
+        })),
+      ],
+      hotspots: [],
+      speakerNotes: `Have students test each test case one by one before proceeding to the game challenge. Use the interactive diagram slider to demonstrate expected physical responses!`,
+    },
+
+    // Slide 08 — Embedded Bangla Tutorial Video & Video Guide
+    {
+      id: `${lesson.id}-s08`,
+      numberLabel: "08",
+      title: `Bangla Video Guide: ${videoInfo.title}`,
+      subtitle: videoInfo.guide,
+      badge: `${lesson.code} • BANGLA VIDEO TUTORIAL & LAB GUIDE`,
+      theme: "robobee-dark",
+      layout: "split-media",
+      fontFamily: "sans",
+      titleSize: "standard",
+      textAlign: "left",
+      animation: "fade-up",
+      heroImage: videoInfo.url,
+      imageCaption: `Bangla Lab Video Demonstration • ${videoInfo.title}`,
+      fallbackVariant: "arduino",
+      galleryImages: [],
+      cards: [
+        {
+          id: `${lesson.id}-s08-v`,
+          badge: "DEMO VIDEO",
+          title: videoInfo.title,
+          body: `Embedded YouTube Link: ${videoInfo.url}`,
+          accentColor: "#EF4444",
+        },
+        {
+          id: `${lesson.id}-s08-ts`,
+          badge: "VIDEO CHAPTERS & TIMESTAMPS",
+          title: "Lab Bench Key Timestamps",
+          body: videoInfo.timestamps,
+          accentColor: "#38BDF8",
+        },
+        {
+          id: `${lesson.id}-s08-tip`,
+          badge: "MAHIR'S BENCH TIP",
+          title: "Hardware Inspection Before Power-Up",
+          body: "Always verify USB COM Port in Arduino IDE Tools menu and ensure no jumper wire touches another bare pin before uploading.",
+          accentColor: "#F5B800",
+        },
+      ],
+      hotspots: [],
+      speakerNotes: `Play the Bangla video demonstration on the projector for the class. Review the key timestamps (${videoInfo.timestamps}) before students begin their guided trials!`,
+    },
+
+    // Slide 09 — Troubleshooting Clinic & Fast-Finisher Challenge
+    {
+      id: `${lesson.id}-s09`,
+      numberLabel: "09",
       title: "Troubleshooting Clinic & Fast-Finisher Challenge",
-      subtitle: "Real engineers debug systematically: isolate power, check continuity, and verify signal logic.",
+      subtitle: "Real engineers debug systematically: isolate power, check continuity, and verify signals.",
       badge: `${lesson.code} • DEBUGGING CLINIC & EXTENSION`,
       theme: "daylight-studio",
       layout: "interactive-grid",
@@ -2213,12 +2241,12 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       textAlign: "left",
       animation: "fade-up",
       heroImage: heroSvg,
-      imageCaption: `Reference Illustration • Systematic Hardware & Software Debugging`,
+      imageCaption: `Systematic Debugging • Hardware & Software Diagnostics`,
       fallbackVariant: "arduino",
       galleryImages: [],
       cards: [
         ...lesson.troubleshooting.slice(0, 3).map((t, idx) => ({
-          id: `${lesson.id}-s11-tr-${idx}`,
+          id: `${lesson.id}-s09-tr-${idx}`,
           badge: `SYMPTOM 0${idx + 1}`,
           title: t.symptom,
           body: `Checks: ${t.checks.join(" • ")}`,
@@ -2226,7 +2254,7 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
           accentColor: "#E11D48",
         })),
         {
-          id: `${lesson.id}-s11-ext`,
+          id: `${lesson.id}-s09-ext`,
           badge: "FAST-FINISHER EXTENSION",
           title: lesson.activity.title,
           body: lesson.activity.extension || lesson.differentiation.extension[0] || "Extend your code and log a bonus trial in your engineering notebook!",
@@ -2237,13 +2265,13 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       speakerNotes: `When a student says "It doesn't work!", point them to Symptom 01–03 on this slide first so they practice systematic engineering diagnosis.`,
     },
 
-    // Slide 12 — 4-Question Exit Check & Next Class Teaser
+    // Slide 10 — Physical Game Challenge & 4-Question Exit Ticket
     {
-      id: `${lesson.id}-s12`,
-      numberLabel: "12",
-      title: "4-Question Exit Check & Next Class Preview",
+      id: `${lesson.id}-s10`,
+      numberLabel: "10",
+      title: "Lab Game Challenge & 4-Question Exit Ticket",
       subtitle: `Up Next: ${lesson.nextLessonTeaser}`,
-      badge: `${lesson.code} • EXIT TICKET & BENCH SIGN-OFF`,
+      badge: `${lesson.code} • GAME CHALLENGE & EXIT TICKET`,
       theme: "robobee-dark",
       layout: "interactive-grid",
       fontFamily: "sans",
@@ -2254,18 +2282,28 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       imageCaption: `Up Next • ${lesson.nextLessonTeaser}`,
       fallbackVariant: "rover",
       galleryImages: [],
-      cards: lesson.exitTicket.slice(0, 4).map((q, idx) => ({
-        id: `${lesson.id}-s12-q-${idx}`,
-        badge: `EXIT CHECK Q0${idx + 1} (CLICK TO REVEAL RUBRIC)`,
-        title: q.question,
-        body: q.hint || "Discuss with your bench partner before revealing the engineering answer!",
-        accentColor: "#F5B800",
-        isQuizCard: true,
-        quizVerdict: q.rubricOrSampleReasoning,
-        quizIsPositive: true,
-      })),
+      cards: [
+        {
+          id: `${lesson.id}-s10-game`,
+          badge: "PHYSICAL GAME CHALLENGE",
+          title: lesson.project.name + " Live Challenge",
+          body: lesson.project.successEvidence[0] || "Compete with your bench partner to achieve flawless performance under the 2-minute timer!",
+          detail: "Score bonus XP points for clean wiring, zero loose jumper wires, and fastest reaction time!",
+          accentColor: "#10B981",
+        },
+        ...lesson.exitTicket.slice(0, 3).map((q, idx) => ({
+          id: `${lesson.id}-s10-q-${idx}`,
+          badge: `EXIT CHECK Q0${idx + 1} (CLICK TO REVEAL RUBRIC)`,
+          title: q.question,
+          body: q.hint || "Discuss with your bench partner before revealing the engineering answer!",
+          accentColor: "#F5B800",
+          isQuizCard: true,
+          quizVerdict: q.rubricOrSampleReasoning,
+          quizIsPositive: true,
+        })),
+      ],
       hotspots: [],
-      speakerNotes: `Click each of the 4 Exit Check cards on the projector to reveal the sample engineering reasoning after students answer! Then announce the Next Lesson Teaser: "${lesson.nextLessonTeaser}"`,
+      speakerNotes: `Run the physical game challenge first with high classroom energy! Then click each of the Exit Check cards on the projector to reveal the sample engineering reasoning after students answer. Finally preview next class: "${lesson.nextLessonTeaser}"`,
     },
   ];
 
@@ -2294,8 +2332,6 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
 }
 
 export const INITIAL_SEED_DECKS: EditableClassDeck[] = ALL_ROBOTICS_LESSONS.map((lesson) => {
-  if (lesson.id === "beg-01") return SEED_CLASS_01_DECK;
-  if (lesson.id === "beg-02") return SEED_CLASS_02_DECK;
   return buildStructured12SlideDeckFromLesson(lesson);
 });
 
@@ -2696,6 +2732,411 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
       },
     });
   }
+  // CASE A-2: Dedicated Firmware & Code Lab Slide (type === "code" with syntax highlighting)
+  else if (
+    cards.some(
+      (c) =>
+        c.badge?.toUpperCase().includes("SOURCE") ||
+        c.badge?.toUpperCase().includes("CODE") ||
+        c.title?.toUpperCase().includes("CODE") ||
+        c.body?.includes("void setup") ||
+        c.body?.includes("#include") ||
+        c.body?.includes("pinMode(") ||
+        c.body?.includes("digitalWrite(")
+    ) ||
+    slide.id.endsWith("-s10") ||
+    slide.title.toLowerCase().includes("code lab")
+  ) {
+    const codeCard = cards.find(
+      (c) =>
+        c.badge?.toUpperCase().includes("SOURCE") ||
+        c.badge?.toUpperCase().includes("CODE") ||
+        c.title?.toUpperCase().includes("CODE") ||
+        c.body?.includes("void setup") ||
+        c.body?.includes("#include") ||
+        c.body?.includes("pinMode(") ||
+        c.body?.includes("digitalWrite(")
+    );
+
+    const rawCode =
+      codeCard?.body ||
+      `// Arduino C++ Firmware\nvoid setup() {\n  pinMode(LED_BUILTIN, OUTPUT);\n}\n\nvoid loop() {\n  digitalWrite(LED_BUILTIN, HIGH);\n  delay(1000);\n  digitalWrite(LED_BUILTIN, LOW);\n  delay(1000);\n}`;
+
+    // Place dedicated Code Block on the right side
+    elements.push({
+      id: `${slide.id}-migrated-code`,
+      type: "code",
+      x: 600,
+      y: 195,
+      width: 620,
+      height: 470,
+      zIndex: zCounter++,
+      content: rawCode,
+      language: "cpp",
+      badgeText: codeCard?.badge || "ARDUINO C++ SOURCE",
+      style: {
+        backgroundColor: palette.isLight ? "#0F172A" : "rgba(10, 15, 28, 0.95)",
+        borderColor: "#38BDF8",
+        borderWidth: 1.5,
+        borderRadius: 16,
+        boxShadow: palette.cardShadow,
+        color: "#F8FAFC",
+        fontFamily: "mono",
+        fontSize: 13,
+        padding: 0,
+      },
+    });
+
+    // Place Explanation & Walkthrough Cards on the left side
+    const explanationCards = cards.filter((c) => c !== codeCard);
+    const expCount = Math.min(3, explanationCards.length);
+    if (expCount === 0) {
+      elements.push({
+        id: `${slide.id}-migrated-code-exp`,
+        type: "callout",
+        x: 60,
+        y: 195,
+        width: 500,
+        height: 470,
+        zIndex: zCounter++,
+        badgeText: "CODE LAB WALKTHROUGH",
+        content: `### Firmware Architecture\n\n${slide.subtitle || "Inspect how each line of Arduino C++ firmware controls the physical hardware components."}\n\n- **Setup Function:** Configures pin directions and initializes serial/I2C buses\n- **Loop Function:** Executes repetitive Sense → Decide → Act cycles\n- **Safety Protocol:** Verify connections before flashing firmware to ATmega328P`,
+        style: {
+          backgroundColor: palette.cardBg,
+          borderColor: palette.cardBorder,
+          borderWidth: 1.5,
+          borderRadius: 18,
+          padding: "26px",
+          color: palette.bodyColor,
+          boxShadow: palette.cardShadow,
+        },
+      });
+    } else {
+      const cardH = expCount === 1 ? 470 : expCount === 2 ? 225 : 145;
+      const gap = expCount === 1 ? 0 : expCount === 2 ? 20 : 16;
+      explanationCards.slice(0, 3).forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-exp-${idx}`}`,
+          type: "callout",
+          x: 60,
+          y: 195 + idx * (cardH + gap),
+          width: 500,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge || `WALKTHROUGH 0${idx + 1}`,
+          content: `### ${c.title}\n\n${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1.5,
+            borderRadius: 16,
+            padding: expCount === 3 ? "14px 18px" : "20px 22px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    }
+  }
+  // CASE A-3: Video Demonstration Slide (type === "video")
+  else if (
+    cards.some(
+      (c) =>
+        c.badge?.toLowerCase().includes("video") ||
+        c.title?.toLowerCase().includes("video") ||
+        c.body?.includes("youtube.com") ||
+        c.body?.includes("youtu.be") ||
+        c.body?.includes(".mp4")
+    ) ||
+    Boolean(
+      slide.heroImage &&
+        (slide.heroImage.includes("youtube.com") ||
+          slide.heroImage.includes("youtu.be") ||
+          slide.heroImage.endsWith(".mp4"))
+    )
+  ) {
+    const videoCard = cards.find(
+      (c) =>
+        c.badge?.toLowerCase().includes("video") ||
+        c.title?.toLowerCase().includes("video") ||
+        c.body?.includes("youtube.com") ||
+        c.body?.includes("youtu.be") ||
+        c.body?.includes(".mp4")
+    );
+    const videoUrl =
+      videoCard?.body.match(/https?:\/\/[^\s]+/)?.[0] ||
+      (slide.heroImage?.startsWith("http")
+        ? slide.heroImage
+        : "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+
+    elements.push({
+      id: `${slide.id}-migrated-video`,
+      type: "video",
+      x: 600,
+      y: 195,
+      width: 620,
+      height: 470,
+      zIndex: zCounter++,
+      content: videoUrl,
+      videoUrl: videoUrl,
+      badgeText: videoCard?.badge || "DEMO VIDEO",
+      style: {
+        borderRadius: 18,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        boxShadow: palette.cardShadow,
+        backgroundColor: "#000000",
+      },
+    });
+
+    const otherCards = cards.filter((c) => c !== videoCard);
+    otherCards.slice(0, 2).forEach((c, idx) => {
+      elements.push({
+        id: `${c.id || `${slide.id}-c-vid-${idx}`}`,
+        type: "callout",
+        x: 60,
+        y: 195 + idx * 240,
+        width: 500,
+        height: 220,
+        zIndex: zCounter++,
+        badgeText: c.badge || `INFO 0${idx + 1}`,
+        content: `### ${c.title}\n\n${c.body}`,
+        style: {
+          backgroundColor: palette.cardBg,
+          borderColor: c.accentColor || palette.cardBorder,
+          borderWidth: 1.5,
+          borderRadius: 16,
+          padding: "20px 22px",
+          color: palette.bodyColor,
+          boxShadow: palette.cardShadow,
+        },
+      });
+    });
+  }
+  // CASE A-4: Hardware Pinout Card Slide (type === "pinout-card")
+  else if (
+    cards.some((c) => c.badge?.includes("PIN ASSIGNMENT") || c.badge?.includes("PIN MAP")) ||
+    (slide.id.endsWith("-s06") && cards.some((c) => c.badge?.includes("PIN")))
+  ) {
+    const pinCards = cards.filter((c) => c.badge?.includes("PIN"));
+    const otherCards = cards.filter((c) => !c.badge?.includes("PIN"));
+    const pinItems = pinCards.map((c, idx) => ({
+      number: idx + 1,
+      label: c.title || `Pin ${idx + 1}`,
+      pinName: c.title || `Pin ${idx + 1}`,
+      note: c.body,
+    }));
+
+    elements.push({
+      id: `${slide.id}-migrated-pinout`,
+      type: "pinout-card",
+      x: 600,
+      y: 195,
+      width: 620,
+      height: 470,
+      zIndex: zCounter++,
+      content: "",
+      caption: "HARDWARE PINOUT MAP",
+      pinItems: pinItems.length > 0 ? pinItems : undefined,
+      style: {
+        backgroundColor: palette.cardBg,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        borderRadius: 18,
+        boxShadow: palette.cardShadow,
+        padding: "16px 18px",
+      },
+    });
+
+    otherCards.slice(0, 3).forEach((c, idx) => {
+      elements.push({
+        id: `${c.id || `${slide.id}-c-pin-${idx}`}`,
+        type: "callout",
+        x: 60,
+        y: 195 + idx * 155,
+        width: 500,
+        height: 140,
+        zIndex: zCounter++,
+        badgeText: c.badge || `SAFETY 0${idx + 1}`,
+        content: `### ${c.title}\n\n${c.body}`,
+        style: {
+          backgroundColor: palette.cardBg,
+          borderColor: c.accentColor || palette.cardBorder,
+          borderWidth: 1.5,
+          borderRadius: 16,
+          padding: "16px 20px",
+          color: palette.bodyColor,
+          boxShadow: palette.cardShadow,
+        },
+      });
+    });
+  }
+  // CASE A-6: Hardware Pinout Map & Breadboard Wiring Table Slide
+  else if (
+    cards.some(
+      (c) =>
+        c.badge?.includes("WIRE") ||
+        c.title?.includes("-->") ||
+        c.title?.includes("->")
+    ) ||
+    (slide.id.endsWith("-s05") && hasHeroImage) ||
+    slide.title?.toLowerCase().includes("wiring diagram")
+  ) {
+    elements.push({
+      id: `${slide.id}-migrated-wire-img`,
+      type: "image",
+      x: 600,
+      y: 195,
+      width: 620,
+      height: 470,
+      zIndex: zCounter++,
+      content: slide.heroImage || "/illustrations/class1-external-blink-wiring.svg",
+      caption: slide.imageCaption || "Point-to-Point Breadboard Wiring Diagram (Press 'Z' to Zoom)",
+      hotspotPins: slide.hotspots && slide.hotspots.length > 0 ? slide.hotspots : undefined,
+      style: {
+        borderRadius: 18,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        boxShadow: palette.cardShadow,
+        objectFit: "contain",
+        backgroundColor: palette.isLight ? "#F8FAFC" : "rgba(0,0,0,0.35)",
+        padding: "12px",
+      },
+    });
+
+    if (cards.length <= 4) {
+      const count = Math.max(1, cards.length);
+      const gap = count === 1 ? 0 : count === 2 ? 20 : count === 3 ? 16 : 12;
+      const cardH = Math.floor((470 - (count - 1) * gap) / count);
+      cards.forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c-wire-${idx}`}`,
+          type: "callout",
+          x: 60,
+          y: 195 + idx * (cardH + gap),
+          width: 500,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge || `WIRE 0${idx + 1}`,
+          content: `### ${c.title}\n${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1.5,
+            borderRadius: 14,
+            padding: count <= 2 ? "18px 20px" : "10px 14px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+            fontSize: count > 3 ? 12 : 14,
+          },
+        });
+      });
+    } else {
+      // 5+ wires: split across 2 compact sub-columns on the left
+      const half = Math.ceil(Math.min(cards.length, 8) / 2);
+      const subCards = cards.slice(0, 8);
+      const gapY = 10;
+      const rowCount = half;
+      const cardH = Math.floor((470 - (rowCount - 1) * gapY) / rowCount);
+
+      subCards.forEach((c, idx) => {
+        const col = idx < half ? 0 : 1;
+        const row = idx < half ? idx : idx - half;
+        elements.push({
+          id: `${c.id || `${slide.id}-c-wire-${idx}`}`,
+          type: "callout",
+          x: 60 + col * 255,
+          y: 195 + row * (cardH + gapY),
+          width: 245,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge || `WIRE 0${idx + 1}`,
+          content: `**${c.title}**\n${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1.5,
+            borderRadius: 12,
+            padding: "8px 12px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+            fontSize: 11,
+          },
+        });
+      });
+    }
+  }
+  // CASE A-5: Interactive Hardware Simulation & Diagram Slide (type === "diagram")
+  else if (
+    cards.some(
+      (c) =>
+        c.badge?.includes("SIMULATION") ||
+        c.badge?.includes("BENCH TEST") ||
+        c.badge?.includes("RADAR") ||
+        c.badge?.includes("CIRCUIT")
+    ) ||
+    slide.id.endsWith("-s07") ||
+    slide.id.endsWith("-s09")
+  ) {
+    const fullText = `${slide.id} ${slide.title} ${slide.subtitle || ""} ${cards.map((c) => c.title + " " + c.body).join(" ")}`.toLowerCase();
+    let diagType: "ultrasonic-radar" | "breadboard-circuit" | "servo-gauge" | "h-bridge-motor" | "ir-reflectance" = "breadboard-circuit";
+    if (fullText.includes("radar") || fullText.includes("sonar") || fullText.includes("ultrasonic") || fullText.includes("barrier") || fullText.includes("distance") || fullText.includes("dustbin")) {
+      diagType = "ultrasonic-radar";
+    } else if (fullText.includes("servo") || fullText.includes("horn") || fullText.includes("angle") || fullText.includes("gauge")) {
+      diagType = "servo-gauge";
+    } else if (fullText.includes("motor") || fullText.includes("l298n") || fullText.includes("h-bridge") || fullText.includes("chassis") || fullText.includes("dance") || fullText.includes("wheel") || fullText.includes("car")) {
+      diagType = "h-bridge-motor";
+    } else if (fullText.includes("ir") || fullText.includes("reflectance") || fullText.includes("tcrt5000") || fullText.includes("sumo") || fullText.includes("line")) {
+      diagType = "ir-reflectance";
+    }
+
+    elements.push({
+      id: `${slide.id}-migrated-diagram`,
+      type: "diagram",
+      x: 600,
+      y: 195,
+      width: 620,
+      height: 470,
+      zIndex: zCounter++,
+      content: "",
+      diagramType: diagType,
+      style: {
+        backgroundColor: palette.cardBg,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        borderRadius: 18,
+        boxShadow: palette.cardShadow,
+      },
+    });
+
+    const diagCardCount = Math.min(cards.length, 4);
+    const diagGap = diagCardCount === 1 ? 0 : diagCardCount === 2 ? 20 : diagCardCount === 3 ? 16 : 12;
+    const diagCardH = diagCardCount === 0 ? 0 : Math.floor((470 - (diagCardCount - 1) * diagGap) / diagCardCount);
+
+    cards.slice(0, 4).forEach((c, idx) => {
+      elements.push({
+        id: `${c.id || `${slide.id}-c-diag-${idx}`}`,
+        type: "callout",
+        x: 60,
+        y: 195 + idx * (diagCardH + diagGap),
+        width: 500,
+        height: diagCardH,
+        zIndex: zCounter++,
+        badgeText: c.badge || `STEP 0${idx + 1}`,
+        content: `### ${c.title}\n\n${c.body}`,
+        style: {
+          backgroundColor: palette.cardBg,
+          borderColor: c.accentColor || palette.cardBorder,
+          borderWidth: 1.5,
+          borderRadius: 16,
+          padding: diagCardCount <= 2 ? "20px 22px" : "12px 16px",
+          color: palette.bodyColor,
+          boxShadow: palette.cardShadow,
+          fontSize: diagCardCount > 2 ? 13 : 15,
+        },
+      });
+    });
+  }
   // CASE B: Interactive Quiz Challenge Slide (e.g. Robot vs. Machine — 3 side-by-side cards)
   else if (hasQuizCards && cards.length === 3) {
     const cardW = 370;
@@ -2821,8 +3262,8 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
       });
     }
   }
-  // CASE E: Split Media with Hero Image on right and 1-3 cards on left
-  else if (hasHeroImage && cards.length > 0 && cards.length <= 3) {
+  // CASE E: Split Media with Hero Image on right and cards on left
+  else if (hasHeroImage && cards.length > 0) {
     const imgX = 660;
     const imgY = 200;
     const imgW = 560;
@@ -2909,7 +3350,7 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           },
         });
       });
-    } else {
+    } else if (cards.length === 3) {
       // 3 cards stacked
       const cardH = 138;
       const gap = 16;
@@ -2937,6 +3378,39 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
             padding: "14px 18px",
             color: palette.bodyColor,
             boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    } else {
+      // 4+ cards stacked cleanly on the left (e.g. BOM items, component cards)
+      const subCards = cards.slice(0, 4);
+      const cardH = 104;
+      const gap = 12;
+      subCards.forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: leftX,
+          y: startY + idx * (cardH + gap),
+          width: colW,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          isQuizCard: c.isQuizCard,
+          quizVerdict: c.quizVerdict,
+          quizIsPositive: c.quizIsPositive,
+          isPollCard: c.isPollCard,
+          pollInitialVotes: c.pollInitialVotes,
+          content: `**${c.title}** • ${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1.5,
+            borderRadius: 12,
+            padding: "10px 14px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+            fontSize: 13,
           },
         });
       });

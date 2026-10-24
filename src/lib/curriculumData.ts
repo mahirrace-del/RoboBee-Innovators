@@ -199,9 +199,9 @@ export const COURSE_SPACES: CourseSpace[] = [
     badge: 'Proposed for Classes 5–8',
     proposedBand: 'Classes 5–8 (Ages 10–14)',
     accentColor: '#6B0F24', // RoboBEE Burgundy
-    statusNotice: 'Core Academy Track (10 Classes — From First-Light Blink to Autonomous Obstacle Rover)',
-    description: 'Master circuits, breadboards, C++ code logic, sensors, motor drivers, 3D CAD design, and two-wheel rover integration.',
-    totalClasses: 10,
+    statusNotice: 'Core Academy Track (12 Classes — From Breadboard X-Ray to Autonomous Maze Explorer)',
+    description: 'Master circuits, breadboards, C++ code logic, sensors, motor drivers, Bluetooth wireless, and autonomous robotics integration across 12 hands-on Friday labs.',
+    totalClasses: 12,
     recommendedHardware: 'Arduino Uno R3 / Nano, Breadboard, LEDs, Sonar HC-SR04, L298N/TB6612FNG Driver, 2WD Rover Chassis'
   },
   {
@@ -915,3954 +915,4582 @@ export const ALL_ROBOTICS_LESSONS: RoboticsLesson[] = [
   },
 
   // -----------------------------------------------------------------------
-  // COURSE SPACE B: BEGINNER ROBOTICS (CLASSES 01-10) — REQUIRED FLAGSHIP
+  // COURSE SPACE B: BEGINNER ROBOTICS (CLASSES 01-12) — COMPLETE FLAGSHIP
   // -----------------------------------------------------------------------
   {
-    id: 'beg-01',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-foundations-what-is-robot", "fg-arduino-microcontroller-vs-computer"],
-      lookUpWhileBuilding: ["fg-board-uno-anatomy", "fg-prog-program-structure"],
-      goDeeper: ["fg-arduino-ide-workflow", "fg-safety-lab-code"]
-    },
-    courseId: 'beginner',
-    sequence: 1,
-    code: 'CLASS 01',
-    title: 'Welcome to Robotics: Meet Arduino, Then Make an LED Blink',
-    subtitle: 'Why extracurriculars & robotics matter, Sense → Decide → Act architecture, interactive Arduino Uno R3 reference tour, and building your first current-limited LED blink circuit.',
-    promise: 'I can explain how a robot senses, decides, and acts—and I can wire a current-limited LED and change C++ code to control a light.',
-    status: 'published',
-    proposedAudience: 'Proposed Pathway for Classes 5–8 (Ages 10–14) — Subject to Cohort & Kit Confirmation',
-    durationMinutes: 120,
-    compactDurationMinutes: 60,
-    prerequisites: ['None — Designed for complete beginners with zero prior electronics or coding experience.'],
-    outcomes: [
-      'Define a True Robot vs. a Machine: Explain using real-world evidence that a robot is a system that Senses its environment (inputs), Decides using a programmed controller (processing), and Acts on the physical world (outputs).',
-      'Identify Core Robotics Hardware: Locate and state the function of the USB port, power pins (5V, 3.3V, GND), digital I/O pins (D0–D13), analog input pins (A0–A5), microcontroller chip (ATmega328P), and onboard LED (LED_BUILTIN) on an Arduino Uno R3 reference board.',
-      'Construct a Safe Current-Limited LED Circuit: Build an external breadboard circuit connecting an Arduino digital output pin, a 220 Ω – 330 Ω series resistor, and a 5mm LED with correct anode (+) and cathode (-) polarity returning to GND.',
-      'Read, Upload & Explain Embedded C++ Structure: Upload a complete Arduino sketch and explain the exact role of const int, void setup(), void loop(), pinMode(), digitalWrite(), HIGH, LOW, and delay().',
-      'Conduct a Timing Experiment: Modify millisecond parameters inside delay(), predict how changing ON and OFF durations changes blink frequency and duty cycle, and record observations in an engineering trial log.'
-    ],
-    vocabulary: [
-      {
-        term: 'Robot',
-        plainMeaning: 'A programmable machine that can gather information from the world around it, make choices using code, and move or signal in response.',
-        technicalMeaning: 'An autonomous or semi-autonomous electromechanical system integrating sensors (transducers), a programmable processing unit (microcontroller/computer), and actuators operating in a Sense–Decide–Act control loop.'
-      },
-      {
-        term: 'Sense → Decide → Act Loop',
-        plainMeaning: 'The 3-step thinking cycle every robot repeats: Sense what is happening, Decide what to do next, and Act by turning on lights, motors, or speakers.',
-        technicalMeaning: 'The fundamental cybernetic control paradigm where input signals from sensors are sampled by a processor, evaluated against algorithmic rules, and converted into electrical drive signals for output actuators.'
-      },
-      {
-        term: 'Microcontroller (MCU)',
-        plainMeaning: 'A tiny, single-chip computer on the Arduino board that stores and runs one dedicated control program over and over.',
-        technicalMeaning: 'An integrated circuit (such as the 8-bit AVR ATmega328P running at 16 MHz on the Arduino Uno R3) containing a CPU core, Flash program memory (32 KB), SRAM (2 KB), EEPROM (1 KB), timers, and general-purpose input/output (GPIO) peripherals on a single die.'
-      },
-      {
-        term: 'Sensor (Input)',
-        plainMeaning: 'A robot\'s "eyes, ears, or fingertips" that measure things like distance, light, touch, or temperature.',
-        technicalMeaning: 'An input transducer that converts a physical phenomenon (sound waves, infrared reflectance, mechanical pressure, heat) into a measurable electrical voltage or digital signal for the microcontroller.'
-      },
-      {
-        term: 'Actuator / Output',
-        plainMeaning: 'A robot\'s "muscles or voice"—any part that does physical work or shows a signal, like an LED lighting up or a motor spinning a wheel.',
-        technicalMeaning: 'A hardware device driven by electrical energy that produces a physical output (photon emission in an LED, rotational torque in a DC/servo motor, or acoustic waves in a piezo buzzer).'
-      },
-      {
-        term: 'Solderless Breadboard',
-        plainMeaning: 'A reusable plug-and-play board with hidden metal clips underneath that lets us connect electronic parts without melting solder.',
-        technicalMeaning: 'A construction base for prototyping electronics featuring internal spring-loaded nickel-silver phosphor bronze clips arranged in horizontal 5-point terminal strips (separated by a 7.62 mm DIP center channel) and vertical power distribution buses.'
-      },
-      {
-        term: 'LED (Light-Emitting Diode)',
-        plainMeaning: 'A tiny electronic light that only lets electricity flow in one direction—in through the long leg (+ Anode) and out through the short leg (- Cathode).',
-        technicalMeaning: 'A two-lead semiconductor light source (p–n junction diode) that emits photons via electroluminescence when forward-biased above its forward voltage drop (Vf ≈ 1.8V–2.2V for standard red LEDs).'
-      },
-      {
-        term: 'Current-Limiting Resistor (Ohm\'s Law)',
-        plainMeaning: 'A safety "speed bump" for electricity that slows down electrical current so the LED and Arduino pin don\'t burn out.',
-        technicalMeaning: 'A passive two-terminal component measured in Ohms (Ω) placed in series with a load to restrict current flow according to Ohm\'s Law (I = (Vsupply - Vf) / R), keeping pin current safely around 10–15 mA (well under the ATmega328P\'s 20 mA recommended continuous limit and 40 mA absolute maximum).'
-      },
-      {
-        term: 'Digital Signal (HIGH / LOW)',
-        plainMeaning: 'A two-state electrical switch signal where HIGH means "ON (5 Volts)" and LOW means "OFF (0 Volts)".',
-        technicalMeaning: 'A discrete binary logic signal representing two voltage states: Logic 1 (HIGH, ≈ 5.0V on 5V AVR boards or 3.3V on 3.3V boards) and Logic 0 (LOW, 0V referenced to Ground).'
-      },
-      {
-        term: 'Ground (GND)',
-        plainMeaning: 'The "return home" path for electricity—every circuit must connect back to GND to complete a closed loop.',
-        technicalMeaning: 'The common zero-volt (0V) reference potential in an electrical circuit through which return current flows back to the power source.'
-      },
-      {
-        term: 'void setup() & void loop()',
-        plainMeaning: 'setup() is the checklist the Arduino runs once when it wakes up; loop() is the main routine it repeats forever while powered on.',
-        technicalMeaning: 'The two mandatory entry-point functions in an Arduino C++ sketch: setup() executes once after power-on or hardware reset to initialize pin modes and peripherals, after which the runtime infinitely invokes loop().'
-      },
-      {
-        term: 'Milliseconds (ms) & delay()',
-        plainMeaning: 'One-thousandths of a second (1,000 ms = 1 second). delay(1000) tells the Arduino to pause right where it is for 1 full second.',
-        technicalMeaning: 'A unit of time equal to 10^-3 seconds passed as an unsigned long argument to delay(ms), which halts sequential CPU instruction execution for the specified duration while hardware timers continue counting.'
-      }
-    ],
-    realWorldDomains: [
-      {
-        title: 'Precision Agriculture & Food Security',
-        domain: 'Agriculture',
-        sense: 'Soil moisture probes, ambient humidity & crop canopy cameras',
-        decide: 'Microcontroller calculates irrigation deficit & nutrient requirements',
-        act: 'Solenoid water valves open & autonomous sprayer rovers navigate rows',
-        description: 'Autonomous soil-moisture rovers and automated irrigation systems sense plant hydration, decide exactly which zones need water, and act by opening targeted valves—conserving fresh water across agricultural communities.'
-      },
-      {
-        title: 'Healthcare, Surgery & Hospital Logistics',
-        domain: 'Healthcare',
-        sense: 'Hallway LiDAR, ultrasonic obstacle rangefinders & patient bed sensors',
-        decide: 'Navigation computer calculates collision-free hospital transit routes',
-        act: 'Differential-drive wheels deliver sterile medicine trays to nurse stations',
-        description: 'Autonomous hospital pharmacy carts sense hallway obstacles using ultrasonic and laser sensors, decide safe detours around gurneys, and act by delivering critical medication safely without delay.'
-      },
-      {
-        title: 'Safe Manufacturing & Quality Inspection',
-        domain: 'Manufacturing',
-        sense: 'High-speed line-scan cameras & optical solder-joint profilers',
-        decide: 'Embedded vision controller evaluates component placement tolerances',
-        act: 'Pneumatic reject actuators divert defective circuit boards off the line',
-        description: 'Automated assembly systems sense solder joints on electronics boards, decide if joints meet quality standards, and act by sorting defective parts before they reach consumers.'
-      },
-      {
-        title: 'Autonomous & Assisted Transportation',
-        domain: 'Transportation',
-        sense: 'Millimeter-wave radar, optical cameras & wheel speed encoders',
-        decide: 'Safety ECU compares distance and closing velocity against braking curve',
-        act: 'Hydraulic emergency braking actuators engage faster than human reaction',
-        description: 'Modern railway and vehicle collision-avoidance systems sense stopping distances, decide when a crash risk exists, and act by applying brakes autonomously.'
-      },
-      {
-        title: 'Accessibility & Assistive Robotics',
-        domain: 'Accessibility',
-        sense: 'Surface electromyography (EMG) electrodes sensing forearm muscle pulses',
-        decide: 'Pattern-recognition algorithm maps nerve firing intent to grip modes',
-        act: 'Precision micro-servo motors actuate bionic fingers to grasp a cup',
-        description: 'Myoelectric bionic hands sense tiny muscle impulses, decide the intended user grip pattern, and act via micro-servos to restore independence.'
-      },
-      {
-        title: 'Disaster Search & Rescue',
-        domain: 'Disaster Response',
-        sense: 'Thermal infrared cameras, CO2 gas sensors & microphone arrays',
-        decide: 'Search controller prioritizes survivor heat signatures in rubble voids',
-        act: 'High-torque tracked flippers climb over debris and drop emergency radios',
-        description: 'Inspection rovers navigate collapsed buildings, sense body heat and air quality, decide if pathways are passable, and act by establishing communication lines without risking rescue workers.'
-      },
-      {
-        title: 'Environmental & River Monitoring',
-        domain: 'Environmental Monitoring',
-        sense: 'Water pH electrodes, dissolved oxygen probes & optical turbidity meters',
-        decide: 'Controller checks if chemical pollutants exceed statutory thresholds',
-        act: 'Surface thrusters steer boat toward contamination source while logging GPS',
-        description: 'Solar-powered robotic surface boats sense river pH and turbidity, decide when pollution levels spike, and act by collecting water samples and transmitting GPS coordinates to environmental scientists.'
-      }
-    ],
-    robotOrNotChallenge: [
-      {
-        item: 'Standard Microwave Oven',
-        senses: 'No environmental sensing — runs blindly on a fixed countdown timer',
-        decides: 'No autonomous decision logic — cannot tell if food is frozen or burning',
-        acts: 'Yes — turns magnetron and turntable motor ON for set time',
-        verdict: 'NOT A ROBOT (Open-Loop Timed Appliance): It acts on a fixed timer without sensing the food state or making adaptive decisions.',
-        isRobot: false
-      },
-      {
-        item: 'Remote-Controlled Toy Car without Autonomy',
-        senses: 'Receives human radio stick inputs only (zero obstacle or environment sensors)',
-        decides: 'No — the human driver\'s brain makes 100% of steering and braking decisions',
-        acts: 'Yes — DC motors spin wheels and steering linkage turns',
-        verdict: 'NOT AN AUTONOMOUS ROBOT (Teleoperated Machine): Until it has onboard sensors and decision code, the human is the controller.',
-        isRobot: false
-      },
-      {
-        item: 'Agricultural Crop-Monitoring Drone',
-        senses: 'Yes — GPS, barometer, IMU, and multispectral crop-health cameras',
-        decides: 'Yes — flight controller computes waypoint path and flags dry crop zones',
-        acts: 'Yes — adjusts 4 brushless rotor speeds to hover, navigate, and log imagery',
-        verdict: 'TRUE ROBOT: Continuously senses flight stability and crop reflectance, decides path corrections, and acts autonomously.',
-        isRobot: true
-      },
-      {
-        item: 'Hospital Automated Pharmacy Dispenser',
-        senses: 'Yes — barcode/optical scanners, pill-count optical gates, and tray sensors',
-        decides: 'Yes — embedded controller verifies prescription ID and checks stock levels',
-        acts: 'Yes — stepper actuators position vials, dispense exact counts, and seal labels',
-        verdict: 'TRUE ROBOT: Industrial medical automation system operating in a closed Sense → Decide → Act verification loop.',
-        isRobot: true
-      },
-      {
-        item: 'Industrial Welding Arm',
-        senses: 'Yes — rotary joint encoders, current feedback sensors, and seam-tracking vision',
-        decides: 'Yes — motion controller calculates multi-axis trajectory and weld penetration',
-        acts: 'Yes — 6-axis servo actuators position the torch with sub-millimeter precision',
-        verdict: 'TRUE ROBOT: Classic articulated industrial robot arm combining encoder feedback, path planning, and precision actuation.',
-        isRobot: true
-      },
-      {
-        item: 'Autonomous Line-Following Rover',
-        senses: 'Yes — IR reflectance sensor array detects contrast between black track and floor',
-        decides: 'Yes — microcontroller calculates steering correction from sensor state',
-        acts: 'Yes — adjusts left and right wheel PWM speeds to stay centered on track',
-        verdict: 'TRUE ROBOT: Mobile autonomous robot operating in a continuous closed-loop Sense → Decide → Act cycle.',
-        isRobot: true
-      }
-    ],
-    teacherPrep: [
-      'Pre-Class Step 1: Test-upload the Class 1 Blink sketch on 1 demo Arduino Uno R3 and verify the classroom projector displays ProjectorView.tsx clearly at 125% zoom from the back of the room.',
-      'Pre-Class Step 2: Pre-sort student hardware trays so each station has strictly today\'s parts: 1x Arduino Uno R3 (or compatible board), 1x USB-A to USB-B cable, 1x 400-point breadboard, 2x 5mm Red LEDs (1 primary + 1 spare), 2x 220Ω or 330Ω resistors, and 3x Male-to-Male jumper wires (1 Red, 1 Black, 1 spare). Keep motors and batteries out of the tray for Class 1 to prevent distractions and short circuits.',
-      'Pre-Class Step 3: Confirm Arduino IDE 2.x is installed on lab laptops with Arduino AVR Boards core ready, OR open the Class 1 Code Lab & Simulator tab for browser-based simulation stations.',
-      'Student Group Structure: Organize students into pairs or trios with rotating engineering roles: Hardware Engineer (breadboard placement), Firmware Navigator (IDE / code input), and Safety & Quality Inspector (polarity and pre-power verification). Roles swap between Part A and Part B.',
-      'Lab Safety Enforcement: Maintain the 5 Mandatory Lab Safety Rules: 1) Unplug before wiring; 2) Never connect an external LED without a series resistor; 3) Protect against short circuits (no bare 5V to GND connections); 4) Check polarity twice, power once; 5) Touch test and emergency disconnect if any component feels warm.',
-      'No-Kit Fallback: For remote or no-kit stations, use the built-in Interactive Arduino Uno Board Tour and Synchronized Blink Simulator in Tab 4 / Slide 8, clearly noting that it models ideal behavior while physical hardware requires port selection and resistor checks.'
-    ],
-    verifiedMaterials: [
-      'Arduino Uno R3 (Microchip ATmega328P DIP or SMD edition with 16 MHz crystal oscillator)',
-      'High-quality shielded USB-A to USB-B Cable (1.5m, verified with active D+ and D- serial data lines)',
-      '400-tie-point solderless breadboard (with vertical power rails and 0.3-inch center DIP ravine)',
-      '5mm Red Diffused LED (Forward voltage Vf ≈ 2.0V, max continuous current 20 mA)',
-      '220 Ω Axial Carbon Film Resistor (Color bands: Red-Red-Brown-Gold, 1/4 Watt, 5% tolerance; 330 Ω also approved)',
-      'Male-to-Male Flexible Jumper Wires (1x Red 20cm, 1x Black 20cm, 1x spare)',
-      'Classroom workstation with Arduino IDE 2.x or Web USB Simulator environment'
-    ],
-    safetyNotes: [
-      '1. Unplug Before Wiring: Always disconnect the USB cable (or power source) before adding, moving, or removing wires and components on the breadboard.',
-      '2. Never Connect an External LED Without a Series Resistor: Connecting an LED directly between 5V (or an output pin) and GND without a 220 Ω – 330 Ω resistor draws excessive current and permanently burns out the LED or damages the microcontroller pin.',
-      '3. Protect Against Short Circuits: Never connect the 5V pin directly to GND with a bare wire, and never place the Arduino board onto a conductive metal desk, coin, or wire clippings.',
-      '4. Check Polarity Twice, Power Once: Have your partner verify LED Anode (+ long leg) and Cathode (- short leg / flat edge) before plugging in the USB cable.',
-      '5. Touch Test & Emergency Disconnect: If any component or chip ever feels warm or smells unusual, immediately unplug the USB cable by gripping the plastic connector housing (never yank the cable wire).'
-    ],
-    classRhythm: [
-      {
-        segment: '00–15 min (15 min): Welcome, Real-World Hook & Safety Briefing',
-        minutes: 15,
-        teacherAction: 'Welcome students to RoboBEE Innovators. Present the "Robot or Not?" challenge (6 everyday machines) and discuss the 7 real-world robotics domains (Agriculture, Healthcare, Manufacturing, Transportation, Accessibility, Disaster Response, Environmental Monitoring) and the 5 mandatory lab safety rules.',
-        studentAction: 'Vote on each machine in the "Robot or Not?" challenge, debate why an RC car differs from an autonomous rover, and verify unpowered desk safety rules.'
-      },
-      {
-        segment: '15–40 min (25 min): Core Concept & Visual Interactive Walkthrough',
-        minutes: 25,
-        teacherAction: 'Walk through the interactive Sense → Decide → Act diagram, the Visual Parts Gallery, and the Interactive Arduino Uno R3 Reference Board Tour (ArduinoUnoPinout.tsx), noting that Uno R3 maps LED_BUILTIN to D13.',
-        studentAction: 'Click through Input → Processing → Output examples, classify kit parts into Sense/Decide/Act, and locate USB, Reset, 5V, GND, A0–A5, and D0–D13 on the reference board.'
-      },
-      {
-        segment: '40–75 min (35 min): Hands-On Hardware Build / CAD / Circuit Assembly',
-        minutes: 35,
-        teacherAction: 'Guide Stage A (unpowered board inspection + onboard LED_BUILTIN verification) followed by Stage B (external 5mm LED + 220 Ω series resistor on breadboard rows 10, 15, and 16). Perform partner pre-power polarity inspection.',
-        studentAction: 'Unplug USB, wire Pin D13 → Row 10a, 220 Ω resistor (10c to 15c), LED Anode (+) long leg in 15e, LED Cathode (-) short leg in 16e, and Row 16a → Arduino GND. Verify with partner before connecting USB.'
-      },
-      {
-        segment: '75–105 min (30 min): Code Lab, Upload, Testing & Guided Modification',
-        minutes: 30,
-        teacherAction: 'Walk through const int LED_PIN = LED_BUILTIN;, setup(), loop(), pinMode(), digitalWrite(), and delay() line by line. Guide students through the Predict-Test-Modify timing challenge (delay(1000) → delay(250) fast beacon → 100ms ON / 900ms OFF heartbeat).',
-        studentAction: 'Upload the starter Blink sketch, observe synchronized onboard and external LED blinking, predict frequency changes before modifying delay() values, and record results in the trial log.'
-      },
-      {
-        segment: '105–120 min (15 min): Troubleshooting, Exit Check Reflection & Safe Shutdown',
-        minutes: 15,
-        teacherAction: 'Lead the troubleshooting matrix review (debugging reversed LED polarity or missing row connections), collect the 4-question Exit Ticket reflection, and supervise safe USB disconnect and component storage.',
-        studentAction: 'Submit the 4-part Exit Ticket (1 Input, 1 Decision rule, 1 Output, 1 Safety Rule), unplug USB by gripping the connector body, and return LEDs, resistors, and jumpers to kit trays.'
-      }
-    ],
-    concepts: [
-      {
-        title: 'The Soul of Robotics: What Actually Makes a Machine a "Robot"?',
-        explanation: 'In popular culture, people often think of robots as metallic humanoids with glowing eyes. But in true engineering, a robot is any autonomous machine that bridges the digital and physical worlds. Consider the difference between a microwave and a Mars rover: When you put food in a microwave and set it for two minutes, it spins blindly on a timer. If your food catches fire or is frozen solid, the microwave has no idea—it has zero sensory awareness of the world. It is a dumb open-loop machine. In stark contrast, NASA’s Perseverance rover on Mars uses high-resolution stereo cameras and laser rangefinders (SENSE) to inspect Martian craters, evaluates safe routes using onboard obstacle-avoidance algorithms (DECIDE), and commands its six motorized wheels to steer around boulders (ACT). Every true robot on Earth—from automated warehouse vehicles sorting packages to hospital medicine delivery drones—operates inside this continuous, unbroken loop: SENSE → DECIDE → ACT.',
-        instructorNote: 'Help students understand that autonomy requires closed-loop feedback based on live sensory data, not just hardcoded blind timers.'
-      },
-      {
-        title: 'The Four Universal Subsystems of Every Robot on Earth',
-        explanation: 'No matter how simple or complex a robot is, its design can always be broken down into four foundational subsystems: 1. THE BODY (Mechanical System): The physical chassis, structural acrylic or aluminum plates, wheels, gearboxes, linkages, and brackets that give the robot shape and allow it to exert force on the world. 2. THE NERVOUS SYSTEM (Electrical System): The battery power pack, voltage regulators, wiring harnesses, and common ground return paths that deliver clean electrical energy to every component. 3. THE SENSES (Perception System): Transducers such as ultrasonic sensors (sonar hearing), infrared sensors (reflective vision), gyroscopes (balance), and tactile bumper switches that convert physical changes in the environment into electrical voltage signals. 4. THE BRAIN (Control System): The microcontroller board (our Arduino Uno) that reads those voltage signals, runs computer code to make decisions, and sends control signals to motors and lights.',
-        instructorNote: 'Pass around physical components from the kit box as you introduce each subsystem so students can touch and feel the hardware.'
-      },
-      {
-        title: 'Inside the Silicon Brain: Microcontroller vs. Personal Computer',
-        explanation: 'Why don’t we just bolt an iPhone or a laptop onto our small robotics rover? Modern computers and smartphones are general-purpose devices. They run complex operating systems like Windows, macOS, or Android, juggling hundreds of background apps, network updates, and graphics drivers. Because their attention is constantly divided, a computer might delay an instruction by a fraction of a second—which could cause a fast robot to crash into a wall before the software reacts! An Arduino Uno, powered by the Microchip ATmega328P microcontroller, is fundamentally different. It has no operating system. It runs only ONE single program that you write, executing instructions in bare-metal real-time. It runs on a 16 MHz quartz crystal oscillator, which means its internal clock pulses 16,000,000 times every single second! When your code commands a pin to turn on or read a sensor, the microcontroller executes that action in approximately 62.5 nanoseconds. It is fast, deterministic, reliable, and uses only a fraction of a watt of battery power.',
-        instructorNote: 'Show students the silver oval crystal on the board labeled "16.000" and explain that it acts like the beating heart of the microcontroller.'
-      },
-      {
-        title: 'Electronics Foundations: Voltage, Current, Resistance & Ohm’s Law',
-        explanation: 'Electricity is not magic—it is the physical movement of billions of microscopic electrons rushing through conductive copper wires. To visualize how a circuit works, engineers use the Water Tower Analogy: 1. VOLTAGE (V, measured in Volts): Think of voltage as the water pressure created by a tall water tank. The higher the tank, the more pressure pushing the water down the pipe. On our Arduino, the standard electrical pressure is 5.0 Volts. 2. CURRENT (I, measured in Amps or Milliamps): Current is the actual volume of water rushing through the pipe per second. In electronics, 1 Ampere means 6.242 × 10^18 electrons are flowing past a point every single second! Most small robotics sensors and LEDs use milliamps (1 mA = 1/1000th of an Amp). 3. RESISTANCE (R, measured in Ohms Ω): Resistance is a narrow constriction or valve inside the pipe that resists the flow of water. If the pipe is wide open with zero resistance, water rushes out uncontrollably in a flood. If the pipe is narrow, only a trickle can pass. These three forces are locked together by the most famous equation in electronics, Ohm’s Law: Voltage = Current × Resistance (V = I × R). Furthermore, electricity can only flow if it has a complete, unbroken circular loop starting from the positive 5V source and returning to Ground (0V GND). If the wire is disconnected anywhere, the circle is broken and current stops instantly.',
-        instructorNote: 'Draw the classic Ohm’s Law triangle on the whiteboard (V at the top, I and R at the bottom) and show how covering one letter reveals the formula for the others.'
-      },
-      {
-        title: 'The Anatomy of an LED & The 220Ω Resistor Rule (The Silicon Bodyguard)',
-        explanation: 'An LED (Light Emitting Diode) is not like a traditional incandescent household bulb that uses a glowing wire filament. An LED is a solid-state semiconductor device that converts electrical energy directly into light photons. Because it is a diode, it acts like a one-way electrical check-valve: electricity can only flow through it in ONE direction, from positive to negative. If you look closely at a 5mm LED, you will notice one leg is slightly longer than the other. The LONG leg is the ANODE (+) and must connect toward positive voltage (+5V). The SHORT leg (which also has a flat edge on the plastic rim) is the CATHODE (-) and must connect toward Ground (GND). If you plug it in backward, no current will flow and the light will stay off. More importantly: once an LED turns on, its internal resistance drops to nearly zero! If you connect an LED directly between 5V and GND with no resistor, an enormous surge of electrical current will try to rush through the diode. Within milliseconds, the microscopic bonding wire inside the LED will overheat, melting the silicon and permanently destroying the LED with a tiny puff of "magic smoke"! To protect both the LED and your Arduino’s microcontroller pin, we always wire a 220Ω (Ohm) resistor in series. We can use Ohm’s Law to prove why: A red LED requires about 2.0V to light up, leaving 3.0V across the resistor (5V - 2V = 3V). To keep the current at a safe 15 milliamps (0.015A): R = 3.0V / 0.015A = 200Ω. A standard 220Ω resistor guarantees the current never exceeds safe limits, acting as an indestructible silicon bodyguard!',
-        instructorNote: 'Hold an LED up to the classroom light so students can see the internal anvil (large flag = cathode/negative) and post (small flag = anode/positive) through the translucent epoxy dome.'
-      },
-      {
-        title: 'The Anatomy of Embedded C++: How Code Commands Physical Voltage',
-        explanation: 'When you type code into the Arduino IDE and click Upload, your human-readable C++ instructions are translated by a compiler into thousands of binary 1s and 0s (machine code). These bytes travel down the USB cable and are burned into the ATmega328P’s internal Flash memory. When the Arduino powers on, it executes your program using two mandatory functions: 1. void setup(): This function runs exactly ONCE when the board first receives power or when you tap the red Reset button. We use setup() to tell the microcontroller how each physical pin should behave. For example, pinMode(13, OUTPUT) tells the chip’s internal circuitry: "Configure Digital Pin 13 as a power source so we can push 5V electricity out." 2. void loop(): Once setup() finishes, the microcontroller jumps into loop() and repeats everything inside its curly braces over and over forever until power is cut! Inside loop(), we use digitalWrite(13, HIGH) to connect Pin 13 to +5V (turning the light ON), followed by delay(1000) which tells the CPU to wait for 1,000 milliseconds (1 full second). Next, digitalWrite(13, LOW) pulls Pin 13 down to 0V (turning the light OFF), followed by another delay(1000). Once the code reaches the bottom curly brace of loop(), it instantly circles back to the top and starts again. You are literally turning computer logic into physical electricity!',
-        instructorNote: 'Emphasize that the microcontroller never gets tired or stops—it will execute loop() billions of times without ever skipping an instruction unless told to do so.'
-      }
-    ],
-    visualizerId: 'arduino_board_tour_sim',
-    project: {
-      name: 'Arduino First-Light Blink & Signal Lab',
-      deliverableType: 'code_artifact',
-      successEvidence: [
-        'A running physical Arduino Uno board (or web simulator) pulsing the built-in amber LED on Pin 13 with verified timing.',
-        'A modified embedded C++ sketch compiled and flashed with zero compiler syntax errors.',
-        'A completed Engineering Prediction Log documenting measured differences between standard 1000ms blinks, rapid 200ms strobes, asymmetric warning beacons, and heartbeat pulse intervals.'
+    "id": "beg-01",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-foundations-what-is-robot",
+        "fg-arduino-microcontroller-vs-computer"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-prog-program-structure"
+      ],
+      "goDeeper": [
+        "fg-arduino-ide-workflow",
+        "fg-safety-lab-code"
       ]
     },
-    activity: {
-      title: 'Upload, Predict, and Program First-Light Signals',
-      steps: [
-        'Step 1 (Physical Inspection): Hold your Arduino Uno by its edges. Locate the silver USB-B port, the black square ATmega328P chip, the small reset button, and find the tiny amber surface-mount LED labeled "L" situated right next to Digital Pin 13.',
-        'Step 2 (Connection & Power): Plug the square end of the USB cable into the Arduino and the flat end into your computer. Confirm that the green LED labeled "ON" illuminates steadily, proving the 5V power regulator is active.',
-        'Step 3 (Software Configuration): Open Arduino IDE 2.x on your computer. Go to Tools -> Board -> Arduino AVR Boards -> Arduino Uno. Then go to Tools -> Port and select the active COM port (e.g. COM3 or COM4 on Windows).',
-        'Step 4 (Inspect the Starter Code): Open File -> Examples -> 01.Basics -> Blink. Read through setup() and loop(). Predict what will happen before you run it.',
-        'Step 5 (Compile & Flash): Click the Upload button (the rightward arrow ➔). Watch the tiny TX and RX LEDs on the board flicker rapidly for two seconds as serial data is flashed into memory. When the IDE displays "Done uploading", look at the board: LED "L" is pulsing on and off with exact 1-second precision!',
-        'Step 6 (Mission 1 - The Heartbeat Challenge): Modify the code to create a realistic human heartbeat rhythm (lub-dub... pause): Turn ON for 120ms, OFF for 120ms, ON for 120ms, then OFF for 800ms. Upload and observe the lifelike pulse!',
-        'Step 7 (Mission 2 - S.O.S. Maritime Distress Beacon): Program the universal international emergency signal in Morse Code: 3 rapid short flashes (150ms), 3 long flashes (500ms), and 3 rapid short flashes (150ms), followed by a 2-second pause before repeating.',
-        'Step 8 (Mission 3 - Strobe & Persistence of Vision): Set the delays to 10ms ON and 10ms OFF. Observe how human eyes begin to blend rapid flashes into continuous motion at half brightness.'
-      ],
-      successCriteria: [
-        'The student successfully configures the IDE board and serial COM port with "Done uploading" status.',
-        'The student can point to the physical LED on the board and explain which line of code turns it on versus off.',
-        'The student successfully modifies delay values, predicts the visual result, and demonstrates at least one custom signaling pattern (Heartbeat, SOS, or Strobe).'
-      ],
-      extension: 'Wire an external 5mm red LED on a solderless breadboard: Connect the long anode leg to Digital Pin 13 through a 220Ω resistor, connect the short cathode leg to an Arduino GND pin, and reprogram timing challenges!'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['Arduino Uno R3 (Microchip ATmega328P DIP or SMD edition with 16 MHz crystal)'],
-      componentList: [
-        { name: 'Arduino Uno R3 Development Board', exactVariant: 'Standard Rev3 with ATmega328P DIP or SMD edition and 16 MHz crystal', quantity: 1 },
-        { name: 'USB-A to USB-B Shielded Cable', exactVariant: '1.5m standard data communication cable (verify data lines present)', quantity: 1 },
-        { name: '400-Tie-Point Solderless Breadboard', exactVariant: 'Half-size breadboard with dual power rails and center 0.3-inch DIP ravine', quantity: 1 },
-        { name: '5mm Red Diffused LED', exactVariant: 'Forward voltage Vf ≈ 2.0V, max continuous current 20 mA, anode long leg', quantity: 1 },
-        { name: '220 Ω Axial Resistor', exactVariant: 'Color bands: Red-Red-Brown-Gold, 1/4 Watt, 5% tolerance (330 Ω also approved)', quantity: 1 },
-        { name: 'Male-to-Male Jumper Wires', exactVariant: '20cm flexible jumper wires: 1x Red (signal), 1x Black (Ground return)', quantity: 2 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/class1-external-blink-wiring.svg',
-      schematic: 'Arduino Digital Pin 13 ──[ 220 Ω Resistor (10c to 15c) ]──[ Anode (+) 5mm Red LED (15e) ]──[ Cathode (-) (16e) ]── Arduino GND (via 16a to GND).',
-      wireTable: [
-        { from: '220 Ω Resistor (Lead 1)', to: 'Breadboard Row 10, Column c (10c)', wireOrPolarityNote: 'Non-polarized (works either way); receives HIGH/LOW signal from Pin 13' },
-        { from: '220 Ω Resistor (Lead 2)', to: 'Breadboard Row 15, Column c (15c)', wireOrPolarityNote: 'Spans rows 10 to 15; limits circuit current to ≈ 13.6 mA' },
-        { from: '5mm Red LED — Anode (+ LONGER Leg)', to: 'Breadboard Row 15, Column e (15e)', wireOrPolarityNote: 'Shares Row 15 (a–e) with resistor lead 2; positive diode terminal' },
-        { from: '5mm Red LED — Cathode (- SHORTER Leg, Flat Rim)', to: 'Breadboard Row 16, Column e (16e)', wireOrPolarityNote: 'Must be in different row (Row 16); negative diode exit terminal' },
-        { from: 'Arduino Digital Pin 13', to: 'Breadboard Row 10, Column a (10a)', wireOrPolarityNote: 'Red Jumper Wire; delivers programmed 5V HIGH / 0V LOW signals' },
-        { from: 'Breadboard Row 16, Column a (16a)', to: 'Arduino GND Pin (or via Blue - Rail to GND)', wireOrPolarityNote: 'Black Jumper Wire; completes the closed return loop back to 0V Ground' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Disconnect Power First: Confirm the USB cable is completely unplugged from both laptop and Arduino board before placing any parts.',
-        '2. Stage A Verification (Built-In LED First): Before wiring the breadboard, connect bare Arduino via USB, select Tools -> Board -> Arduino Uno and Tools -> Port, upload sketch, confirm onboard amber "L" LED blinks at 1 Hz (1s ON, 1s OFF), then unplug USB.',
-        '3. Insert the 220 Ω Resistor: Gently bend leads into a 90° U-shape. Insert one lead firmly into breadboard hole 10c and the other into 15c. (Resistors have no polarity—either direction works).',
-        '4. Inspect & Insert 5mm Red LED: Identify the LONGER leg (Anode, +) and SHORTER leg with flat edge on plastic rim (Cathode, -). Insert LONGER leg into 15e (sharing Row 15 with resistor) and SHORTER leg into 16e.',
-        '5. Connect Signal Jumper (Red): Plug one end of Red jumper into Arduino Digital Pin 13 and other end into breadboard hole 10a (sharing Row 10 with top resistor leg).',
-        '6. Connect Ground Return Jumper (Black): Plug one end of Black jumper into breadboard hole 16a (sharing Row 16 with short LED cathode leg) and other end into any Arduino GND pin.',
-        '7. Partner Pre-Power Inspection: Verify resistor bridges Row 10c to 15c, LED long leg is in 15e and short leg is in 16e, Red wire connects Pin 13 to 10a, and Black wire connects 16a to GND.',
-        '8. Power-Up & Expected Result: Plug USB cable back into laptop. Within 2 seconds both the onboard "L" LED and your external red breadboard LED will blink in perfect synchronization: 1.0s ON, 1.0s OFF.',
-        '9. Safe Shutdown & Storage: When done, unplug USB by gripping connector body. Pull components straight out gently with fingers near base of leads, and place parts into labeled storage compartments.'
-      ],
-      powerAndSafetyChecks: [
-        'Never place an active, powered Arduino board directly onto a conductive metal table, aluminum foil, or copper tape.',
-        'Never connect or disconnect wires while the USB cable is plugged in. Always unplug the USB cable before making circuit changes!',
-        'Never connect an external LED directly between 5V and GND without a 220Ω current-limiting resistor.',
-        'If the board ever feels hot to the touch or your computer warns of a "USB Power Surge", unplug the USB cable immediately!'
-      ],
-      testCases: [
-        { action: 'Upload standard 1000ms Blink sketch', expectedResult: 'Both onboard amber "L" LED and external breadboard red LED turn ON for 1.0s and OFF for 1.0s in synchronization.' },
-        { action: 'Change delay values to 200ms and re-upload', expectedResult: 'Both LEDs pulse at a rapid 2.5 Hz strobe rate (200ms ON, 200ms OFF).' },
-        { action: 'Press the red physical RESET button on the board', expectedResult: 'The blinking pauses for approximately 1 second while bootloader restarts, then resumes normal blinking.' },
-        { action: 'Disconnect USB cable from computer', expectedResult: 'All LEDs turn off immediately as electrical current stops flowing through the open circuit.' }
+    "courseId": "beginner",
+    "sequence": 1,
+    "code": "BEGINNER 01",
+    "title": "Meet Arduino, Breadboard X-Ray, Traffic Light & Police Strobe",
+    "subtitle": "Microcontroller anatomy, solderless breadboard internal spring clips, Ohm’s law current limits, and multi-LED traffic signal & dual-strobe firmware.",
+    "promise": "I can explain how a robot senses, decides, and acts, trace breadboard internal connections, calculate safe current-limiting resistors, and program a 3-LED traffic light and police strobe system.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "None — Complete beginner course with zero prior coding or electronics experience required."
+    ],
+    "outcomes": [
+      "Differentiate between microcontrollers (ATmega328P dedicated real-time control) and general-purpose desktop computers.",
+      "Deconstruct solderless breadboard internal architecture: 5-pin horizontal terminal strips vs vertical power bus rails.",
+      "Apply Ohm’s Law (V = I × R) to calculate safe current-limiting resistance (220Ω) preventing LED burnout and GPIO damage.",
+      "Identify polarity on semiconductor LEDs (longer anode lead + vs shorter cathode lead - with flat rim).",
+      "Write, compile, flash, and debug Arduino C++ code controlling a 3-LED Traffic Light sequence and high-speed Police Strobe mode."
+    ],
+    "vocabulary": [
+      {
+        "term": "Microcontroller (MCU)",
+        "plainMeaning": "A single tiny chip that acts as the dedicated brain for a machine or robot.",
+        "technicalMeaning": "An integrated circuit (ATmega328P AVR 8-bit, 16 MHz) containing a CPU core, 32KB flash memory, 2KB SRAM, and GPIO peripherals."
+      },
+      {
+        "term": "Solderless Breadboard",
+        "plainMeaning": "A reusable construction board with hidden metal clips for plugging in circuits without solder.",
+        "technicalMeaning": "A prototyping base with internal phosphor bronze spring clips configured into 5-point tie terminal strips separated by a center DIP ravine."
+      },
+      {
+        "term": "Current-Limiting Resistor",
+        "plainMeaning": "An electrical safety speed bump that limits electron flow so LEDs and Arduino pins do not burn out.",
+        "technicalMeaning": "A passive fixed resistor in series with a diode to drop excess circuit voltage according to Ohm’s Law (I = (Vsupply - Vf) / R)."
+      },
+      {
+        "term": "Light Emitting Diode (LED)",
+        "plainMeaning": "A tiny electronic light bulb that only lets electricity flow in one direction.",
+        "technicalMeaning": "A P-N junction semiconductor diode that emits photons via electroluminescence when forward-biased above its forward voltage drop (Vf ≈ 2.0V)."
+      },
+      {
+        "term": "Digital Output (HIGH / LOW)",
+        "plainMeaning": "A two-state electrical switch command: HIGH gives 5 Volts (ON), LOW gives 0 Volts (OFF).",
+        "technicalMeaning": "A discrete binary logic state generated by microcontroller output transistors: Logic 1 (≈5.0V) and Logic 0 (0.0V Ground)."
+      },
+      {
+        "term": "void setup() & void loop()",
+        "plainMeaning": "setup() runs once when powering on; loop() repeats forever and ever while running.",
+        "technicalMeaning": "Mandatory entry points in Arduino runtime: setup() initializes registers and pin modes once; loop() is called repeatedly in an infinite while loop."
+      }
+    ],
+    "teacherPrep": [
+      "Unbox Arduino Uno R3 kits, half-size breadboards, red/yellow/green LEDs, and 220Ω resistors onto student trays.",
+      "Verify Arduino IDE 2.x detects CH340 or Atmega16U2 USB serial drivers on student laptops."
+    ],
+    "verifiedMaterials": [
+      "Arduino Uno R3 with shielded USB cable",
+      "400-point half-size solderless breadboard",
+      "1x 5mm Red diffused LED, 1x 5mm Yellow diffused LED, 1x 5mm Green diffused LED",
+      "3x 220 Ω axial metal-film resistors (Red-Red-Brown)",
+      "6x Male-to-Male jumper wires (Red, Yellow, Green, Black)"
+    ],
+    "safetyNotes": [
+      "Always disconnect the USB cable before adding or changing wires on the breadboard.",
+      "Never connect an LED directly between 5V and GND without a 220Ω current-limiting resistor.",
+      "Keep metal tools, paperclips, and wires away from the bare Arduino circuit board while powered."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Hold up an actual cutaway breadboard showing the internal metal clips. Demonstrate a high-speed police strobe and automated traffic light.",
+        "studentAction": "Examine their workbench hardware tray. Count LEDs, resistors, and identify the ATmega328P chip on their Uno."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Project the Breadboard X-Ray & Ohm’s Law slide. Teach LED polarity (long lead anode +, flat rim cathode -) and resistor color bands.",
+        "studentAction": "Use the interactive Circuit Switch & Breadboard Sim on the classroom portal to test virtual LED circuits before wiring physical parts."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide point-to-point wiring of Red (Pin 13), Yellow (Pin 12), and Green (Pin 11) LEDs with 220Ω series resistors to Ground rail.",
+        "studentAction": "Wire the 3-LED traffic light circuit. Conduct partner peer-check: confirm resistor bridges rows and cathodes connect to common Ground."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through void setup() pinMode() declarations and sequential digitalWrite() delay() traffic timing.",
+        "studentAction": "Upload the traffic light sketch. Observe the realistic cycle. Then modify code to create an emergency 80ms alternating Police Strobe mode!"
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"Narayanganj Traffic Gridlock Challenge\": who can program a realistic pedestrian crossing button sequence first?",
+        "studentAction": "Demonstrate custom light patterns to the class, complete the 4-question Exit Ticket, and pack workbench hardware trays safely."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "Microcontroller vs Desktop Computer",
+        "explanation": "A desktop computer runs millions of lines of operating system code to multitask browsers, games, and videos. An Arduino microcontroller runs ONE single control loop dedicated directly to reading electrical voltages and controlling physical machines with microsecond precision.",
+        "instructorNote": "Point out the silver 16 MHz quartz crystal oscillator that acts as the heartbeat of the ATmega328P."
+      },
+      {
+        "title": "Breadboard Internal X-Ray Architecture",
+        "explanation": "Inside a breadboard, columns are not connected together, but horizontal rows (a-b-c-d-e and f-g-h-i-j) are connected by continuous spring-loaded metal clips. Components in the same row share electrical contact. The center channel separates dual-inline IC chips.",
+        "instructorNote": "Have students probe row continuity with a multimeter in continuity beep mode."
+      },
+      {
+        "title": "Ohm’s Law & Safe Diode Current",
+        "explanation": "Without a resistor, an LED behaves like an electrical short circuit: huge current rushes through the diode, causing thermal destruction in less than a second. A 220Ω resistor limits current to I = (5V - 2V) / 220Ω ≈ 13.6 mA, well below the 20 mA pin safety rating.",
+        "instructorNote": "Demonstrate the difference in brightness between 220Ω, 1kΩ, and 10kΩ resistors."
+      }
+    ],
+    "visualizerId": "breadboard_circuit_sim",
+    "project": {
+      "name": "Autonomous Traffic Signal & Police Strobe Station",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "A physical breadboard circuit with 3 LEDs wired in series with 220Ω resistors connected to Arduino Pins 13, 12, and 11.",
+        "Flawless execution of standard traffic sequencing (Red 4s, Yellow 1s, Green 4s).",
+        "Successful code modification enabling emergency dual-strobe police flasher mode (80ms alternating bursts)."
       ]
     },
-    codeLab: {
-      language: 'cpp',
-      code: `/*
- * ============================================================================
- * RoboBEE Innovators — Beginner Robotics & Arduino (Proposed Track)
- * Class 1 (beg-01): Welcome to Robotics: Meet Arduino, Then Make an LED Blink
- * ============================================================================
- * Target Reference Board : Arduino Uno R3 (ATmega328P)
- * Circuit Configuration  :
- *   - Stage A (Built-in test) : Uses onboard LED_BUILTIN (mapped to Pin 13 on Uno R3)
- *   - Stage B (External circuit):
- *       Arduino Pin 13 ---> 220 Ohm Resistor ---> Red LED Anode (+, Long Leg)
- *       Red LED Cathode (-, Short Leg / Flat Rim) ---> Arduino GND
- * ============================================================================
- */
-
-// 1. PIN & TIMING CONSTANTS (Global Scope — easy to read and change in one place)
-const int LED_PIN     = LED_BUILTIN; // On Arduino Uno R3, LED_BUILTIN equals Digital Pin 13
-const int ON_TIME_MS  = 1000;        // Time LED stays ON in milliseconds (1000 ms = 1.0 second)
-const int OFF_TIME_MS = 1000;        // Time LED stays OFF in milliseconds (1000 ms = 1.0 second)
-
-// 2. SETUP FUNCTION — Runs ONCE when the Arduino powers on or the Reset button is pressed
-void setup() {
-  // Configure LED_PIN as a digital OUTPUT so the microcontroller can drive 5V or 0V safely
-  pinMode(LED_PIN, OUTPUT);
-}
-
-// 3. LOOP FUNCTION — Repeats continuously forever (Sense -> Decide -> Act cycle)
-void loop() {
-  // ACT Step 1: Turn the LED ON by driving the output pin HIGH (5 Volts on Uno R3)
-  digitalWrite(LED_PIN, HIGH);
-
-  // DECIDE / TIMING Step 1: Hold the ON state for ON_TIME_MS milliseconds
-  delay(ON_TIME_MS);
-
-  // ACT Step 2: Turn the LED OFF by pulling the output pin LOW (0 Volts / Ground)
-  digitalWrite(LED_PIN, LOW);
-
-  // DECIDE / TIMING Step 2: Hold the OFF state for OFF_TIME_MS milliseconds before loop() repeats
-  delay(OFF_TIME_MS);
-}
-`,
-      pinMap: {
-        'LED_BUILTIN': 'Digital Pin 13 (Built-in SMD amber LED with internal 1kΩ resistor)',
-        'Pin 13': 'Digital Output Pin delivering 5V HIGH / 0V LOW to external breadboard circuit',
-        '5V': 'Regulated 5.0V DC bus power rail from USB or NCP1117 linear voltage regulator',
-        'GND': 'System Ground reference plane (0.0V DC return path for current)'
-      },
-      setupAndUpload: [
-        '1. Connect your Arduino Uno to the computer using the high-quality shielded USB cable.',
-        '2. Launch the Arduino IDE 2.x software on your desktop.',
-        '3. Go to Tools -> Board -> Arduino AVR Boards and select "Arduino Uno".',
-        '4. Go to Tools -> Port and click on the port identified with your board (e.g. COM3, COM4, or /dev/ttyACM0).',
-        '5. Click the Verify button (Checkmark icon) to compile your C++ code into machine hex bytes.',
-        '6. Click the Upload button (Rightward Arrow icon) to flash the compiled hex file into the ATmega328P Flash memory.',
-        '7. Look at the board: verify that the TX and RX LEDs flicker rapidly for two seconds, followed by the amber LED "L" and external LED pulsing to life!'
+    "activity": {
+      "title": "Assemble, Wire, and Program the Municipal Traffic Light",
+      "steps": [
+        "Step 1: Place 3 LEDs into breadboard rows with cathode (-) legs inserted into the blue Ground bus rail.",
+        "Step 2: Insert three 220Ω resistors bridging the LED anode rows to separate signal input rows.",
+        "Step 3: Connect jumper wires from Arduino Digital Pin 13 (Red), Pin 12 (Yellow), and Pin 11 (Green) to the resistor input rows.",
+        "Step 4: Connect a black jumper wire from the breadboard blue rail to an Arduino GND pin.",
+        "Step 5: Connect USB cable, open Arduino IDE 2.x, select Arduino Uno COM port, and upload the Traffic Light sketch.",
+        "Step 6: Verify timing on stopwatch: Red illuminates for 4000ms, transitions to Yellow for 1200ms, then Green for 4000ms.",
+        "Step 7: Challenge: Modify code to create an emergency Police Strobe alternating Red and Green rapidly 5 times each."
       ],
-      explanations: [
-        '/* ... */ and // (Comments): Explanatory text for human engineers. The C++ compiler ignores comments completely—they consume zero bytes in memory.',
-        'const int LED_PIN = LED_BUILTIN;: Declares an immutable integer constant mapping to Pin 13 on the Uno R3. The const keyword prevents accidental alteration.',
-        'const int ON_TIME_MS = 1000; and OFF_TIME_MS = 1000;: Stores blink durations in milliseconds at the top of the sketch for quick timing modifications.',
-        'void setup() { ... }: The mandatory initialization function. Runs exactly once after power-on or hardware reset; void indicates no return value.',
-        'pinMode(LED_PIN, OUTPUT);: Sets the internal transistor driver for Pin 13 to low-impedance OUTPUT mode, enabling it to source current safely.',
-        'void loop() { ... }: The primary execution routine. Infinitely repeats sequentially from top to bottom as long as power is maintained.',
-        'digitalWrite(LED_PIN, HIGH); and LOW;: HIGH connects the pin to 5V (turning LED ON); LOW pulls the pin to 0V Ground (turning LED OFF).',
-        'delay(ON_TIME_MS); and delay(OFF_TIME_MS);: Pauses CPU instruction progression for specified milliseconds, allowing the eye to register each state.'
+      "successCriteria": [
+        "Circuit operates reliably without loose jumpers or flickering connections.",
+        "Student can explain why the 220Ω resistor is necessary and identify anode vs cathode leads.",
+        "Student successfully flashes and demonstrates both Traffic and Police Strobe modes."
       ],
-      expectedResult: 'Both the onboard amber SMD LED labeled "L" and the external red breadboard LED alternate steadily between bright illumination (5V) and complete darkness (0V) at the exact programmed interval.',
-      caveats: [
-        'Blocking Delay Warning: While delay() is executing, the microcontroller is completely frozen in an idle loop and CANNOT read sensors or react to emergency stops. In Class 03 and Advanced classes, we will master non-blocking millis() timing!',
-        'Power Indicator Distinguish: Do not confuse the green power LED labeled "ON" with the programmable amber LED labeled "L". The green light indicates 5V power presence; only "L" is controlled by your code.',
-        'Pin 13 Resistor: While Pin 13 has a built-in resistor for the onboard surface-mount LED, any external LED connected to external breadboard pins MUST have its own 220Ω resistor!'
-      ],
-      tweakTip: 'Run the 4 Timing Experiments: 1) Rapid Strobe (200ms/200ms); 2) Beacon (100ms/900ms); 3) Robot Heartbeat (120ms/120ms/120ms/800ms); 4) Persistence of Vision limit (10ms/10ms).'
+      "extension": "Add an asynchronous pedestrian blink warning where the Yellow LED pulses 3 times before switching to Red."
     },
-    troubleshooting: [
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3 (ATmega328P 16MHz)"
+      ],
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Rev3 with DIP/SMD ATmega328P",
+          "quantity": 1
+        },
+        {
+          "name": "400-Tie Breadboard",
+          "exactVariant": "Half-size solderless breadboard",
+          "quantity": 1
+        },
+        {
+          "name": "5mm Red LED",
+          "exactVariant": "Diffused lens, Vf ≈ 2.0V",
+          "quantity": 1
+        },
+        {
+          "name": "5mm Yellow LED",
+          "exactVariant": "Diffused lens, Vf ≈ 2.1V",
+          "quantity": 1
+        },
+        {
+          "name": "5mm Green LED",
+          "exactVariant": "Diffused lens, Vf ≈ 2.2V",
+          "quantity": 1
+        },
+        {
+          "name": "220 Ω Resistors",
+          "exactVariant": "1/4 Watt, 5% tolerance (Red-Red-Brown-Gold)",
+          "quantity": 3
+        },
+        {
+          "name": "Male-to-Male Jumpers",
+          "exactVariant": "20cm multi-color flexible wires",
+          "quantity": 6
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/class1-external-blink-wiring.svg",
+      "schematic": "Arduino D13 -> 220Ω -> Red LED Anode | Cathode -> GND; Arduino D12 -> 220Ω -> Yellow LED Anode | Cathode -> GND; Arduino D11 -> 220Ω -> Green LED Anode | Cathode -> GND",
+      "wireTable": [
+        {
+          "from": "Arduino Digital Pin 13",
+          "to": "Breadboard Row 10 (Red LED Signal)",
+          "wireOrPolarityNote": "Red wire — Red Traffic LED"
+        },
+        {
+          "from": "Arduino Digital Pin 12",
+          "to": "Breadboard Row 15 (Yellow LED Signal)",
+          "wireOrPolarityNote": "Yellow wire — Yellow Caution LED"
+        },
+        {
+          "from": "Arduino Digital Pin 11",
+          "to": "Breadboard Row 20 (Green LED Signal)",
+          "wireOrPolarityNote": "Green wire — Green Go LED"
+        },
+        {
+          "from": "Breadboard Blue Rail (-)",
+          "to": "Arduino GND Pin",
+          "wireOrPolarityNote": "Black wire — Common Circuit Return Ground"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Verify USB is unplugged before touching components.",
+        "2. Insert Red LED long leg in row 11, short leg in blue Ground rail.",
+        "3. Insert 220Ω resistor bridging row 10 to row 11.",
+        "4. Repeat for Yellow (rows 15/16) and Green (rows 20/21) with their respective 220Ω resistors.",
+        "5. Connect jumpers from D13, D12, and D11 to rows 10, 15, and 20.",
+        "6. Connect black jumper from blue Ground rail to Arduino GND.",
+        "7. Plug in USB cable. Compile and upload firmware."
+      ],
+      "powerAndSafetyChecks": [
+        "Ensure resistor leads do not touch adjacent metal leads or short across rows.",
+        "Check that LED flat rim (cathode) is in the Ground rail, not facing the signal pin."
+      ],
+      "testCases": [
+        {
+          "action": "Power up with standard traffic sketch",
+          "expectedResult": "Red turns on for 4s, Yellow turns on for 1.2s, Green turns on for 4s."
+        },
+        {
+          "action": "Upload Police Strobe sketch",
+          "expectedResult": "Red and Green LEDs alternate 3 rapid 80ms bursts each."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 01: Traffic Light & Police Strobe\n * Board: Arduino Uno R3 (ATmega328P)\n */\n\nconst int PIN_RED    = 13;\nconst int PIN_YELLOW = 12;\nconst int PIN_GREEN  = 11;\n\nvoid setup() {\n  pinMode(PIN_RED, OUTPUT);\n  pinMode(PIN_YELLOW, OUTPUT);\n  pinMode(PIN_GREEN, OUTPUT);\n}\n\nvoid loop() {\n  // Traffic Light Sequence\n  // 1. RED STOP (4.0s)\n  digitalWrite(PIN_RED, HIGH);\n  digitalWrite(PIN_YELLOW, LOW);\n  digitalWrite(PIN_GREEN, LOW);\n  delay(4000);\n\n  // 2. GREEN GO (4.0s)\n  digitalWrite(PIN_RED, LOW);\n  digitalWrite(PIN_GREEN, HIGH);\n  delay(4000);\n\n  // 3. YELLOW CAUTION (1.2s)\n  digitalWrite(PIN_GREEN, LOW);\n  digitalWrite(PIN_YELLOW, HIGH);\n  delay(1200);\n\n  // Emergency Police Strobe Burst (Demo Mode)\n  digitalWrite(PIN_YELLOW, LOW);\n  for (int i = 0; i < 4; i++) {\n    digitalWrite(PIN_RED, HIGH);\n    digitalWrite(PIN_GREEN, LOW);\n    delay(80);\n    digitalWrite(PIN_RED, LOW);\n    digitalWrite(PIN_GREEN, HIGH);\n    delay(80);\n  }\n}\n",
+      "pinMap": {
+        "Pin 13": "Digital Output connected to Red Traffic LED via 220Ω resistor",
+        "Pin 12": "Digital Output connected to Yellow Caution LED via 220Ω resistor",
+        "Pin 11": "Digital Output connected to Green Go LED via 220Ω resistor",
+        "GND": "Common Circuit Ground return rail"
+      },
+      "setupAndUpload": [
+        "Select Tools -> Board -> Arduino Uno.",
+        "Select Tools -> Port -> (Your detected COM port).",
+        "Click Upload (Arrow icon) and confirm \"Done uploading\"."
+      ],
+      "explanations": [
+        "pinMode(pin, OUTPUT): Sets internal MCU transistor driver to source up to 20mA safely.",
+        "digitalWrite(pin, HIGH): Sets output voltage to 5.0V, driving current through resistor and LED to Ground.",
+        "delay(ms): Suspends program execution for specified milliseconds while hardware timers maintain state.",
+        "for loop strobe: Rapidly toggles Red and Green pins to simulate emergency vehicle warning strobes."
+      ],
+      "expectedResult": "System alternates smoothly between standard municipal traffic lights and rapid emergency police vehicle strobing.",
+      "caveats": [
+        "Never omit the 220Ω resistor: direct 5V will burn out standard LEDs within milliseconds.",
+        "Ensure the USB cable provides steady 5V power from laptop USB port."
+      ],
+      "tweakTip": "Change the red/green delay in the police strobe from 80ms down to 40ms to observe visual persistence of vision!"
+    },
+    "troubleshooting": [
       {
-        symptom: 'Onboard "L" LED blinks, but the external breadboard LED stays completely dark.',
-        checks: [
-          'Unplug USB first. Check LED leg polarity: ensure the longer leg (Anode, +) is in Row 15 sharing with the resistor, and shorter leg (Cathode, -) is in Row 16.',
-          'Verify that the 220 Ω resistor bridges Row 10 (Column c) to Row 15 (Column c).',
-          'Confirm that the Red jumper wire is in Row 10a (connected to Pin 13) and Black jumper wire is in Row 16a (connected to GND).',
-          'Check for accidental short circuits: verify that the LED legs are in DIFFERENT rows (Row 15 and Row 16), not plugged into the same row!'
+        "symptom": "One of the LEDs does not light up at all.",
+        "checks": [
+          "Check LED polarity: the longer leg must connect to the resistor, shorter flat-rim leg to Ground.",
+          "Check resistor connection: verify resistor is in the exact row as the LED long leg.",
+          "Check jumper pin assignment: confirm wire is seated firmly in D13, D12, or D11."
         ],
-        explanation: 'LEDs are diodes that only conduct current in one direction (Anode + to Cathode -). If inserted backward or shorted on the same breadboard row, no current will flow through the diode junction.'
+        "explanation": "Diodes only conduct electricity in one direction. Reverse polarity blocks all current flow safely without light emission."
       },
       {
-        symptom: 'External LED turns ON and stays solidly lit—it never blinks OFF.',
-        checks: [
-          'Check the Arduino pin header: ensure the Red jumper wire is plugged into Digital Pin 13, NOT into the 5V power pin!',
-          'Inspect your loop() code: confirm that there is a delay(OFF_TIME_MS); AFTER the digitalWrite(LED_PIN, LOW); line.',
-          'Verify that OFF_TIME_MS is not set to 0. If delay is omitted or 0, the LED turns off for less than a microsecond and turns back on instantly, appearing constantly on.'
+        "symptom": "Arduino IDE reports \"avrdude: ser_open(): can't open device COM...\" error.",
+        "checks": [
+          "Unplug and reconnect the USB cable.",
+          "Verify in Device Manager that the USB Serial port appears under Ports (COM & LPT).",
+          "Close other serial monitors or tabs that might be locking the COM port."
         ],
-        explanation: 'Connecting directly to 5V bypasses program control. Omitting the second delay causes the MCU to loop back to HIGH faster than the human eye\'s persistence of vision threshold (≈ 50ms).'
+        "explanation": "The operating system COM port driver was locked by another process or the cable was not fully seated."
       },
       {
-        symptom: 'External LED blinks, but it is extremely dim (barely visible in room light).',
-        checks: [
-          'Check your setup() function: confirm that pinMode(LED_PIN, OUTPUT); is included and spelled correctly.',
-          'Inspect the resistor color bands: ensure you used Red-Red-Brown (220 Ω) or Orange-Orange-Brown (330 Ω), NOT Brown-Black-Orange (10,000 Ω / 10 kΩ) or Brown-Black-Yellow (100 kΩ).',
-          'Ensure the breadboard tie-point holes are gripping the component leads firmly and not loose.'
+        "symptom": "LEDs are very dim and hard to see.",
+        "checks": [
+          "Verify resistor value: confirm color bands are Red-Red-Brown (220Ω), not Red-Red-Yellow (220kΩ).",
+          "Check that the breadboard Ground wire is connected to Arduino GND and not a digital pin."
         ],
-        explanation: 'If pinMode() is omitted, the pin defaults to INPUT mode with a weak 20kΩ internal pull-up, limiting current to < 0.25 mA. A 10kΩ resistor similarly restricts current to < 0.3 mA.'
+        "explanation": "A 220kΩ resistor drops current to microamps, rendering the LED barely visible."
+      }
+    ],
+    "checksForUnderstanding": [
+      "Why does an LED need a resistor while an incandescent flashlight bulb does not?",
+      "What happens if you plug both legs of an LED into the exact same horizontal breadboard row?"
+    ],
+    "exitTicket": [
+      {
+        "question": "Explain what happens inside a breadboard along row 15 (columns a through e).",
+        "rubricOrSampleReasoning": "All 5 holes (a, b, c, d, e) in row 15 are connected together underneath by a continuous spring metal clip. Any wire or part placed in these holes is electrically joined."
       },
       {
-        symptom: 'Arduino IDE error: "avrdude: ser_open(): can\'t open device // COM port not found / Permission denied"',
-        checks: [
-          'Verify that the USB cable is pushed all the way into the Arduino jack until it clicks firmly into place.',
-          'Check if the green "ON" LED on the board is illuminated. If it is dark, your cable or USB port has no power.',
-          'Verify that you are using a true data cable, not a cheap phone charge-only cable that lacks internal D+ and D- data wires.',
-          'Open Tools -> Port in the IDE and ensure a checkmark appears next to the active COM port. If no COM port appears, reinstall the CH340 or FTDI USB driver.',
-          'Close the Serial Monitor window or any other program (such as Cura, 3D printer software, or Python scripts) that might be locking the serial port.'
+        "question": "Calculate the current flowing through a Red LED (Vf = 2.0V) connected to 5V through a 220Ω resistor using Ohm’s Law.",
+        "rubricOrSampleReasoning": "I = (Vsupply - Vf) / R = (5.0V - 2.0V) / 220Ω = 3.0V / 220Ω ≈ 0.0136 A = 13.6 mA. This is safe because it is under the 20 mA continuous pin limit."
+      },
+      {
+        "question": "What is the main difference between void setup() and void loop()?",
+        "rubricOrSampleReasoning": "setup() runs only once when the Arduino boots up or resets to configure pins; loop() runs continuously forever in an infinite cycle."
+      }
+    ],
+    "differentiation": {
+      "support": [
+        "Provide breadboards with color-coded stickers indicating where resistors and LED anodes go."
+      ],
+      "extension": [
+        "Program a 4-way intersection simulation with alternating cross-traffic lights and pedestrian crossing countdowns."
+      ],
+      "offlineOption": [
+        "Use the interactive breadboard circuit simulator on the RoboBee portal without physical hardware."
+      ]
+    },
+    "nextLessonId": "beg-02",
+    "nextLessonTeaser": "Class 02: Arcade Buttons, Buzzer tone(), and the 2-Player Reaction Timer Game! Learn digital inputs and high-speed reflex battles.",
+    "sources": [
+      {
+        "title": "ATmega328P Microchip Datasheet & Electrical Characteristics",
+        "url": "https://microchip.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "Breadboard Traffic Light Wiring Illustration",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
+    ],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+
+  {
+    "id": "beg-02",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-electronics-ohms-law",
+        "fg-prog-program-structure"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-electronics-breadboards"
+      ],
+      "goDeeper": [
+        "fg-testing-fmea-debugging",
+        "fg-safety-lab-code"
+      ]
+    },
+    "courseId": "beginner",
+    "sequence": 2,
+    "code": "BEGINNER 02",
+    "title": "Arcade Buttons, Buzzer tone(), 2-Player Reaction Timer Game",
+    "subtitle": "Digital inputs, floating pins, internal pullup resistors, audio square wave frequencies, and millisecond reflex game firmware.",
+    "promise": "I can wire tactile arcade pushbuttons with internal pullups, synthesize frequencies on a piezo buzzer, and program a 2-player reflex reaction timer game with false-start detection.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01"
+    ],
+    "outcomes": [
+      "Explain the concept of floating digital inputs and demonstrate why pull-up/pull-down resistors are required.",
+      "Enable the ATmega328P internal 20kΩ pull-up resistor using pinMode(pin, INPUT_PULLUP) without external parts.",
+      "Synthesize musical tones and audio alerts using tone(pin, frequency, duration) and noTone(pin).",
+      "Track elapsed time in milliseconds using the non-blocking millis() timer system.",
+      "Assemble and program an interactive 2-Player Reaction Timer Game with random delay countdown, sub-millisecond winner logging, and false-start penalty buzzer."
+    ],
+    "vocabulary": [
+      {
+        "term": "Digital Input (digitalRead)",
+        "plainMeaning": "Reading whether an electronic switch is currently open (HIGH) or closed (LOW).",
+        "technicalMeaning": "Sampling a GPIO pin voltage through an internal Schmitt trigger to determine if the logic state is above VIH or below VIL."
+      },
+      {
+        "term": "Floating Pin",
+        "plainMeaning": "An unconnected input pin that randomly flips between 1 and 0 due to static electricity and radio noise in the air.",
+        "technicalMeaning": "A high-impedance CMOS input node lacking a deterministic reference potential, susceptible to electromagnetic interference (EMI)."
+      },
+      {
+        "term": "Internal Pull-Up Resistor",
+        "plainMeaning": "A built-in resistor inside the Arduino chip that gently pulls the input pin up to 5V until you press the button to Ground.",
+        "technicalMeaning": "An internal 20kΩ–50kΩ semiconductor resistor enabled via MCU firmware connecting the pin to VCC when configured as INPUT_PULLUP."
+      },
+      {
+        "term": "Piezo Buzzer",
+        "plainMeaning": "A tiny disc that flexes back and forth when pulsed with electricity to create sound waves in the air.",
+        "technicalMeaning": "An acoustic transducer utilizing the piezoelectric effect to vibrate a metal diaphragm in response to applied AC or PWM square waves."
+      },
+      {
+        "term": "tone() and Frequency (Hz)",
+        "plainMeaning": "tone(pin, 440) vibrates a speaker 440 times per second to play musical note Concert A.",
+        "technicalMeaning": "A core Arduino function that configures a hardware timer to generate a 50% duty cycle square wave at a specified frequency in Hertz."
+      },
+      {
+        "term": "millis() Timer",
+        "plainMeaning": "An internal stopwatch inside the Arduino that counts milliseconds since the board turned on.",
+        "technicalMeaning": "An unsigned 32-bit counter incremented by the Timer0 overflow interrupt every 1.024 milliseconds, rolling over after approximately 50 days."
+      }
+    ],
+    "teacherPrep": [
+      "Set up 2 tactile arcade pushbuttons, 1 piezo buzzer, and status LEDs for each student team.",
+      "Test pushbuttons in breadboards to confirm pins bridge the center ravine cleanly."
+    ],
+    "verifiedMaterials": [
+      "Arduino Uno R3 with USB cable",
+      "400-tie breadboard",
+      "2x 12mm Tactile Arcade Pushbuttons",
+      "1x 5V Passive Piezo Buzzer module",
+      "2x 5mm LEDs (Player 1 Red, Player 2 Green) with 220Ω resistors",
+      "8x Male-to-Male jumper wires"
+    ],
+    "safetyNotes": [
+      "Piezo buzzers can be loud when operated close to the ear: keep buzzers mounted on the bench breadboard.",
+      "Always press pushbuttons with reasonable finger pressure; do not bend the internal metal leaf contacts."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Invite two students to the front bench for an exciting live reflex battle. Trigger the random buzzer countdown: who reacts fastest?",
+        "studentAction": "Cheer on the live match. Note the millisecond score displayed on the serial monitor. Inspect their own pushbuttons and buzzers."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Demonstrate a floating pin on the projector (antenna wire fluctuating wildly). Teach INPUT_PULLUP and tone(pin, Hz) physics.",
+        "studentAction": "Experiment with the interactive Reaction Game simulator on the portal to understand button debouncing and state changes."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide placement of Player 1 button (D2), Player 2 button (D3), Buzzer (D8), and winner indicator LEDs (D11 and D12).",
+        "studentAction": "Wire the dual arcade button and buzzer circuit. Verify buttons connect pins to GND and buzzer + connects to D8."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through random(2000, 5000) countdown logic, polling button states with digitalRead(), and logging reaction time with millis().",
+        "studentAction": "Upload the 2-Player Game sketch. Open Serial Monitor at 9600 baud. Test countdown beeps, false-start penalties, and winner fanfare."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Run the RoboBee Classroom Reflex Championship: partner vs partner tournament bracket!",
+        "studentAction": "Compete in best-of-5 tournament rounds. Log reaction times in milliseconds (e.g. 184ms vs 212ms) and complete Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "The Mystery of Floating Pins",
+        "explanation": "When an input pin is not connected to 5V or GND, it acts like a sensitive radio antenna. Electromagnetic noise from AC lights and human hands causes the pin to flap randomly between 0 and 1. A pull-up resistor holds the pin securely at 5V until pressed to GND.",
+        "instructorNote": "Touch an unconnected input pin with your bare finger on the projector to show the erratic 0/1 serial monitor readings."
+      },
+      {
+        "title": "Sound Waves & The tone() Function",
+        "explanation": "Sound is vibrating air molecules. When Arduino turns a buzzer pin HIGH and LOW 1,000 times per second (1 kHz), the piezo disc flexes at 1 kHz, creating an audible high-pitched tone. By changing frequency in Hz, we can play musical scales and game sounds.",
+        "instructorNote": "Play C-Major scale (262Hz C, 294Hz D, 330Hz E, 349Hz F, 392Hz G, 440Hz A, 494Hz B, 523Hz C)."
+      },
+      {
+        "title": "Precision Stopwatch Timing with millis()",
+        "explanation": "delay() freezes the microcontroller completely, making it blind to button presses! millis() returns the exact millisecond count without pausing. By saving startTime when the buzzer sounds and subtracting it when a button is pressed, we measure human reflexes to 1/1000th of a second.",
+        "instructorNote": "Explain that average human visual reaction time is 200–250ms, while audio reaction time is around 170ms."
+      }
+    ],
+    "visualizerId": "reaction_game_sim",
+    "project": {
+      "name": "2-Player Precision Reaction Timer Game Console",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Dual tactile arcade button circuit with piezo buzzer and winner indicator LEDs wired on breadboard.",
+        "Randomized 2000ms–5000ms countdown buzzer with anti-cheating false start detection.",
+        "Accurate millisecond reflex scoring displayed on Serial Monitor with victory fanfare tone for the winner."
+      ]
+    },
+    "activity": {
+      "title": "Wire and Program the 2-Player Reflex Battle Station",
+      "steps": [
+        "Step 1: Place Player 1 button straddling breadboard center ravine connecting Pin 2 to GND.",
+        "Step 2: Place Player 2 button straddling center ravine connecting Pin 3 to GND.",
+        "Step 3: Connect Piezo buzzer positive (+) pin to Arduino Pin 8 and negative (-) to GND.",
+        "Step 4: Connect Player 1 LED to Pin 11 and Player 2 LED to Pin 12 with 220Ω series resistors.",
+        "Step 5: Flash firmware with pinMode(2, INPUT_PULLUP) and pinMode(3, INPUT_PULLUP).",
+        "Step 6: Open Serial Monitor at 9600 baud. Observe countdown: \"3... 2... 1... BEEP!\"",
+        "Step 7: Compete with partner: whoever presses first illuminates their LED and hears the victory melody!"
+      ],
+      "successCriteria": [
+        "Buttons read reliably without floating pin errors or contact bounce issues.",
+        "Buzzer plays clear countdown chirps, false start buzzes, and victory fanfares.",
+        "Accurate millisecond scores reported on serial monitor."
+      ],
+      "extension": "Add a best-of-5 tournament score counter that flashes both LEDs when a player reaches 3 victories!"
+    },
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3 (ATmega328P)"
+      ],
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "Solderless Breadboard",
+          "exactVariant": "Half-size 400 tie points",
+          "quantity": 1
+        },
+        {
+          "name": "Arcade Pushbuttons",
+          "exactVariant": "12mm tactile momentaries with square caps",
+          "quantity": 2
+        },
+        {
+          "name": "Piezo Buzzer",
+          "exactVariant": "5V passive acoustic transducer",
+          "quantity": 1
+        },
+        {
+          "name": "5mm LEDs (Red & Green)",
+          "exactVariant": "Diffused lens indicator LEDs",
+          "quantity": 2
+        },
+        {
+          "name": "220 Ω Resistors",
+          "exactVariant": "1/4W 5% carbon film",
+          "quantity": 2
+        },
+        {
+          "name": "Jumper Wires",
+          "exactVariant": "Male-to-Male 20cm flexible jumpers",
+          "quantity": 8
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "Button 1: D2 -> Button -> GND (INPUT_PULLUP); Button 2: D3 -> Button -> GND (INPUT_PULLUP); Buzzer: D8 -> (+) Buzzer (-) -> GND; Player 1 LED: D11 -> 220Ω -> Anode | Cathode -> GND; Player 2 LED: D12 -> 220Ω -> Anode | Cathode -> GND",
+      "wireTable": [
+        {
+          "from": "Arduino Digital Pin 2",
+          "to": "Player 1 Button Terminal",
+          "wireOrPolarityNote": "Red wire — Player 1 Input"
+        },
+        {
+          "from": "Player 1 Button Other Terminal",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Ground connection"
+        },
+        {
+          "from": "Arduino Digital Pin 3",
+          "to": "Player 2 Button Terminal",
+          "wireOrPolarityNote": "Green wire — Player 2 Input"
+        },
+        {
+          "from": "Player 2 Button Other Terminal",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Ground connection"
+        },
+        {
+          "from": "Arduino Digital Pin 8",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Yellow wire — Audio PWM Output"
+        },
+        {
+          "from": "Piezo Buzzer (-) Pin",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Buzzer return Ground"
+        },
+        {
+          "from": "Arduino Digital Pin 11",
+          "to": "Player 1 Red LED Resistor",
+          "wireOrPolarityNote": "Red LED signal"
+        },
+        {
+          "from": "Arduino Digital Pin 12",
+          "to": "Player 2 Green LED Resistor",
+          "wireOrPolarityNote": "Green LED signal"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Insert pushbuttons bridging the central ravine to avoid shorting left and right terminals.",
+        "2. Connect button Ground pins to the common blue Ground rail.",
+        "3. Wire Pin 2 and Pin 3 to opposite button contacts.",
+        "4. Insert Piezo buzzer noting polarity (+ is longer leg or indicated by top sticker).",
+        "5. Wire indicator LEDs with 220Ω resistors to D11 and D12.",
+        "6. Connect blue rail to Arduino GND, plug in USB, and upload firmware."
+      ],
+      "powerAndSafetyChecks": [
+        "Verify buttons are oriented so pressing shorts pin to Ground, not pin to itself.",
+        "Ensure buzzer + is on Pin 8 and - is on GND."
+      ],
+      "testCases": [
+        {
+          "action": "Press Player 1 button during idle",
+          "expectedResult": "Serial monitor registers button press with instantaneous response."
+        },
+        {
+          "action": "Press button BEFORE countdown beep (cheat)",
+          "expectedResult": "Harsh low-pitch buzz (150Hz) sounds; false-start penalty reported."
+        },
+        {
+          "action": "Press button after countdown beep",
+          "expectedResult": "Winner LED lights up, victory fanfare sounds, reaction time in ms printed."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 02: 2-Player Reaction Timer Game\n * Board: Arduino Uno R3 (ATmega328P)\n */\n\nconst int PIN_BTN1   = 2;   // Player 1 Arcade Button (INPUT_PULLUP)\nconst int PIN_BTN2   = 3;   // Player 2 Arcade Button (INPUT_PULLUP)\nconst int PIN_BUZZER = 8;   // Piezo Buzzer\nconst int PIN_LED1   = 11;  // Player 1 Winner LED\nconst int PIN_LED2   = 12;  // Player 2 Winner LED\n\nvoid setup() {\n  pinMode(PIN_BTN1, INPUT_PULLUP);\n  pinMode(PIN_BTN2, INPUT_PULLUP);\n  pinMode(PIN_BUZZER, OUTPUT);\n  pinMode(PIN_LED1, OUTPUT);\n  pinMode(PIN_LED2, OUTPUT);\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE 2-PLAYER REACTION GAME ===\");\n  Serial.println(\"Get ready! Waiting for GO signal...\");\n}\n\nvoid loop() {\n  digitalWrite(PIN_LED1, LOW);\n  digitalWrite(PIN_LED2, LOW);\n\n  // Random countdown delay between 2.0s and 5.0s\n  int waitTime = random(2000, 5000);\n  unsigned long startCountdown = millis();\n\n  // Watch for false starts during countdown\n  while (millis() - startCountdown < (unsigned long)waitTime) {\n    if (digitalRead(PIN_BTN1) == LOW) {\n      triggerFalseStart(1);\n      return;\n    }\n    if (digitalRead(PIN_BTN2) == LOW) {\n      triggerFalseStart(2);\n      return;\n    }\n  }\n\n  // GO SIGNAL! Beep at 1000 Hz\n  tone(PIN_BUZZER, 1000, 250);\n  unsigned long goTime = millis();\n  int winner = 0;\n  unsigned long reactionTime = 0;\n\n  // Poll buttons for fastest reflex\n  while (winner == 0) {\n    if (digitalRead(PIN_BTN1) == LOW) {\n      reactionTime = millis() - goTime;\n      winner = 1;\n    } else if (digitalRead(PIN_BTN2) == LOW) {\n      reactionTime = millis() - goTime;\n      winner = 2;\n    }\n  }\n\n  // Celebrate winner\n  if (winner == 1) {\n    digitalWrite(PIN_LED1, HIGH);\n    Serial.print(\"PLAYER 1 WINS! Time: \");\n    Serial.print(reactionTime);\n    Serial.println(\" ms\");\n  } else {\n    digitalWrite(PIN_LED2, HIGH);\n    Serial.print(\"PLAYER 2 WINS! Time: \");\n    Serial.print(reactionTime);\n    Serial.println(\" ms\");\n  }\n\n  // Victory fanfare\n  tone(PIN_BUZZER, 659, 120); delay(140);\n  tone(PIN_BUZZER, 880, 250); delay(300);\n  delay(3000); // Wait 3s before next round\n}\n\nvoid triggerFalseStart(int player) {\n  Serial.print(\"FALSE START by Player \");\n  Serial.println(player);\n  tone(PIN_BUZZER, 150, 600); // Penalty buzz\n  delay(1500);\n}\n",
+      "pinMap": {
+        "Pin 2": "Player 1 Arcade Button (Internal pullup, active LOW when pressed)",
+        "Pin 3": "Player 2 Arcade Button (Internal pullup, active LOW when pressed)",
+        "Pin 8": "Piezo Buzzer (Square wave tone generation)",
+        "Pin 11": "Player 1 Victory Indicator LED",
+        "Pin 12": "Player 2 Victory Indicator LED"
+      },
+      "setupAndUpload": [
+        "Connect Arduino Uno via USB cable.",
+        "Select Tools -> Board -> Arduino Uno and proper COM port.",
+        "Upload sketch and open Serial Monitor at 9600 baud."
+      ],
+      "explanations": [
+        "pinMode(pin, INPUT_PULLUP): Activates the internal 20kΩ pull-up resistor, keeping pin HIGH until button connects it to GND.",
+        "digitalRead(pin) == LOW: Detects button press because closing switch connects pin to 0V Ground.",
+        "random(2000, 5000): Generates unpredictable delay so players cannot anticipate the go-beep.",
+        "millis() - goTime: Calculates human reaction speed in milliseconds with zero CPU blocking."
+      ],
+      "expectedResult": "Players hear a random go-beep; whoever presses their button first has their LED illuminate and sees their reflex time in ms on the Serial Monitor.",
+      "caveats": [
+        "Buttons must be pressed firmly: light brushing may trigger debounce chatter.",
+        "Ensure the Serial Monitor baud rate is set to 9600 to view results."
+      ],
+      "tweakTip": "Change tone frequencies in the victory fanfare to customize your team signature sound!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "False start triggers immediately as soon as round begins without touching button.",
+        "checks": [
+          "Check pinMode declaration: must be INPUT_PULLUP, not plain INPUT.",
+          "Check button wiring: verify button is not shorted to Ground by mistake.",
+          "Check breadboard placement: make sure button straddles center ravine."
         ],
-        explanation: 'The Arduino IDE uses the avrdude utility to communicate with the USB-to-Serial bridge chip (ATmega16U2 or CH340) on the Arduino board. If the port is busy, disconnected, or unpowered, upload will fail.'
+        "explanation": "A plain INPUT pin floats randomly, triggering false LOW reads from electromagnetic noise."
       },
       {
-        symptom: 'Arduino IDE refuses to compile with error: "expected \';\' before \'}\' token" or syntax error.',
-        checks: [
-          'Look at the line number highlighted in red by the compiler, and look at the line directly above it.',
-          'Check that every statement inside setup() and loop() ends with a semicolon (;).',
-          'Verify matching curly braces: ensure setup() has { and }, and loop() has { and }.'
+        "symptom": "Buzzer sounds very weak, scratchy, or clicks instead of singing.",
+        "checks": [
+          "Check buzzer type: confirm it is a passive piezo buzzer (can play multiple pitches) or active buzzer.",
+          "Check polarity: ensure longer lead connects to Pin 8 and shorter lead to Ground."
         ],
-        explanation: 'C++ syntax requires semicolons to terminate statements. Missing a semicolon prevents the compiler from constructing an Abstract Syntax Tree (AST).'
+        "explanation": "Passive buzzers require alternating tone() frequencies to vibrate their diaphragm."
       },
       {
-        symptom: 'The green "ON" power LED on the Arduino turns off as soon as a breadboard wire is connected.',
-        checks: [
-          'UNPLUG THE USB CABLE IMMEDIATELY! Do not hesitate.',
-          'Inspect the workbench: check for stray metal staples, paperclips, wire snippings, or aluminum foil touching the underside solder pins.',
-          'If an external breadboard is connected, check whether a wire connects 5V directly into GND without passing through a resistor or component.',
-          'Inspect the ATmega328P chip and the gold polyfuse near the USB port for visual discoloration or scorching.'
+        "symptom": "One player cannot register button presses.",
+        "checks": [
+          "Inspect breadboard wire: test continuity between button terminal and Arduino Pin 2 or 3.",
+          "Check pushbutton legs: some tactile switches have leads bent underneath that do not enter the breadboard."
         ],
-        explanation: 'A short circuit (0 Ohms between 5V and GND) causes excessive current to rush from the host computer’s USB port. The Arduino Uno has an onboard resettable PTC polyfuse that automatically trips to protect your computer’s motherboard.'
+        "explanation": "A bent pin prevents electrical contact with the breadboard spring clip."
       }
     ],
-    checksForUnderstanding: [
-      'Q1: Why is a standard remote-controlled (RC) toy car usually classified as a teleoperated machine rather than an autonomous robot? (Answer: Because it lacks onboard environmental sensors and programmed decision logic—the human holding the remote makes all steering decisions).',
-      'Q2: On a standard solderless breadboard, how are the 5 holes 15a, 15b, 15c, 15d, and 15e connected underneath the plastic? (Answer: All 5 holes share a single horizontal metal spring strip, and are isolated from 15f–15j by the center gap).',
-      'Q3: What happens if you connect a 5mm Red LED directly between an Arduino 5V pin and GND without a 220 Ω – 330 Ω series resistor? (Answer: Excessive current flows, overheating the semiconductor junction and permanently burning out the LED or damaging the pin).',
-      'Q4: What happens in your Blink program if you write digitalWrite(LED_PIN, LOW); but delete the second delay(1000); after it? (Answer: The LED appears solidly ON because loop() immediately jumps back to HIGH in less than a microsecond).',
-      'Q5: If you set ON_TIME_MS = 250 and OFF_TIME_MS = 250, how long does one complete cycle take and how many cycles occur in 1 second? (Answer: 500 ms per cycle, yielding exactly 2 complete blink cycles per second).'
+    "checksForUnderstanding": [
+      "Why does digitalRead() return LOW when you press a button configured with INPUT_PULLUP?",
+      "How does millis() allow us to measure time without freezing the microcontroller like delay()?"
     ],
-    exitTicket: [
+    "exitTicket": [
       {
-        question: 'Name 1 Input (Sensor): Name one sensor a robot uses to gather information from its surroundings.',
-        rubricOrSampleReasoning: 'Acceptable answers: HC-SR04 ultrasonic distance sensor, infrared reflectance line sensor, tactile pushbutton bumper, LDR light sensor, or temperature sensor.'
+        "question": "What is a \"floating pin\" and how does pinMode(pin, INPUT_PULLUP) solve it?",
+        "rubricOrSampleReasoning": "A floating pin is an unconnected input that randomly fluctuates between HIGH and LOW due to electrical noise. INPUT_PULLUP activates an internal 20kΩ resistor that ties the pin securely to 5V (HIGH) until a button pulls it to 0V (LOW)."
       },
       {
-        question: 'Name 1 Decision Rule: Give one example of an if/then decision a robot brain might make based on that sensor.',
-        rubricOrSampleReasoning: 'Acceptable answers: "if distance < 20cm then turn right", "if line sensor sees black then steer left", or "if pushbutton is pressed then stop motors".'
+        "question": "How do you calculate a player’s reaction time using the millis() function?",
+        "rubricOrSampleReasoning": "Record goTime = millis() the exact moment the buzzer beeps. When the button is pressed, record pressTime = millis(). The reaction time is pressTime - goTime."
       },
       {
-        question: 'Name 1 Output (Actuator): Name one actuator that lets the robot act physically on the world, and describe how we wired our LED output today.',
-        rubricOrSampleReasoning: 'Acceptable answers: 5mm LED for visual signals (Anode + long leg through 220Ω resistor to Pin 13, Cathode - short leg to GND), DC gear motor for wheel drive, or servo motor for gripper.'
-      },
-      {
-        question: 'Name 1 Lab Safety Rule: State one safety rule you followed today before changing wires or powering your circuit.',
-        rubricOrSampleReasoning: 'Acceptable answers: Unplug USB before changing wiring; always use a 220Ω series resistor with an external LED; check polarity twice before power; never connect 5V directly to GND.'
+        "question": "What physical property determines whether a piezo buzzer plays a high pitch versus a low pitch?",
+        "rubricOrSampleReasoning": "Frequency in Hertz (Hz)—the number of times the diaphragm vibrates back and forth per second. Higher frequency produces higher musical pitch."
       }
     ],
-    differentiation: {
-      support: [
-        'Pair students as "Lead Engineer" (typing code in the IDE) and "Systems Inspector" (checking board connections, verifying pin numbers, and recording prediction logs). Swap roles halfway through class.',
-        'Provide color-coded breadboard cheat sheets and use the interactive web board simulator for any student encountering USB driver or port permissions issues on their workstation.'
+    "differentiation": {
+      "support": [
+        "Provide breadboards with pre-labeled P1 and P2 button zones."
       ],
-      extension: [
-        'Hardware Challenge: Wire an external 5mm green LED and a 220Ω resistor to Digital Pin 12 on a breadboard. Modify your C++ sketch to blink Pin 13 and Pin 12 alternately like railroad crossing signals!',
-        'Algorithmic Challenge: Write an algorithmic SOS beacon function that uses a custom C++ function void flash(int duration) with for-loops to eliminate repetitive code.'
+      "extension": [
+        "Implement an audio-only vs visual-only reaction trial to measure human sensory speed differences."
       ],
-      offlineOption: [
-        'Draw a complete schematic diagram of the Arduino Uno, Pin 13, the internal 1kΩ resistor, the onboard LED, and the Ground return path on an engineering notebook page, calculating the circuit current using Ohm’s Law.'
+      "offlineOption": [
+        "Play the interactive Reaction Timer Game simulator on the web portal."
       ]
     },
-    nextLessonId: 'beg-02',
-    nextLessonTeaser: 'Class 2: Circuits, Breadboards and Safe Outputs — Multi-LED traffic controller and series vs. parallel breadboard paths.',
-    sources: [
-      { title: 'Arduino Official Hardware Documentation — UNO R3', url: 'https://docs.arduino.cc/hardware/uno-rev3/', accessedOrVersioned: 'ATmega328P Rev3 Hardware Spec' },
-      { title: 'Arduino Official Built-In Examples — Blink Tutorial', url: 'https://docs.arduino.cc/built-in-examples/basics/Blink/', accessedOrVersioned: 'Official Arduino Blink Guide' },
-      { title: 'Arduino Language Reference — pinMode()', url: 'https://docs.arduino.cc/language-reference/en/functions/digital-io/pinMode/', accessedOrVersioned: 'Arduino Core API' },
-      { title: 'Arduino Language Reference — digitalWrite()', url: 'https://www.arduino.cc/en/Reference/digitalWrite', accessedOrVersioned: 'Arduino Core API' },
-      { title: 'Arduino Language Reference — delay()', url: 'https://docs.arduino.cc/language-reference/en/functions/time/delay/', accessedOrVersioned: 'Arduino Timing API' },
-      { title: 'Arduino Language Reference — LED_BUILTIN Constant', url: 'https://docs.arduino.cc/language-reference/en/variables/constants/ledbuiltin', accessedOrVersioned: 'Arduino Board Pin Constants' },
-      { title: 'SparkFun Engineering Tutorial — How to Use a Breadboard', url: 'https://learn.sparkfun.com/tutorials/how-to-use-a-breadboard/all', accessedOrVersioned: 'SparkFun Electronics' },
-      { title: 'SparkFun Engineering Tutorial — Light-Emitting Diodes (LEDs)', url: 'https://learn.sparkfun.com/tutorials/light-emitting-diodes-leds/all', accessedOrVersioned: 'SparkFun Electronics' }
+    "nextLessonId": "beg-03",
+    "nextLessonTeaser": "Class 03: Potentiometers, PWM, RGB Mood Lamp & Theremin DJ Synth! Learn analog inputs and smooth electronic sound synthesis.",
+    "sources": [
+      {
+        "title": "Arduino Language Reference: digitalRead, tone, and millis",
+        "url": "https://arduino.cc"
+      }
     ],
-    assetCredits: [
-      { asset: 'Arduino Uno R3 Vector Pinout & Anatomy', creator: 'RoboBEE Innovators Engineering Team', license: 'RoboBEE Innovators IP', sourceUrl: 'team_info' },
-      { asset: 'Interactive Board Tour & Synchronized Blink Simulator', creator: 'RoboBEE Innovators Visual Interaction Lab', license: 'Proprietary', sourceUrl: 'team_info' }
+    "assetCredits": [
+      {
+        "asset": "Reaction Game Diagram",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
     ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
-  // -----------------------------------------------------------------------
-  // BEGINNER 02: CIRCUITS, BREADBOARDS & SAFE OUTPUTS
-  // -----------------------------------------------------------------------
-  // BEGINNER 02: CIRCUITS, BREADBOARDS, AND SAFE OUTPUTS
-  // -----------------------------------------------------------------------
   {
-    id: 'beg-02',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-electronics-ohms-law", "fg-safety-lab-code"],
-      lookUpWhileBuilding: ["fg-electronics-breadboards", "fg-board-uno-anatomy"],
-      goDeeper: ["fg-testing-fmea-debugging", "fg-prog-program-structure"]
-    },
-    courseId: 'beginner',
-    sequence: 2,
-    code: 'BEGINNER 02',
-    title: 'Circuits, Breadboards, and Safe Outputs',
-    promise: 'Master the physics of solderless breadboards, calculate exact current-limiting resistance with Ohm’s Law, and wire a multi-stage robotic traffic signal controller.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01'],
-    outcomes: [
-      'Deconstruct the internal spring-clip architecture of solderless breadboards (power rails vs horizontal terminal tie-points).',
-      'Derive the current-limiting resistor equation using Ohm’s Law (V = I × R) and LED forward voltage drops (Vf).',
-      'Decode 4-band and 5-band resistor color codes (E12 standard) and verify resistance with a digital multimeter.',
-      'Construct a multi-output breadboard circuit (Red, Yellow, Green status LEDs) with isolated series protection resistors.',
-      'Program deterministic multi-state robotic signal sequences in C++ using digital I/O port manipulation.'
-    ],
-    vocabulary: [
-      { 
-        term: 'Solderless Breadboard', 
-        plainMeaning: 'A reusable plastic grid with hidden spring-clip channels that let you connect components together instantly without hot solder.', 
-        technicalMeaning: 'A modular prototyping construction base featuring nickel-plated phosphor bronze spring clips configured into vertical distribution buses and 5-point horizontal terminal strips.' 
-      },
-      { 
-        term: 'Current-Limiting Resistor', 
-        plainMeaning: 'An electrical safety resistor that slows down electron flow so sensitive semiconductor diodes and microcontrollers do not overheat or burn out.', 
-        technicalMeaning: 'A passive two-terminal fixed resistor placed in series with a diode to drop excess circuit voltage and restrict forward current to safe operational thresholds (typically 10mA–20mA).' 
-      },
-      { 
-        term: 'Ohm’s Law', 
-        plainMeaning: 'The fundamental mathematical rule of electricity: Voltage equals Current multiplied by Resistance (V = I × R).', 
-        technicalMeaning: 'An empirical physical law stating that the electric current through a linear conductor between two points is directly proportional to the potential difference and inversely proportional to resistance.' 
-      },
-      { 
-        term: 'Forward Voltage Drop (Vf)', 
-        plainMeaning: 'The minimum voltage "toll fee" an LED requires across its semiconductor junction before it can emit light.', 
-        technicalMeaning: 'The operating potential drop across a forward-biased P-N junction diode under standard forward conduction (typically 1.8V–2.2V for Red/Yellow, 3.0V–3.3V for Green/Blue/White).' 
-      },
-      { 
-        term: 'Current Sourcing vs Sinking', 
-        plainMeaning: 'Sourcing pushes positive electrical current out of the pin; sinking pulls current into the pin and returns it to Ground.', 
-        technicalMeaning: 'Sourcing occurs when an active-high output transistor connects the GPIO pin to VCC (+5V); sinking occurs when an active-low transistor connects the GPIO pin to Ground (0V).' 
-      },
-      { 
-        term: 'Thermal Runaway', 
-        plainMeaning: 'A dangerous chain reaction where heating decreases resistance, which draws more current, creating even more heat until the component melts.', 
-        technicalMeaning: 'A positive feedback process where increasing semiconductor temperature decreases junction barrier potential, exponentially amplifying current and resulting in catastrophic device failure.' 
-      }
-    ],
-    teacherPrep: [
-      'Inspect half-size 400 tie-point breadboards to ensure clips have not been bent by oversized component leads.',
-      'Prepare bins with 220Ω (Red-Red-Brown-Gold) and 330Ω (Orange-Orange-Brown-Gold) 1/4W resistors.',
-      'Check assorted 5mm diffused LEDs (Red, Yellow, Green) and test lead straightness.',
-      'Verify Male-to-Male 20cm copper jumper wires have intact Dupont pins and good continuity.'
-    ],
-    verifiedMaterials: [
-      'Arduino Uno Rev3 (Official or 100% ATmega328P DIP clone)',
-      'Solderless breadboard (400 tie-points, half-size with power rails)',
-      '3x 5mm diffused LEDs (1x Red, 1x Yellow, 1x Green)',
-      '3x Carbon film resistors, 220Ω ±5%, 0.25W',
-      '6x Male-to-Male jumper wires (Red, Black, Yellow, Green, Blue)'
-    ],
-    safetyNotes: [
-      'Never connect an LED directly between 5V and GND without a series resistor — doing so causes instant diode destruction and can permanently burn out the microcontroller output pin.',
-      'Always unplug the USB cable or battery power before inserting or repositioning wires on the breadboard.',
-      'Do not bridge both legs of an LED or resistor into the exact same 5-hole row — that shorts the component out.'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Display an X-ray tear-down of a breadboard showing internal nickel clips. Demonstrate a bare LED connected to a 9V battery popping in a burst of smoke on video.', 
-        studentAction: 'Examine breadboard internal tie-point rows with flashlights and identify the central isolation trench.' 
-      },
-      { 
-        segment: '10–25m Concept', 
-        minutes: 15, 
-        teacherAction: 'Derive Ohm’s Law on the board: V_resistor = 5.0V - 2.0V = 3.0V; R = 3.0V / 0.015A = 200Ω. Explain why 220Ω is the standard safe choice.', 
-        studentAction: 'Calculate required resistance for a 3.2V Blue LED operating at 15mA: (5V - 3.2V) / 0.015A = 120Ω.' 
-      },
-      { 
-        segment: '25–50m Build', 
-        minutes: 25, 
-        teacherAction: 'Guide multi-LED breadboard construction: Red on Pin 9, Yellow on Pin 8, Green on Pin 7, each with dedicated 220Ω resistor and shared GND rail.', 
-        studentAction: 'Wire the traffic light circuit, plug in USB, and upload the robotic state sequence sketch.' 
-      },
-      { 
-        segment: '50–60m Exit Check', 
-        minutes: 10, 
-        teacherAction: 'Inspect student traffic light sequences and assess circuit topology.', 
-        studentAction: 'Complete the formative exit ticket and defend why parallel LEDs require separate resistors.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. Solderless Breadboard Internal Anatomy & Continuity',
-        explanation: 'A solderless breadboard is an array of nickel-plated phosphor bronze spring clips encased in ABS plastic. Along the outer edges run two vertical columns known as Power Rails (+ in red for VCC, - in blue for GND). In the center area, horizontal terminal strips are arranged in numbered rows of 5 interconnected tie-points (columns a-b-c-d-e and f-g-h-i-j). The center 0.3-inch divider trench physically and electrically isolates the two halves, allowing Dual In-Line Package (DIP) integrated circuits to sit across the trench without shorting their opposite pins together.',
-        instructorNote: 'Emphasize: Two wires inserted into row 15a and row 15b are touching each other via the hidden metal strip beneath. But row 15a and row 16a are completely insulated from each other.'
-      },
-      {
-        title: '2. Ohm’s Law & The Exact Current-Limiting Derivation',
-        explanation: 'An LED is a non-linear semiconductor diode: once voltage exceeds its forward threshold (Vf ≈ 2.0V for Red), its internal electrical resistance drops nearly to zero! If connected directly across a 5V supply, the diode attempts to draw infinite current, destroying its microscopic silicon bond wire within milliseconds. By placing a resistor in series, the circuit obeys Kirchhoff’s Voltage Law (V_source = V_resistor + V_led) and Ohm’s Law (V_resistor = I × R). To achieve a bright, safe forward current of 15mA (0.015A) from a 5.0V Arduino pin: R = (5.0V - 2.0V) / 0.015A = 3.0V / 0.015A = 200Ω. The nearest standard manufactured resistor value in the E12 series is 220Ω, delivering exactly 13.6mA — safely below the ATmega328P pin limit of 40mA absolute maximum.',
-        instructorNote: 'Show students the formula triangle: V at the top, I and R at the bottom. Cover the variable you want to find.'
-      },
-      {
-        title: '3. Resistor Color Band Decoding (E12 Standard)',
-        explanation: 'Because electronic resistors are too small for printed text numbers, manufacturers mark their nominal resistance using color-coded circumferential bands based on the IEC 60062 international standard. On a 4-band resistor: Band 1 = 1st significant digit; Band 2 = 2nd significant digit; Band 3 = Multiplier (power of 10); Band 4 = Tolerance. For a 220Ω resistor: Red (2) — Red (2) — Brown (×10¹) — Gold (±5%). For a 10kΩ resistor: Brown (1) — Black (0) — Orange (×10³) — Gold (±5%). For a 330Ω resistor: Orange (3) — Orange (3) — Brown (×10¹) — Gold (±5%).',
-        instructorNote: 'Teach the mnemonic: Bad Boys R-O-Y Great Britain Very Good Wife (Black=0, Brown=1, Red=2, Orange=3, Yellow=4, Green=5, Blue=6, Violet=7, Gray=8, White=9).'
-      },
-      {
-        title: '4. Series vs Parallel Circuit Rules & Current Hogging',
-        explanation: 'In a Series circuit, all components are connected end-to-end along a single path: Current is identical through every component (I_total = I_1 = I_2), while voltages divide (V_total = V_1 + V_2). In a Parallel circuit, components share common positive and negative nodes: Voltage across every branch is identical (V_total = V_1 = V_2), while currents add (I_total = I_1 + I_2). CRITICAL ENGINEERING RULE: Never place multiple LEDs in parallel sharing a single current-limiting resistor! Due to microscopic manufacturing tolerances, one LED will have a slightly lower Vf, causing it to draw all the current ("current hogging"), burning it out first, after which the remaining LEDs quickly cascade into failure.',
-        instructorNote: 'Show students that in the RoboBEE lab, every single LED always receives its own dedicated series resistor.'
-      },
-      {
-        title: '5. Microcontroller GPIO Output States: Sourcing vs Sinking',
-        explanation: 'Every digital I/O pin on the ATmega328P microcontroller contains a complementary pair of internal silicon MOSFET switches: a P-channel transistor tied to VCC (+5V) and an N-channel transistor tied to Ground (0V). Executing `digitalWrite(pin, HIGH)` activates the P-FET, connecting the pin to +5V and pushing electric current OUT into the circuit (Current Sourcing). Executing `digitalWrite(pin, LOW)` activates the N-FET, pulling the pin to 0V and draining electric current down to Ground (Current Sinking). Both configurations are widely used in commercial robotics: Active-HIGH sourcing turns devices on with logic 1; Active-LOW sinking turns devices on with logic 0.',
-        instructorNote: 'Explain that the ATmega328P can source up to 20mA per pin continuously, but the entire chip has a total maximum current budget of 200mA across all pins combined.'
-      },
-      {
-        title: '6. Robotic Status Annunciators & Industrial Safety Signals',
-        explanation: 'Real-world autonomous robots cannot speak human words; they communicate internal computational states to lab operators using tri-color status indicator beacons (Annunciator Stacks). In modern robotics engineering (ISO 10218 robotic safety standards): Solid Red = E-Stop engaged / System Fault; Solid Yellow = Standby / Pre-movement warning; Solid Green = Autonomous navigation active; Flashing Amber = Low battery / Telemetry link lost. Today, students build and program this exact industrial robotic annunciator on their breadboards.',
-        instructorNote: 'Relate this to industrial KUKA robot cells and warehouse AGVs that flash amber strobe lights before starting wheel motion.'
-      }
-    ],
-    visualizerId: 'breadboard_circuit_sim',
-    project: {
-      name: 'Tri-State Robotic Signal & Traffic Annunciator',
-      deliverableType: 'physical_build',
-      successEvidence: [
-        'Breadboard circuit with Red, Yellow, and Green LEDs wired with dedicated 220Ω series resistors.',
-        'Shared common Ground return rail connected back to Arduino GND.',
-        'Arduino executing deterministic traffic light timing sequence without flickering or pin overload.'
+    "id": "beg-03",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-electronics-ohms-law",
+        "fg-prog-program-structure"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-electronics-breadboards"
+      ],
+      "goDeeper": [
+        "fg-testing-fmea-debugging",
+        "fg-arduino-ide-workflow"
       ]
     },
-    activity: {
-      title: 'Assemble and Code the Robotic Annunciator Circuit',
-      steps: [
-        'Step 1: Unplug the USB cable from the Arduino to guarantee an electrically dead workspace.',
-        'Step 2: Insert the Red LED into breadboard rows 10 & 11 (Long leg / Anode in row 10, short leg / Cathode in row 11).',
-        'Step 3: Insert the Yellow LED into rows 15 & 16, and the Green LED into rows 20 & 21.',
-        'Step 4: Insert three 220Ω resistors: one spanning from row 10 to Arduino Pin 9; one from row 15 to Pin 8; one from row 20 to Pin 7.',
-        'Step 5: Connect three black jumper wires from rows 11, 16, and 21 to the breadboard blue negative (-) Ground rail.',
-        'Step 6: Connect a master ground wire from the breadboard Ground rail to an Arduino GND pin.',
-        'Step 7: Perform visual peer-review inspection before plugging in USB power and uploading the sketch.'
-      ],
-      successCriteria: [
-        'All three LEDs light up brightly in sequence without any dimming or resistor overheating.',
-        'No short circuits exist between adjacent breadboard terminal rows.',
-        'The C++ sketch executes the correct timed transition: Green (3s) -> Yellow (1s) -> Red (3s).'
-      ],
-      extension: 'Wire an active-low pedestrian push indicator or program a 4-state European traffic sequence with simultaneous Red and Amber.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['Arduino Uno R3 (ATmega328P)', 'Solderless Breadboard 400 tie-points'],
-      componentList: [
-        { name: 'Arduino Uno Rev3', exactVariant: 'Standard Rev3 DIP ATmega328P', quantity: 1 },
-        { name: 'Solderless Breadboard', exactVariant: '400 Tie-Point Half Size with Power Rails', quantity: 1 },
-        { name: '5mm Red Diffused LED', exactVariant: 'Vf ≈ 2.0V, If = 20mA max, 625nm wavelength', quantity: 1 },
-        { name: '5mm Yellow Diffused LED', exactVariant: 'Vf ≈ 2.1V, If = 20mA max, 590nm wavelength', quantity: 1 },
-        { name: '5mm Green Diffused LED', exactVariant: 'Vf ≈ 2.2V, If = 20mA max, 525nm wavelength', quantity: 1 },
-        { name: 'Carbon Film Resistors', exactVariant: '220Ω ±5%, 0.25W (Red-Red-Brown-Gold)', quantity: 3 },
-        { name: 'Male-to-Male Jumper Wires', exactVariant: '20cm 24AWG copper multi-color', quantity: 6 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/breadboard_led_resistor_wiring.svg',
-      schematic: 'Arduino Pin 9 ──[ 220Ω ]──[ Red LED Anode | Cathode ]── GND Rail\nArduino Pin 8 ──[ 220Ω ]──[ Yellow LED Anode | Cathode ]── GND Rail\nArduino Pin 7 ──[ 220Ω ]──[ Green LED Anode | Cathode ]── GND Rail\nGND Rail ────────────────────────────────────────────── Arduino GND',
-      wireTable: [
-        { from: 'Arduino Digital Pin 9', to: 'Breadboard Row 10A (Red Resistor)', wireOrPolarityNote: 'Red Signal Wire' },
-        { from: 'Arduino Digital Pin 8', to: 'Breadboard Row 15A (Yellow Resistor)', wireOrPolarityNote: 'Yellow Signal Wire' },
-        { from: 'Arduino Digital Pin 7', to: 'Breadboard Row 20A (Green Resistor)', wireOrPolarityNote: 'Green Signal Wire' },
-        { from: 'Breadboard Row 11E (Red Cathode)', to: 'Breadboard Blue (-) Rail', wireOrPolarityNote: 'Black Ground Jumper' },
-        { from: 'Breadboard Row 16E (Yellow Cathode)', to: 'Breadboard Blue (-) Rail', wireOrPolarityNote: 'Black Ground Jumper' },
-        { from: 'Breadboard Row 21E (Green Cathode)', to: 'Breadboard Blue (-) Rail', wireOrPolarityNote: 'Black Ground Jumper' },
-        { from: 'Breadboard Blue (-) Rail', to: 'Arduino GND Pin', wireOrPolarityNote: 'Main System Ground Return Wire' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Ensure Arduino is fully disconnected from USB and 9V power before placing components.',
-        '2. Orient the breadboard horizontally with the blue (-) ground rail closest to you.',
-        '3. Inspect the three 5mm LEDs. Note that the longer leg is the Anode (+), and the flat collar side with the shorter leg is the Cathode (-).',
-        '4. Insert the Red, Yellow, and Green LEDs into rows 10-11, 15-16, and 20-21 respectively.',
-        '5. Place a 220Ω resistor (Red-Red-Brown-Gold) in series with the anode of each LED.',
-        '6. Connect the three cathode rows to the common blue (-) ground bus rail.',
-        '7. Connect the master Ground wire from the breadboard bus rail to the Arduino GND pin.',
-        '8. Connect signal wires from Pins 9, 8, and 7 to the input ends of the resistors.',
-        '9. Re-verify with your lab partner that no resistor or LED has both legs in the same row.',
-        '10. Plug in the USB cable and upload the sketch.'
-      ],
-      powerAndSafetyChecks: [
-        'Verify that each LED has its OWN dedicated 220Ω resistor — never share one resistor between multiple LEDs.',
-        'Check that no wire strands are touching adjacent terminal rows.',
-        'Confirm that total current from all active pins does not exceed the 200mA microcontroller package ceiling.'
-      ],
-      testCases: [
-        { action: 'Upload code and observe Pin 7 state', expectedResult: 'Green LED illuminates for exactly 3000ms while Red and Yellow remain dark.' },
-        { action: 'Observe transition after 3000ms', expectedResult: 'Green LED extinguishes and Yellow LED illuminates for exactly 1000ms.' },
-        { action: 'Observe transition after 4000ms', expectedResult: 'Yellow LED extinguishes and Red LED illuminates for exactly 3000ms.' }
-      ]
-    },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - Robotic Signal Annunciator
-// Class: BEGINNER 02 - Circuits, Breadboards, and Safe Outputs
-// Controls a 3-stage traffic indicator using safe series resistors.
-
-const int RED_LED_PIN    = 9; // Pin 9 drives Red LED through 220Ω resistor
-const int YELLOW_LED_PIN = 8; // Pin 8 drives Yellow LED through 220Ω resistor
-const int GREEN_LED_PIN  = 7; // Pin 7 drives Green LED through 220Ω resistor
-
-void setup() {
-  // Configure all three digital pins as low-impedance voltage outputs
-  pinMode(RED_LED_PIN, OUTPUT);
-  pinMode(YELLOW_LED_PIN, OUTPUT);
-  pinMode(GREEN_LED_PIN, OUTPUT);
-
-  // Initial state: start with all LEDs safely turned OFF
-  digitalWrite(RED_LED_PIN, LOW);
-  digitalWrite(YELLOW_LED_PIN, LOW);
-  digitalWrite(GREEN_LED_PIN, LOW);
-}
-
-void loop() {
-  // PHASE 1: GREEN LIGHT (Robot Navigation Active / Clear to proceed)
-  digitalWrite(GREEN_LED_PIN, HIGH);
-  digitalWrite(YELLOW_LED_PIN, LOW);
-  digitalWrite(RED_LED_PIN, LOW);
-  delay(3000); // Hold Green for 3.0 seconds
-
-  // PHASE 2: YELLOW LIGHT (Warning / Deceleration / Obstacle ahead)
-  digitalWrite(GREEN_LED_PIN, LOW);
-  digitalWrite(YELLOW_LED_PIN, HIGH);
-  digitalWrite(RED_LED_PIN, LOW);
-  delay(1000); // Hold Yellow for 1.0 second
-
-  // PHASE 3: RED LIGHT (Halt / E-Stop / Critical Hazard Zone)
-  digitalWrite(GREEN_LED_PIN, LOW);
-  digitalWrite(YELLOW_LED_PIN, LOW);
-  digitalWrite(RED_LED_PIN, HIGH);
-  delay(3000); // Hold Red for 3.0 seconds
-}`,
-      pinMap: { 
-        'Pin 9': 'Red Status LED Anode via 220Ω resistor', 
-        'Pin 8': 'Yellow Warning LED Anode via 220Ω resistor', 
-        'Pin 7': 'Green Clear LED Anode via 220Ω resistor',
-        'GND': 'Common Ground Rail for all 3 LED cathodes'
+    "courseId": "beginner",
+    "sequence": 3,
+    "code": "BEGINNER 03",
+    "title": "Potentiometer, PWM, RGB Mood Lamp & Theremin DJ Synth",
+    "subtitle": "10-bit Analog-to-Digital conversion (ADC), pulse-width modulation (PWM), RGB additive color mixing, and audio frequency modulation.",
+    "promise": "I can read 10-bit analog signals, generate PWM duty cycles, blend RGB LED colors, and modulate audio frequencies into an electronic DJ Theremin synth.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01",
+      "Beginner 02"
+    ],
+    "outcomes": [
+      "Explain how the 10-bit Analog-to-Digital Converter (ADC) maps continuous voltages (0V–5V) to discrete integer values (0–1023).",
+      "Demonstrate Pulse Width Modulation (PWM) duty cycle control using analogWrite(pin, 0–255) on timer-enabled pins.",
+      "Wire a 10kΩ rotary potentiometer as an adjustable analog voltage divider.",
+      "Construct an RGB Common-Cathode LED circuit with individual series current-limiting resistors and mix secondary colors.",
+      "Program an interactive dual-mode DJ Theremin: dial rotation smoothly sweeps RGB color spectrum and modulates acoustic pitch from 150 Hz to 2500 Hz."
+    ],
+    "vocabulary": [
+      {
+        "term": "Potentiometer",
+        "plainMeaning": "A rotary dial knob that acts as an adjustable electrical valve for voltage.",
+        "technicalMeaning": "A 3-terminal variable resistor with an internal resistive track and movable wiper arm operating as an adjustable voltage divider."
       },
-      setupAndUpload: [
-        '1. In the Arduino IDE, confirm "Arduino Uno" is selected under Tools > Board.',
-        '2. Select the matching serial communication port under Tools > Port.',
-        '3. Click the Verify button (checkmark) to ensure zero compilation syntax errors.',
-        '4. Click Upload (arrow pointing right) and observe the Arduino TX/RX LEDs flickering as the binary flashes.'
-      ],
-      explanations: [
-        'const int: Declares read-only constant integers for pin numbers, optimizing memory and preventing accidental reassignment.',
-        'pinMode(pin, OUTPUT): Sets the Data Direction Register (DDR) bit to 1, enabling the internal high-speed CMOS output driver.',
-        'digitalWrite(pin, HIGH): Connects the internal pin gate to VCC (+5V), sourcing ~13.6mA through the 220Ω resistor to illuminate the LED.',
-        'digitalWrite(pin, LOW): Connects the internal pin gate to GND (0V), shutting off current flow completely.'
-      ],
-      expectedResult: 'The breadboard LEDs transition continuously in an infinite industrial traffic cycle: Green (3s) -> Yellow (1s) -> Red (3s) -> repeats.',
-      caveats: [
-        'Ensure the long leg of each LED connects to the resistor row, and the short leg connects to the ground row.',
-        'Do not remove wires while the board is actively powered.'
-      ],
-      tweakTip: 'Implement European intersection timing: add a 4th phase where Red and Yellow illuminate together for 800ms right before turning Green!'
-    },
-    troubleshooting: [
-      { 
-        symptom: 'One specific LED fails to illuminate while the other two work normally.', 
-        checks: [
-          'Step 1: Check LED orientation — is the long leg (Anode) connected to the resistor and short leg (Cathode) to GND?',
-          'Step 2: Check row alignment — verify that both legs are not plugged into the same 5-hole row.',
-          'Step 3: Swap the suspected LED into a known-working row to check for internal semiconductor burnout.'
-        ], 
-        explanation: 'LEDs are directional diodes; reversed polarity blocks current conduction without damage, but no photons are emitted.' 
+      {
+        "term": "Analog vs Digital",
+        "plainMeaning": "Digital is strictly ON or OFF (light switch); analog is an infinite smooth spectrum (volume knob).",
+        "technicalMeaning": "Digital signals exist in discrete binary states; analog signals represent continuous physical quantities varying smoothly over time."
       },
-      { 
-        symptom: 'All three LEDs illuminate at the exact same time and never change.', 
-        checks: [
-          'Step 1: Verify the sketch uploaded successfully with "Done uploading" in the IDE status bar.',
-          'Step 2: Check that each digital pin (9, 8, 7) connects to a separate breadboard row, rather than being bridged together.'
-        ], 
-        explanation: 'If jumper wires are plugged into the same breadboard row, the outputs are tied together, overriding individual software control.' 
+      {
+        "term": "Analog-to-Digital Converter (ADC)",
+        "plainMeaning": "The translator chip that turns analog voltages into numbers the microcontroller can calculate with.",
+        "technicalMeaning": "A successive-approximation ADC peripheral mapping 0V–VREF (5.0V) to a 10-bit integer range (0 to 1023, resolution ≈ 4.88 mV per step)."
       },
-      { 
-        symptom: 'The Arduino board disconnects or reboots every time an LED turns on.', 
-        checks: [
-          'Step 1: Unplug USB immediately!',
-          'Step 2: Inspect for a missing resistor: did an LED connect directly from Pin 9 to GND with 0Ω resistance?',
-          'Step 3: Check for bent wire leads touching the metal USB connector casing.'
-        ], 
-        explanation: 'A short circuit draws excessive current (>500mA), tripping the Arduino board’s onboard resettable polyfuse to protect your computer’s USB port.' 
+      {
+        "term": "Pulse Width Modulation (PWM)",
+        "plainMeaning": "Flicking a digital pin on and off hundreds of times per second to simulate dimming an LED or slowing a motor.",
+        "technicalMeaning": "A modulation technique varying the ratio of pulse ON-time to OFF-time (duty cycle 0% to 100% via 8-bit value 0–255 at 490Hz or 980Hz)."
       },
-      { 
-        symptom: 'LEDs appear very dim even when commanded HIGH.', 
-        checks: [
-          'Step 1: Inspect resistor color code — did you accidentally use a 10kΩ resistor (Brown-Black-Orange) instead of 220Ω (Red-Red-Brown)?',
-          'Step 2: Test with a digital multimeter across the resistor to verify actual resistance.'
-        ], 
-        explanation: 'A 10kΩ resistor allows only 0.3mA of current to pass (10,000 ohms), which is too weak to produce visible photon emission in diffused LEDs.' 
+      {
+        "term": "RGB LED (Common Cathode)",
+        "plainMeaning": "One LED containing Red, Green, and Blue crystals sharing one common Ground pin.",
+        "technicalMeaning": "A multi-chip optoelectronic package with three separate semiconductor dice and a single common negative cathode lead."
+      },
+      {
+        "term": "map() Function",
+        "plainMeaning": "Converting a number from one scale (like 0–1023) into another scale (like 0–255 or 150Hz–2500Hz).",
+        "technicalMeaning": "A linear mathematical transform function: y = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min."
       }
     ],
-    checksForUnderstanding: [
-      'Why is it physically impossible to power an LED directly from 5V without a series resistor?',
-      'How does a solderless breadboard connect holes horizontally vs vertically?',
-      'If two LEDs are placed in parallel sharing one resistor, what dangerous phenomenon can occur?'
+    "teacherPrep": [
+      "Distribute 10kΩ rotary potentiometers, common-cathode RGB LEDs, 220Ω resistors, and buzzers.",
+      "Confirm students know which Arduino pins support hardware PWM (pins with tilde ~: 3, 5, 6, 9, 10, 11)."
     ],
-    exitTicket: [
-      { 
-        question: 'Calculate the required series resistor value for a Blue LED with a forward voltage of Vf = 3.2V operating at 15mA from a 5.0V Arduino pin.', 
-        hint: 'Use Ohm’s Law: R = (V_supply - V_f) / I_forward. Convert 15mA into amperes (0.015A).',
-        rubricOrSampleReasoning: 'Voltage across resistor V_R = 5.0V - 3.2V = 1.8V. Resistance R = 1.8V / 0.015A = 120Ω. The nearest standard manufactured E12 resistor is 120Ω or 150Ω.' 
+    "verifiedMaterials": [
+      "Arduino Uno R3 with USB cable",
+      "400-tie solderless breadboard",
+      "1x 10kΩ Rotary Potentiometer (B10K)",
+      "1x 5mm RGB Diffused LED (Common Cathode)",
+      "3x 220 Ω axial resistors (for R, G, B pins)",
+      "1x Piezo Buzzer",
+      "8x Male-to-Male jumper wires"
+    ],
+    "safetyNotes": [
+      "Never connect the potentiometer wiper directly between 5V and GND without the resistive track; wire outer pins to 5V and GND, center pin to A0.",
+      "Always use 220Ω resistors on all three RGB anode leads to avoid burning out the color dice."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Perform a live electronic DJ Theremin demo! Turn the dial knob: the room glows through vibrant purple, cyan, and amber while pitch glides like a futuristic sci-fi synth.",
+        "studentAction": "Observe the color transitions and sound pitch. Inspect the 3-legged potentiometer dial on their bench."
       },
-      { 
-        question: 'Explain why two wires plugged into holes 15a and 15e are electrically connected, but holes 15e and 15f are NOT.', 
-        hint: 'Think about the central divider trench running down the middle of the breadboard.',
-        rubricOrSampleReasoning: 'Holes 15a through 15e share a single continuous metal spring-clip underneath. The central trench splits the breadboard into two isolated halves, so column f belongs to a separate clip.' 
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Explain the 10-bit ADC (1024 steps) and PWM duty cycles. Teach RGB additive color physics (Red + Green = Yellow, Red + Blue = Magenta).",
+        "studentAction": "Open the Sensor Observatory simulator on the portal: drag virtual voltage sliders to observe ADC values and PWM wave shapes."
       },
-      { 
-        question: 'Why does RoboBEE engineering mandate separate series resistors for every LED in a multi-light circuit?', 
-        hint: 'Consider slight manufacturing differences in forward voltage between individual LEDs.',
-        rubricOrSampleReasoning: 'Sharing a single resistor causes "current hogging" — the LED with slightly lower forward voltage draws excess current, overheats, burns out, and cascades into failure for the remaining LEDs.' 
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide wiring: Potentiometer outer pins to 5V and GND, wiper to A0; RGB LED common cathode (longest leg) to GND, R to D9, G to D10, B to D11 via 220Ω; Buzzer to D6.",
+        "studentAction": "Wire the complete potentiometer, RGB LED, and buzzer synth bench. Conduct continuity check before connecting USB."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through analogRead(A0), map() to RGB color components, analogWrite() PWM outputs, and tone() frequency generation.",
+        "studentAction": "Upload the DJ Synth sketch. Rotate the dial and observe real-time Serial Plotter graphs of potentiometer voltage and audio frequency."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"RoboBee DJ Color & Sound Jam\": who can tune the dial to exact Target Frequencies and custom Hex colors?",
+        "studentAction": "Showcase custom color blending presets (Cyber Gold, Ocean Cyan, Laser Violet) and complete the 3-question Exit Ticket."
       }
     ],
-    differentiation: {
-      support: [
-        'Provide a 1:1 scale color-printed breadboard layout template showing exact hole numbers for students needing spatial assistance.',
-        'Pre-bend resistor legs at 90-degree angles to make insertion into 5-hole rows smooth.'
-      ],
-      extension: [
-        'Mission: Program an interactive crosswalk where an additional white or blue LED flashes rapidly as a warning strobe.',
-        'Mission: Use the C++ modulo operator (%) to create an automatic cycling loop without duplicating digitalWrite calls.'
-      ],
-      offlineOption: [
-        'Sketch the circuit on an engineering grid sheet showing node continuity, voltage drops, and Kirchhoff loop equations.'
+    "concepts": [
+      {
+        "title": "How 10-bit ADC Slices Analog Voltages",
+        "explanation": "Microcontrollers can only understand numbers. The Arduino 10-bit ADC cuts the 0V–5V range into 2^10 = 1024 equal steps. 0V gives 0, 2.5V gives 512, and 5V gives 1023. This gives an incredible measurement accuracy of approximately 4.88 millivolts per step!",
+        "instructorNote": "Have students calculate what ADC integer corresponds to 3.3 Volts: (3.3 / 5.0) * 1023 ≈ 675."
+      },
+      {
+        "title": "Pulse Width Modulation (PWM) Optical Illusion",
+        "explanation": "Arduino digital pins can only output 0V or 5V. To create intermediate voltages, PWM switches the pin HIGH and LOW 490 times per second. By varying the percentage of time the pin is HIGH (Duty Cycle), our eyes and ears perceive smooth dimming and speed control.",
+        "instructorNote": "Show PWM duty cycle oscilloscope waveforms on the projector: 25% (dim), 50% (medium), 75% (bright)."
+      },
+      {
+        "title": "RGB Additive Color Mixing",
+        "explanation": "Computer screens, robot status displays, and stage lights create millions of colors from just three wavelengths: Red, Green, and Blue. By controlling the PWM brightness of each LED die independently with analogWrite(), we can mix any color in the rainbow.",
+        "instructorNote": "Turn on Red and Green simultaneously at full 255 brightness to reveal bright Yellow!"
+      }
+    ],
+    "visualizerId": "sensor_serial_sim",
+    "project": {
+      "name": "Interactive RGB Mood Lamp & DJ Theremin Synth Console",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Functional 10kΩ potentiometer analog input circuit reading 0–1023 on Pin A0.",
+        "Common-Cathode RGB LED circuit mixing primary and secondary colors via PWM Pins 9, 10, and 11.",
+        "Simultaneous tone modulation on Pin D6 creating continuous audio pitch sweeps from 150 Hz to 2500 Hz."
       ]
     },
-    nextLessonId: 'beg-03',
-    nextLessonTeaser: 'Beginner 03: Arduino & C++ First Steps — Inputs & Serial Monitor. Discover how robots sense touch with tactile pushbuttons, master active-low pull-up physics, and stream live sensor telemetry at 9600 baud!',
-    sources: [
-      { title: 'Arduino Foundations: Digital Pins & Breadboards', url: 'https://docs.arduino.cc/learn/microcontrollers/digital-pins/' },
-      { title: 'IEC 60062 Marking codes for resistors and capacitors', url: 'https://www.iec.ch' }
+    "activity": {
+      "title": "Assemble, Wire, and Program the DJ Theremin Console",
+      "steps": [
+        "Step 1: Place 10kΩ potentiometer across three rows; connect left pin to 5V, right pin to GND, and center pin to Analog A0.",
+        "Step 2: Identify RGB LED leads: longest lead is Cathode (-); outer leads are Red, Green, and Blue anodes.",
+        "Step 3: Connect Common Cathode lead to breadboard Ground rail.",
+        "Step 4: Connect Red anode to Pin 9 via 220Ω resistor, Green to Pin 10 via 220Ω, and Blue to Pin 11 via 220Ω.",
+        "Step 5: Connect Piezo buzzer (+) to PWM Pin 6 and (-) to Ground rail.",
+        "Step 6: Upload firmware and rotate dial: watch colors transition smoothly across the spectrum while audio frequency modulates.",
+        "Step 7: Challenge: Modify code to create a Strobe Party Mode when the dial reaches maximum position (>1000)!"
+      ],
+      "successCriteria": [
+        "Potentiometer analog readings span the full 0–1023 range without dead spots.",
+        "All three RGB channels illuminate brightly and mix cleanly without flickering.",
+        "Audio tone modulates smoothly without clicks or lockups."
+      ],
+      "extension": "Add a serial command parser to allow setting custom RGB hex colors directly from the computer keyboard!"
+    },
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3 (ATmega328P)"
+      ],
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "Solderless Breadboard",
+          "exactVariant": "Half-size 400 tie points",
+          "quantity": 1
+        },
+        {
+          "name": "10kΩ Rotary Potentiometer",
+          "exactVariant": "Linear taper (B10K) 3-pin",
+          "quantity": 1
+        },
+        {
+          "name": "5mm RGB LED",
+          "exactVariant": "Common Cathode diffused lens",
+          "quantity": 1
+        },
+        {
+          "name": "220 Ω Resistors",
+          "exactVariant": "1/4 Watt, 5% (Red-Red-Brown)",
+          "quantity": 3
+        },
+        {
+          "name": "Piezo Buzzer",
+          "exactVariant": "5V passive transducer",
+          "quantity": 1
+        },
+        {
+          "name": "Jumper Wires",
+          "exactVariant": "Male-to-Male multi-color flexible jumpers",
+          "quantity": 8
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/class1-external-blink-wiring.svg",
+      "schematic": "Potentiometer: 5V -> Pin 1 | Wiper Pin 2 -> A0 | Pin 3 -> GND; RGB LED: Cathode -> GND | Red -> 220Ω -> D9 (PWM) | Green -> 220Ω -> D10 (PWM) | Blue -> 220Ω -> D11 (PWM); Buzzer: D6 (PWM) -> Buzzer (+) | (-) -> GND",
+      "wireTable": [
+        {
+          "from": "Arduino 5V Pin",
+          "to": "Potentiometer Outer Terminal 1",
+          "wireOrPolarityNote": "Red wire — 5V Bus"
+        },
+        {
+          "from": "Potentiometer Center Wiper",
+          "to": "Arduino Analog In A0",
+          "wireOrPolarityNote": "Yellow wire — Analog Signal"
+        },
+        {
+          "from": "Potentiometer Outer Terminal 3",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — 0V Ground"
+        },
+        {
+          "from": "Arduino Digital Pin 9 (PWM)",
+          "to": "RGB Red Anode 220Ω Resistor",
+          "wireOrPolarityNote": "Red channel"
+        },
+        {
+          "from": "Arduino Digital Pin 10 (PWM)",
+          "to": "RGB Green Anode 220Ω Resistor",
+          "wireOrPolarityNote": "Green channel"
+        },
+        {
+          "from": "Arduino Digital Pin 11 (PWM)",
+          "to": "RGB Blue Anode 220Ω Resistor",
+          "wireOrPolarityNote": "Blue channel"
+        },
+        {
+          "from": "RGB Common Cathode (Longest Leg)",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Common Cathode return"
+        },
+        {
+          "from": "Arduino Digital Pin 6 (PWM)",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Audio tone output"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Verify USB is disconnected before wiring.",
+        "2. Insert potentiometer firmly into breadboard rows 1, 2, 3.",
+        "3. Insert RGB LED: identify longest lead (Cathode) and connect to Ground rail.",
+        "4. Connect 220Ω resistors to the other three leads and connect to PWM pins 9, 10, 11.",
+        "5. Connect Piezo buzzer to Pin 6 and Ground.",
+        "6. Connect 5V and GND jumpers, plug in USB, and upload firmware."
+      ],
+      "powerAndSafetyChecks": [
+        "Confirm potentiometer outer pins connect across 5V and GND, not shorted together.",
+        "Check that RGB cathode is connected to GND, not 5V."
+      ],
+      "testCases": [
+        {
+          "action": "Turn potentiometer dial fully counter-clockwise",
+          "expectedResult": "ADC reads 0; LED turns deep Red; buzzer emits low 150 Hz bass hum."
+        },
+        {
+          "action": "Turn potentiometer dial to 50% midpoint",
+          "expectedResult": "ADC reads ≈ 512; LED blends to vibrant Cyan/Green; buzzer plays 1200 Hz tone."
+        },
+        {
+          "action": "Turn potentiometer dial fully clockwise",
+          "expectedResult": "ADC reads 1023; LED illuminates brilliant Magenta/Blue; buzzer sings at 2500 Hz."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 03: RGB Mood Lamp & DJ Theremin Synth\n * Board: Arduino Uno R3 (ATmega328P)\n */\n\nconst int PIN_POT    = A0;  // 10k Potentiometer Wiper (Analog In)\nconst int PIN_RED    = 9;   // RGB Red Anode (PWM ~)\nconst int PIN_GREEN  = 10;  // RGB Green Anode (PWM ~)\nconst int PIN_BLUE   = 11;  // RGB Blue Anode (PWM ~)\nconst int PIN_BUZZER = 6;   // Piezo Buzzer (PWM ~)\n\nvoid setup() {\n  pinMode(PIN_RED, OUTPUT);\n  pinMode(PIN_GREEN, OUTPUT);\n  pinMode(PIN_BLUE, OUTPUT);\n  pinMode(PIN_BUZZER, OUTPUT);\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE DJ THEREMIN & RGB SYNTH ===\");\n}\n\nvoid loop() {\n  // Read 10-bit analog voltage (0 to 1023)\n  int potValue = analogRead(PIN_POT);\n\n  // Map analog reading to audio frequency (150 Hz to 2500 Hz)\n  int freq = map(potValue, 0, 1023, 150, 2500);\n  tone(PIN_BUZZER, freq);\n\n  // Calculate RGB color mixing across 3 color zones\n  int r = 0, g = 0, b = 0;\n  if (potValue < 341) {\n    // Zone 1: Red fading to Green\n    r = map(potValue, 0, 341, 255, 0);\n    g = map(potValue, 0, 341, 0, 255);\n    b = 0;\n  } else if (potValue < 682) {\n    // Zone 2: Green fading to Blue\n    r = 0;\n    g = map(potValue, 341, 682, 255, 0);\n    b = map(potValue, 341, 682, 0, 255);\n  } else {\n    // Zone 3: Blue fading back to Red/Purple\n    r = map(potValue, 682, 1023, 0, 255);\n    g = 0;\n    b = map(potValue, 682, 1023, 255, 120);\n  }\n\n  // Drive PWM outputs\n  analogWrite(PIN_RED, r);\n  analogWrite(PIN_GREEN, g);\n  analogWrite(PIN_BLUE, b);\n\n  // Telemetry to Serial Monitor\n  Serial.print(\"POT: \");\n  Serial.print(potValue);\n  Serial.print(\" | Freq: \");\n  Serial.print(freq);\n  Serial.print(\" Hz | RGB: (\");\n  Serial.print(r); Serial.print(\",\");\n  Serial.print(g); Serial.print(\",\");\n  Serial.print(b); Serial.println(\")\");\n\n  delay(20); // Smooth 50 Hz refresh rate\n}\n",
+      "pinMap": {
+        "Pin A0": "10kΩ Potentiometer Wiper (0V to 5V analog voltage input)",
+        "Pin 9": "PWM Output ~ driving RGB Red Anode (via 220Ω resistor)",
+        "Pin 10": "PWM Output ~ driving RGB Green Anode (via 220Ω resistor)",
+        "Pin 11": "PWM Output ~ driving RGB Blue Anode (via 220Ω resistor)",
+        "Pin 6": "PWM Output ~ driving Piezo Buzzer acoustic frequency",
+        "GND": "Common Ground return"
+      },
+      "setupAndUpload": [
+        "Connect Arduino Uno via USB cable.",
+        "Select Tools -> Board -> Arduino Uno and proper COM port.",
+        "Upload sketch and open Serial Plotter to visualize live waveforms."
+      ],
+      "explanations": [
+        "analogRead(A0): Reads internal 10-bit ADC, converting voltage to integer between 0 and 1023.",
+        "map(value, fromLow, fromHigh, toLow, toHigh): Scales numbers proportionally between ranges.",
+        "analogWrite(pin, 0-255): Generates PWM square wave to control effective brightness and voltage.",
+        "tone(PIN_BUZZER, freq): Drives piezo diaphragm at specified frequency in Hz for audio synth sound."
+      ],
+      "expectedResult": "Turning the knob continuously alters both the RGB illumination color through the full visual spectrum and the acoustic synthesizer pitch from low bass hum to high treble whistle.",
+      "caveats": [
+        "Only pins with the tilde symbol (~) support analogWrite() PWM output on the Uno (pins 3, 5, 6, 9, 10, 11).",
+        "Do not omit resistors: without them, one color will hog all current and burn out."
+      ],
+      "tweakTip": "Adjust the frequency range from 150-2500Hz to 440-880Hz to restrict the pitch to a single musical octave!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "Analog readings only show 0 or 1023 with nothing in between.",
+        "checks": [
+          "Check potentiometer wiper connection: confirm center pin is plugged into A0.",
+          "Check outer pins: one must be on 5V and the other on GND.",
+          "Inspect breadboard: ensure potentiometer pins are in separate horizontal rows."
+        ],
+        "explanation": "If the wiper pin is wired incorrectly, it connects directly to the power rail instead of reading the divided voltage."
+      },
+      {
+        "symptom": "One color of the RGB LED stays on all the time and ignores code.",
+        "checks": [
+          "Check pin assignments: ensure wires are plugged into PWM pins (9, 10, 11).",
+          "Verify resistor isolation: confirm resistors do not touch each other."
+        ],
+        "explanation": "Touching resistor leads creates an electrical short between adjacent color channels."
+      },
+      {
+        "symptom": "Buzzer stops playing when color changes.",
+        "checks": [
+          "Check timer conflicts: on Uno, tone() uses Timer2, which shares pins 3 and 11 PWM. Using Pin 6 avoids conflict.",
+          "Verify buzzer wire connection to Pin 6 and GND."
+        ],
+        "explanation": "Pin 6 uses Timer0, avoiding timer conflict with tone() on Timer2."
+      }
     ],
-    assetCredits: [
-      { asset: 'Breadboard LED Resistor Wiring Illustration', creator: 'RoboBEE Innovators Academy', license: 'Proprietary Educational Architecture', sourceUrl: 'team_info' }
+    "checksForUnderstanding": [
+      "How many unique voltage levels can the Arduino Uno 10-bit ADC distinguish between 0V and 5V?",
+      "Why do we use analogWrite() on PWM pins instead of standard digitalWrite() to dim LEDs?"
+    ],
+    "exitTicket": [
+      {
+        "question": "What is the mathematical resolution in millivolts of the 10-bit ADC on an Arduino Uno powered by 5.0 Volts?",
+        "rubricOrSampleReasoning": "Resolution = Vref / (2^10 - 1) = 5.0V / 1023 ≈ 0.004887 V = 4.88 mV per integer step."
+      },
+      {
+        "question": "How does Pulse Width Modulation (PWM) create the appearance of analog voltage using only digital HIGH (5V) and LOW (0V) states?",
+        "rubricOrSampleReasoning": "By switching the pin on and off at a rapid frequency (490 Hz) and varying the duty cycle (percentage of time HIGH). The average power delivered creates the visual or physical effect of intermediate voltages."
+      },
+      {
+        "question": "What happens when you mix Red (PWM 255) and Green (PWM 255) together on an RGB LED?",
+        "rubricOrSampleReasoning": "In additive optical color mixing, combining Red and Green light produces Yellow light."
+      }
+    ],
+    "differentiation": {
+      "support": [
+        "Provide color-coded jumper wires matching the RGB LED leads (Red, Green, Blue wires)."
+      ],
+      "extension": [
+        "Program a Theremin that locks to the 7 notes of the pentatonic musical scale rather than continuous glissando."
+      ],
+      "offlineOption": [
+        "Experiment with the interactive Sensor Observatory simulator on the RoboBee portal."
+      ]
+    },
+    "nextLessonId": "beg-04",
+    "nextLessonTeaser": "Class 04: 16x2 I2C LCD Displays, Custom Emojis, Animated Banners & Stopwatch! Learn the I2C bus and alphanumeric communication.",
+    "sources": [
+      {
+        "title": "Atmel AVR ATmega328P ADC & PWM Architecture Manual",
+        "url": "https://microchip.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "RGB Mood Lamp Schematic",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
     ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
-  // -----------------------------------------------------------------------
-  // BEGINNER 03: ARDUINO AND C++ FIRST STEPS: INPUTS & SERIAL MONITOR
-  // -----------------------------------------------------------------------
   {
-    id: 'beg-03',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-prog-program-structure", "fg-arduino-ide-workflow"],
-      lookUpWhileBuilding: ["fg-comm-i2c-spi-uart", "fg-board-uno-anatomy"],
-      goDeeper: ["fg-prog-millis-vs-delay", "fg-testing-fmea-debugging"]
-    },
-    courseId: 'beginner',
-    sequence: 3,
-    code: 'BEGINNER 03',
-    title: 'Arduino and C++ First Steps: Inputs & Serial Monitor',
-    promise: 'Master tactile digital inputs, eliminate electromagnetic antenna noise with internal pull-up physics, write software contact debouncers, and stream live robotic telemetry at 9600 baud.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01', 'Beginner 02'],
-    outcomes: [
-      'Diagnose the physics of "floating inputs" acting as ambient electromagnetic antennas picking up 50Hz/60Hz mains noise.',
-      'Configure the ATmega328P internal 20kΩ–50kΩ pull-up resistor architecture using `INPUT_PULLUP`.',
-      'Analyze the microsecond mechanics of mechanical switch contact bounce and implement software debouncing.',
-      'Construct a tactile Human-Machine Interface (HMI) pushbutton circuit with active-low safety logic.',
-      'Establish bidirectional UART serial communication at 9600 baud to log diagnostic sensor telemetry.'
-    ],
-    vocabulary: [
-      { 
-        term: 'Floating Pin', 
-        plainMeaning: 'A digital input pin connected to nothing, which acts like a tiny radio antenna catching stray electrical static from the air.', 
-        technicalMeaning: 'A high-impedance CMOS gate input with no fixed electrical reference to VCC or GND, causing its logical state to fluctuate randomly due to capacitive electromagnetic coupling.' 
-      },
-      { 
-        term: 'INPUT_PULLUP', 
-        plainMeaning: 'A software command that switches on a tiny safety resistor inside the Arduino chip to hold the pin at 5V until pressed to Ground.', 
-        technicalMeaning: 'An internal ATmega328P register configuration that connects an on-chip 20kΩ–50kΩ resistor between the I/O pin and the internal VCC supply bus.' 
-      },
-      { 
-        term: 'Active-LOW Logic', 
-        plainMeaning: 'An inverted logic system where a 0 (Ground) means "Pressed / Active", and a 1 (+5V) means "Released / Idle".', 
-        technicalMeaning: 'A digital signaling convention where the asserted (active) state corresponds to electrical ground (0V / binary 0), and the unasserted state corresponds to system voltage (5V / binary 1).' 
-      },
-      { 
-        term: 'Contact Bounce', 
-        plainMeaning: 'The microscopic metal spring inside a button bouncing open and shut several times in a few thousandths of a second when tapped.', 
-        technicalMeaning: 'Transient electrical oscillations (typically lasting 1ms–10ms) caused by elastic mechanical collisions of physical switch contacts before reaching stable mechanical closure.' 
-      },
-      { 
-        term: 'UART Serial Protocol', 
-        plainMeaning: 'A two-wire electronic conversation channel that sends data one letter or bit at a time over a single wire.', 
-        technicalMeaning: 'Universal Asynchronous Receiver-Transmitter: a hardware protocol transmitting byte packets framed with 1 start bit, 8 data bits, no parity, and 1 stop bit (8-N-1) across TX and RX lines.' 
-      },
-      { 
-        term: 'Baud Rate', 
-        plainMeaning: 'The exact timing speed of the serial connection (9600 baud means 9,600 electrical pulses per second).', 
-        technicalMeaning: 'The modulation rate of a communication channel, defined as the number of discrete signaling events or symbol transitions per second.' 
-      }
-    ],
-    teacherPrep: [
-      'Verify 4-pin tactile momentary switches seat firmly across the breadboard center trench without loose wobble.',
-      'Check that students know how to locate the Serial Monitor icon (magnifying glass) in Arduino IDE 2.x.',
-      'Prepare an intentionally ungrounded jumper wire demonstration to show floating pin erratic readings live on the projector.'
-    ],
-    verifiedMaterials: [
-      'Arduino Uno Rev3',
-      '4-pin momentary tactile pushbutton (6x6mm through-hole)',
-      'Solderless half-size breadboard',
-      'External 5mm status LED and 220Ω resistor',
-      'Male-to-Male jumper wires (Red, Black, Yellow, Green)'
-    ],
-    safetyNotes: [
-      'Always connect the switch between the digital input pin and Ground (GND); never short a direct wire from 5V to GND without a resistive load.',
-      'Unplug USB power before placing or removing the tactile switch from the breadboard.'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Configure Pin 2 as bare INPUT. Touch the metal wire with your finger and show the Serial Monitor streaming wildly between 0 and 1 from ambient AC static!', 
-        studentAction: 'Observe the floating pin live telemetry on the classroom screen and discover why floating inputs are dangerous in robotics.' 
-      },
-      { 
-        segment: '10–25m Concept', 
-        minutes: 15, 
-        teacherAction: 'Explain the internal pull-up resistor schematic inside the ATmega328P. Demonstrate contact bounce on a digital storage oscilloscope.', 
-        studentAction: 'Trace the active-low current path when the button is held down (current flows from 5V through internal 20kΩ to GND).' 
-      },
-      { 
-        segment: '25–50m Build', 
-        minutes: 25, 
-        teacherAction: 'Guide button insertion across breadboard trench, connect Pin 2 to switch and GND return. Walk through software toggle latch code.', 
-        studentAction: 'Wire the button, upload the sketch, open Serial Monitor at 9600 baud, and program a pushbutton toggle that turns an external LED ON and OFF.' 
-      },
-      { 
-        segment: '50–60m Exit Check', 
-        minutes: 10, 
-        teacherAction: 'Inspect student Serial Monitor streams and verify toggle latch stability.', 
-        studentAction: 'Complete the exit check questions explaining pull-up logic and debouncing math.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. The Floating Input Hazard & The Antenna Effect',
-        explanation: 'A microcontroller CMOS input pin has an ultra-high input impedance (over 100,000,000 ohms). It requires virtually zero electrical current to sense whether a voltage is present. Consequently, if a pin is left disconnected ("floating"), it acts exactly like a radio antenna! It picks up ambient electromagnetic interference (EMI) radiating from room fluorescent lights, laptop power bricks, and 50Hz/60Hz mains wiring. If a robot used a floating pin to trigger its emergency brake, the robot would randomly stop or jerk erratically without anyone touching it. To guarantee deterministic behavior, every digital input must be actively pulled up to VCC or pulled down to GND.',
-        instructorNote: 'Have students wave their hands near a floating input pin in Serial Plotter — the graph looks like an ECG heartbeat monitor from electro-static induction.'
-      },
-      {
-        title: '2. The ATmega328P Internal Pull-Up Resistor Architecture',
-        explanation: 'In early electronics, every pushbutton required an external 10,000Ω (10kΩ) pull-up resistor soldered onto the circuit board to hold the pin high. The designers of the ATmega328P microchip integrated a microscopic on-chip resistor (nominally 20kΩ to 50kΩ) directly into the silicon of every I/O pin! By calling `pinMode(pin, INPUT_PULLUP)`, the microcontroller closes an internal PMOS switch connecting this internal resistor between the I/O pin and the internal +5V power rail. This eliminates external components, saves breadboard space, and makes robot wiring faster and far more reliable.',
-        instructorNote: 'Point out that the internal pull-up resistor is relatively weak (20k–50kΩ), which draws only ~0.15mA when the button is pressed, conserving battery power.'
-      },
-      {
-        title: '3. Active-LOW Logic in Industrial Robotics Safety',
-        explanation: 'In beginner minds, "Pressed = 1, Released = 0" feels intuitive. However, professional aerospace and industrial robotics almost universally use Active-LOW logic ("Pressed = 0, Released = 1"). Why? Because connecting a switch between an input pin and Ground (GND) means you only run a Ground wire to the physical button on the robot bumper. If the wire rubs against the aluminum metal chassis and wears through its insulation, it simply shorts to Ground — causing the robot to stop safely. If an Active-HIGH circuit (carrying +5V or +24V) wore through and touched the metal frame, it would create a catastrophic direct battery short circuit and fire hazard!',
-        instructorNote: 'Connect this to emergency stop buttons (E-Stops) on industrial machinery, which are wired normally-closed (NC) so that cutting the wire immediately triggers an emergency shutdown.'
-      },
-      {
-        title: '4. Mechanical Contact Bounce & Elastic Collisions',
-        explanation: 'When you press a tactile pushbutton, it feels like a single instant click. But at microscopic scale and high microsecond speeds, the moving metal leaf spring slams into the stationary contact plate, flexing and rebounding elastically. It physically bounces open and closed 5 to 25 times over the course of 2 to 10 milliseconds before settling into firm contact! Because an Arduino executes code at 16 million instructions per second (one instruction every 62.5 nanoseconds), the microcontroller can detect every single bounce as an independent button press! Without debouncing, pressing a button once might toggle a robot arm 14 times in a blink.',
-        instructorNote: 'Have students run a counter sketch without debouncing and watch the counter jump from 1 to 5 to 12 on a single finger tap.'
-      },
-      {
-        title: '5. Software Debouncing Algorithms: Delay vs Non-Blocking Time Stamps',
-        explanation: 'To eliminate contact bounce, engineers use software debouncing. The simplest method is the Delay Debounce: when a state change is detected, execute a short `delay(20)` to let the physical metal spring finish bouncing before reading the pin again. The professional method is Non-Blocking State Debounce: record the time of the transition using `millis()`. Ignore all subsequent transitions until at least 30 milliseconds have elapsed since the last detected edge. This ensures rock-solid single-click detection while keeping the robot CPU 100% free to monitor other critical sensors.',
-        instructorNote: 'Compare debouncing to a referee in sports waiting 1 second after a whistle before allowing another play to begin.'
-      },
-      {
-        title: '6. UART Serial Framing, Baud Rates & Diagnostic Telemetry',
-        explanation: 'Robots need a way to talk back to human developers during testing. The Arduino Uno uses Universal Asynchronous Receiver-Transmitter (UART) serial hardware. When you call `Serial.print("ROBO_OK")`, the ATmega328P converts each ASCII character into an 8-bit byte. It frames the byte with a 0 Start Bit at the beginning and a 1 Stop Bit at the end, shifting the bits sequentially out of Digital Pin 1 (TX) at precisely timed microsecond intervals dictated by the Baud Rate (9600 bits per second = 104.16 microseconds per bit). The onboard USB interface chip reads these electrical pulses and forwards them to your computer screen.',
-        instructorNote: 'Demonstrate what happens when the IDE Serial Monitor is set to 115200 baud while the Arduino sends at 9600 baud — complete character corruption due to clock mismatch.'
-      }
-    ],
-    visualizerId: 'sensor_serial_sim',
-    project: {
-      name: 'Interactive Robotic HMI Console with Toggle Latch',
-      deliverableType: 'code_artifact',
-      successEvidence: [
-        'Tactile button wired between Pin 2 and GND using internal pull-up resistor.',
-        'External status LED on Pin 9 toggling ON and OFF cleanly on alternate button presses without double-click bouncing.',
-        'Serial Monitor streaming formatted JSON-like diagnostic telemetry at 9600 baud showing button state and cycle count.'
+    "id": "beg-04",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-arduino-ide-workflow",
+        "fg-prog-program-structure"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-electronics-breadboards"
+      ],
+      "goDeeper": [
+        "fg-testing-fmea-debugging",
+        "fg-safety-lab-code"
       ]
     },
-    activity: {
-      title: 'Assemble the Button HMI and Program Software Latching',
-      steps: [
-        'Step 1: Unplug USB power from the Arduino board.',
-        'Step 2: Place a 4-pin tactile switch straddling the central divider trench between rows 15 and 17.',
-        'Step 3: Connect a jumper wire from Arduino Pin 2 to breadboard row 15a (Switch Terminal 1).',
-        'Step 4: Connect a jumper wire from Arduino GND to breadboard row 17a (Switch Terminal 2 diagonally opposite).',
-        'Step 5: Wire an external status LED with a 220Ω series resistor from Arduino Pin 9 to GND.',
-        'Step 6: Plug in the USB cable, upload the debounced toggle latch sketch, and open the Serial Monitor at 9600 baud.',
-        'Step 7: Press the tactile button and observe the LED latch ON. Press again to latch OFF.'
-      ],
-      successCriteria: [
-        'Pressing the tactile switch cleanly toggles the status LED every single time without false double-triggers.',
-        'Serial Monitor displays human-readable diagnostic messages: "BUTTON PRESSED -> SYSTEM ACTIVE" and "SYSTEM STANDBY".',
-        'No external resistors are used on the button circuit (leveraging internal pull-up silicon).'
-      ],
-      extension: 'Add a second button on Pin 3 to serve as a Dedicated E-Stop Reset that immediately forces the LED off and prints an emergency log.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['Arduino Uno Rev3', '6x6mm 4-Pin Momentary Tactile Pushbutton'],
-      componentList: [
-        { name: 'Arduino Uno Rev3', exactVariant: 'Standard Rev3 DIP ATmega328P', quantity: 1 },
-        { name: '4-Pin Tactile Pushbutton', exactVariant: '6x6mm through-hole momentary switch', quantity: 1 },
-        { name: 'Solderless Breadboard', exactVariant: '400 Tie-Point Half Size', quantity: 1 },
-        { name: '5mm Red Diffused LED', exactVariant: 'Vf ≈ 2.0V, If = 20mA max', quantity: 1 },
-        { name: 'Carbon Film Resistor', exactVariant: '220Ω ±5%, 0.25W', quantity: 1 },
-        { name: 'Male-to-Male Jumper Wires', exactVariant: '20cm 24AWG copper', quantity: 4 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/arduino_button_input_pullup.svg',
-      schematic: 'Arduino Pin 2 ──[ Tactile Switch ]── Arduino GND (Uses internal ~20kΩ pull-up to 5V)\nArduino Pin 9 ──[ 220Ω Resistor ]──[ LED Anode | Cathode ]── Arduino GND',
-      wireTable: [
-        { from: 'Arduino Digital Pin 2', to: 'Breadboard Row 15A (Switch Pin 1)', wireOrPolarityNote: 'Button Sense Signal (Yellow)' },
-        { from: 'Breadboard Row 17A (Switch Pin 2)', to: 'Arduino GND Pin', wireOrPolarityNote: 'Button Ground Return (Black)' },
-        { from: 'Arduino Digital Pin 9', to: 'Breadboard Row 25A (Resistor Leg 1)', wireOrPolarityNote: 'LED Output Signal (Red)' },
-        { from: 'Breadboard Row 25E (Resistor Leg 2)', to: 'Breadboard Row 26A (LED Anode)', wireOrPolarityNote: 'Internal Tie-Point' },
-        { from: 'Breadboard Row 26E (LED Cathode)', to: 'Arduino GND Pin', wireOrPolarityNote: 'LED Ground Return (Black)' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Disconnect USB power before modifying circuit wiring.',
-        '2. Orient the 4-pin tactile button so that its legs curve outward across the center breadboard trench.',
-        '3. Press the button firmly until its plastic body sits flush against the breadboard face.',
-        '4. Connect Pin 2 to one side of the button, and connect GND to the opposite terminal.',
-        '5. Wire the external LED on Pin 9 with its series 220Ω resistor.',
-        '6. Reconnect the USB cable and upload the sketch.',
-        '7. Open Tools > Serial Monitor in the Arduino IDE and set the baud rate dropdown to 9600 baud.'
-      ],
-      powerAndSafetyChecks: [
-        'Confirm the button is wired between Pin 2 and GND (never connect the button between 5V and GND!).',
-        'Verify that the LED cathode connects directly to Ground, not to 5V.'
-      ],
-      testCases: [
-        { action: 'Board powered, button untouched', expectedResult: 'LED is dark. Serial Monitor logs "System: STANDBY | Raw Pin: 1"' },
-        { action: 'Tap button once firmly', expectedResult: 'LED turns ON and remains ON. Serial Monitor logs "Event: CLICK | System: ACTIVE"' },
-        { action: 'Tap button a second time', expectedResult: 'LED turns OFF and remains OFF. Serial Monitor logs "Event: CLICK | System: STANDBY"' }
+    "courseId": "beginner",
+    "sequence": 4,
+    "code": "BEGINNER 04",
+    "title": "16x2 I2C LCD, SDA/SCL, Custom Emojis, Animated Banner & Stopwatch",
+    "subtitle": "Inter-Integrated Circuit (I2C) serial bus protocol, alphanumeric character LCD displays, custom 5x8 pixel font generation, and non-blocking millisecond stopwatch.",
+    "promise": "I can wire an I2C LCD screen over SDA/SCL using only 2 communication wires, create custom pixel bitmap characters, display animated banners, and build a millisecond-accurate stopwatch.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01",
+      "Beginner 02",
+      "Beginner 03"
+    ],
+    "outcomes": [
+      "Explain the advantages of the I2C serial communication bus (2 wires: SDA data and SCL clock) over 16-pin parallel display wiring.",
+      "Identify I2C device addresses (0x27 or 0x3F) and write address-scanning diagnostics using the Wire library.",
+      "Design and render custom 5x8 byte array pixel characters (RoboBee mascot and beating heart) on the HD44780 CGRAM.",
+      "Implement non-blocking character scrolling for marquee announcements using millis().",
+      "Assemble and program an interactive Lap Stopwatch with Start, Stop, and Reset arcade buttons and millisecond precision."
+    ],
+    "vocabulary": [
+      {
+        "term": "I2C Bus (Inter-Integrated Circuit)",
+        "plainMeaning": "A 2-wire highway that lets multiple smart chips talk to the Arduino using only two pins (SDA and SCL).",
+        "technicalMeaning": "A synchronous, multi-master, multi-slave, packet-switched serial communication bus invented by Philips Semiconductor."
+      },
+      {
+        "term": "SDA (Serial Data Line)",
+        "plainMeaning": "The wire that carries the actual messages, letters, and numbers back and forth.",
+        "technicalMeaning": "The bidirectional open-drain data signal line pulled high with pull-up resistors, synchronized to SCL clock transitions."
+      },
+      {
+        "term": "SCL (Serial Clock Line)",
+        "plainMeaning": "The metronome wire that pulses a beat so both chips know exactly when to read each bit.",
+        "technicalMeaning": "The synchronous clock line driven by the master (Arduino Uno on Analog Pin A5) coordinating serial bit transfer rates (standard mode 100 kHz)."
+      },
+      {
+        "term": "16x2 Character LCD",
+        "plainMeaning": "A liquid crystal screen that displays 16 characters per line across 2 lines (32 characters total).",
+        "technicalMeaning": "An alphanumeric dot-matrix liquid crystal display driven by an HD44780 controller or compatible chip via PCF8574 I2C expander."
+      },
+      {
+        "term": "I2C Hex Address (0x27 / 0x3F)",
+        "plainMeaning": "The unique street address number of the screen on the I2C highway.",
+        "technicalMeaning": "A 7-bit slave address transmitted by the master to select the target peripheral before data byte exchange begins."
+      },
+      {
+        "term": "CGRAM (Character Generator RAM)",
+        "plainMeaning": "The memory bank inside the screen where we draw our own custom pixel characters and emojis.",
+        "technicalMeaning": "A 64-byte internal RAM space in the HD44780 allowing user definition of up to 8 custom 5x8 pixel font patterns."
+      }
+    ],
+    "teacherPrep": [
+      "Distribute 1602 LCDs with pre-soldered PCF8574 I2C backpack modules to student benches.",
+      "Ensure LiquidCrystal_I2C library is installed in Arduino IDE 2.x across all student laptops."
+    ],
+    "verifiedMaterials": [
+      "Arduino Uno R3 with USB cable",
+      "1602 Character LCD with soldered PCF8574 I2C backpack",
+      "Solderless breadboard",
+      "1x Tactile Pushbutton (for stopwatch start/lap)",
+      "4x Female-to-Male jumper wires (for I2C backpack: VCC, GND, SDA, SCL)",
+      "4x Male-to-Male jumper wires"
+    ],
+    "safetyNotes": [
+      "Adjust the blue potentiometer on the back of the I2C backpack gently with a plastic screwdriver to calibrate contrast; do not force it.",
+      "Verify VCC connects to 5V and GND connects to GND before plugging in USB."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Display a live 16x2 LCD screen with animated flying RoboBee wings and a real-time classroom lap timer. Show a legacy 16-wire LCD tangle vs a sleek 4-wire I2C backpack.",
+        "studentAction": "Inspect the PCF8574 I2C backpack on the back of their screen. Count the 4 pins: GND, VCC, SDA, SCL."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Explain the I2C serial protocol. Teach Uno pin assignments: SDA is on A4, SCL is on A5. Demonstrate the 5x8 custom character grid.",
+        "studentAction": "Use the interactive Logic Counter & Display Sim on the portal to design a custom 5x8 pixel emoji character."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide wiring: LCD VCC -> 5V, GND -> GND, SDA -> A4, SCL -> A5; wire pushbutton from D2 to GND with internal pullup.",
+        "studentAction": "Connect the 4 I2C lines to Arduino Uno. Turn the contrast trimmer potentiometer until character rectangles appear clearly."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through lcd.init(), lcd.backlight(), lcd.createChar(), and non-blocking millisecond stopwatch calculation.",
+        "studentAction": "Upload the code. Watch custom RoboBee emoji appear on the screen! Press button to start, lap, and reset the live stopwatch."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"RoboBee 5.000-Second Human Reflex Challenge\": can you stop the timer at exactly 5.000 seconds?",
+        "studentAction": "Compete in the 5-second precision challenge, display custom animated headlines, and complete the Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "Why I2C Solves Pin Exhaustion",
+        "explanation": "Old-school LCD screens required 16 individual wires (RS, EN, D0-D7, power, backlight). This left almost no pins for sensors or motors! The I2C protocol uses only 2 communication wires (SDA and SCL) to talk to up to 127 different devices simultaneously on the same two pins.",
+        "instructorNote": "Point out the dedicated SDA and SCL pins next to AREF on the Uno R3 (which are internally connected to A4 and A5)."
+      },
+      {
+        "title": "Custom 5x8 Pixel Fonts in CGRAM",
+        "explanation": "Each character on a 16x2 LCD is made of 5 columns and 8 rows of dots (40 pixels). By defining an 8-byte array where 1 represents a dark pixel and 0 represents a blank pixel, we can program custom icons like battery gauges, robot faces, and hearts.",
+        "instructorNote": "Draw a 5x8 binary grid on the whiteboard: B01110, B10001, B10101, B10001, B01110 (smiley face)."
+      },
+      {
+        "title": "Non-Blocking LCD Refreshing",
+        "explanation": "Updating an LCD over I2C takes a few milliseconds. If we clear and rewrite the screen in every loop() cycle, the screen flickers uncontrollably! Professional firmware only updates the display when the timer value changes or on a fixed 100ms interval.",
+        "instructorNote": "Demonstrate the difference between lcd.clear() flicker vs overwriting specific column coordinates with lcd.setCursor()."
+      }
+    ],
+    "visualizerId": "logic_counter_sim",
+    "project": {
+      "name": "16x2 I2C Smart Announcement Display & Precision Stopwatch",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Operational 16x2 I2C LCD connected via SDA (A4) and SCL (A5) with clear character contrast.",
+        "Display of custom 5x8 pixel RoboBee and Heart icons loaded into CGRAM.",
+        "Working millisecond stopwatch with arcade button trigger and scrolling headline banner."
       ]
     },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - Robotic HMI & Input Telemetry
-// Class: BEGINNER 03 - Arduino and C++ First Steps: Inputs & Serial Monitor
-// Implements active-low INPUT_PULLUP, software contact debouncing,
-// toggle latching, and real-time UART telemetry.
-
-const int BUTTON_PIN = 2; // Tactile button connected between Pin 2 and GND
-const int LED_PIN    = 9; // Status LED connected to Pin 9 via 220Ω resistor
-
-// System state variables
-int ledState = LOW;         // Current operational state of the robot LED (LOW or HIGH)
-int lastButtonState = HIGH; // Previous raw reading from the active-low button (default HIGH)
-unsigned long lastDebounceTime = 0; // Timestamp of the last detected transition
-const unsigned long DEBOUNCE_DELAY_MS = 40; // 40ms debounce lockout window
-unsigned long pressCounter = 0;     // Total number of valid human presses
-
-void setup() {
-  // Configure Pin 2 with internal 20kΩ pull-up resistor (no external resistor needed!)
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
-  
-  // Configure Pin 9 as low-impedance output driver for LED
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, ledState);
-
-  // Initialize hardware UART serial link at 9600 bits per second
-  Serial.begin(9600);
-  delay(200); // Allow serial transceiver to stabilize
-  Serial.println("==========================================");
-  Serial.println("  ROBOBEE INNOVATORS - HMI CONSOLE READY  ");
-  Serial.println("  INPUT_PULLUP Active-LOW Logic Engaged  ");
-  Serial.println("==========================================");
-}
-
-void loop() {
-  // Read current raw pin state (1 = unpressed, 0 = pressed to GND)
-  int currentReading = digitalRead(BUTTON_PIN);
-
-  // Check if mechanical contact state changed (either pressed down or released)
-  if (currentReading != lastButtonState) {
-    lastDebounceTime = millis(); // Reset debounce timer
-  }
-
-  // If signal has stayed stable longer than our 40ms debounce window:
-  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY_MS) {
-    // Detect falling edge: transition from unpressed (HIGH) to pressed (LOW)
-    if (currentReading == LOW && lastButtonState == HIGH) {
-      pressCounter++;
-      ledState = !ledState; // Toggle LED state (LOW -> HIGH or HIGH -> LOW)
-      digitalWrite(LED_PIN, ledState);
-
-      // Transmit diagnostic telemetry packet over Serial Monitor
-      Serial.print("[TELEMETRY] Press #");
-      Serial.print(pressCounter);
-      Serial.print(" | Action: TOGGLE | System State: ");
-      if (ledState == HIGH) {
-        Serial.println("ACTIVE (1)");
-      } else {
-        Serial.println("STANDBY (0)");
-      }
-    }
-  }
-
-  // Save current reading for next loop iteration comparison
-  lastButtonState = currentReading;
-}`,
-      pinMap: { 
-        'Pin 2': 'Tactile pushbutton input with on-chip INPUT_PULLUP', 
-        'Pin 9': 'Status LED Anode via 220Ω current-limiting resistor',
-        'GND': 'Common Ground for both pushbutton and LED cathode'
-      },
-      setupAndUpload: [
-        '1. Verify Arduino Uno is connected via USB cable.',
-        '2. In the Arduino IDE, verify Tools > Board is set to "Arduino Uno".',
-        '3. Click Upload. Once complete, open Tools > Serial Monitor.',
-        '4. In the Serial Monitor window (bottom panel), verify the dropdown is set to "9600 baud".'
+    "activity": {
+      "title": "Wire and Program the Smart Alphanumeric Station",
+      "steps": [
+        "Step 1: Connect Female-to-Male jumper wires from LCD backpack: GND to GND, VCC to 5V, SDA to A4, SCL to A5.",
+        "Step 2: Connect a tactile pushbutton between Digital Pin 2 and GND (using INPUT_PULLUP).",
+        "Step 3: Plug in USB and check backlight illumination; adjust blue trimmer pot until text contrast is sharp.",
+        "Step 4: Upload the I2C scanner sketch if needed to verify address (standard is 0x27).",
+        "Step 5: Upload the RoboBee Smart LCD Banner & Stopwatch sketch.",
+        "Step 6: Press the button to start the stopwatch; press again to pause and record lap time.",
+        "Step 7: Challenge: Modify the custom 5x8 byte array to create your own personalized team mascot icon!"
       ],
-      explanations: [
-        'pinMode(BUTTON_PIN, INPUT_PULLUP): Activates the internal 20kΩ pull-up resistor, forcing the pin to read 1 (HIGH) until physically grounded.',
-        'digitalRead(BUTTON_PIN): Reads the digital voltage on Pin 2. Returns 0 (LOW) when pressed, 1 (HIGH) when released.',
-        'millis(): Built-in hardware timer function returning milliseconds elapsed since Arduino power-up, enabling non-blocking debouncing.',
-        'ledState = !ledState: Boolean NOT operator, inverting LOW into HIGH and HIGH into LOW to create a push-on / push-off toggle latch.'
+      "successCriteria": [
+        "Text renders crisply without garbled characters or contrast wash-out.",
+        "Custom emojis display accurately at specified cursor coordinates.",
+        "Stopwatch increments accurately in seconds and tenths of seconds."
       ],
-      expectedResult: 'Pressing the button once lights the LED and logs "[TELEMETRY] Press #1 | Action: TOGGLE | System State: ACTIVE (1)". Pressing again turns off the LED and logs STANDBY.',
-      caveats: [
-        'If the Serial Monitor shows gibberish characters, change the baud rate dropdown at the bottom right from 115200 to 9600 baud.',
-        'Be sure the button is seated firmly across the center trench — loose pins produce intermittent connections.'
-      ],
-      tweakTip: 'Change DEBOUNCE_DELAY_MS from 40 to 0 to observe contact bounce live in the Serial Monitor as a single tap registers 3-5 presses!'
+      "extension": "Add a second button to record up to 3 split-lap times stored in an array and displayed on demand!"
     },
-    troubleshooting: [
-      { 
-        symptom: 'Serial Monitor displays strange unreadable characters like ⸮⸮⸮ or inverted question marks.', 
-        checks: [
-          'Step 1: Check the baud rate dropdown at the bottom right corner of the Serial Monitor window.',
-          'Step 2: Confirm it is set to exactly "9600 baud" to match `Serial.begin(9600)` in your C++ setup() function.'
-        ], 
-        explanation: 'Asynchronous serial communication requires both transmitter and receiver to use the exact same clock speed. A baud rate mismatch scrambles bit decoding.' 
-      },
-      { 
-        symptom: 'The button reading stays permanently at 0 (LOW) even when nobody is touching it.', 
-        checks: [
-          'Step 1: Check button orientation on the breadboard.',
-          'Step 2: Note that a 4-pin tactile switch has internal metal bridges connecting pairs of pins.',
-          'Step 3: Rotate the switch 90 degrees or connect jumper wires diagonally across opposite corners.'
-        ], 
-        explanation: 'Connecting wires to the two pins on the same internal bridge permanently connects Pin 2 to GND, simulating a stuck button.' 
-      },
-      { 
-        symptom: 'The button reading flickers erratically between 0 and 1 without touching it.', 
-        checks: [
-          'Step 1: Inspect setup() code — did you write `pinMode(BUTTON_PIN, INPUT)` instead of `INPUT_PULLUP`?',
-          'Step 2: Check that the GND jumper wire is plugged firmly into a real Arduino GND pin.'
-        ], 
-        explanation: 'Using plain `INPUT` leaves the pin floating without an electrical reference, causing it to pick up stray electromagnetic static from the room.' 
-      },
-      { 
-        symptom: 'A single press of the button registers 2, 3, or more count increments.', 
-        checks: [
-          'Step 1: Inspect the debounce delay value in code (`DEBOUNCE_DELAY_MS`).',
-          'Step 2: Increase the debounce threshold from 40ms to 60ms or 80ms for worn mechanical switches.'
-        ], 
-        explanation: 'Mechanical contact bounce creates rapid microsecond oscillations as metal contacts collide. A higher debounce threshold filters out slow mechanical settling.' 
-      }
-    ],
-    checksForUnderstanding: [
-      'What electrical phenomenon causes a floating pin to read random values when touched by a human hand?',
-      'Why does `INPUT_PULLUP` eliminate the need for an external resistor on a pushbutton?',
-      'In active-low logic, what binary number does the Arduino read when a switch connects the pin to Ground?'
-    ],
-    exitTicket: [
-      { 
-        question: 'Explain why connecting an input pin to a button wired to GND with `INPUT_PULLUP` is safer for robots than wiring a button to +5V with an external pull-down.', 
-        hint: 'Think about what happens if a wire chafes against an aluminum robot chassis.',
-        rubricOrSampleReasoning: 'Wiring to GND means only Ground lines run to external robot bumpers. If a wire insulation chafes against the metal chassis, it simply activates a safe active-low signal rather than creating a catastrophic high-current direct power short circuit.' 
-      },
-      { 
-        question: 'What is mechanical contact bounce, and how long does it typically last in physical tactile switches?', 
-        hint: 'Consider the elasticity of metal leaf springs.',
-        rubricOrSampleReasoning: 'Contact bounce is the rapid mechanical bouncing of metal switch contacts as they collide, creating transient electrical oscillations lasting 1ms to 10ms that can fool a high-speed microchip into registering multiple clicks.' 
-      },
-      { 
-        question: 'If `Serial.begin(9600)` transmits 10 bits per character (1 start + 8 data + 1 stop bit), how many characters can be sent per second?', 
-        hint: 'Divide the baud rate by the number of bits per framed character.',
-        rubricOrSampleReasoning: '9600 bits per second / 10 bits per character = 960 characters per second. Each character takes approximately 1.04 milliseconds to transmit.' 
-      }
-    ],
-    differentiation: {
-      support: [
-        'Use an illuminated LED alongside the Serial Monitor so visual learners can see the physical pin state immediately.',
-        'Provide a labeled diagram of the 4-pin switch showing which pins are internally connected.'
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "1602 LCD with PCF8574 I2C Backpack"
       ],
-      extension: [
-        'Mission: Program a double-click detector — detect if the button is pressed twice within 300 milliseconds.',
-        'Mission: Long-Press detector — holding the button for more than 2 seconds triggers an audible reset tone.'
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "1602 Alphanumeric LCD",
+          "exactVariant": "With soldered PCF8574 I2C backpack (Address 0x27)",
+          "quantity": 1
+        },
+        {
+          "name": "Tactile Pushbutton",
+          "exactVariant": "12mm momentary switch",
+          "quantity": 1
+        },
+        {
+          "name": "Solderless Breadboard",
+          "exactVariant": "Half-size 400 tie points",
+          "quantity": 1
+        },
+        {
+          "name": "Female-to-Male Jumpers",
+          "exactVariant": "20cm ribbon cables for I2C",
+          "quantity": 4
+        },
+        {
+          "name": "Male-to-Male Jumpers",
+          "exactVariant": "20cm flexible wire",
+          "quantity": 2
+        }
       ],
-      offlineOption: [
-        'Draw the complete timing diagram showing the noisy mechanical bounce versus the filtered debounced output signal over a 50ms timeline.'
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "LCD I2C Backpack: VCC -> Arduino 5V | GND -> Arduino GND | SDA -> Arduino Analog A4 | SCL -> Arduino Analog A5; Button: Arduino D2 -> Button -> GND (INPUT_PULLUP)",
+      "wireTable": [
+        {
+          "from": "LCD I2C Backpack VCC",
+          "to": "Arduino 5V Power Pin",
+          "wireOrPolarityNote": "Red wire — 5V DC Bus"
+        },
+        {
+          "from": "LCD I2C Backpack GND",
+          "to": "Arduino GND Pin",
+          "wireOrPolarityNote": "Black wire — Ground"
+        },
+        {
+          "from": "LCD I2C Backpack SDA",
+          "to": "Arduino Analog Pin A4 (SDA)",
+          "wireOrPolarityNote": "Blue wire — Serial Data"
+        },
+        {
+          "from": "LCD I2C Backpack SCL",
+          "to": "Arduino Analog Pin A5 (SCL)",
+          "wireOrPolarityNote": "Yellow wire — Serial Clock"
+        },
+        {
+          "from": "Arduino Digital Pin 2",
+          "to": "Pushbutton Terminal 1",
+          "wireOrPolarityNote": "Stopwatch Start/Stop trigger"
+        },
+        {
+          "from": "Pushbutton Terminal 2",
+          "to": "Arduino GND",
+          "wireOrPolarityNote": "Button Ground return"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Verify USB is disconnected before wiring.",
+        "2. Connect 4 female ends to LCD backpack pins (GND, VCC, SDA, SCL).",
+        "3. Connect male ends to Arduino 5V, GND, A4, A5.",
+        "4. Connect button from D2 to GND on breadboard.",
+        "5. Plug in USB. If screen shows solid white blocks, turn the contrast trimmer on the back with a screwdriver until characters appear."
+      ],
+      "powerAndSafetyChecks": [
+        "Never short VCC and GND on the I2C backpack.",
+        "Verify SDA and SCL are not swapped (SDA goes to A4, SCL goes to A5)."
+      ],
+      "testCases": [
+        {
+          "action": "Power on board with sketch uploaded",
+          "expectedResult": "Screen displays \"RoboBEE Innovators\" on Line 1 with custom animated bee icon."
+        },
+        {
+          "action": "Press pushbutton once",
+          "expectedResult": "Stopwatch begins counting milliseconds smoothly on Line 2."
+        },
+        {
+          "action": "Press pushbutton a second time",
+          "expectedResult": "Stopwatch freezes and displays final elapsed time."
+        }
       ]
     },
-    nextLessonId: 'beg-04',
-    nextLessonTeaser: 'Beginner 04: Sensors as Inputs — Analog Readings & Voltage Dividers. Step beyond binary 0 and 1 into the continuous physical world! Connect photoresistors and potentiometers to read 10-bit analog values from 0 to 1023!',
-    sources: [
-      { title: 'Arduino Reference: Digital Input Pullup', url: 'https://docs.arduino.cc/built-in-examples/digital/InputPullupSerial/' },
-      { title: 'Microchip ATmega328P Datasheet: I/O Ports', url: 'https://www.microchip.com' }
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 04: 16x2 I2C LCD & Stopwatch\n * Board: Arduino Uno R3 (ATmega328P)\n * Required Library: LiquidCrystal_I2C by Frank de Brabander\n */\n\n#include <Wire.h>\n#include <LiquidCrystal_I2C.h>\n\n// Set the LCD I2C address to 0x27 for a 16 chars and 2 line display\nLiquidCrystal_I2C lcd(0x27, 16, 2);\n\nconst int PIN_BTN = 2; // Stopwatch Start/Stop Button\n\n// Custom 5x8 Byte Character: RoboBee Icon\nbyte roboBee[8] = {\n  B01010,\n  B11111,\n  B10101,\n  B11111,\n  B01110,\n  B11111,\n  B01010,\n  B00100\n};\n\n// Custom 5x8 Byte Character: Heart Icon\nbyte heart[8] = {\n  B00000,\n  B01010,\n  B11111,\n  B11111,\n  B01110,\n  B00100,\n  B00000,\n  B00000\n};\n\nbool running = false;\nunsigned long startTime = 0;\nunsigned long elapsedTime = 0;\nbool lastBtnState = HIGH;\n\nvoid setup() {\n  pinMode(PIN_BTN, INPUT_PULLUP);\n\n  lcd.init();\n  lcd.backlight();\n\n  // Load custom characters into CGRAM slots 0 and 1\n  lcd.createChar(0, roboBee);\n  lcd.createChar(1, heart);\n\n  lcd.setCursor(0, 0);\n  lcd.write(0); // Display custom RoboBee\n  lcd.print(\" ROBOBEE LAB \");\n  lcd.write(1); // Display custom Heart\n\n  lcd.setCursor(0, 1);\n  lcd.print(\"Timer: 0.00s\");\n}\n\nvoid loop() {\n  bool btnState = digitalRead(PIN_BTN);\n\n  // Detect button press on falling edge (transition from HIGH to LOW)\n  if (lastBtnState == HIGH && btnState == LOW) {\n    if (!running) {\n      running = true;\n      startTime = millis() - elapsedTime;\n    } else {\n      running = false;\n    }\n    delay(50); // Simple debounce\n  }\n  lastBtnState = btnState;\n\n  // Update stopwatch display when running\n  if (running) {\n    elapsedTime = millis() - startTime;\n    lcd.setCursor(7, 1);\n    float seconds = elapsedTime / 1000.0;\n    lcd.print(seconds, 2);\n    lcd.print(\"s  \");\n  }\n}\n",
+      "pinMap": {
+        "SDA (Pin A4)": "I2C Serial Data Bus communication",
+        "SCL (Pin A5)": "I2C Serial Clock Bus synchronization",
+        "Pin 2": "Arcade Button input (INPUT_PULLUP) for stopwatch control",
+        "5V & GND": "Regulated 5V logic and LED backlight power"
+      },
+      "setupAndUpload": [
+        "Install \"LiquidCrystal_I2C\" via Arduino IDE Library Manager.",
+        "Connect Arduino Uno, select board and COM port, and upload sketch.",
+        "Adjust the contrast knob on the back of the LCD if screen appears blank."
+      ],
+      "explanations": [
+        "LiquidCrystal_I2C lcd(0x27, 16, 2): Instantiates the LCD controller object with I2C address 0x27.",
+        "lcd.createChar(0, roboBee): Transfers the 8-byte array pattern into CGRAM address slot 0.",
+        "lcd.setCursor(col, row): Moves the active writing cursor (columns 0–15, rows 0–1).",
+        "millis() - startTime: Tracks high-precision continuous time without freezing the microcontroller."
+      ],
+      "expectedResult": "Screen displays \"ROBOBEE LAB\" flanked by custom bee and heart icons, and counts up stopwatch seconds in real-time when button is pressed.",
+      "caveats": [
+        "If nothing appears on screen, turn the blue contrast potentiometer on the back of the I2C backpack.",
+        "Some I2C backpacks use address 0x3F instead of 0x27; run an I2C scanner sketch if detection fails."
+      ],
+      "tweakTip": "Create your own custom 5x8 pixel character using an online binary LCD generator and display it on line 2!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "Screen backlight lights up, but only displays solid white rectangles or no text.",
+        "checks": [
+          "Adjust the blue potentiometer trimmer on the back of the I2C backpack with a small screwdriver.",
+          "Contrast is set either too high (solid blocks) or too low (completely blank)."
+        ],
+        "explanation": "The liquid crystal bias voltage requires calibration to achieve optimal viewing angle."
+      },
+      {
+        "symptom": "Arduino IDE gives compilation error: \"LiquidCrystal_I2C.h: No such file or directory\".",
+        "checks": [
+          "Open Arduino IDE -> Sketch -> Include Library -> Manage Libraries.",
+          "Search for \"LiquidCrystal I2C\" by Frank de Brabander and click Install."
+        ],
+        "explanation": "The external library must be installed locally for the compiler to locate the header files."
+      },
+      {
+        "symptom": "Screen does not initialize and stays frozen.",
+        "checks": [
+          "Confirm SDA is plugged into A4 and SCL into A5.",
+          "Upload an I2C Scanner sketch to verify whether the device address is 0x27 or 0x3F."
+        ],
+        "explanation": "Different manufacturer chipsets default to 0x27 (PCF8574T) or 0x3F (PCF8574AT)."
+      }
     ],
-    assetCredits: [
-      { asset: 'Tactile Button Pullup Diagram', creator: 'RoboBEE Innovators Academy', license: 'Proprietary Educational Architecture', sourceUrl: 'team_info' }
+    "checksForUnderstanding": [
+      "How many communication wires does the I2C protocol use to send data to the screen?",
+      "What is the purpose of the SCL (Serial Clock) line in I2C communication?"
+    ],
+    "exitTicket": [
+      {
+        "question": "Which two Arduino Uno pins are dedicated to the I2C bus?",
+        "rubricOrSampleReasoning": "Analog Pin A4 is SDA (Serial Data) and Analog Pin A5 is SCL (Serial Clock)."
+      },
+      {
+        "question": "How many custom characters can be stored in the LCD CGRAM simultaneously?",
+        "rubricOrSampleReasoning": "Up to 8 custom 5x8 pixel characters (slots 0 through 7)."
+      },
+      {
+        "question": "Why should you avoid calling lcd.clear() in every execution of void loop()?",
+        "rubricOrSampleReasoning": "lcd.clear() takes up to 2 milliseconds and blanks the entire screen memory, causing noticeable and distracting optical flickering. It is better to position the cursor with lcd.setCursor() and overwrite characters directly."
+      }
+    ],
+    "differentiation": {
+      "support": [
+        "Provide printed binary 5x8 grids for students to color in with pencil before typing byte arrays."
+      ],
+      "extension": [
+        "Program a scrolling marquee text message that smoothly shifts text left across the 16 columns."
+      ],
+      "offlineOption": [
+        "Use the interactive LCD Simulator on the RoboBee portal to test custom emojis."
+      ]
+    },
+    "nextLessonId": "beg-05",
+    "nextLessonTeaser": "Class 05: LDR Light Sensor, PIR HC-SR501 Motion Vault Alarm & Auto Streetlight! Learn environmental optical sensing and infrared security.",
+    "sources": [
+      {
+        "title": "Philips I2C Bus Specification Manual",
+        "url": "https://nxp.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "1602 LCD I2C Pinout Diagram",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
     ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
-  // -----------------------------------------------------------------------
-  // BEGINNER 04: SENSORS AS INPUTS: ANALOG READINGS & VOLTAGE DIVIDERS
-  // -----------------------------------------------------------------------
   {
-    id: 'beg-04',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-electronics-ohms-law", "fg-board-uno-anatomy"],
-      lookUpWhileBuilding: ["fg-comp-tcrt5000", "fg-foundations-open-closed-loop"],
-      goDeeper: ["fg-testing-fmea-debugging", "fg-prog-program-structure"]
-    },
-    courseId: 'beginner',
-    sequence: 4,
-    code: 'BEGINNER 04',
-    title: 'Sensors as Inputs: Analog Readings & Voltage Dividers',
-    promise: 'Explore the continuous physical world: master 10-bit Analog-to-Digital Converter (ADC) quantization, derive the voltage divider formula, calibrate ambient photoresistors, and build an automatic phototaxis threshold controller.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01', 'Beginner 02', 'Beginner 03'],
-    outcomes: [
-      'Contrast continuous physical analog signals with discrete binary digital states.',
-      'Deconstruct the ATmega328P 10-bit Successive Approximation ADC and calculate quantization resolution (4.887mV per LSB).',
-      'Derive the mathematical Voltage Divider equation (V_out = V_in × R2 / [R1 + R2]) for passive resistive sensors.',
-      'Construct a light-sensing circuit using a Cadmium Sulfide (CdS) photoresistor balanced against a fixed 10kΩ reference resistor.',
-      'Implement dynamic software calibration algorithms using `map()`, `constrain()`, and threshold hysteresis in C++.'
-    ],
-    vocabulary: [
-      { 
-        term: 'Analog Signal', 
-        plainMeaning: 'A smooth, continuous electrical signal that can have any voltage value between 0V and 5V (like volume, brightness, or temperature).', 
-        technicalMeaning: 'A continuously variable physical quantity whose voltage or current magnitude is directly proportional to a measured environmental stimulus.' 
-      },
-      { 
-        term: 'Analog-to-Digital Converter (ADC)', 
-        plainMeaning: 'The on-chip silicon translation engine that turns an incoming voltage into an integer number between 0 and 1023.', 
-        technicalMeaning: 'A 10-bit Successive Approximation Register (SAR) peripheral that quantizes an input voltage from 0V to the reference voltage (AREF = 5.0V) into 1024 discrete binary integer bins.' 
-      },
-      { 
-        term: 'Voltage Divider', 
-        plainMeaning: 'A pair of resistors that divide a higher input voltage into a lower, measurable output voltage according to their resistance ratio.', 
-        technicalMeaning: 'A linear circuit configuration of two passive series impedances where the intermediate tap voltage obeys the transfer function V_out = V_in × (R2 / [R1 + R2]).' 
-      },
-      { 
-        term: 'Light-Dependent Resistor (LDR)', 
-        plainMeaning: 'A light sensor whose electrical resistance drops drastically when photons strike its wavy semiconductor surface.', 
-        technicalMeaning: 'A photoresistive Cadmium Sulfide (CdS) component exhibiting photoconductivity, whose resistance decreases non-linearly from ~1MΩ in total darkness to ~1kΩ in bright ambient light.' 
-      },
-      { 
-        term: 'Potentiometer', 
-        plainMeaning: 'A rotary control dial with three pins that outputs a continuously variable voltage by sliding a wiper across a carbon track.', 
-        technicalMeaning: 'A three-terminal variable resistor with a manual rotary wiper contact that functions as an adjustable voltage divider between VCC and GND.' 
-      },
-      { 
-        term: 'Threshold Hysteresis', 
-        plainMeaning: 'A safety deadband that prevents an autonomous robot from flickering rapidly ON and OFF when light is hovering right on the edge of a trigger point.', 
-        technicalMeaning: 'The intentional lag between an activation threshold and a deactivation threshold to prevent rapid relay or actuator chattering caused by analog signal noise.' 
-      }
-    ],
-    teacherPrep: [
-      'Check GL5528 or similar 5mm CdS photoresistors (LDRs) and 10kΩ 1/4W pull-down balancing resistors.',
-      'Test 10kΩ rotary potentiometers (B10K) for smooth wiper continuity using a multimeter.',
-      'Dim classroom blinds during demonstration to demonstrate dramatic analog value shifts live on the projector.'
-    ],
-    verifiedMaterials: [
-      'Arduino Uno Rev3',
-      '10kΩ linear rotary potentiometer (B10K)',
-      'GL5528 5mm LDR photoresistor',
-      '10kΩ ±5% 0.25W carbon film resistor (Brown-Black-Orange-Gold)',
-      '5mm Red status LED & 220Ω series resistor',
-      'Solderless half-size breadboard & jumper wires'
-    ],
-    safetyNotes: [
-      'Never connect both outer legs of a potentiometer to the same rail — one outer leg must connect to +5V and the opposite outer leg to GND, with the center wiper to Analog Pin A0.',
-      'Ensure the LDR is paired with a fixed balancing resistor (10kΩ); plugging an LDR directly between 5V and A0 without a ground resistor leaves the pin floating.'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Display a smartphone ambient light sensor. Ask: "How can a computer, which only knows 0 and 1, sense whether the sun is rising or setting?"', 
-        studentAction: 'Discuss analog vs digital phenomena (light, sound, heat vs binary light switch).' 
-      },
-      { 
-        segment: '10–25m Concept', 
-        minutes: 15, 
-        teacherAction: 'Derive 10-bit ADC quantization: 5.0V / 1024 = 4.887mV per count. Write the voltage divider equation on the board: V_out = 5V × (10k / [R_ldr + 10k]).', 
-        studentAction: 'Calculate analog values: 0V -> 0; 2.5V -> 512; 5.0V -> 1023.' 
-      },
-      { 
-        segment: '25–50m Build', 
-        minutes: 25, 
-        teacherAction: 'Guide breadboard potentiometer and LDR voltage divider wiring. Demonstrate Tools > Serial Plotter live waveform visualization.', 
-        studentAction: 'Wire the LDR voltage divider, graph live light changes in Serial Plotter, and program an automatic night-lamp with an LED.' 
-      },
-      { 
-        segment: '50–60m Exit Check', 
-        minutes: 10, 
-        teacherAction: 'Review student calibration data tables and inspect threshold stability.', 
-        studentAction: 'Complete the exit ticket explaining ADC resolution and voltage divider math.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. The Analog Physical World vs The Digital Microchip',
-        explanation: 'In nature, almost every physical phenomenon is continuous and analog: sunlight does not jump instantaneously from pitch black to blinding noon; ambient temperature does not toggle binary between freezing and boiling; sound pressure waves vibrate across a continuous spectrum. However, digital microprocessors can only store discrete binary bits (0s and 1s). To bridge this fundamental physical gap, autonomous robots rely on Analog-to-Digital Converters (ADCs) to sample, measure, and quantize continuous physical voltages into digital numbers.',
-        instructorNote: 'Use the analogy of a smooth ramp (analog) versus a staircase with 1024 individual steps (digital quantization).'
-      },
-      {
-        title: '2. The 10-Bit Successive Approximation ADC & Quantization',
-        explanation: 'The ATmega328P microcontroller contains an integrated 10-bit Successive Approximation Register (SAR) ADC connected to Analog Pins A0 through A5 via an internal analog multiplexer. A 10-bit resolution means the chip divides the 0.0V to 5.0V input voltage range into 2^10 = 1,024 discrete integer steps (from 0 to 1023). Each step represents a voltage quantum of V_LSB = 5.000V / 1024 = 0.0048828 Volts (approximately 4.88 millivolts). When Analog Pin A0 sees 0.0V, `analogRead(A0)` returns 0; at 2.5V, it returns 512; at 5.0V, it returns 1023. The conversion takes approximately 100 microseconds (13 to 260 ADC clock cycles).',
-        instructorNote: 'Highlight that 10 bits is standard for microcontrollers; high-precision laboratory instruments use 16-bit (65,536 steps) or 24-bit ADCs.'
-      },
-      {
-        title: '3. The Voltage Divider Derivation & Why Sensors Need It',
-        explanation: 'Microcontroller ADCs can ONLY measure voltage; they cannot directly measure electrical resistance! However, many of the most useful robotic sensors — photoresistors (light), thermistors (temperature), flex sensors (finger bending), and strain gauges — are variable resistors. To turn changing resistance into a readable changing voltage, we build a Voltage Divider. Two resistors (R1 and R2) are placed in series between VCC (+5V) and GND. By Ohm’s Law, the total current flowing through the pair is I = V_in / (R1 + R2). The output voltage tapped between them is V_out = I × R2. Substituting gives the golden equation: V_out = V_in × (R2 / [R1 + R2]). If R1 is a light sensor whose resistance changes, V_out rises and falls proportionally!',
-        instructorNote: 'Derive the formula step-by-step on the board so students understand it is simply Ohm’s Law applied to two series resistors.'
-      },
-      {
-        title: '4. Photoresistors (CdS LDR) & Semiconductor Photoconductivity',
-        explanation: 'A Light-Dependent Resistor contains a zig-zag track of Cadmium Sulfide (CdS) semiconductor material. In darkness, valence electrons are tightly bound within the semiconductor crystal lattice, resulting in extremely high electrical resistance (typically 500,000Ω to 1,000,000Ω = 1 MΩ). When incident light photons strike the CdS surface, their energy excites valence electrons across the bandgap into the conduction band. These free electron-hole pairs drastically increase electrical conductivity, dropping the LDR resistance down to 1,000Ω to 2,000Ω (1kΩ–2kΩ) under bright classroom light. By pairing the LDR with a fixed 10kΩ reference resistor, V_out changes by over 3.5 Volts between light and dark!',
-        instructorNote: 'Warn students that LDRs have a physical response latency of ~10ms–50ms; for high-speed laser break-beams, phototransistors or photodiodes are preferred.'
-      },
-      {
-        title: '5. Potentiometers: 3-Terminal Rotary Voltage Dividers',
-        explanation: 'A rotary potentiometer is an electromechanical component containing a curved resistive carbon track and a movable conductive metal wiper connected to the center terminal. Terminal 1 connects to one end of the track (+5V); Terminal 3 connects to the opposite end (GND); Terminal 2 connects to the wiper. As you rotate the shaft, the wiper physically slides along the carbon track, smoothly varying the ratio of resistance above the wiper versus below the wiper. It acts as an adjustable voltage divider, sweeping the output voltage seamlessly from 0.00V all the way to 5.00V without requiring any external resistors.',
-        instructorNote: 'Have students connect a potentiometer and open Tools > Serial Plotter to watch their finger turns draw smooth real-time sine waves.'
-      },
-      {
-        title: '6. Dynamic Sensor Calibration & Threshold Hysteresis',
-        explanation: 'In the real world, no two rooms have identical ambient lighting: a robotics competition arena in a gym has different lux levels than a classroom at night. Professional autonomous robots NEVER hardcode arbitrary magic numbers like `if (val > 500)`. Instead, robots execute an automatic calibration sequence upon startup: during the first 5 seconds, the robot records the absolute minimum (`sensorMin`) and maximum (`sensorMax`) light values detected. It then uses the C++ `map()` function to normalize the signal into a universal 0% to 100% scale. Furthermore, engineers add Hysteresis (a deadband gap between ON and OFF thresholds) to eliminate jitter and flickering when the sensor hovers near the trigger boundary.',
-        instructorNote: 'Demonstrate how a night-light without hysteresis buzzes and flickers furiously at twilight, whereas hysteresis provides clean, confident switching.'
-      }
-    ],
-    visualizerId: 'sensor_observatory_sim',
-    project: {
-      name: 'Autonomous Phototaxis Light Observatory & Night-Lamp',
-      deliverableType: 'dataset',
-      successEvidence: [
-        'Breadboard circuit featuring both a 10kΩ potentiometer and an LDR/10kΩ voltage divider.',
-        'Serial Plotter displaying smooth 10-bit analog waveforms (0–1023) without electrical noise or dropouts.',
-        'C++ program converting raw ADC integers into calibrated physical Volts and triggering an external LED indicator when light drops below a calibrated threshold.'
+    "id": "beg-05",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-electronics-ohms-law",
+        "fg-board-uno-anatomy"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-electronics-breadboards",
+        "fg-prog-program-structure"
+      ],
+      "goDeeper": [
+        "fg-testing-fmea-debugging",
+        "fg-safety-lab-code"
       ]
     },
-    activity: {
-      title: 'Assemble the Analog Observatory & Calibrate Thresholds',
-      steps: [
-        'Step 1: Disconnect USB power from the Arduino board.',
-        'Step 2: Insert the 10kΩ rotary potentiometer into the breadboard so its 3 pins occupy separate rows (e.g., rows 5, 6, 7).',
-        'Step 3: Connect potentiometer Pin 1 to Arduino 5V, Pin 3 to Arduino GND, and center wiper Pin 2 to Arduino Analog Pin A0.',
-        'Step 4: On the opposite side of the breadboard, assemble the LDR voltage divider: place the LDR between 5V and row 20.',
-        'Step 5: Place a 10kΩ fixed resistor (Brown-Black-Orange-Gold) from row 20 to the breadboard GND rail.',
-        'Step 6: Connect a jumper wire from row 20 (the junction between LDR and 10kΩ resistor) to Arduino Analog Pin A1.',
-        'Step 7: Wire an external status LED with a 220Ω series resistor on Digital Pin 9 to serve as the automatic night-lamp.',
-        'Step 8: Connect USB, upload the sketch, and open Tools > Serial Plotter to view live analog waveforms.'
-      ],
-      successCriteria: [
-        'Turning the potentiometer knob smoothly sweeps Analog 0 from 0 to 1023 (0.0V to 5.0V).',
-        'Covering the LDR with a finger causes the Analog 1 voltage to drop significantly, illuminating the Pin 9 LED.',
-        'Serial Monitor streams formatted telemetry: `Raw: [value] | Volts: [v]V | Illuminance: [pct]% | Lamp: [ON/OFF]`.'
-      ],
-      extension: 'Program a dynamic auto-calibration loop: during the first 3 seconds of power-up, flash the LED rapidly while recording room ambient minimum and maximum light levels.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['Arduino Uno Rev3 (ATmega328P)', '10kΩ Rotary Potentiometer', 'GL5528 CdS Photoresistor'],
-      componentList: [
-        { name: 'Arduino Uno Rev3', exactVariant: 'Standard Rev3 DIP ATmega328P', quantity: 1 },
-        { name: '10kΩ Rotary Potentiometer', exactVariant: 'B10K 3-terminal single-turn', quantity: 1 },
-        { name: 'CdS Photoresistor (LDR)', exactVariant: 'GL5528 5mm (Dark: 1MΩ, 10 Lux: 10k–20kΩ)', quantity: 1 },
-        { name: 'Carbon Film Resistor', exactVariant: '10kΩ ±5%, 0.25W (Brown-Black-Orange-Gold)', quantity: 1 },
-        { name: 'Carbon Film Resistor', exactVariant: '220Ω ±5%, 0.25W (Red-Red-Brown-Gold)', quantity: 1 },
-        { name: '5mm Red Diffused LED', exactVariant: 'Vf ≈ 2.0V, If = 20mA max', quantity: 1 },
-        { name: 'Solderless Breadboard', exactVariant: '400 Tie-Point Half Size', quantity: 1 },
-        { name: 'Male-to-Male Jumper Wires', exactVariant: '20cm 24AWG copper', quantity: 7 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/potentiometer_analog_a0.svg',
-      schematic: 'Arduino 5V ──────[ Pot Pin 1 ]──[ Pin 2 Wiper ➔ A0 ]──[ Pot Pin 3 ]────── Arduino GND\nArduino 5V ──────[ LDR Photoresistor ]──┬──[ 10kΩ Resistor ]────────────── Arduino GND\n                                        └── ➔ Arduino Analog Pin A1\nArduino Pin 9 ───[ 220Ω Resistor ]──────[ LED Anode | Cathode ]───────────── Arduino GND',
-      wireTable: [
-        { from: 'Arduino 5V Pin', to: 'Breadboard Red (+) Power Rail', wireOrPolarityNote: 'Main System 5V Bus (Red)' },
-        { from: 'Arduino GND Pin', to: 'Breadboard Blue (-) Ground Rail', wireOrPolarityNote: 'Main System GND Bus (Black)' },
-        { from: 'Breadboard Red (+) Rail', to: 'Potentiometer Outer Terminal 1', wireOrPolarityNote: 'Potentiometer VCC (Red)' },
-        { from: 'Breadboard Blue (-) Rail', to: 'Potentiometer Outer Terminal 3', wireOrPolarityNote: 'Potentiometer GND (Black)' },
-        { from: 'Potentiometer Center Wiper 2', to: 'Arduino Analog Pin A0', wireOrPolarityNote: 'Analog Channel 0 Signal (Yellow)' },
-        { from: 'Breadboard Red (+) Rail', to: 'LDR Leg 1', wireOrPolarityNote: 'LDR Power Connection' },
-        { from: 'LDR Leg 2 (Row 20)', to: '10kΩ Resistor Leg 1 (Row 20)', wireOrPolarityNote: 'Voltage Divider Midpoint Node' },
-        { from: '10kΩ Resistor Leg 2', to: 'Breadboard Blue (-) Rail', wireOrPolarityNote: 'Voltage Divider Ground Leg' },
-        { from: 'Breadboard Row 20 (Node)', to: 'Arduino Analog Pin A1', wireOrPolarityNote: 'Analog Channel 1 Signal (Green)' },
-        { from: 'Arduino Digital Pin 9', to: 'Breadboard Row 25 (220Ω Resistor)', wireOrPolarityNote: 'Night-Lamp Output Signal (Blue)' },
-        { from: 'LED Cathode (Row 26)', to: 'Breadboard Blue (-) Rail', wireOrPolarityNote: 'LED Ground Return (Black)' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Ensure Arduino is fully powered down before inserting analog components.',
-        '2. Plug the potentiometer into rows 5, 6, and 7 on the left side of the breadboard.',
-        '3. Wire the potentiometer outer legs to the +5V and GND power rails.',
-        '4. Connect the center wiper (row 6) to Arduino Analog Pin A0.',
-        '5. On the right side of the breadboard, insert the LDR between +5V and row 20.',
-        '6. Insert the 10kΩ resistor (Brown-Black-Orange) between row 20 and GND rail to complete the voltage divider.',
-        '7. Connect a jumper wire from row 20 to Arduino Analog Pin A1.',
-        '8. Wire the 220Ω resistor and Red LED from Digital Pin 9 to GND.',
-        '9. Re-verify that the 5V and GND rails are never shorted together.',
-        '10. Plug in the USB cable and upload the sketch.'
-      ],
-      powerAndSafetyChecks: [
-        'Confirm the potentiometer center wiper connects to Analog Pin A0, NOT to +5V or GND directly.',
-        'Verify that the LDR voltage divider has its 10kΩ resistor tied firmly to Ground — a missing ground creates a floating input.',
-        'Confirm that the LED has its 220Ω resistor in series to prevent drawing more than 20mA.'
-      ],
-      testCases: [
-        { action: 'Turn potentiometer knob fully counter-clockwise', expectedResult: 'Analog A0 reads 0 (0.00V ± 0.05V)' },
-        { action: 'Turn potentiometer knob fully clockwise', expectedResult: 'Analog A0 reads 1023 (5.00V ± 0.05V)' },
-        { action: 'Cover LDR with finger to simulate darkness', expectedResult: 'Analog A1 drops below 300, and Pin 9 LED turns ON automatically' }
-      ]
-    },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - Analog Observatory & Phototaxis Controller
-// Class: BEGINNER 04 - Sensors as Inputs: Analog Readings & Voltage Dividers
-// Reads 10-bit ADC channels (A0 Potentiometer, A1 LDR Voltage Divider),
-// converts to physical Volts, and controls an automatic night-lamp with hysteresis.
-
-const int POT_PIN   = A0; // Potentiometer center wiper on Analog 0
-const int LDR_PIN   = A1; // LDR voltage divider junction on Analog 1
-const int LAMP_PIN  = 9;  // Night-lamp indicator LED on Digital Pin 9
-
-// Threshold settings with hysteresis to prevent flickering
-const int DARK_THRESHOLD_ON  = 350; // Lamp turns ON when light falls below 350
-const int DARK_THRESHOLD_OFF = 420; // Lamp turns OFF when light rises above 420 (70-count hysteresis)
-bool lampState = false;
-
-void setup() {
-  pinMode(LAMP_PIN, OUTPUT);
-  digitalWrite(LAMP_PIN, LOW);
-
-  // Initialize hardware serial telemetry at 9600 baud
-  Serial.begin(9600);
-  delay(100);
-  Serial.println("==============================================");
-  Serial.println("  ROBOBEE INNOVATORS - 10-BIT ADC OBSERVATORY ");
-  Serial.println("  Channel A0: Potentiometer | Channel A1: LDR  ");
-  Serial.println("==============================================");
-}
-
-void loop() {
-  // Read 10-bit ADC values (0 to 1023)
-  int rawPot = analogRead(POT_PIN);
-  int rawLdr = analogRead(LDR_PIN);
-
-  // Convert raw 10-bit integers into physical engineering Volts
-  // Formula: Volts = (ADC_reading / 1023.0) * 5.0V
-  float potVolts = (rawPot / 1023.0) * 5.0;
-  float ldrVolts = (rawLdr / 1023.0) * 5.0;
-
-  // Map LDR reading into an intuitive 0% to 100% light level
-  int lightPercent = map(rawLdr, 100, 900, 0, 100);
-  lightPercent = constrain(lightPercent, 0, 100);
-
-  // Autonomous Night-Lamp Logic with Threshold Hysteresis
-  if (rawLdr < DARK_THRESHOLD_ON && !lampState) {
-    lampState = true;
-    digitalWrite(LAMP_PIN, HIGH);
-    Serial.println(">>> [EVENT] Ambient darkness detected. Night-lamp ACTIVATED.");
-  } else if (rawLdr > DARK_THRESHOLD_OFF && lampState) {
-    lampState = false;
-    digitalWrite(LAMP_PIN, LOW);
-    Serial.println(">>> [EVENT] Ambient illumination restored. Night-lamp DEACTIVATED.");
-  }
-
-  // Stream formatted telemetry packet for Serial Plotter / Monitor
-  Serial.print("POT_ADC:");
-  Serial.print(rawPot);
-  Serial.print(" LDR_ADC:");
-  Serial.print(rawLdr);
-  Serial.print(" LDR_Volts:");
-  Serial.print(ldrVolts, 2);
-  Serial.print(" Light%:");
-  Serial.print(lightPercent);
-  Serial.print(" Lamp:");
-  Serial.println(lampState ? 100 : 0);
-
-  delay(100); // 10 Hz sampling rate
-}`,
-      pinMap: { 
-        'A0': 'Potentiometer center wiper (0.0V–5.0V input)', 
-        'A1': 'LDR / 10kΩ voltage divider midpoint tap',
-        'Pin 9': 'Automatic Night-Lamp LED Anode via 220Ω resistor',
-        '5V': 'Sensor distribution power bus',
-        'GND': 'Common Ground return bus'
+    "courseId": "beginner",
+    "sequence": 5,
+    "code": "BEGINNER 05",
+    "title": "LDR Light Sensor, PIR HC-SR501 Motion Vault Alarm & Auto Streetlight",
+    "subtitle": "Photoresistor semiconductor physics, analog voltage dividers, pyroelectric infrared (PIR) thermal detection, and smart municipal & security systems.",
+    "promise": "I can construct analog voltage dividers with photoresistors, interface PIR motion sensors, and build an automated night streetlight and intruder security alarm.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01",
+      "Beginner 02",
+      "Beginner 03"
+    ],
+    "outcomes": [
+      "Explain the semiconductor physics of Light-Dependent Resistors (LDR) and photon-excited conductivity.",
+      "Construct a precision analog voltage divider using a 10kΩ fixed resistor and calculate output voltage curves.",
+      "Interface an HC-SR04/HC-SR501 Pyroelectric Infrared (PIR) sensor, adjusting sensitivity and re-trigger delay potentiometers.",
+      "Implement threshold comparison logic (if / else) with hysteresis to prevent streetlamp chatter at dusk.",
+      "Assemble and program a dual-mode municipal station: automatically dims on streetlights when dark, and arms an audible security vault alarm when motion is detected."
+    ],
+    "vocabulary": [
+      {
+        "term": "Light-Dependent Resistor (LDR)",
+        "plainMeaning": "A sensor whose electrical resistance drops dramatically when light hits its wavy face.",
+        "technicalMeaning": "A cadmium sulfide (CdS) photoconductive cell where incident photons excite valence electrons into the conduction band, decreasing electrical resistance from ~1 MΩ (dark) to ~1 kΩ (bright)."
       },
-      setupAndUpload: [
-        '1. Connect Arduino Uno via USB cable.',
-        '2. In the Arduino IDE, verify Tools > Board is "Arduino Uno".',
-        '3. Click Upload. Once complete, open Tools > Serial Plotter (Ctrl+Shift+L) to see multiple live color graphs.',
-        '4. Alternatively, open Tools > Serial Monitor at 9600 baud to inspect numeric voltage calculations.'
-      ],
-      explanations: [
-        'analogRead(pin): Initiates the Successive Approximation ADC, returning a 10-bit integer between 0 and 1023 proportional to input voltage.',
-        'float potVolts = (raw / 1023.0) * 5.0: Calibrates the raw integer into true physical Volts (4.887mV per step).',
-        'map(val, in_min, in_max, out_min, out_max): Performs linear mathematical interpolation to scale raw sensor readings into percentage values.',
-        'Hysteresis Check: Using separate thresholds for turning ON (350) and turning OFF (420) prevents rapid high-frequency relay or LED chattering.'
-      ],
-      expectedResult: 'Serial Plotter renders multi-colored waveform lines. Turning the potentiometer moves POT_ADC from 0 to 1023. Shading the LDR drops LDR_ADC and switches the Lamp line from 0 to 100.',
-      caveats: [
-        'Analog pins on the Arduino Uno (A0–A5) do not require a pinMode() declaration in setup().',
-        'Floating analog pins pick up environmental 50Hz noise and fluctuate wildly if wires are loose.'
-      ],
-      tweakTip: 'Change DARK_THRESHOLD_ON to match your specific room ambient light levels by reading the baseline in the Serial Monitor!'
-    },
-    troubleshooting: [
-      { 
-        symptom: 'analogRead(A0) stays permanently locked at 1023 regardless of potentiometer rotation.', 
-        checks: [
-          'Step 1: Check the Ground connection on the potentiometer outer leg.',
-          'Step 2: If the GND leg is disconnected, the entire resistive track floats up to +5V, causing the wiper to read 1023 everywhere.',
-          'Step 3: Verify the breadboard ground rail is connected back to an Arduino GND pin.'
-        ], 
-        explanation: 'Without a complete return circuit to Ground, no electric current flows through the resistive track, leaving the wiper pulled up to VCC.' 
+      {
+        "term": "Voltage Divider",
+        "plainMeaning": "Two resistors in a row that split a 5V supply into a smaller measurable voltage based on their resistance ratio.",
+        "technicalMeaning": "A linear circuit that produces an output voltage proportional to the input: Vout = Vin × (R2 / (R1 + R2))."
       },
-      { 
-        symptom: 'analogRead(A1) reading barely changes when shading or illuminating the LDR.', 
-        checks: [
-          'Step 1: Inspect the voltage divider circuit: is the 10kΩ fixed resistor present between A1 and GND?',
-          'Step 2: If the fixed resistor is missing, you have an open circuit rather than a voltage divider.',
-          'Step 3: Confirm you are using a 10kΩ resistor (Brown-Black-Orange), NOT a 220Ω resistor (which would dominate the LDR).'
-        ], 
-        explanation: 'A voltage divider requires two comparable resistances. If R2 is too small (e.g., 220Ω vs 10,000Ω LDR), nearly all voltage drops across the LDR, leaving V_out stuck near 0V.' 
+      {
+        "term": "PIR Sensor (Passive Infrared)",
+        "plainMeaning": "A motion sensor that detects the moving body heat of humans and warm-blooded animals.",
+        "technicalMeaning": "A pyroelectric sensor containing two infrared-sensitive crystalline elements behind a segmented Fresnel lens detecting differential thermal radiation."
       },
-      { 
-        symptom: 'The night-lamp LED flickers and buzzes rapidly when light is near the threshold.', 
-        checks: [
-          'Step 1: Check your software threshold code — are you using a single threshold like `if (val < 400)` for both turning ON and OFF?',
-          'Step 2: Implement hysteresis: set the ON threshold to 350 and the OFF threshold to 420.'
-        ], 
-        explanation: 'Natural analog sensor noise causes readings to fluctuate by ±3 to ±8 counts. Without a hysteresis deadband, values hovering on the boundary toggle the output on every loop iteration.' 
+      {
+        "term": "Hysteresis",
+        "plainMeaning": "Having different ON and OFF threshold points so a streetlight does not flicker crazily when sunset is right on the edge.",
+        "technicalMeaning": "The dependence of the state of a system on its history, creating a dead-band zone between switching thresholds to prevent oscillation."
       },
-      { 
-        symptom: 'Analog readings jump erratically whenever another pin turns ON.', 
-        checks: [
-          'Step 1: Check your power source — are you powering a motor or heavy load from the same 5V pin?',
-          'Step 2: Add a 0.1µF ceramic decoupling capacitor between the sensor 5V rail and GND near the breadboard.'
-        ], 
-        explanation: 'Sudden load spikes pull down the analog reference voltage rail, causing the ADC to read artificial voltage shifts.' 
+      {
+        "term": "Latching Security Alarm",
+        "plainMeaning": "An alarm that stays sounding once triggered until an authorized human resets it.",
+        "technicalMeaning": "A bistable software state that transitions to an active alarm latch condition and ignores further sensor inputs until explicitly cleared."
       }
     ],
-    checksForUnderstanding: [
-      'What voltage does a reading of 512 represent on an Arduino Uno powered by a 5.0V supply?',
-      'Why is a voltage divider mandatory when interfacing resistive sensors like LDRs or thermistors?',
-      'How does software hysteresis protect mechanical relays and robot actuators from wearing out?'
+    "teacherPrep": [
+      "Prepare LDR photoresistors, 10kΩ fixed resistors, HC-SR501 PIR motion sensor modules, and white LEDs on student trays.",
+      "Demonstrate how to set the PIR jumper to \"H\" (repeatable trigger mode)."
     ],
-    exitTicket: [
-      { 
-        question: 'Calculate the expected voltage at Analog Pin A1 when an LDR with resistance R_ldr = 15kΩ is paired with a fixed 10kΩ resistor across a 5.0V supply.', 
-        hint: 'Use the voltage divider formula: V_out = V_in × (R_fixed / [R_ldr + R_fixed]).',
-        rubricOrSampleReasoning: 'V_out = 5.0V × (10,000 / [15,000 + 10,000]) = 5.0V × (10,000 / 25,000) = 5.0V × 0.40 = 2.00 Volts. The ADC reading would be (2.00V / 5.0V) × 1023 ≈ 409.' 
+    "verifiedMaterials": [
+      "Arduino Uno R3 with USB cable",
+      "Solderless breadboard",
+      "1x LDR Photoresistor (5mm CdS)",
+      "1x 10kΩ Fixed Resistor (Brown-Black-Orange)",
+      "1x HC-SR501 PIR Motion Sensor Module",
+      "1x High-Brightness White LED (Streetlight) with 220Ω resistor",
+      "1x Piezo Buzzer (Alarm Siren)",
+      "8x Male-to-Male and 3x Female-to-Male jumper wires"
+    ],
+    "safetyNotes": [
+      "HC-SR501 PIR sensors require 30–60 seconds after power-up to stabilize their internal thermal reference before readings are reliable.",
+      "Do not touch the white dome Fresnel lens with sharp metal tools."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Dim the classroom lights: a model city streetlight automatically glows bright! Then wave a hand near the bank vault box: an emergency security siren blares instantly!",
+        "studentAction": "Observe the light and motion triggers. Inspect the wavy serpentine pattern on the LDR sensor and the faceted dome on the PIR sensor."
       },
-      { 
-        question: 'What is the voltage resolution (step size) of a 10-bit ADC operating with a 5.0V reference, and how many distinct values can it return?', 
-        hint: 'Calculate 2^10 and divide 5.0V by that number of steps.',
-        rubricOrSampleReasoning: 'A 10-bit ADC has 2^10 = 1,024 discrete steps (returning integers from 0 to 1023). The voltage step size is 5.0V / 1024 = 0.00488 Volts (4.88 millivolts per step).' 
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Explain the Voltage Divider formula Vout = 5V * (10k / (R_ldr + 10k)). Teach PIR differential heat sensing and Fresnel lenses.",
+        "studentAction": "Open the Sensor Observatory simulator: adjust ambient light sliders and watch the analog voltage divider curve shift."
       },
-      { 
-        question: 'Why does a potentiometer not require an external fixed resistor, whereas an LDR does?', 
-        hint: 'Consider how many terminals each component has and what is inside them.',
-        rubricOrSampleReasoning: 'A potentiometer is already a complete 3-terminal voltage divider internally — its resistive track provides both R1 and R2 with the wiper tapping the junction. An LDR is only a 2-terminal variable resistor, so an external fixed resistor is required to complete the voltage divider to Ground.' 
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide wiring: LDR and 10kΩ divider to A0; PIR VCC to 5V, GND to GND, OUT to D2; White LED to D9 (PWM); Buzzer to D8.",
+        "studentAction": "Wire the complete dual municipal and security circuit. Check connections with partner before power-up."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through analogRead(A0) thresholding, digitalRead(2) PIR motion detection, and hysteresis logic to prevent light fluttering.",
+        "studentAction": "Upload code. Open Serial Plotter. Cover the LDR with a finger to simulate nightfall; wave hand to trigger security alarm siren."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"Laser Vault Heist Challenge\": can you sneak past the PIR sensor without setting off the alarm?",
+        "studentAction": "Test sensor sensitivity limits, demonstrate calibrated threshold switching, and complete the Exit Ticket."
       }
     ],
-    differentiation: {
-      support: [
-        'Provide a printed voltage divider chart showing V_out curves for different LDR resistance values.',
-        'Use the Serial Plotter with fixed min/max dummy prints (0 and 1023) to keep the auto-scaling window steady.'
-      ],
-      extension: [
-        'Mission: Build a Light-Seeking Phototaxis Sensor Bar — connect two LDRs (Left on A1, Right on A2) and compute an error differential (left - right) to steer a virtual rover toward light.',
-        'Mission: Implement an automatic baseline zeroing routine that calibrates to dark upon a button press.'
-      ],
-      offlineOption: [
-        'Plot a manual graph on grid paper showing LDR resistance (Y-axis) versus distance from a desk lamp (X-axis) using multimeter measurements.'
+    "concepts": [
+      {
+        "title": "Why Microcontrollers Cannot Read Resistance Directly",
+        "explanation": "Microcontrollers can only measure VOLTAGE, never resistance! A photoresistor changes resistance (Ohms), not voltage. By putting the LDR in series with a fixed 10kΩ resistor across 5V and GND, the changing resistance creates a changing voltage drop at the midpoint that the ADC can read.",
+        "instructorNote": "Write the formula on the board: when LDR is bright (1kΩ), Vout = 5V * (10k / 11k) ≈ 4.5V; when dark (100kΩ), Vout = 5V * (10k / 110k) ≈ 0.45V."
+      },
+      {
+        "title": "How PIR Detects Human Body Heat",
+        "explanation": "Human bodies emit infrared radiation at a wavelength of around 10 micrometers. The PIR sensor has two pyroelectric windows side by side. When a human walks past, one window sees the heat before the other, creating a differential voltage pulse that triggers the output pin.",
+        "instructorNote": "Point out the white dome—it is a Fresnel lens that splits the room into dozens of infrared detection zones."
+      },
+      {
+        "title": "Hysteresis & Dusk Anti-Flicker Logic",
+        "explanation": "At sunset, light fluctuates right around the threshold. If threshold is 500, a light value of 499 turns the lamp ON, but its own light might bounce back and raise it to 501, turning it OFF! Hysteresis uses two thresholds: turn ON below 450, and turn OFF only above 550.",
+        "instructorNote": "Explain that all smart thermostats and streetlights use hysteresis to protect lamps and motors from rapid cycling."
+      }
+    ],
+    "visualizerId": "sensor_observatory_sim",
+    "project": {
+      "name": "Smart Automated Streetlight & Bank Vault Intrusion Alarm",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Functional LDR + 10kΩ voltage divider reading ambient light levels on Pin A0.",
+        "HC-SR501 PIR sensor detecting human motion reliably on Digital Pin 2.",
+        "Automated PWM streetlamp fading on at dusk, and siren alarm latching upon motion detection."
       ]
     },
-    nextLessonId: 'beg-05',
-    nextLessonTeaser: 'Beginner 05: Program Logic & Debugging — The Hardware Reaction-Time Game. Ditch blocking delay() commands! Master non-blocking millis() state machines, random number generation, and microsecond human reaction measurement!',
-    sources: [
-      { title: 'Arduino Reference: analogRead()', url: 'https://docs.arduino.cc/language-reference/en/functions/analog-io/analogRead/' },
-      { title: 'Microchip ATmega328P Datasheet: 10-bit Analog-to-Digital Converter', url: 'https://www.microchip.com' }
+    "activity": {
+      "title": "Assemble, Calibrate, and Program the Municipal Security Station",
+      "steps": [
+        "Step 1: Wire LDR from 5V to breadboard row 10; wire 10kΩ resistor from row 10 to GND.",
+        "Step 2: Connect a jumper wire from row 10 (the midpoint divider) to Arduino Analog A0.",
+        "Step 3: Connect HC-SR501 PIR sensor: VCC to 5V, GND to GND, OUT to Digital Pin 2.",
+        "Step 4: Connect High-brightness White LED to Pin 9 (PWM) via 220Ω resistor to GND.",
+        "Step 5: Connect Piezo buzzer to Pin 8 and GND.",
+        "Step 6: Upload firmware; allow 30 seconds for PIR thermal stabilization.",
+        "Step 7: Cover LDR with your palm: streetlamp smoothly illuminates. Wave hand over PIR: siren blares!"
+      ],
+      "successCriteria": [
+        "LDR readings respond smoothly to changes in classroom lighting.",
+        "Streetlight turns on only when dark, without flickering or chatter.",
+        "Motion alarm detects movement within 3 meters and alerts immediately."
+      ],
+      "extension": "Add a photo-resistor light meter bar graph using 3 colored LEDs indicating Lux levels!"
+    },
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "HC-SR501 PIR Module"
+      ],
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "5mm CdS Photoresistor (LDR)",
+          "exactVariant": "Dark resistance > 1MΩ, Light < 10kΩ",
+          "quantity": 1
+        },
+        {
+          "name": "10kΩ Fixed Resistor",
+          "exactVariant": "1/4 Watt, 5% (Brown-Black-Orange)",
+          "quantity": 1
+        },
+        {
+          "name": "HC-SR501 PIR Motion Module",
+          "exactVariant": "With dual potentiometers and jumper",
+          "quantity": 1
+        },
+        {
+          "name": "White High-Brightness LED",
+          "exactVariant": "5mm clear lens, 3.2V Vf",
+          "quantity": 1
+        },
+        {
+          "name": "220 Ω Resistor",
+          "exactVariant": "1/4 Watt, 5%",
+          "quantity": 1
+        },
+        {
+          "name": "Piezo Buzzer",
+          "exactVariant": "5V passive acoustic transducer",
+          "quantity": 1
+        },
+        {
+          "name": "Jumper Wires",
+          "exactVariant": "Male-to-Male and Female-to-Male",
+          "quantity": 8
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/class1-external-blink-wiring.svg",
+      "schematic": "Divider: 5V -> LDR -> Node A0 -> 10kΩ -> GND; PIR: 5V -> VCC | GND -> GND | OUT -> D2; LED: D9 -> 220Ω -> White LED Anode | Cathode -> GND; Buzzer: D8 -> Buzzer (+) | (-) -> GND",
+      "wireTable": [
+        {
+          "from": "Arduino 5V",
+          "to": "LDR Terminal 1",
+          "wireOrPolarityNote": "Red wire — 5V Supply"
+        },
+        {
+          "from": "LDR Terminal 2 & 10kΩ Resistor",
+          "to": "Arduino Analog In A0",
+          "wireOrPolarityNote": "Yellow wire — Midpoint Voltage"
+        },
+        {
+          "from": "10kΩ Resistor Other Lead",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Ground"
+        },
+        {
+          "from": "PIR OUT Pin",
+          "to": "Arduino Digital Pin 2",
+          "wireOrPolarityNote": "Green wire — Motion trigger signal"
+        },
+        {
+          "from": "Arduino Digital Pin 9 (PWM)",
+          "to": "White LED 220Ω Resistor",
+          "wireOrPolarityNote": "Streetlight control"
+        },
+        {
+          "from": "Arduino Digital Pin 8",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Alarm Siren output"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Verify USB is disconnected.",
+        "2. Build voltage divider: LDR to 5V, 10kΩ to GND, center to A0.",
+        "3. Connect PIR sensor via Female-to-Male jumpers (VCC, OUT, GND).",
+        "4. Connect White LED to PWM Pin 9 and Buzzer to Pin 8.",
+        "5. Connect Ground rail to Arduino GND, plug in USB, and wait 30 seconds for PIR warm-up."
+      ],
+      "powerAndSafetyChecks": [
+        "Confirm PIR jumper is set to \"H\" (repeatable trigger).",
+        "Ensure 10kΩ resistor connects to GND, not 5V."
+      ],
+      "testCases": [
+        {
+          "action": "Cover LDR with black paper",
+          "expectedResult": "Analog A0 reading drops below 400; White streetlight fades on smoothly."
+        },
+        {
+          "action": "Uncover LDR to ambient classroom light",
+          "expectedResult": "Analog A0 reading rises above 600; White streetlight turns off."
+        },
+        {
+          "action": "Wave hand in front of PIR during dark mode",
+          "expectedResult": "Digital Pin 2 goes HIGH; Piezo buzzer triggers 2-tone police emergency siren."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 05: Smart Streetlight & Vault Alarm\n * Board: Arduino Uno R3 (ATmega328P)\n */\n\nconst int PIN_LDR     = A0; // LDR Voltage Divider\nconst int PIN_PIR     = 2;  // HC-SR501 PIR Motion Sensor\nconst int PIN_LIGHT   = 9;  // White Streetlight LED (PWM ~)\nconst int PIN_BUZZER  = 8;  // Security Siren Buzzer\n\n// Hysteresis Thresholds for Streetlight\nconst int DARK_THRESHOLD  = 400; // Turn light ON when darker than this\nconst int LIGHT_THRESHOLD = 550; // Turn light OFF when brighter than this\n\nbool isNight = false;\n\nvoid setup() {\n  pinMode(PIN_PIR, INPUT);\n  pinMode(PIN_LIGHT, OUTPUT);\n  pinMode(PIN_BUZZER, OUTPUT);\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE SMART STREETLIGHT & VAULT ALARM ===\");\n  Serial.println(\"Warming up PIR sensor (30 seconds)...\");\n  delay(2000); // Quick boot delay\n}\n\nvoid loop() {\n  int lightLevel = analogRead(PIN_LDR);\n  int motionDetected = digitalRead(PIN_PIR);\n\n  // Hysteresis State Machine for Streetlight\n  if (!isNight && lightLevel < DARK_THRESHOLD) {\n    isNight = true;\n    analogWrite(PIN_LIGHT, 255); // Full brightness at night\n    Serial.println(\">> NIGHT DETECTED: Streetlight ON\");\n  } else if (isNight && lightLevel > LIGHT_THRESHOLD) {\n    isNight = false;\n    analogWrite(PIN_LIGHT, 0); // Turn off during daylight\n    Serial.println(\">> DAYLIGHT DETECTED: Streetlight OFF\");\n  }\n\n  // Security Vault Alarm: Only active when night is set and motion detected\n  if (isNight && motionDetected == HIGH) {\n    Serial.println(\"!! INTRUSION ALERT: Motion in Vault !!\");\n    // Sound 2-tone alarm siren\n    for (int i = 0; i < 3; i++) {\n      tone(PIN_BUZZER, 800, 100);\n      delay(120);\n      tone(PIN_BUZZER, 1200, 100);\n      delay(120);\n    }\n  }\n\n  delay(100); // 10 Hz telemetry loop\n}\n",
+      "pinMap": {
+        "Pin A0": "LDR + 10kΩ Analog Voltage Divider input",
+        "Pin 2": "PIR Motion Sensor digital output (HIGH when body heat moves)",
+        "Pin 9": "PWM Output ~ driving White Streetlamp LED",
+        "Pin 8": "Digital Output driving Alarm Siren Buzzer"
+      },
+      "setupAndUpload": [
+        "Connect Arduino Uno via USB cable.",
+        "Select Tools -> Board -> Arduino Uno and proper COM port.",
+        "Upload sketch and wait 30 seconds for PIR thermal stabilization."
+      ],
+      "explanations": [
+        "analogRead(PIN_LDR): Samples the voltage divider node to determine ambient light level.",
+        "Hysteresis logic (DARK_THRESHOLD vs LIGHT_THRESHOLD): Prevents light from flashing on and off at sunset.",
+        "digitalRead(PIN_PIR) == HIGH: Detects moving thermal differential signatures across the pyroelectric elements.",
+        "2-tone siren loop: Alternates 800 Hz and 1200 Hz tones to create an urgent industrial alert sound."
+      ],
+      "expectedResult": "Streetlight illuminates automatically in the dark; if an intruder moves while dark, the alarm siren sounds immediately.",
+      "caveats": [
+        "HC-SR501 requires up to 60 seconds to warm up and establish its baseline thermal reading.",
+        "Adjust the left pot on the PIR for delay time and right pot for detection range (3m to 7m)."
+      ],
+      "tweakTip": "Implement a PWM smooth fade-in so the streetlight gradually ramps up over 2 seconds like modern LED municipal streetlights!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "PIR sensor triggers constantly even when nobody is moving.",
+        "checks": [
+          "Allow full 60 seconds after power-up for the pyroelectric sensor to warm up.",
+          "Check for heat sources nearby: avoid pointing the sensor directly at radiators, heaters, or open windows.",
+          "Turn the sensitivity potentiometer slightly counter-clockwise to reduce range."
+        ],
+        "explanation": "Air convection currents from heaters create thermal differentials that trigger sensitive PIR elements."
+      },
+      {
+        "symptom": "LDR values change very little between bright room and dark room.",
+        "checks": [
+          "Check resistor value: confirm the fixed resistor is 10kΩ (Brown-Black-Orange), not 220Ω.",
+          "Confirm wire to A0 connects to the junction between the LDR and resistor."
+        ],
+        "explanation": "Using a 220Ω resistor with an LDR whose minimum resistance is 1kΩ produces negligible voltage change."
+      },
+      {
+        "symptom": "Streetlight flickers rapidly when light is near threshold.",
+        "checks": [
+          "Increase the gap between DARK_THRESHOLD (e.g. 400) and LIGHT_THRESHOLD (e.g. 550).",
+          "Ensure the streetlight LED is not pointing directly at its own LDR sensor (optical feedback loop)."
+        ],
+        "explanation": "If light from the LED strikes the LDR, it tricks itself into thinking daylight has returned."
+      }
     ],
-    assetCredits: [
-      { asset: 'Potentiometer Analog Wiring Illustration', creator: 'RoboBEE Innovators Academy', license: 'Proprietary Educational Architecture', sourceUrl: 'team_info' }
+    "checksForUnderstanding": [
+      "Why is a fixed 10kΩ resistor needed in series with the LDR to measure light?",
+      "What is hysteresis and why is it important in automated lighting systems?"
+    ],
+    "exitTicket": [
+      {
+        "question": "Calculate Vout of a voltage divider when Vin = 5.0V, R1 (LDR) = 40kΩ (dim room), and R2 (fixed) = 10kΩ.",
+        "rubricOrSampleReasoning": "Vout = Vin × (R2 / (R1 + R2)) = 5.0V × (10k / (40k + 10k)) = 5.0V × (10 / 50) = 1.0 Volt. The ADC will read approximately (1.0 / 5.0) × 1023 ≈ 204."
+      },
+      {
+        "question": "How does an HC-SR501 PIR sensor detect human movement without emitting any light or sound of its own?",
+        "rubricOrSampleReasoning": "It is a PASSIVE sensor. It absorbs natural infrared thermal radiation (body heat ~10µm) emitted by warm bodies. When a person moves across the Fresnel lens, the differential heat across two pyroelectric crystals triggers an output pulse."
+      },
+      {
+        "question": "What happens if you set DARK_THRESHOLD to 500 and LIGHT_THRESHOLD to 500 without hysteresis?",
+        "rubricOrSampleReasoning": "Any tiny fluctuation or sensor noise around 500 will cause the light to flicker on and off rapidly and erratically (hunting/chatter), potentially damaging the lamp or driving circuit."
+      }
+    ],
+    "differentiation": {
+      "support": [
+        "Provide breadboards with pre-wired voltage dividers so students focus on calibration and code."
+      ],
+      "extension": [
+        "Program an intelligent timeout that keeps the streetlight on for 15 seconds after motion ceases."
+      ],
+      "offlineOption": [
+        "Simulate the vault alarm in the interactive web portal simulator."
+      ]
+    },
+    "nextLessonId": "beg-06",
+    "nextLessonTeaser": "Class 06: HC-SR04 Ultrasonic Sonar + SG90 Servo Radar Barrier & Distance Bar! Learn acoustic echolocation and motorized boom gates.",
+    "sources": [
+      {
+        "title": "HC-SR501 Pyroelectric Infrared Sensor User Manual",
+        "url": "https://sparkfun.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "LDR & PIR Security Station Wiring Diagram",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
     ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
-  // -----------------------------------------------------------------------
-  // BEGINNER 05: PROGRAM LOGIC & DEBUGGING (REACTION GAME)
-  // -----------------------------------------------------------------------
   {
-    id: 'beg-05',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-prog-program-structure"],
-      lookUpWhileBuilding: ["fg-prog-millis-vs-delay", "fg-testing-fmea-debugging"],
-      goDeeper: ["fg-arduino-microcontroller-vs-computer"]
-    },
-    courseId: 'beginner',
-    sequence: 5,
-    code: 'BEGINNER 05',
-    title: 'Program Logic & Debugging: Reaction-Time Game',
-    promise: 'By the end of this masterclass, you will understand non-blocking hardware timing with millis(), seed pseudo-random number generators with floating analog noise, build a high-precision electronic reflex timer, and practice the scientific single-variable debugging method.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01', 'Beginner 02', 'Beginner 03', 'Beginner 04'],
-    outcomes: [
-      'Contrast blocking delay() with non-blocking time tracking using the internal 32-bit hardware timer via millis().',
-      'Harvest atmospheric electrical noise from an unconnected floating analog pin to seed the pseudo-random generator.',
-      'Construct a 4-state Finite State Machine (Standby, Random Wait, Go Stimulus, Reaction Evaluation).',
-      'Implement falling-edge button detection to reliably catch false starts before the stimulus triggers.',
-      'Apply the single-variable scientific debugging protocol to isolate hardware faults from algorithmic logic bugs.'
-    ],
-    vocabulary: [
-      { term: 'millis()', plainMeaning: 'A built-in hardware stopwatch counting milliseconds since the Arduino powered on.', technicalMeaning: 'A function that returns the number of milliseconds passed since the board began executing the program, tracked by Timer0.' },
-      { term: 'Blocking Code', plainMeaning: 'Commands like delay() that freeze the robot brain so it cannot respond to sensors.', technicalMeaning: 'Execution that halts CPU instruction flow, preventing polling of inputs or servicing real-time events.' },
-      { term: 'Non-Blocking Code', plainMeaning: 'Smart timing that checks the clock on the fly without stopping robot tasks.', technicalMeaning: 'Asynchronous event-loop design that compares timestamps to determine when tasks should execute without stalling.' },
-      { term: 'Pseudo-Random Number Generator (PRNG)', plainMeaning: 'A mathematical formula that mimics randomness but repeats if not given a fresh seed.', technicalMeaning: 'A deterministic algorithm producing a sequence of numbers approximating the properties of random numbers.' },
-      { term: 'Random Seed', plainMeaning: 'A starting number plucked from physical static noise to make random sequences unpredictable.', technicalMeaning: 'An initial value provided to a PRNG to initialize its internal mathematical state register.' },
-      { term: 'Finite State Machine (FSM)', plainMeaning: 'A program organized into clearly labeled modes (like Waiting, Running, Winner).', technicalMeaning: 'A computational model consisting of a finite number of discrete states, transitions, and inputs.' },
-      { term: 'Scientific Debugging', plainMeaning: 'Changing only ONE single wire or line of code at a time to prove the root cause.', technicalMeaning: 'A systematic method of isolating faults by formulating single-variable hypotheses and running empirical tests.' }
-    ],
-    teacherPrep: ['Verify pushbuttons, LEDs, 220Ω resistors, and breadboards; test Serial Monitor reaction tester sketch at 9600 baud.'],
-    verifiedMaterials: ['Arduino Uno Rev3 DIP', '4-Pin Tactile Pushbutton', '5mm Diffused Red LED', '220Ω 1/4W Resistor', 'Half-size breadboard', 'Solid-core jumper wires'],
-    safetyNotes: ['Never short digital output pins directly to 5V or Ground. Ensure button is wired with INPUT_PULLUP to avoid shorting the power rail.'],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Run a live reflex showdown on the projector: Have two student volunteers compete to react to a sudden visual flash. Point out millisecond human reaction limits (~200ms).', 
-        studentAction: 'Predict the physical speed limit of human nerve conduction from visual eye input to thumb muscle action.' 
-      },
-      { 
-        segment: '10–25m Logic', 
-        minutes: 15, 
-        teacherAction: 'Diagram the 4-state Finite State Machine on the whiteboard. Explain why delay() makes false-start detection impossible and introduce millis().', 
-        studentAction: 'Trace state transitions and evaluate what happens if a player presses the button prematurely during the random delay.' 
-      },
-      { 
-        segment: '25–50m Build', 
-        minutes: 25, 
-        teacherAction: 'Guide circuit breadboard construction: Stimulus LED on Pin 13, Response Button on Pin 2 with INPUT_PULLUP. Seed PRNG with analogRead(A0).', 
-        studentAction: 'Assemble hardware, upload reaction game, and record 5 competitive reaction rounds against a lab partner.' 
-      },
-      { 
-        segment: '50–60m Debug', 
-        minutes: 10, 
-        teacherAction: 'Introduce an intentional bug (e.g. inverted button logic or missing randomSeed) and model the scientific debugging protocol.', 
-        studentAction: 'Diagnose the bug by testing one hypothesis at a time and submit the formative exit ticket.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. The Fatal Flaw of Blocking Delays (delay() vs Real-Time Sensing)',
-        explanation: 'When an embedded engineer calls `delay(2000)`, the microcontroller’s Arithmetic Logic Unit (ALU) enters a hard busy-wait loop, executing millions of useless "no-operation" (NOP) clock cycles. During those two seconds, the robot is completely deaf and blind: it cannot read incoming ultrasonic pulses, cannot detect boundary lines, and cannot see an emergency stop button being pressed! In mission-critical robotics, blocking delays are strictly forbidden. Systems must instead use time-based polling using hardware counter registers.',
-        instructorNote: 'Compare delay() to sleeping with noise-canceling headphones on: the world keeps moving, but you miss every warning signal!'
-      },
-      {
-        title: '2. Hardware Timers & The Internal Clock with millis()',
-        explanation: 'Inside the ATmega328P microcontroller, a dedicated silicon counter called Timer0 runs continuously in the background, clocked by the 16MHz quartz crystal. Every 1024 microseconds, Timer0 triggers a hardware interrupt that increments an internal 32-bit `unsigned long` memory counter. Calling `millis()` simply reads this counter without halting CPU execution. Because an unsigned long is 32 bits ($2^{32} - 1$), the counter can track up to 4,294,967,295 milliseconds—which is approximately 49.7 days of continuous operation before rolling over to zero!',
-        instructorNote: 'Show students the difference between int (16-bit, rolls over at 32,767 ms = 32 seconds!) and unsigned long (32-bit, lasts 49.7 days).'
-      },
-      {
-        title: '3. Pseudo-Random Number Generation & Analog Noise Seeding',
-        explanation: 'Computers are deterministic logic machines: given the exact same input, they will calculate the exact same output every single time. A standard `random(2000, 5000)` function uses a mathematical Linear Congruential Generator (PRNG) that produces an identical sequence of numbers every time the Arduino powers on! To make the game truly unpredictable, we must inject true physical entropy. We do this by calling `randomSeed(analogRead(A0))` during `setup()`. Because analog pin A0 has no wire connected to it, it acts as a microscopic radio antenna, picking up floating electromagnetic noise from the room to seed the generator.',
-        instructorNote: 'Demonstrate to students that without randomSeed(), the LED illuminates after the exact same number of seconds every single time the reset button is pressed.'
-      },
-      {
-        title: '4. Finite State Machines (FSM) in Game & Robotic Control',
-        explanation: 'Complex robotics behavior should never be written as deeply nested IF/ELSE spaghettis. Instead, professional systems use Finite State Machines (FSMs). An FSM divides the system into clear, mutually exclusive behavioral states: STATE_IDLE (waiting for round to start), STATE_RANDOM_WAIT (suspense period), STATE_STIMULUS_ACTIVE (LED lit, clock running), STATE_RESULT_DISPLAY (calculating score), and STATE_FALSE_START_PENALTY (caught cheating). The code executes only the logic appropriate to the active state and transitions smoothly between them.',
-        instructorNote: 'Draw the state bubbles on the board with arrows showing the triggers that cause transitions.'
-      },
-      {
-        title: '5. Scientific Single-Variable Debugging Protocol',
-        explanation: 'When a robot or electronic circuit fails to work, novice students often panic and change five things at once: moving wires, editing variables, swapping pins, and modifying equations. This haphazard approach makes debugging impossible because even if the circuit begins working, you have no idea what fixed it—or worse, you introduced three new hidden bugs! The Scientific Single-Variable Method requires: 1. Formulate a single falsifiable hypothesis; 2. Change exactly ONE variable; 3. Run the test and record empirical results; 4. Revert the change if it did not resolve the symptom.',
-        instructorNote: 'Teach the debugging mantra: "Isolate the symptom, form a hypothesis, test ONE variable, verify empirically."'
-      },
-      {
-        title: '6. Edge Detection vs Level Detection in User Inputs',
-        explanation: 'When reading a tactile button, there is a fundamental difference between Level Detection and Edge Detection. Level detection checks whether the pin is currently LOW at the instantaneous moment the code reads it (`digitalRead(pin) == LOW`). Edge detection monitors for the exact moment of state transition: from HIGH to LOW (Falling Edge) or from LOW to HIGH (Rising Edge). By storing the button’s previous state (`previousButtonState`), the code can detect the exact millisecond the player presses down, preventing repeated triggering if the button remains held down.',
-        instructorNote: 'Show how checking button states in a fast loop without edge detection would trigger a score 10,000 times a second!'
-      }
-    ],
-    visualizerId: 'reaction_game_sim',
-    project: {
-      name: 'High-Precision Reflex Timer & Reaction Game',
-      deliverableType: 'code_artifact',
-      successEvidence: [
-        'Breadboard circuit with Stimulus LED and Tactile Response Button wired with INPUT_PULLUP.',
-        'Randomized wait period (2000ms–5000ms) seeded with floating analog antenna noise.',
-        'Serial Monitor reporting millisecond reaction score and instantaneous false-start penalty detection.'
+    "id": "beg-06",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-comp-hc-sr04",
+        "fg-board-uno-anatomy"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-electronics-breadboards",
+        "fg-prog-program-structure"
+      ],
+      "goDeeper": [
+        "fg-testing-fmea-debugging",
+        "fg-safety-lab-code"
       ]
     },
-    activity: {
-      title: 'Assemble, Program, and Calibrate the Reflex Game',
-      steps: [
-        'Step 1: Wire the Red Stimulus LED to Arduino Pin 13 through a 220Ω series resistor to GND.',
-        'Step 2: Wire the 4-pin momentary pushbutton across breadboard trench, connecting Pin 2 to one leg and GND to the diagonal leg.',
-        'Step 3: In setup(), enable internal pull-up resistor on Pin 2 and seed the PRNG using analogRead(A0).',
-        'Step 4: Upload the embedded C++ sketch and open the Serial Monitor at 9600 baud.',
-        'Step 5: Run 5 competitive rounds with your lab partner, noting reaction times and testing false-start interception.',
-        'Step 6: Complete the single-variable debugging challenge by diagnosing an intentional code bug.'
-      ],
-      successCriteria: [
-        'Game reliably measures reaction times between 150ms and 500ms.',
-        'Pressing the button before the LED illuminates immediately aborts the round with a false-start penalty message.'
-      ],
-      extension: 'Add a high-score persistence variable that announces a new "Academy Reflex Record" in the Serial Monitor.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['Arduino Uno R3 DIP (ATmega328P)', 'Half-Size Solderless Breadboard (400 tie-points)'],
-      componentList: [
-        { name: 'Arduino Uno Rev3', exactVariant: 'Standard Rev3 DIP ATmega328P', quantity: 1 },
-        { name: 'Tactile Pushbutton', exactVariant: '6x6mm 4-pin momentary tact switch', quantity: 1 },
-        { name: '5mm Red Diffused LED', exactVariant: 'Vf ≈ 2.0V, 20mA max, 625nm wavelength', quantity: 1 },
-        { name: 'Carbon Film Resistor', exactVariant: '220Ω ±5%, 0.25W (Red-Red-Brown-Gold)', quantity: 1 },
-        { name: 'Half-Size Breadboard', exactVariant: '400 Tie-Point Breadboard with Power Rails', quantity: 1 },
-        { name: 'Jumper Wires', exactVariant: '20cm 24AWG Male-to-Male copper jumpers', quantity: 4 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/reaction_game_wiring.svg',
-      schematic: 'Arduino Pin 13 ──[ 220Ω ]──[ LED Anode | Cathode ]── Arduino GND\nArduino Pin 2 ──[ Tactile Switch NO ]── Arduino GND (Internal Pull-Up Active)\nArduino Pin A0 (Unconnected Antenna for PRNG noise seed)',
-      wireTable: [
-        { from: 'Arduino Digital Pin 13', to: 'Breadboard Row 10A (Resistor Lead 1)', wireOrPolarityNote: 'Yellow Signal Wire' },
-        { from: 'Breadboard Row 10E (Resistor Lead 2)', to: 'Breadboard Row 11A (LED Anode)', wireOrPolarityNote: 'Component series bridge' },
-        { from: 'Breadboard Row 11E (LED Cathode)', to: 'Arduino GND', wireOrPolarityNote: 'Black Ground Wire' },
-        { from: 'Arduino Digital Pin 2', to: 'Breadboard Row 20A (Button Pin 1)', wireOrPolarityNote: 'Green Signal Wire' },
-        { from: 'Breadboard Row 22A (Button Pin 2)', to: 'Arduino GND', wireOrPolarityNote: 'Black Ground Return Wire' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Ensure Arduino is disconnected from USB power during breadboard wiring.',
-        '2. Straddle the 4-pin pushbutton across the central breadboard divider trench between rows 20 and 22.',
-        '3. Connect Arduino Pin 2 to row 20A and connect row 22A to Arduino GND.',
-        '4. Insert the 220Ω resistor and Red LED in series across rows 10 and 11, returning cathode to GND.',
-        '5. Confirm that Pin A0 is completely empty (no wire attached) to act as a floating RF noise antenna.',
-        '6. Plug in USB cable, compile and upload the sketch, and open the Serial Monitor at 9600 baud.'
-      ],
-      powerAndSafetyChecks: [
-        'Verify button is wired between Pin 2 and GND only — never connect a pushbutton directly from 5V to GND without a resistor!',
-        'Confirm Pin 13 series resistor is 220Ω (Red-Red-Brown) rather than 10kΩ or 0Ω.',
-        'Check that the pushbutton legs are oriented correctly across the trench.'
-      ],
-      testCases: [
-        { action: 'Wait for LED illumination, then press button immediately', expectedResult: 'Serial Monitor displays reaction time in milliseconds (e.g. "Reaction Time: 214 ms").' },
-        { action: 'Press button BEFORE LED illuminates during the suspense delay', expectedResult: 'Serial Monitor prints "FALSE START PENALTY! Cheating detected!" and aborts the round.' },
-        { action: 'Press reset button on Arduino and observe delay before LED turns on', expectedResult: 'Delay duration changes each round due to analogRead(A0) PRNG seeding.' }
+    "courseId": "beginner",
+    "sequence": 6,
+    "code": "BEGINNER 06",
+    "title": "HC-SR04 Ultrasonic Sonar + SG90 Servo Radar Barrier & Distance Bar",
+    "subtitle": "Acoustic echolocation time-of-flight physics, SG90 angular servomotors with 50Hz PWM control, and automated tollgate boom barrier systems.",
+    "promise": "I can calculate acoustic time-of-flight distances with ultrasonic sonar, command SG90 micro servos with 50Hz PWM pulses, and build an automated tollgate boom barrier.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01",
+      "Beginner 02",
+      "Beginner 03",
+      "Beginner 04"
+    ],
+    "outcomes": [
+      "Apply the speed of sound equation in air (v = 343 m/s = 0.0343 cm/µs) to calculate distance from acoustic round-trip echo times.",
+      "Generate standard 10µs trigger pulses and measure echo response duration using pulseIn(pin, HIGH).",
+      "Explain how SG90 servomotors use internal closed-loop feedback potentiometers to hold exact angles from 0° to 180°.",
+      "Drive servomotors cleanly using the Arduino <Servo.h> library and calculate pulse widths (1000µs = 0°, 1500µs = 90°, 2000µs = 180°).",
+      "Assemble and program an Automated Highway Tollgate: 3-LED distance gauge indicates approach distance; when vehicle stops < 15cm, barrier sweeps up 90°, sounds confirmation chirp, and lowers."
+    ],
+    "vocabulary": [
+      {
+        "term": "Ultrasonic Sonar (HC-SR04)",
+        "plainMeaning": "An electronic bat that emits high-frequency sound clicks humans cannot hear and times how long the echo takes to bounce back.",
+        "technicalMeaning": "An active acoustic rangefinder featuring a 40 kHz piezoelectric transmitter and receiver measuring round-trip time-of-flight."
+      },
+      {
+        "term": "Speed of Sound (343 m/s)",
+        "plainMeaning": "How fast sound travels through room temperature air: about 1 centimeter every 29.1 microseconds.",
+        "technicalMeaning": "The velocity of acoustic pressure waves in dry air at 20°C: v ≈ 331.4 + 0.606 × T(°C) ≈ 343 m/s = 0.0343 cm/µs."
+      },
+      {
+        "term": "Time-of-Flight (ToF)",
+        "plainMeaning": "The total round-trip time for a sound wave to travel to an object and bounce back into the sensor.",
+        "technicalMeaning": "The elapsed time Δt measured by the microcontroller; distance d = (Δt × speed_of_sound) / 2 to account for the two-way travel."
+      },
+      {
+        "term": "SG90 Micro Servomotor",
+        "plainMeaning": "A motorized steering arm that rotates to an exact angle (0° to 180°) and holds its position firmly.",
+        "technicalMeaning": "A closed-loop rotary actuator containing a DC motor, reduction gear train, feedback potentiometer, and error amplifier controlled by 50Hz PWM."
+      },
+      {
+        "term": "Servo PWM Pulse Width",
+        "plainMeaning": "The length of the electrical pulse that tells the servo what angle to turn to.",
+        "technicalMeaning": "A periodic 20ms (50 Hz) frame where pulse duration dictates angular position: ~1.0ms = 0°, ~1.5ms = 90° (neutral), ~2.0ms = 180°."
+      }
+    ],
+    "teacherPrep": [
+      "Place HC-SR04 ultrasonic sensors, SG90 9g micro servos with horn arms, and 3x LEDs on student benches.",
+      "Attach a lightweight paper or cardboard tollgate arm to the servo horn with double-sided tape."
+    ],
+    "verifiedMaterials": [
+      "Arduino Uno R3 with USB cable",
+      "HC-SR04 Ultrasonic Distance Sensor",
+      "SG90 9g Micro Servo with horn arm and mounting screws",
+      "3x 5mm LEDs (Green, Yellow, Red) with 220Ω resistors",
+      "1x Piezo Buzzer",
+      "Solderless breadboard and jumper wires"
+    ],
+    "safetyNotes": [
+      "Never force the SG90 servo horn with your fingers while powered; forcing it can strip the delicate nylon reduction gears.",
+      "Connect servo red wire to 5V and brown wire to GND; reverse power can permanently damage the internal servo driver."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Drive a model toy car towards the bench: the distance bar shifts from Green to Yellow to Red; at 12cm, the automated boom barrier swings up smoothly with a chime!",
+        "studentAction": "Observe the acoustic sensor \"eyes\" (Transmitter T and Receiver R) and the motorized boom barrier in action."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Derive Distance = (Duration * 0.0343) / 2 on the whiteboard. Explain the SG90 internal potentiometer and 50Hz PWM pulse width control.",
+        "studentAction": "Test the Ultrasonic Sonar Sim on the portal: move virtual obstacles and observe time-of-flight waveform calculations."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide wiring: HC-SR04 VCC->5V, GND->GND, Trig->D9, Echo->D10; SG90 Servo Signal->D6, VCC->5V, GND->GND; LEDs to D2, D3, D4.",
+        "studentAction": "Assemble the tollgate station on breadboard. Press servo horn onto spline at 0° horizontal position."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through <Servo.h>, trigger pulse generation (digitalWrite HIGH for 10µs), pulseIn(Echo), and barrier state transitions.",
+        "studentAction": "Upload code. Open Serial Monitor. Hold hand at different distances: observe distance in cm printed in real-time and barrier opening!"
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Run the \"Padma Toll Plaza Automated Gate Challenge\": can your gate handle oncoming cars and reset safely without collisions?",
+        "studentAction": "Demonstrate automated toll barrier operation, calibrate detection distance threshold, and complete the Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "Acoustic Time-of-Flight Physics",
+        "explanation": "The HC-SR04 emits eight 40 kHz ultrasound sound pulses from transducer \"T\". These sound waves travel through air at 343 m/s, strike an obstacle, and bounce back to receiver \"R\". By measuring the round-trip microsecond time with pulseIn(), distance is calculated as: Distance (cm) = (Duration (µs) × 0.0343) / 2.",
+        "instructorNote": "Why divide by 2? Because the sound wave travels to the obstacle and all the way back!"
+      },
+      {
+        "title": "How Servos Know Their Exact Angle",
+        "explanation": "Unlike continuous DC motors that spin freely, an SG90 servo motor is a closed-loop positioning robot. Inside, an internal potentiometer measures the exact shaft angle. A microchip compares target pulse width against actual position and drives the internal motor until the error is zero.",
+        "instructorNote": "Demonstrate that trying to push the servo arm while powered results in the motor pushing back to hold its commanded angle."
+      },
+      {
+        "title": "The Speed of Sound in Air",
+        "explanation": "At 20°C, sound travels 1 cm in approximately 29.15 microseconds. If pulseIn() returns 1000 µs: Distance = 1000 / 29.15 / 2 ≈ 17.15 cm. This allows our robot to perceive obstacles before physically touching them.",
+        "instructorNote": "Explain why soft cloth or slanted walls can absorb sound waves or deflect them away, causing false readings."
+      }
+    ],
+    "visualizerId": "ultrasonic_sonar_sim",
+    "project": {
+      "name": "Smart Automated Tollgate Barrier & Radar Distance Bar",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "HC-SR04 sonar sensor reading accurate distance (2cm–200cm) on Serial Monitor.",
+        "3-LED distance gauge reflecting proximity (Green > 30cm, Yellow 15–30cm, Red < 15cm).",
+        "SG90 servo boom barrier rotating smoothly to 90° on vehicle approach and resetting to 0° after passage."
       ]
     },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - Precision Reflex & Reaction Game
-// Class: BEGINNER 05 - Program Logic, millis() Timing & Debugging
-
-const int STIMULUS_LED_PIN = 13; // Output: High-speed stimulus visual LED
-const int BUTTON_PIN       = 2;  // Input: Reaction trigger button (active-LOW)
-const int NOISE_SEED_PIN   = A0; // Floating analog antenna for randomSeed()
-
-void setup() {
-  pinMode(STIMULUS_LED_PIN, OUTPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP); // 20kΩ internal pull-up resistor enabled
-
-  Serial.begin(9600);
-  while (!Serial) { ; } // Wait for serial port to connect
-
-  // Seed pseudo-random generator with atmospheric electromagnetic noise
-  randomSeed(analogRead(NOISE_SEED_PIN));
-
-  Serial.println(F("========================================"));
-  Serial.println(F("  ROBOBEE ACADEMY REFLEX TEST STATION   "));
-  Serial.println(F("========================================"));
-  Serial.println(F("Rules: Keep your thumb ready on the button."));
-  Serial.println(F("When the RED light fires, PRESS INSTANTLY!"));
-  Serial.println(F("False starts will be penalized heavily!\n"));
-}
-
-void loop() {
-  digitalWrite(STIMULUS_LED_PIN, LOW);
-  Serial.println(F(">> Status: STANDBY. Get Ready..."));
-
-  // Calculate random suspense delay between 2.0s and 5.0s
-  unsigned long suspenseDuration = random(2000, 5001);
-  unsigned long waitStartTime = millis();
-
-  // Non-blocking false-start detection window
-  bool falseStartDetected = false;
-  while (millis() - waitStartTime < suspenseDuration) {
-    // If player presses button during suspense window (active-LOW)
-    if (digitalRead(BUTTON_PIN) == LOW) {
-      falseStartDetected = true;
-      break;
-    }
-  }
-
-  // Handle False Start Penalty
-  if (falseStartDetected) {
-    Serial.println(F("❌ [PENALTY] FALSE START! You jumped the gun before the light!"));
-    Serial.println(F("   Disqualified for this round. Cooling down for 3 seconds...\n"));
-    
-    // Rapid error strobe (3 fast blinks)
-    for (int i = 0; i < 3; i++) {
-      digitalWrite(STIMULUS_LED_PIN, HIGH);
-      delay(80);
-      digitalWrite(STIMULUS_LED_PIN, LOW);
-      delay(80);
-    }
-    delay(2000);
-    return; // Restart game loop
-  }
-
-  // STIMULUS EVENT: FIRE THE LIGHT!
-  digitalWrite(STIMULUS_LED_PIN, HIGH);
-  unsigned long stimulusTriggerTime = millis();
-
-  // Poll button until player reacts
-  while (digitalRead(BUTTON_PIN) == HIGH) {
-    // Escape hatch: timeout after 4 seconds of human inaction
-    if (millis() - stimulusTriggerTime > 4000) {
-      Serial.println(F("⚠️ [TIMEOUT] Did you fall asleep? Light remained unpressed for 4s.\n"));
-      digitalWrite(STIMULUS_LED_PIN, LOW);
-      delay(2000);
-      return;
-    }
-  }
-
-  // Calculate high-precision elapsed reaction time
-  unsigned long reactionTimeMs = millis() - stimulusTriggerTime;
-  digitalWrite(STIMULUS_LED_PIN, LOW); // Turn off stimulus immediately
-
-  // Display Telemetry Results & Athletic Evaluation
-  Serial.println(F("⚡ [STIMULUS TRIGGERED]"));
-  Serial.print(F("🎯 Reaction Time: "));
-  Serial.print(reactionTimeMs);
-  Serial.println(F(" ms"));
-
-  if (reactionTimeMs < 180) {
-    Serial.println(F("🏆 Performance Rating: SUPERHUMAN (Esports / Fighter Pilot Grade)"));
-  } else if (reactionTimeMs <= 250) {
-    Serial.println(F("🥇 Performance Rating: EXCELLENT (High Athletic Reflexes)"));
-  } else if (reactionTimeMs <= 350) {
-    Serial.println(F("🥈 Performance Rating: AVERAGE (Normal Human Baseline)"));
-  } else {
-    Serial.println(F("🥉 Performance Rating: SLUGGISH (Drink some water and refocus!)"));
-  }
-
-  Serial.println(F("----------------------------------------\n"));
-  delay(3000); // 3-second recovery delay before next test round
-}`,
-      pinMap: { 
-        'Pin 13': 'Visual stimulus LED (220Ω series resistor to GND)', 
-        'Pin 2': 'Reaction response tactile button (INPUT_PULLUP active-LOW)',
-        'Pin A0': 'Unconnected floating analog pin for PRNG noise harvesting'
-      },
-      setupAndUpload: [
-        '1. Connect Arduino Uno via USB and confirm Port under Tools > Port.',
-        '2. Verify and upload the sketch to the board.',
-        '3. Open the Serial Monitor (Ctrl+Shift+M or Cmd+Shift+M) and ensure baud rate is 9600.',
-        '4. Rest your index finger lightly on the button and wait for the "STANDBY" prompt.'
+    "activity": {
+      "title": "Assemble, Wire, and Program the Automated Tollgate",
+      "steps": [
+        "Step 1: Mount HC-SR04 on breadboard; connect VCC to 5V, GND to GND, Trig to Pin 9, Echo to Pin 10.",
+        "Step 2: Connect SG90 servo: Brown wire to GND, Red wire to 5V, Orange signal wire to Pin 6.",
+        "Step 3: Connect 3 indicator LEDs: Green (Pin 2), Yellow (Pin 3), Red (Pin 4) with 220Ω series resistors.",
+        "Step 4: Connect Piezo buzzer to Pin 8 and GND.",
+        "Step 5: Upload code. When powered, the servo will calibrate to 0° horizontal barrier position.",
+        "Step 6: Move a hand towards the sonar: watch Green turn to Yellow, then Red.",
+        "Step 7: When hand stops within 15cm, barrier opens to 90°, chime sounds, holds for 3 seconds, and closes!"
       ],
-      explanations: [
-        'randomSeed(analogRead(A0)): Reads floating atmospheric voltage (0-1023) from unconnected pin A0, initializing the PRNG seed register.',
-        'millis() - waitStartTime < suspenseDuration: Non-blocking time window that constantly checks for button presses while waiting for the timer to expire.',
-        'digitalRead(BUTTON_PIN) == LOW: Detects active-low button press when connected to GND via internal pull-up resistor.',
-        'millis() - stimulusTriggerTime: Computes exact human neuromuscular reaction time with millisecond precision.'
+      "successCriteria": [
+        "Sonar measurements agree with a physical ruler within ±1 cm accuracy.",
+        "Servo sweeps smoothly between 0° and 90° without jittering or grinding.",
+        "Tollgate operates autonomously and reliably for 10 consecutive vehicle passes."
       ],
-      expectedResult: 'Serial Monitor prompts the user to get ready; after an unpredictable 2-5s delay, the LED fires. Pressing the button prints the reaction time (e.g. 218ms) and athletic ranking.',
-      caveats: [
-        'Ensure Pin A0 has NO wire connected to it; grounding Pin A0 causes randomSeed to read 0 every time, making delays predictable.',
-        'Release the button quickly after pressing so you do not accidentally trigger a false start on the next round.'
-      ],
-      tweakTip: 'Mission Challenge: Create a best-of-5 tournament scorekeeper variable that computes the runner’s average reaction time across 5 consecutive rounds!'
+      "extension": "Add a vehicle speed estimation feature: measure distance twice over 200ms to calculate approach speed in cm/s!"
     },
-    troubleshooting: [
-      { 
-        symptom: 'Game immediately aborts with "FALSE START" the instant the round begins without the button being touched.', 
-        checks: [
-          'Step 1: Inspect button wiring — is Pin 2 connected to the same pin as GND through a jumper wire or bent pin?',
-          'Step 2: Confirm code includes `pinMode(BUTTON_PIN, INPUT_PULLUP)` — if set to `INPUT`, floating noise can falsely read LOW.',
-          'Step 3: Measure voltage at Pin 2 with a multimeter: it should read 5.0V when unpressed, and 0V when pressed.'
-        ], 
-        explanation: 'If the pin is floating or accidentally grounded, digitalRead() evaluates to LOW immediately, triggering the false start penalty.' 
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "HC-SR04 Sonar Module",
+        "SG90 Micro Servo"
+      ],
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "HC-SR04 Ultrasonic Sensor",
+          "exactVariant": "4-pin 40 kHz module (VCC, Trig, Echo, GND)",
+          "quantity": 1
+        },
+        {
+          "name": "SG90 9g Micro Servo",
+          "exactVariant": "With single-arm horn and mounting screw",
+          "quantity": 1
+        },
+        {
+          "name": "5mm LEDs (Green, Yellow, Red)",
+          "exactVariant": "Diffused lens indicator LEDs",
+          "quantity": 3
+        },
+        {
+          "name": "220 Ω Resistors",
+          "exactVariant": "1/4 Watt, 5%",
+          "quantity": 3
+        },
+        {
+          "name": "Piezo Buzzer",
+          "exactVariant": "5V passive transducer",
+          "quantity": 1
+        },
+        {
+          "name": "Jumper Wires",
+          "exactVariant": "Male-to-Male and Male-to-Female jumpers",
+          "quantity": 10
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "HC-SR04: VCC->5V | GND->GND | Trig->D9 | Echo->D10; SG90 Servo: Red->5V | Brown->GND | Orange->D6; Distance LEDs: D2 (Green), D3 (Yellow), D4 (Red) -> 220Ω -> Anodes | Cathodes->GND; Buzzer: D8 -> Buzzer (+) | (-) -> GND",
+      "wireTable": [
+        {
+          "from": "Arduino Digital Pin 9",
+          "to": "HC-SR04 Trig Pin",
+          "wireOrPolarityNote": "10µs ultrasonic trigger pulse"
+        },
+        {
+          "from": "Arduino Digital Pin 10",
+          "to": "HC-SR04 Echo Pin",
+          "wireOrPolarityNote": "Pulse width time-of-flight return"
+        },
+        {
+          "from": "Arduino Digital Pin 6 (PWM)",
+          "to": "SG90 Orange Signal Wire",
+          "wireOrPolarityNote": "50Hz Servo position signal"
+        },
+        {
+          "from": "Arduino 5V Power Pin",
+          "to": "Breadboard Red Rail (+)",
+          "wireOrPolarityNote": "Common 5V Bus"
+        },
+        {
+          "from": "Arduino GND Pin",
+          "to": "Breadboard Blue Rail (-)",
+          "wireOrPolarityNote": "Common Ground Return"
+        },
+        {
+          "from": "Arduino Digital Pin 2",
+          "to": "Green Distance LED Resistor",
+          "wireOrPolarityNote": "Clear zone indicator"
+        },
+        {
+          "from": "Arduino Digital Pin 3",
+          "to": "Yellow Distance LED Resistor",
+          "wireOrPolarityNote": "Caution zone indicator"
+        },
+        {
+          "from": "Arduino Digital Pin 4",
+          "to": "Red Distance LED Resistor",
+          "wireOrPolarityNote": "Stop / Tollgate zone indicator"
+        },
+        {
+          "from": "Arduino Digital Pin 8",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Confirmation chirp output"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Verify USB is disconnected before wiring.",
+        "2. Insert HC-SR04 across 4 separate breadboard columns.",
+        "3. Connect Trig to D9 and Echo to D10; connect VCC and GND.",
+        "4. Connect SG90 servo: Brown to GND, Red to 5V, Orange to D6.",
+        "5. Connect 3 LEDs to D2, D3, D4 with 220Ω resistors.",
+        "6. Connect Buzzer to D8, plug in USB, and flash firmware."
+      ],
+      "powerAndSafetyChecks": [
+        "Do not force the servo horn by hand while the Arduino is powered.",
+        "Verify HC-SR04 VCC is connected to 5V, not 3.3V (HC-SR04 requires 5V to fire 40kHz ultrasound bursts)."
+      ],
+      "testCases": [
+        {
+          "action": "Hold obstacle 40cm away",
+          "expectedResult": "Green LED illuminates; barrier remains closed at 0°."
+        },
+        {
+          "action": "Move obstacle to 20cm away",
+          "expectedResult": "Yellow LED illuminates; warning beep emitted."
+        },
+        {
+          "action": "Move obstacle to 10cm away",
+          "expectedResult": "Red LED illuminates; barrier raises to 90°; confirmation chime sounds."
+        },
+        {
+          "action": "Remove obstacle after 3 seconds",
+          "expectedResult": "Barrier sweeps smoothly back down to 0° closed position."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 06: Sonar Radar & Servo Tollgate\n * Board: Arduino Uno R3 (ATmega328P)\n */\n\n#include <Servo.h>\n\nconst int PIN_TRIG    = 9;   // HC-SR04 Trigger Pin\nconst int PIN_ECHO    = 10;  // HC-SR04 Echo Pin\nconst int PIN_SERVO   = 6;   // SG90 Servo Signal Pin\nconst int PIN_LED_G   = 2;   // Green LED (Clear)\nconst int PIN_LED_Y   = 3;   // Yellow LED (Caution)\nconst int PIN_LED_R   = 4;   // Red LED (Stop / Toll)\nconst int PIN_BUZZER  = 8;   // Confirmation Chime Buzzer\n\nServo tollgate;\n\nvoid setup() {\n  pinMode(PIN_TRIG, OUTPUT);\n  pinMode(PIN_ECHO, INPUT);\n  pinMode(PIN_LED_G, OUTPUT);\n  pinMode(PIN_LED_Y, OUTPUT);\n  pinMode(PIN_LED_R, OUTPUT);\n  pinMode(PIN_BUZZER, OUTPUT);\n\n  tollgate.attach(PIN_SERVO);\n  tollgate.write(0); // Start with barrier closed (0 degrees)\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE AUTOMATED TOLLGATE BARRIER ===\");\n}\n\n// Function to measure distance in centimeters\nlong measureDistance() {\n  digitalWrite(PIN_TRIG, LOW);\n  delayMicroseconds(2);\n  // Send 10 microsecond HIGH pulse to fire 40 kHz ultrasound burst\n  digitalWrite(PIN_TRIG, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(PIN_TRIG, LOW);\n\n  // Measure round-trip echo pulse duration in microseconds\n  long duration = pulseIn(PIN_ECHO, HIGH, 30000); // 30ms timeout (~5m max)\n  if (duration == 0) return 999; // No echo detected\n\n  // Distance formula: d = (duration * 0.0343) / 2\n  long distanceCm = (duration * 0.0343) / 2;\n  return distanceCm;\n}\n\nvoid loop() {\n  long distance = measureDistance();\n\n  Serial.print(\"Distance: \");\n  Serial.print(distance);\n  Serial.println(\" cm\");\n\n  // Proximity Gauge\n  if (distance > 30) {\n    // Clear Zone (> 30 cm)\n    digitalWrite(PIN_LED_G, HIGH);\n    digitalWrite(PIN_LED_Y, LOW);\n    digitalWrite(PIN_LED_R, LOW);\n  } else if (distance >= 15 && distance <= 30) {\n    // Caution Zone (15 to 30 cm)\n    digitalWrite(PIN_LED_G, LOW);\n    digitalWrite(PIN_LED_Y, HIGH);\n    digitalWrite(PIN_LED_R, LOW);\n  } else if (distance < 15 && distance > 0) {\n    // Tollgate Zone (< 15 cm): Open Barrier!\n    digitalWrite(PIN_LED_G, LOW);\n    digitalWrite(PIN_LED_Y, LOW);\n    digitalWrite(PIN_LED_R, HIGH);\n\n    Serial.println(\">> VEHICLE AT GATE: Opening barrier to 90 deg...\");\n    tollgate.write(90); // Open barrier arm\n    tone(PIN_BUZZER, 1200, 150); // Confirmation chirp\n    delay(3000); // Hold gate open for 3 seconds\n\n    Serial.println(\">> Lowering barrier back to 0 deg...\");\n    tollgate.write(0); // Close barrier arm\n    delay(500);\n  }\n\n  delay(60); // 16 Hz measurement loop\n}\n",
+      "pinMap": {
+        "Pin 9": "HC-SR04 Trig Pin (Generates 10µs ultrasonic burst trigger)",
+        "Pin 10": "HC-SR04 Echo Pin (Reads acoustic round-trip flight duration)",
+        "Pin 6": "SG90 Servo PWM signal line (commands angular position)",
+        "Pins 2, 3, 4": "Distance indicator bar (Green, Yellow, Red LEDs)",
+        "Pin 8": "Confirmation Chime Buzzer"
       },
-      { 
-        symptom: 'Reaction times are identical on every test round after resetting the board.', 
-        checks: [
-          'Step 1: Check if `randomSeed(analogRead(A0))` is present in setup().',
-          'Step 2: Inspect Pin A0 to ensure it is completely empty and not touching 5V, GND, or adjacent pins.'
-        ], 
-        explanation: 'Without a randomized seed from floating RF noise, the Arduino PRNG generates the exact same sequence of pseudo-random numbers upon every reset.' 
+      "setupAndUpload": [
+        "Connect Arduino Uno via USB cable.",
+        "Select Tools -> Board -> Arduino Uno and proper COM port.",
+        "Upload sketch and open Serial Monitor at 9600 baud."
+      ],
+      "explanations": [
+        "digitalWrite(PIN_TRIG, HIGH) + delayMicroseconds(10): Triggers the HC-SR04 internal processor to fire 8 ultrasound cycles at 40 kHz.",
+        "pulseIn(PIN_ECHO, HIGH, 30000): Measures the microsecond duration until the reflected echo is detected.",
+        "d = (duration * 0.0343) / 2: Converts time-of-flight to metric centimeters based on acoustic speed.",
+        "tollgate.write(90): Commands the SG90 servo motor to rotate directly to 90 degrees."
+      ],
+      "expectedResult": "Sonar measures vehicle distance accurately; distance bar updates in real time; approaching vehicles under 15cm trigger the boom gate to raise, chime, wait 3 seconds, and close.",
+      "caveats": [
+        "Soft fabrics, angled cardboard, and acoustic absorbers may not reflect ultrasound cleanly.",
+        "pulseIn() timeout defaults to 1 second if omitted; always specify 30000µs timeout to maintain fast loop timing."
+      ],
+      "tweakTip": "Implement a smooth servo sweep loop using a for-loop incrementing by 2 degrees every 15ms for ultra-smooth barrier motion!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "Distance reading constantly shows 0 cm or 999 cm regardless of object distance.",
+        "checks": [
+          "Check Trig and Echo wiring: ensure Trig connects to D9 and Echo to D10 (they are often accidentally swapped).",
+          "Verify 5V power: HC-SR04 requires full 5.0V power to charge its transmitter transducers."
+        ],
+        "explanation": "Swapping Trig and Echo prevents the trigger pulse from firing, causing the receiver to time out."
       },
-      { 
-        symptom: 'Stimulus LED does not light up when the game enters the GO phase, but Serial Monitor prints messages.', 
-        checks: [
-          'Step 1: Check LED polarity — is long leg (Anode) connected to Pin 13 through the resistor and short leg (Cathode) to GND?',
-          'Step 2: Swap the LED with a fresh unit to test for semiconductor burnout.'
-        ], 
-        explanation: 'Reversed LED polarity blocks forward current conduction; the software executes normally but produces no visible optical signal.' 
+      {
+        "symptom": "Servo motor jitters, buzzes loudly, or resets the Arduino board.",
+        "checks": [
+          "Check power supply: the servo DC motor draws current spikes up to 500mA when moving.",
+          "Ensure servo horn is not jammed against a mechanical stop.",
+          "Use a dedicated power rail or plug into a high-current laptop USB port."
+        ],
+        "explanation": "Current spikes from an inductive servo motor can cause a brief voltage dip (brownout), restarting the MCU."
       },
-      { 
-        symptom: 'Serial Monitor displays scrambled, garbled hieroglyphic characters instead of English text.', 
-        checks: [
-          'Step 1: Look at the bottom right corner of the Serial Monitor window.',
-          'Step 2: Change the baud rate dropdown menu from 115200 (or other value) to exactly 9600 baud to match `Serial.begin(9600)`.'
-        ], 
-        explanation: 'UART asynchronous serial communication requires transmitter and receiver clocks to be synchronized to the exact same baud rate.' 
+      {
+        "symptom": "Barrier arm is crooked or does not point horizontally when at 0 degrees.",
+        "checks": [
+          "Command tollgate.write(0) in code to position the spline motor shaft.",
+          "Unscrew the servo horn, align it horizontally, and press it firmly back onto the gear spline."
+        ],
+        "explanation": "The servo horn was installed at an offset mechanical angle on the splined shaft."
       }
     ],
-    checksForUnderstanding: [
-      'Why is using delay() in an autonomous robot dangerous when monitoring emergency stop sensors?',
-      'How does millis() allow an embedded system to track time without halting CPU instruction flow?',
-      'Why does an unconnected analog pin (A0) provide an effective seed for pseudo-random number generators?'
+    "checksForUnderstanding": [
+      "Why must the round-trip echo duration be divided by 2 when calculating obstacle distance?",
+      "What is the difference between how an SG90 servo motor operates compared to a standard DC toy motor?"
     ],
-    exitTicket: [
-      { 
-        question: 'Explain the difference between blocking time control (delay) and non-blocking time control (millis) using a real-world analogy.', 
-        rubricOrSampleReasoning: 'delay() is like sitting with your eyes closed waiting for an alarm, unable to see anything. millis() is like glancing at your wrist watch while continuing to navigate and look around.' 
+    "exitTicket": [
+      {
+        "question": "Calculate the obstacle distance if the HC-SR04 Echo pulse duration is measured at 1166 microseconds.",
+        "rubricOrSampleReasoning": "Distance = (Duration × 0.0343 cm/µs) / 2 = (1166 × 0.0343) / 2 ≈ 40.0 cm / 2 ≈ 20.0 cm."
       },
-      { 
-        question: 'What is the role of an unsigned long variable type when storing millis() timestamps, and why cannot a regular int be used?', 
-        rubricOrSampleReasoning: 'A standard signed int (16-bit on Arduino) rolls over after 32,767 milliseconds (~32 seconds). An unsigned long (32-bit) can count up to ~4.29 billion milliseconds (~49.7 days) before rolling over.' 
+      {
+        "question": "What frequency of sound does the HC-SR04 ultrasonic sensor emit, and can humans hear it?",
+        "rubricOrSampleReasoning": "It emits ultrasound at 40,000 Hertz (40 kHz). Humans cannot hear it because human hearing is limited to approximately 20 Hz – 20,000 Hz."
       },
-      { 
-        question: 'What is the single-variable scientific debugging method, and why is it essential in robotics development?', 
-        rubricOrSampleReasoning: 'It is changing only one hardware or software parameter at a time and verifying results empirically. Changing multiple things simultaneously masks the root cause and creates compounding bugs.' 
+      {
+        "question": "How does an SG90 servo know which angle it is currently holding?",
+        "rubricOrSampleReasoning": "It has an internal feedback potentiometer attached to the output shaft that acts as a closed-loop voltage sensor, reporting actual position to its internal comparator chip."
       }
     ],
-    differentiation: {
-      support: ['Provide pre-wired breadboards with color-coded signal jumpers (Yellow for Pin 13, Green for Pin 2).'],
-      extension: ['Implement a 2-player reflex duel with two buttons (Pins 2 and 3) that detects who pressed first down to the microsecond.'],
-      offlineOption: ['Use the interactive web reaction simulator with virtual oscilloscopes and debounce timing traces.']
+    "differentiation": {
+      "support": [
+        "Provide pre-attached cardboard boom gates so students focus on wiring and sonar logic."
+      ],
+      "extension": [
+        "Add an automated anti-crush safety sensor: if an object enters the gate area while closing, immediately reopen!"
+      ],
+      "offlineOption": [
+        "Use the interactive Ultrasonic Radar simulator on the RoboBee portal."
+      ]
     },
-    nextLessonId: 'beg-06',
-    nextLessonTeaser: 'Beginner 06: DC Motors & Motor Drivers — Why can’t an Arduino pin power a motor directly? Learn H-Bridge MOSFET switches, flyback diodes, and PWM speed control!',
-    sources: [{ title: 'Arduino Reference: millis() & Timer0 Architecture', url: 'https://docs.arduino.cc/language-reference/en/functions/time/millis/' }],
-    assetCredits: [{ asset: 'Reaction Game Diagram', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
+    "nextLessonId": "beg-07",
+    "nextLessonTeaser": "Class 07 (Major Project Build Day 1): Touchless Smart Dustbin & Mini Robotic Arm! Build your first complete household autonomous robot.",
+    "sources": [
+      {
+        "title": "HC-SR04 Ultrasonic Ranging Module Technical Specification",
+        "url": "https://sparkfun.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "Ultrasonic Tollgate Schematic",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
+    ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
   {
-    id: 'beg-06',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-comp-tb6612fng", "fg-safety-lab-code"],
-      lookUpWhileBuilding: ["fg-electronics-ohms-law", "fg-board-uno-anatomy"],
-      goDeeper: ["fg-motion-differential-kinematics"]
-    },
-    courseId: 'beginner',
-    sequence: 6,
-    code: 'BEGINNER 06',
-    title: 'DC Motors and Motor Drivers: The H-Bridge',
-    promise: 'By the end of this masterclass, you will understand the Lorentz force of DC motors, why microcontrollers require H-Bridge motor drivers, how flyback diodes protect circuits, and how Pulse Width Modulation (PWM) controls rotational speed.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01', 'Beginner 02', 'Beginner 03', 'Beginner 04', 'Beginner 05'],
-    outcomes: [
-      'Explain why an ATmega328P GPIO pin (max 20mA recommended) cannot directly drive an inductive DC motor (300mA–1500mA stall current).',
-      'Analyze the 4-quadrant switching states of an H-Bridge circuit (Forward, Reverse, Coast, Active Regenerative Brake).',
-      'Explain how inductive kickback (V = -L di/dt) creates massive voltage spikes and how flyback diodes prevent MOSFET destruction.',
-      'Contrast modern low-resistance MOSFET drivers (TB6612FNG) with legacy bipolar drivers (L298N).',
-      'Wire a dual DC motor test stand with independent high-current battery power and shared Common Ground.'
-    ],
-    vocabulary: [
-      { term: 'Motor Driver', plainMeaning: 'A heavy-duty electronic gate that lets tiny Arduino signals safely control powerful battery motors.', technicalMeaning: 'An integrated circuit interface translating low-power digital logic into high-current power stages for inductive loads.' },
-      { term: 'H-Bridge', plainMeaning: 'Four electronic switches arranged in an "H" shape to reverse electric current through a motor.', technicalMeaning: 'An electronic circuit topology enabling bidirectional voltage and current control across an electrical load.' },
-      { term: 'Lorentz Force', plainMeaning: 'The physical magnetic push that spins an electric motor when current flows through its coils.', technicalMeaning: 'The force exerted on a charged particle moving through magnetic and electric fields: F = q(E + v × B).' },
-      { term: 'Back-EMF (Counter Electromotive Force)', plainMeaning: 'A reverse voltage generated by the spinning motor that opposes the battery voltage.', technicalMeaning: 'The voltage created across an electric motor as its magnetic field collapses or rotates, opposing applied voltage.' },
-      { term: 'Flyback Diode', plainMeaning: 'A safety one-way valve that drains dangerous high-voltage electrical sparks when a motor turns off.', technicalMeaning: 'A diode placed across an inductive load to dissipate high-voltage transient spikes caused by rapid current interruption.' },
-      { term: 'PWM (Pulse Width Modulation)', plainMeaning: 'Rapidly switching motor power ON and OFF hundreds of times per second to set wheel speed.', technicalMeaning: 'A modulation technique controlling delivered power by varying the duty cycle of a fixed-frequency square wave.' },
-      { term: 'Common Ground (Shared GND)', plainMeaning: 'Connecting all negative wires together so signals have the same zero-volt reference point.', technicalMeaning: 'A unified reference potential shared across multiple voltage domains to enable signal integrity.' }
-    ],
-    teacherPrep: ['Prepare TT yellow DC gear motors, TB6612FNG drivers, 4xAA battery packs, and elevated motor bench test stands.'],
-    verifiedMaterials: ['Arduino Uno Rev3 DIP', 'TB6612FNG Dual H-Bridge Driver Carrier', 'TT Yellow DC Gear Motor (1:48 ratio)', '4xAA Battery Holder (6.0V nominal)', 'Bench elevation block', 'Jumper wires'],
-    safetyNotes: [
-      'NEVER connect a DC motor directly across Arduino GPIO pins! Doing so draws excessive current, causing permanent silicon burn-out.',
-      'Always bench-test motors with wheels elevated completely off the table surface to prevent runaway hardware accidents.',
-      'Never short the high-current battery rail (VM) to the microcontroller 5V logic rail (VCC).'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Compare a smartphone headphone jack (low power) to a rock concert stadium amplifier (high power). Explain why Arduino is the brain and the H-Bridge is the muscle.', 
-        studentAction: 'Compare current draw: Arduino pin (20mA) vs DC motor starting surge (1000mA). Calculate ratio (50x difference!).' 
-      },
-      { 
-        segment: '10–25m Concept', 
-        minutes: 15, 
-        teacherAction: 'Draw the H-Bridge switch diagram on the board. Trace current path for Forward, Reverse, Coast, and Active Brake. Explain inductive kickback and flyback diodes.', 
-        studentAction: 'Fill out the H-Bridge 4-state direction truth table and calculate PWM average voltage for values 0, 128, and 255.' 
-      },
-      { 
-        segment: '25–50m Build', 
-        minutes: 25, 
-        teacherAction: 'Supervise wiring of TB6612FNG logic pins, motor terminals, battery pack, and the vital Common Ground connection.', 
-        studentAction: 'Assemble motor stand with elevated wheel. Upload C++ test sketch and observe bidirectional rotation, braking, and PWM speed sweeps.' 
-      },
-      { 
-        segment: '50–60m Exit Check', 
-        minutes: 10, 
-        teacherAction: 'Inspect student wiring for common ground compliance and verify dynamic braking behavior.', 
-        studentAction: 'Complete exit check questions and explain why an H-Bridge requires a shared GND.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. Lorentz Force & The Electromechanics of DC Motors',
-        explanation: 'A brushed direct current (DC) motor operates on the Lorentz Force principle: when electric current ($I$) flows through copper wire coils situated inside a permanent magnetic field ($B$), a physical mechanical force ($F = B \cdot I \cdot L \sin\theta$) is exerted on the rotor. The mechanical commutator flips the electrical polarity every half-turn, producing continuous rotary torque. The faster the motor spins, the more mechanical work it performs. However, producing substantial physical torque requires substantial current—typically 200mA under light rolling loads and up to 1500mA when stalled or starting!',
-        instructorNote: 'Demonstrate by spinning a disconnected DC motor by hand: feel the magnetic detents of the permanent magnets inside.'
-      },
-      {
-        title: '2. The Golden Rule of Power Isolation (Logic vs Inductive Loads)',
-        explanation: 'Every digital I/O pin on the ATmega328P microcontroller has a strict continuous current limit of 20mA (with an absolute maximum rating of 40mA). Attempting to power a 1000mA DC motor directly from an Arduino pin pulls 50 times the safe current rating! This excessive current instantly vaporizes the microscopic silicon bond wires inside the microcontroller package, destroying the pin permanently. Modern robotics strictly segregates circuits into two isolated domains: Low-Power Digital Logic (5V / low current) and High-Power Inductive Drive (6V–12V / high current).',
-        instructorNote: 'State the golden rule clearly: Microcontrollers are THINKERS, not MUSCLES. Never power motors or coils from GPIO pins!'
-      },
-      {
-        title: '3. Anatomy of an H-Bridge & Inductive Kickback (Flyback Protection)',
-        explanation: 'An H-Bridge circuit consists of four electronic switches (typically MOSFET transistors: Q1, Q2, Q3, Q4) arranged in an "H" shape around the motor terminals. Closing Q1 and Q4 pushes current from Left to Right (Motor spins Forward). Closing Q2 and Q3 pushes current from Right to Left (Motor spins Reverse). CRITICAL ELECTRICAL SAFETY: A motor coil is an inductor that stores energy in a magnetic field. When the switches suddenly turn off, the magnetic field collapses violently, generating a massive reverse voltage spike known as Inductive Kickback ($V = -L \frac{di}{dt}$), easily reaching 50V–100V! Fast-recovery Schottky Flyback Diodes clamp these spikes safely back into the power rails, protecting the delicate driver transistors from burning out.',
-        instructorNote: 'Point out what happens if Q1 and Q2 are turned on simultaneously: "Shoot-Through" creates a dead short across the battery that melts wires!'
-      },
-      {
-        title: '4. Modern MOSFET Drivers (TB6612FNG) vs Legacy Bipolar Drivers (L298N)',
-        explanation: 'Many outdated robotics tutorials use the ancient L298N dual motor driver. The L298N is built using obsolete bipolar junction transistors (BJTs) that have a massive internal voltage drop of 2.0V to 3.0V! If you connect a 6V battery pack to an L298N, the motor only receives ~3.5V, while the remaining 2.5V is wasted as intense heat ($P = V \times I$), requiring a massive aluminum heatsink. The modern Toshiba TB6612FNG driver uses low-resistance DMOS Field-Effect Transistors ($R_{DS(on)} \approx 0.5\Omega$). It drops almost zero voltage, generates virtually no heat, fits on a tiny postage-stamp carrier board, and features built-in thermal shutdown and standby energy saving.',
-        instructorNote: 'Show students the physical size difference: the bulky heavy L298N brick vs the compact, highly efficient TB6612FNG chip.'
-      },
-      {
-        title: '5. Pulse Width Modulation (PWM) & Mechanical Inertia',
-        explanation: 'Microcontrollers cannot output continuously variable analog voltages like 2.5V or 3.7V—they are purely digital, outputting either 0V or 5V. To control motor speed smoothly, we use Pulse Width Modulation (PWM). PWM rapidly toggles the digital output at approximately 490Hz (490 times per second on Uno pins 5 & 6). By adjusting the Duty Cycle (the percentage of time the signal is HIGH versus LOW), we control average electrical power. At `analogWrite(pin, 128)`, the signal is 50% ON and 50% OFF, delivering 50% average power. The physical inertia of the motor’s heavy copper rotor acts as a mechanical low-pass filter, smoothing the pulses into steady rotational velocity.',
-        instructorNote: 'Explain the 8-bit resolution: 0 = 0% duty (Stop), 128 = 50% duty (Half Speed), 255 = 100% duty (Full Speed).'
-      },
-      {
-        title: '6. The Critical Necessity of Shared Common Ground (GND)',
-        explanation: 'A voltage is not an absolute number; it is an electrical potential DIFFERENCE between two points measured relative to a 0V reference. If your 6V motor battery pack is completely isolated from your Arduino, the Arduino’s 5V logic signal has no return path back to the Arduino when plugged into the driver! The driver gates cannot measure the 5V signal because they do not share the same 0V ground baseline. Without a Common Ground wire tying the Arduino GND to the Battery Pack (-), logic signals float erratically, causing motors to twitch uncontrollably or fail to respond entirely.',
-        instructorNote: 'Draw two separate mountains on the board: you cannot measure the height difference between two flags unless you measure from the same sea level!'
-      }
-    ],
-    visualizerId: 'motor_driver_pwm_sim',
-    project: {
-      name: 'Precision DC Motor Driver & Bench Test Stand',
-      deliverableType: 'physical_build',
-      successEvidence: [
-        'Elevated motor test stand demonstrating Forward, Reverse, Coast, and Active Dynamic Braking.',
-        'Smooth PWM speed acceleration sweep from minimum starting deadband to full speed.',
-        'Properly wired dual-supply circuit with independent 6V motor power and shared Common Ground.'
+    "id": "beg-07",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-comp-hc-sr04",
+        "fg-testing-fmea-debugging"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-electronics-breadboards"
+      ],
+      "goDeeper": [
+        "fg-safety-lab-code",
+        "fg-arduino-ide-workflow"
       ]
     },
-    activity: {
-      title: 'Wire, Program, and Test the Motor Test Stand',
-      steps: [
-        'Step 1: Elevate the yellow TT DC gear motor and wheel securely on a bench block clear of table contact.',
-        'Step 2: Connect the TB6612FNG logic pins to Arduino: PWMA to Pin 5 (~PWM), AIN1 to Pin 7, AIN2 to Pin 8, and STBY to Pin 6.',
-        'Step 3: Connect Arduino 5V to Driver VCC (Logic Power), and Arduino GND to Driver GND.',
-        'Step 4: Connect the 4xAA battery pack positive (6V) to Driver VM (Motor Power) and battery negative (-) to Driver GND (Shared Common Ground).',
-        'Step 5: Connect the two yellow motor wires to driver output terminals A01 and A02.',
-        'Step 6: Upload the embedded C++ sketch and observe forward spin, active braking, reverse spin, and PWM speed sweeps.'
-      ],
-      successCriteria: [
-        'Motor spins smoothly in both directions under software control.',
-        'Active brake stops wheel immediately without coasting.',
-        'Microcontroller does not brown out or reset when motor starts from a dead stop.'
-      ],
-      extension: 'Find the exact minimum PWM value (deadband threshold) required to overcome internal gearbox friction from a stationary stop.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['Arduino Uno R3 DIP (ATmega328P)', 'Toshiba TB6612FNG Dual Motor Driver Breakout', 'TT Yellow DC Gear Motor (1:48)'],
-      componentList: [
-        { name: 'Arduino Uno Rev3', exactVariant: 'Standard Rev3 DIP ATmega328P', quantity: 1 },
-        { name: 'TB6612FNG Motor Driver Breakout', exactVariant: 'Dual H-Bridge, 1.2A continuous / 3.2A peak per channel', quantity: 1 },
-        { name: 'TT DC Gear Motor + Wheel', exactVariant: '3V–6V DC, 1:48 gear ratio with 65mm rubber tire', quantity: 1 },
-        { name: '4xAA Battery Holder', exactVariant: '4-cell AA switched battery box (6.0V nominal)', quantity: 1 },
-        { name: 'Half-Size Breadboard', exactVariant: '400 tie-points with power bus strips', quantity: 1 },
-        { name: 'Jumper Wires', exactVariant: '20cm 24AWG Male-to-Male and Male-to-Female jumpers', quantity: 10 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/motor_driver_tb6612_wiring.svg',
-      schematic: 'Arduino Pin 5 (~PWM) ── PWMA (Speed)\nArduino Pin 7 ────────── AIN1 (Direction 1)\nArduino Pin 8 ────────── AIN2 (Direction 2)\nArduino Pin 6 ────────── STBY (Standby Enable, HIGH=Run)\nArduino 5V ───────────── VCC (Driver Logic Power)\nArduino GND ──────────── GND (Common Ground)\nBattery 6V (+) ───────── VM (Motor Drive Power)\nBattery 6V (-) ───────── GND (Common Ground)\nDriver A01 ───────────── Motor Terminal 1\nDriver A02 ───────────── Motor Terminal 2',
-      wireTable: [
-        { from: 'Arduino Digital Pin 5 (~PWM)', to: 'TB6612FNG PWMA', wireOrPolarityNote: 'Blue PWM Speed Signal' },
-        { from: 'Arduino Digital Pin 7', to: 'TB6612FNG AIN1', wireOrPolarityNote: 'Yellow Direction Signal 1' },
-        { from: 'Arduino Digital Pin 8', to: 'TB6612FNG AIN2', wireOrPolarityNote: 'Green Direction Signal 2' },
-        { from: 'Arduino Digital Pin 6', to: 'TB6612FNG STBY', wireOrPolarityNote: 'Orange Standby Enable Signal' },
-        { from: 'Arduino 5V Pin', to: 'TB6612FNG VCC', wireOrPolarityNote: 'Red 5V Logic Power Wire' },
-        { from: 'Arduino GND Pin', to: 'TB6612FNG GND', wireOrPolarityNote: 'Black Master Logic Ground' },
-        { from: '4xAA Battery Pack (+ 6V)', to: 'TB6612FNG VM', wireOrPolarityNote: 'Red Heavy-Duty Motor Power Wire' },
-        { from: '4xAA Battery Pack (- GND)', to: 'TB6612FNG GND', wireOrPolarityNote: 'Black SHARED COMMON GROUND Wire' },
-        { from: 'TB6612FNG A01 Terminal', to: 'Motor Lead 1', wireOrPolarityNote: 'Motor Phase 1 Wire' },
-        { from: 'TB6612FNG A02 Terminal', to: 'Motor Lead 2', wireOrPolarityNote: 'Motor Phase 2 Wire' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Ensure 4xAA battery pack power switch is turned OFF before making connections.',
-        '2. Mount TB6612FNG carrier board into breadboard center trench.',
-        '3. Connect all logic wires between Arduino and driver breakout.',
-        '4. Connect the critical Black Common Ground wire between Arduino GND and Battery GND on the breadboard rail.',
-        '5. Prop the motor test stand so the rubber tire is suspended in mid-air.',
-        '6. Plug in Arduino USB cable, turn ON battery pack switch, and upload the sketch.'
-      ],
-      powerAndSafetyChecks: [
-        'Double-check that battery 6V (+) connects to VM and NEVER to Arduino 5V or VCC.',
-        'Confirm common ground connection exists between battery pack (-) and Arduino GND.',
-        'If driver chip or wires feel hot to the touch, switch battery pack OFF immediately.'
-      ],
-      testCases: [
-        { action: 'AIN1=HIGH, AIN2=LOW, PWMA=150', expectedResult: 'Motor spins smoothly forward at medium speed.' },
-        { action: 'AIN1=LOW, AIN2=HIGH, PWMA=150', expectedResult: 'Motor reverses direction smoothly at medium speed.' },
-        { action: 'AIN1=HIGH, AIN2=HIGH, PWMA=255', expectedResult: 'Motor enters Active Dynamic Braking, halting wheel immediately.' }
+    "courseId": "beginner",
+    "sequence": 7,
+    "code": "BEGINNER 07",
+    "title": "Major Build 1: Touchless Smart Dustbin & Mini Robotic Arm",
+    "subtitle": "Major Project Milestone Day 1 — Mechanical pushrod linkages, noise-filtering algorithms, finite state machine architecture, and complete smart sanitation product integration.",
+    "promise": "I can assemble mechanical pushrod linkages, filter sensor noise, and build an autonomous touchless smart dustbin that opens on approach, holds, and closes safely.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01 through Beginner 06"
+    ],
+    "outcomes": [
+      "Design and assemble mechanical lever pushrod linkages to convert rotational servo torque into linear lid lifting.",
+      "Implement a 5-reading median/moving-average digital filter in C++ to eliminate acoustic sonar false positives and draft noise.",
+      "Architect a 4-state Finite State Machine (IDLE -> OPENING -> HOLDING -> CLOSING) with non-blocking timing.",
+      "Integrate physical sensors, servomotors, chassis enclosure, status indicator LEDs, and power distribution into a finished product.",
+      "Defend the completed smart device in an authentic engineering product showcase, measuring opening latency and battery current."
+    ],
+    "vocabulary": [
+      {
+        "term": "Mechanical Linkage",
+        "plainMeaning": "A connected set of metal rods and pivots that transmits force and motion from a motor to a lid.",
+        "technicalMeaning": "An assembly of rigid bodies connected by kinematic joints to transmit force and motion along a designed geometric trajectory."
+      },
+      {
+        "term": "Pushrod",
+        "plainMeaning": "A stiff metal wire that pushes the bin lid open when the servo arm rotates.",
+        "technicalMeaning": "A rigid linkage element loaded primarily in compression or tension to actuate remote mechanical components."
+      },
+      {
+        "term": "Finite State Machine (FSM)",
+        "plainMeaning": "A program organized into clear behavior stages (like Waiting, Opening, Open, Closing) that transitions based on rules.",
+        "technicalMeaning": "A computational model consisting of a finite set of states, transitions between states triggered by inputs, and associated actions."
+      },
+      {
+        "term": "Median Digital Filter",
+        "plainMeaning": "Taking 5 sensor readings, throwing out the highest and lowest glitches, and picking the middle number to prevent lid fluttering.",
+        "technicalMeaning": "A non-linear digital filtering technique widely used to remove salt-and-pepper noise from sensor data while preserving sharp step edges."
+      },
+      {
+        "term": "Holding Dwell Time",
+        "plainMeaning": "How long the bin lid stays open so you have plenty of time to throw away trash without it snapping on your hand.",
+        "technicalMeaning": "A software-controlled timer duration during which an actuator remains in its activated state prior to initiating closing trajectory."
+      },
+      {
+        "term": "System Integration",
+        "plainMeaning": "Putting all the separate parts (brain, eyes, muscle, chassis, and power) together into a finished, working machine.",
+        "technicalMeaning": "The engineering process of bringing together component subsystems into one unified, cooperating system ensuring functional synergy."
+      }
+    ],
+    "teacherPrep": [
+      "Prepare tabletop mini dustbin boxes or acrylic chassis kits with hinged lids for each team.",
+      "Provide pre-bent paperclip/wire pushrod linkages and hot-glue/mounting tape pads.",
+      "Ensure student power banks or 9V battery clips are charged and tested."
+    ],
+    "verifiedMaterials": [
+      "Arduino Uno R3 or Nano development board",
+      "HC-SR04 Ultrasonic Sonar Sensor",
+      "SG90 9g Micro Servo with horn arm and mounting hardware",
+      "Mini Dustbin Chassis / Box with lightweight hinged lid",
+      "Steel / Brass pushrod linkage wire (1.2mm diameter, 10cm length)",
+      "1x Common Cathode RGB LED or 2x 5mm LEDs (Green Open, Red Closed)",
+      "Solderless breadboard or prototyping shield and jumpers",
+      "Double-sided foam tape and zip-ties"
+    ],
+    "safetyNotes": [
+      "Ensure the lid is lightweight (cardboard or thin plastic) so the 9g micro servo does not stall under excessive mechanical load.",
+      "Keep fingers clear of the mechanical hinge pivot during automatic testing."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Walk up to a prototype Touchless Smart Dustbin with a handful of scrap paper: hold hand 15cm away; lid sweeps open smoothly, holds for 3 seconds with a blue status glow, and closes gently. Explain: \"Today, you build this commercial smart home robot!\"",
+        "studentAction": "Examine the completed physical build. Inspect the servo pushrod linkage mounted to the bin lid hinge."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Deconstruct the mechanical linkage geometry (lever arm radius vs angular travel). Teach the 4-state Finite State Machine and median noise filtering.",
+        "studentAction": "Interact with the Servo Arm & Mechanical Linkage Sim on the portal: test lever angles and noise filter algorithms."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide physical assembly: mount HC-SR04 facing outward on front of bin; mount SG90 on interior wall; link pushrod to lid; wire Arduino.",
+        "studentAction": "Assemble the physical dustbin mechanics. Adjust pushrod length so 0° holds lid closed and 100° opens lid wide."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through FSM architecture in C++: enum State { IDLE, OPENING, HOLDING, CLOSING }; and the 5-sample median filter.",
+        "studentAction": "Upload the Touchless Dustbin firmware. Test approach hand gestures: tune detection threshold to exactly 20cm."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"RoboBee Sanitation Product Showcase\": each team demonstrates 5 consecutive hands-free trash deposits and defends their build.",
+        "studentAction": "Demonstrate completed Smart Bin to peers and instructors. Measure opening response time in milliseconds and complete Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "Lever Linkage Geometry & Torque",
+        "explanation": "An SG90 servo produces about 1.6 kg-cm of torque at 5V. If our pushrod is attached 1.5 cm from the servo pivot, it exerts over 1.0 kg of pushing force! Connecting the other end of the rod further from the lid hinge gives high mechanical advantage to lift the lid effortlessly.",
+        "instructorNote": "Show that attaching the pushrod too far out on the servo horn reduces lifting force, while attaching too close reduces travel distance."
+      },
+      {
+        "title": "Eliminating False Triggers with Median Filtering",
+        "explanation": "Ultrasonic sensors occasionally read a false \"0cm\" or \"300cm\" due to room echoes, drafts, or electrical noise. If our code reacts to a single bad reading, the bin lid flaps erratically. A 5-reading median filter sorts samples and picks the median, completely ignoring extreme spikes.",
+        "instructorNote": "Demonstrate array sorting: raw values [18, 19, 0, 18, 20] -> sorted [0, 18, 18, 19, 20] -> median is 18 cm (the 0 is eliminated!)."
+      },
+      {
+        "title": "Finite State Machine (FSM) Clean Architecture",
+        "explanation": "Amateur code uses nested delay() calls that freeze the machine. Professional embedded systems use a Finite State Machine: IDLE (watching for hands), OPENING (smooth servo ramp), HOLDING (3s countdown with blinking light), and CLOSING (gentle non-slamming descent).",
+        "instructorNote": "Draw the 4 circles and transition arrows on the whiteboard."
+      }
+    ],
+    "visualizerId": "servo_arm_sim",
+    "project": {
+      "name": "Major Milestone 1: Autonomous Touchless Smart Sanitation Dustbin",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Fully assembled mechanical chassis with lid actuated by SG90 servo pushrod linkage.",
+        "HC-SR04 sonar front-mounted measuring user hand approach with median noise filtering.",
+        "Robust 4-state FSM executing: detects hand < 20cm -> opens to 100° in 350ms -> holds 3000ms -> closes smoothly without slamming."
       ]
     },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - H-Bridge Motor Control Lab
-// Class: BEGINNER 06 - DC Motors & The TB6612FNG Motor Driver
-
-// Control Pin Assignments
-const int PIN_PWMA = 5;  // Speed control: MUST be a hardware ~PWM pin (Timer0)
-const int PIN_AIN1 = 7;  // Motor Direction input 1
-const int PIN_AIN2 = 8;  // Motor Direction input 2
-const int PIN_STBY = 6;  // Standby disable pin (HIGH = Active, LOW = Sleep)
-
-void setup() {
-  // Configure all driver control pins as low-impedance digital outputs
-  pinMode(PIN_PWMA, OUTPUT);
-  pinMode(PIN_AIN1, OUTPUT);
-  pinMode(PIN_AIN2, OUTPUT);
-  pinMode(PIN_STBY, OUTPUT);
-
-  // Take driver out of low-power standby mode
-  digitalWrite(PIN_STBY, HIGH);
-
-  Serial.begin(9600);
-  Serial.println(F("========================================"));
-  Serial.println(F("  ROBOBEE TB6612FNG MOTOR TEST BENCH    "));
-  Serial.println(F("========================================"));
-}
-
-// Low-level helper: Set motor state (Speed: -255 to +255, 0 = Coast, brake = true for active stop)
-void driveMotor(int speedVal, bool activeBrake = false) {
-  if (activeBrake) {
-    // ACTIVE REGENERATIVE BRAKE: Both direction pins HIGH shorts motor terminals
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, HIGH);
-    analogWrite(PIN_PWMA, 255);
-    return;
-  }
-
-  if (speedVal > 0) {
-    // FORWARD ROTATION
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, LOW);
-    analogWrite(PIN_PWMA, constrain(speedVal, 0, 255));
-  } else if (speedVal < 0) {
-    // REVERSE ROTATION
-    digitalWrite(PIN_AIN1, LOW);
-    digitalWrite(PIN_AIN2, HIGH);
-    analogWrite(PIN_PWMA, constrain(abs(speedVal), 0, 255));
-  } else {
-    // COAST TO A HALT: Both direction pins LOW
-    digitalWrite(PIN_AIN1, LOW);
-    digitalWrite(PIN_AIN2, LOW);
-    analogWrite(PIN_PWMA, 0);
-  }
-}
-
-void loop() {
-  // 1. FORWARD SPEED SWEEP (Accelerating from deadband to full throttle)
-  Serial.println(F(">> Phase 1: Forward Acceleration Sweep..."));
-  for (int spd = 70; spd <= 255; spd += 25) {
-    driveMotor(spd);
-    Serial.print(F("   PWM Duty: "));
-    Serial.println(spd);
-    delay(250);
-  }
-  delay(1000); // Hold full forward speed for 1s
-
-  // 2. ACTIVE BRAKE DEMONSTRATION
-  Serial.println(F(">> Phase 2: ACTIVE DYNAMIC BRAKE engaged!"));
-  driveMotor(0, true); // Active brake
-  delay(1500);
-
-  // 3. REVERSE SPEED SWEEP
-  Serial.println(F(">> Phase 3: Reverse Rotation Sweep..."));
-  for (int spd = 70; spd <= 220; spd += 30) {
-    driveMotor(-spd);
-    Serial.print(F("   Reverse PWM: "));
-    Serial.println(spd);
-    delay(250);
-  }
-  delay(1000);
-
-  // 4. COAST TO STOP
-  Serial.println(F(">> Phase 4: Coasting to stop (low resistance)...\n"));
-  driveMotor(0, false); // Passive coast
-  delay(2500);
-}`,
-      pinMap: { 
-        'Pin 5': 'PWMA speed duty cycle (Hardware ~PWM pin)', 
-        'Pin 7': 'AIN1 motor direction logic input 1', 
-        'Pin 8': 'AIN2 motor direction logic input 2', 
-        'Pin 6': 'STBY standby enable pin (HIGH = operational, LOW = standby)' 
-      },
-      setupAndUpload: [
-        '1. Ensure motor wheel is elevated in mid-air before uploading.',
-        '2. Verify and upload the sketch via Arduino IDE.',
-        '3. Switch battery pack power switch to ON.',
-        '4. Open Serial Monitor at 9600 baud to observe telemetry transitions.'
+    "activity": {
+      "title": "Fabricate, Assemble, and Program the Touchless Smart Dustbin",
+      "steps": [
+        "Step 1: Mount HC-SR04 ultrasonic sensor to the front aperture of the dustbin facing slightly upwards.",
+        "Step 2: Secure SG90 servo motor firmly to the interior sidewall using foam tape or bracket screws.",
+        "Step 3: Bend a 10cm steel linkage pushrod: form Z-bends on both ends; attach one end to servo horn and other end to lid bracket.",
+        "Step 4: Wire HC-SR04 (Trig D9, Echo D10), SG90 (Signal D6, 5V, GND), and status RGB LED (Pins 3, 4, 5).",
+        "Step 5: Upload the production-grade FSM firmware.",
+        "Step 6: Test manual calibration: confirm 0° holds lid completely flush and 100° opens lid to 80° vertical clearance.",
+        "Step 7: Conduct 10 consecutive hands-free discard trials with crumpled paper balls."
       ],
-      explanations: [
-        'digitalWrite(STBY, HIGH): Pulls the TB6612FNG standby pin HIGH, awakening internal charge pump and MOSFET gate drivers.',
-        'digitalWrite(AIN1, HIGH) & AIN2, LOW: Configures H-Bridge to conduct diagonally, routing battery current forward through motor coils.',
-        'digitalWrite(AIN1, HIGH) & AIN2, HIGH: Enters Active Regenerative Brake mode, shorting motor terminals to ground to resist rotation.',
-        'analogWrite(PWMA, val): Sends high-frequency 490Hz pulse-width modulated square wave, altering average motor voltage.'
+      "successCriteria": [
+        "Lid opens within 400ms of hand approach within 20cm.",
+        "Zero false triggers observed when ambient students walk past at 50cm.",
+        "Lid closes gently without snapping or stalling the servo motor."
       ],
-      expectedResult: 'Elevated wheel accelerates smoothly forward through 8 speed steps, snaps to an immediate halt under active braking, accelerates in reverse, and coasts to rest.',
-      caveats: [
-        'If the motor rotates backward during Phase 1, simply swap the two motor wires connected to terminals A01 and A02.',
-        'Below a PWM value of ~60-80, the motor may hum without spinning due to internal gearbox static friction.'
-      ],
-      tweakTip: 'Mission Challenge: Determine the exact "Breakaway PWM Threshold" where the motor first starts turning, and write a software clamp that never commands below that value!'
+      "extension": "Add an automatic full-bin warning: if trash remains stacked < 5cm from sensor for 10 seconds, flash red LED!"
     },
-    troubleshooting: [
-      { 
-        symptom: 'Motor emits a high-pitched whine or buzz, but the wheel does not rotate.', 
-        checks: [
-          'Step 1: Increase the PWM speed value above 100 in code.',
-          'Step 2: Check battery pack voltage with a digital multimeter — fresh 4xAA cells should measure ~6.0V.',
-          'Step 3: Try spinning the wheel lightly with your fingers to see if gear teeth are jammed.'
-        ], 
-        explanation: 'Gearbox static friction (stiction) requires a minimum breakaway torque. Low PWM values cannot supply sufficient average current to overcome mechanical resistance.' 
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3 or Nano",
+        "HC-SR04 Sonar",
+        "SG90 Micro Servo"
+      ],
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 or Nano",
+          "exactVariant": "Standard 16 MHz microcontroller",
+          "quantity": 1
+        },
+        {
+          "name": "HC-SR04 Sonar Sensor",
+          "exactVariant": "4-pin ultrasonic distance module",
+          "quantity": 1
+        },
+        {
+          "name": "SG90 9g Micro Servo",
+          "exactVariant": "High-torque nylon gear micro servo",
+          "quantity": 1
+        },
+        {
+          "name": "Dustbin Container Body & Lid",
+          "exactVariant": "Lightweight desktop flip-top bin (15–20cm height)",
+          "quantity": 1
+        },
+        {
+          "name": "Linkage Pushrod Wire",
+          "exactVariant": "1.2mm diameter stiff steel wire (10cm length)",
+          "quantity": 1
+        },
+        {
+          "name": "Status Indicator RGB LED",
+          "exactVariant": "Common cathode 5mm LED with 220Ω resistors",
+          "quantity": 1
+        },
+        {
+          "name": "Half-size Solderless Breadboard",
+          "exactVariant": "400 tie points with power rails",
+          "quantity": 1
+        },
+        {
+          "name": "Mounting Hardware & Jumpers",
+          "exactVariant": "Double-sided foam tape, zip ties, and jumper wires",
+          "quantity": 12
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/class1-external-blink-wiring.svg",
+      "schematic": "HC-SR04: VCC->5V | GND->GND | Trig->D9 | Echo->D10; SG90 Servo: VCC->5V | GND->GND | Signal->D6; Status RGB LED: Cathode->GND | Red->220Ω->D3 | Green->220Ω->D4 | Blue->220Ω->D5",
+      "wireTable": [
+        {
+          "from": "Arduino Digital Pin 9",
+          "to": "HC-SR04 Trig Pin",
+          "wireOrPolarityNote": "Sonar trigger pulse"
+        },
+        {
+          "from": "Arduino Digital Pin 10",
+          "to": "HC-SR04 Echo Pin",
+          "wireOrPolarityNote": "Sonar echo return"
+        },
+        {
+          "from": "Arduino Digital Pin 6 (PWM)",
+          "to": "SG90 Orange Signal Wire",
+          "wireOrPolarityNote": "Lid actuator servo command"
+        },
+        {
+          "from": "Arduino Digital Pin 3",
+          "to": "RGB Red Anode Resistor",
+          "wireOrPolarityNote": "Closing / Closed indicator"
+        },
+        {
+          "from": "Arduino Digital Pin 4",
+          "to": "RGB Green Anode Resistor",
+          "wireOrPolarityNote": "Open / Ready indicator"
+        },
+        {
+          "from": "Arduino Digital Pin 5",
+          "to": "RGB Blue Anode Resistor",
+          "wireOrPolarityNote": "Holding countdown indicator"
+        },
+        {
+          "from": "Arduino 5V Power Pin",
+          "to": "Breadboard Power Rail (+)",
+          "wireOrPolarityNote": "Regulated 5V bus"
+        },
+        {
+          "from": "Arduino GND Pin",
+          "to": "Breadboard Ground Rail (-)",
+          "wireOrPolarityNote": "Common Ground return"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Drill or cut neat aperture holes in dustbin body for sonar transducers.",
+        "2. Fasten SG90 servo securely to inner wall with industrial foam tape.",
+        "3. Form Z-bends in the 1.2mm wire pushrod and connect between servo arm and lid underside.",
+        "4. Mount Arduino and breadboard to rear or base of dustbin.",
+        "5. Connect all wires according to wire table.",
+        "6. Power via USB or 9V battery pack; test open/close angles."
+      ],
+      "powerAndSafetyChecks": [
+        "Verify pushrod does not bind or hit the bin rim during opening stroke.",
+        "Confirm servo is powered from 5V rail and shares common Ground with Arduino."
+      ],
+      "testCases": [
+        {
+          "action": "Idle state (no hand near bin)",
+          "expectedResult": "Lid rests securely closed at 0°; status LED glows faint Green."
+        },
+        {
+          "action": "Hover hand 10cm above sonar sensor",
+          "expectedResult": "Lid sweeps smoothly open to 100° in ~350ms; status LED switches to Blue."
+        },
+        {
+          "action": "Hold hand for countdown period",
+          "expectedResult": "Lid stays open for exactly 3000ms; status LED pulses."
+        },
+        {
+          "action": "Countdown timer expires",
+          "expectedResult": "Lid descends smoothly back to 0° closed position; status LED returns to Green."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 07: Touchless Smart Dustbin\n * Major Project Milestone Day 1\n * Board: Arduino Uno R3 or Nano (ATmega328P)\n */\n\n#include <Servo.h>\n\nconst int PIN_TRIG   = 9;   // Sonar Trigger\nconst int PIN_ECHO   = 10;  // Sonar Echo\nconst int PIN_SERVO  = 6;   // Lid Actuator Servo\nconst int PIN_RED    = 3;   // RGB Red\nconst int PIN_GREEN  = 4;   // RGB Green\nconst int PIN_BLUE   = 5;   // RGB Blue\n\n// Mechanical Angle Constants\nconst int ANGLE_CLOSED = 0;   // Lid flush closed\nconst int ANGLE_OPEN   = 105; // Lid lifted wide\nconst int DETECT_DIST  = 20;  // Detection boundary in cm\nconst unsigned long DWELL_TIME = 3000; // Hold open for 3.0 seconds\n\nServo lidServo;\n\n// Finite State Machine States\nenum BinState {\n  STATE_IDLE,\n  STATE_OPENING,\n  STATE_HOLDING,\n  STATE_CLOSING\n};\n\nBinState currentState = STATE_IDLE;\nunsigned long stateStartTime = 0;\n\n// 5-Sample Median Filter for Ultra-Reliable Sonar Distance\nlong getFilteredDistance() {\n  long samples[5];\n  for (int i = 0; i < 5; i++) {\n    digitalWrite(PIN_TRIG, LOW);\n    delayMicroseconds(2);\n    digitalWrite(PIN_TRIG, HIGH);\n    delayMicroseconds(10);\n    digitalWrite(PIN_TRIG, LOW);\n\n    long duration = pulseIn(PIN_ECHO, HIGH, 25000);\n    if (duration == 0) duration = 15000;\n    samples[i] = (duration * 0.0343) / 2;\n    delay(10);\n  }\n\n  // Simple bubble sort to find median\n  for (int i = 0; i < 4; i++) {\n    for (int j = i + 1; j < 5; j++) {\n      if (samples[i] > samples[j]) {\n        long temp = samples[i];\n        samples[i] = samples[j];\n        samples[j] = temp;\n      }\n    }\n  }\n  return samples[2]; // Return median middle sample\n}\n\nvoid setStatusColor(bool r, bool g, bool b) {\n  digitalWrite(PIN_RED, r ? HIGH : LOW);\n  digitalWrite(PIN_GREEN, g ? HIGH : LOW);\n  digitalWrite(PIN_BLUE, b ? HIGH : LOW);\n}\n\nvoid setup() {\n  pinMode(PIN_TRIG, OUTPUT);\n  pinMode(PIN_ECHO, INPUT);\n  pinMode(PIN_RED, OUTPUT);\n  pinMode(PIN_GREEN, OUTPUT);\n  pinMode(PIN_BLUE, OUTPUT);\n\n  lidServo.attach(PIN_SERVO);\n  lidServo.write(ANGLE_CLOSED);\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE TOUCHLESS SMART DUSTBIN READY ===\");\n  setStatusColor(false, true, false); // Green = Ready\n}\n\nvoid loop() {\n  long distance = getFilteredDistance();\n\n  switch (currentState) {\n    case STATE_IDLE:\n      setStatusColor(false, true, false); // Green = Ready\n      if (distance > 0 && distance < DETECT_DIST) {\n        Serial.println(\">> HAND DETECTED: Opening Lid!\");\n        currentState = STATE_OPENING;\n        stateStartTime = millis();\n      }\n      break;\n\n    case STATE_OPENING:\n      setStatusColor(false, false, true); // Blue = Opening\n      lidServo.write(ANGLE_OPEN);\n      if (millis() - stateStartTime >= 350) { // Allow 350ms to reach 105 deg\n        currentState = STATE_HOLDING;\n        stateStartTime = millis();\n      }\n      break;\n\n    case STATE_HOLDING:\n      setStatusColor(false, false, true); // Blue = Holding\n      // If hand remains present, refresh dwell timer\n      if (distance > 0 && distance < DETECT_DIST) {\n        stateStartTime = millis();\n      }\n      if (millis() - stateStartTime >= DWELL_TIME) {\n        Serial.println(\">> Dwell complete: Closing Lid...\");\n        currentState = STATE_CLOSING;\n        stateStartTime = millis();\n      }\n      break;\n\n    case STATE_CLOSING:\n      setStatusColor(true, false, false); // Red = Closing\n      lidServo.write(ANGLE_CLOSED);\n      if (millis() - stateStartTime >= 400) { // Allow 400ms to seat flush\n        currentState = STATE_IDLE;\n        Serial.println(\">> Bin safely closed and IDLE.\");\n      }\n      break;\n  }\n\n  delay(40);\n}\n",
+      "pinMap": {
+        "Pin 9": "HC-SR04 Trigger Pin (Fires ultrasonic chirp pulses)",
+        "Pin 10": "HC-SR04 Echo Pin (Reads return acoustic time-of-flight)",
+        "Pin 6": "SG90 Micro Servo PWM control line",
+        "Pin 3": "Status RGB LED Red channel (Closing state)",
+        "Pin 4": "Status RGB LED Green channel (Idle / Ready state)",
+        "Pin 5": "Status RGB LED Blue channel (Opening / Holding state)"
       },
-      { 
-        symptom: 'Arduino disconnects from USB or reboots every time the motor attempts to start.', 
-        checks: [
-          'Step 1: Check where the motor driver VM pin is connected — is it accidentally plugged into Arduino 5V instead of the battery pack?',
-          'Step 2: Verify that the 4xAA batteries are fresh and not completely drained.'
-        ], 
-        explanation: 'When a motor starts from rest, it draws a massive inrush current surge. If powered from Arduino 5V, this surge droops the voltage rail below 4.3V, triggering the ATmega328P Brown-Out Detector (BOD) reset.' 
+      "setupAndUpload": [
+        "Mount mechanical hardware into dustbin enclosure.",
+        "Connect Arduino via USB, select Board and Port, and upload sketch.",
+        "Test hand gestures: confirm lid opens smoothly, holds 3 seconds, and closes."
+      ],
+      "explanations": [
+        "getFilteredDistance(): Takes 5 sonar samples, sorts them in ascending order, and returns samples[2] (the median) to eliminate false spikes.",
+        "enum BinState: Clean enum defining the 4 formal states of the machine.",
+        "DWELL_TIME (3000ms): Keeps lid open so user can comfortably dispose of trash without rush.",
+        "stateStartTime timer refresh: If user’s hand stays in front of the sensor, the dwell timer resets, keeping the lid open continuously."
+      ],
+      "expectedResult": "Placing hand within 20cm of bin smoothly swings lid open to 105°; lid stays open for 3s (or as long as hand remains); closes gently when user steps away.",
+      "caveats": [
+        "Do not set ANGLE_OPEN beyond the mechanical limit of the lid hinge, or the servo will stall and overheat.",
+        "Ensure the pushrod wire is rigid steel so it does not flex or bow under load."
+      ],
+      "tweakTip": "Adjust DWELL_TIME from 3000ms to 5000ms if users prefer a longer trash deposit window!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "Lid opens only halfway or the servo motor buzzes loudly when open.",
+        "checks": [
+          "Check mechanical linkage travel: verify the pushrod is not jammed against the bin rim.",
+          "Adjust ANGLE_OPEN in code: reduce from 105 to 90 or 85 degrees to match lid hinge freedom."
+        ],
+        "explanation": "Commanding a servo beyond physical mechanical limits causes the motor to stall under high stall current."
       },
-      { 
-        symptom: 'Motor does not respond at all; Serial Monitor prints normally, but wheel never moves.', 
-        checks: [
-          'Step 1: Verify STBY pin 6 is set to OUTPUT and commanded HIGH in code.',
-          'Step 2: Verify the Shared Common Ground wire is securely bridging Arduino GND to Battery (-) on the breadboard.',
-          'Step 3: Confirm the physical switch on the 4xAA battery pack is flipped ON.'
-        ], 
-        explanation: 'If the STBY pin is LOW or floating, the TB6612FNG enters low-power sleep mode, disabling all internal MOSFET gate drivers.' 
+      {
+        "symptom": "Lid opens randomly when nobody is in front of the dustbin.",
+        "checks": [
+          "Check sonar angle: ensure the sensor is not angled downwards towards the floor or tabletop.",
+          "Increase sample count in median filter from 5 to 7 samples."
+        ],
+        "explanation": "Ground reflections can create intermittent false echos that trigger threshold detection."
       },
-      { 
-        symptom: 'Motor only spins in one direction; reversing commands cause it to stop.', 
-        checks: [
-          'Step 1: Inspect jumper wire from Pin 8 to AIN2 — is it seated firmly in the breadboard row?',
-          'Step 2: Swap the AIN1 and AIN2 wires to see if the failure follows the wire or the driver channel.'
-        ], 
-        explanation: 'A disconnected direction pin leaves that gate floating, preventing the H-Bridge from completing the second diagonal conduction path.' 
+      {
+        "symptom": "Lid snaps open so fast it shakes the dustbin.",
+        "checks": [
+          "Implement an interpolated servo sweep: increment angle by 3 degrees every 10ms instead of instantaneous jump.",
+          "Ensure the bin base is weighted or taped to the tabletop."
+        ],
+        "explanation": "Direct positional jumps command maximum servo motor acceleration and rotational momentum."
       }
     ],
-    checksForUnderstanding: [
-      'Why does connecting a DC motor directly to an Arduino GPIO pin cause permanent chip damage?',
-      'How does an H-Bridge circuit achieve bidirectional motor rotation without reversing battery wires by hand?',
-      'Why is a Common Ground wire between the Arduino and battery pack strictly required?'
+    "checksForUnderstanding": [
+      "How does a 5-sample median filter eliminate false ultrasonic spikes?",
+      "Why is a Finite State Machine superior to a long delay(3000) for managing the lid cycle?"
     ],
-    exitTicket: [
-      { 
-        question: 'Why can a microcontroller GPIO pin power an LED directly, but cannot power a DC motor directly?', 
-        rubricOrSampleReasoning: 'An LED draws safe low current (~15mA), within the ATmega328P 20mA pin rating. A DC motor draws 300mA to 1500mA+, which exceeds the pin rating by 15 to 75 times and vaporizes internal silicon traces.' 
+    "exitTicket": [
+      {
+        "question": "Explain what happens during the HOLDING state if a user keeps their hand in front of the sensor for 8 seconds.",
+        "rubricOrSampleReasoning": "The code checks if distance < DETECT_DIST during the HOLDING state; if true, it resets stateStartTime = millis(). This refreshes the 3-second countdown so the lid never snaps shut while the user is actively using the bin."
       },
-      { 
-        question: 'What is inductive kickback, and what circuit component protects the motor driver against it?', 
-        rubricOrSampleReasoning: 'Inductive kickback is a high-voltage spike generated when current through a motor coil is interrupted, caused by collapsing magnetic fields (V = -L di/dt). Flyback diodes clamp these spikes safely.' 
+      {
+        "question": "Why does sorting an array of 5 readings and selecting index 2 eliminate an occasional 0cm sensor glitch?",
+        "rubricOrSampleReasoning": "A glitch of 0cm will be sorted to the very front of the array (index 0). Index 2 represents the true median reading, completely filtering out both 0cm dropouts and 300cm echo timeouts."
       },
-      { 
-        question: 'What happens to average motor voltage when an Arduino executes analogWrite(pin, 128) from a 5V logic driver?', 
-        rubricOrSampleReasoning: 'analogWrite(pin, 128) outputs a 50% duty cycle PWM square wave, delivering an average effective voltage of 2.5V (50% of 5V).' 
+      {
+        "question": "What is the mechanical advantage of attaching a pushrod further away from the bin lid hinge?",
+        "rubricOrSampleReasoning": "Greater distance from the hinge increases the moment arm (Torque = Force × Distance), meaning less force is needed from the servo motor to lift the weight of the lid."
       }
     ],
-    differentiation: {
-      support: ['Provide color-coded breadboard wiring templates highlighting VM (Red), GND (Black), and Logic (Yellow/Blue).'],
-      extension: ['Implement a smooth S-curve acceleration profile that ramps motor speed without mechanical jerk.'],
-      offlineOption: ['Use the interactive H-Bridge transistor simulator to toggle virtual switches and trace current paths.']
+    "differentiation": {
+      "support": [
+        "Provide pre-cut pushrods with precision Z-bends for quick mechanical assembly."
+      ],
+      "extension": [
+        "Add an automated soft-close feature using PWM micro-stepping to eliminate all closure impact noise."
+      ],
+      "offlineOption": [
+        "Simulate the complete Touchless Dustbin mechanical linkage on the RoboBee portal."
+      ]
     },
-    nextLessonId: 'beg-07',
-    nextLessonTeaser: 'Beginner 07: Movement Functions & Route Control — Package raw motor pins into forward(), turnRight(), and stopRobot() to drive precision floor routes!',
-    sources: [{ title: 'Toshiba TB6612FNG Driver Datasheet & Application Notes', url: 'https://toshiba.semicon-storage.com/' }],
-    assetCredits: [{ asset: 'H-Bridge Truth Table Guide', creator: 'RoboBEE Innovators Lab', license: 'Proprietary', sourceUrl: 'team_info' }],
+    "nextLessonId": "beg-08",
+    "nextLessonTeaser": "Class 08: MQ-2 Gas/Smoke, DHT11 Temp/Humidity, Soil Moisture & 5V Relay! Enter environmental monitoring and high-power industrial switching.",
+    "sources": [
+      {
+        "title": "RoboBEE Innovators Major Build 1 Engineering Specifications",
+        "url": ""
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "Touchless Smart Dustbin Mechanical Assembly Drawing",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
+    ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
   {
-    id: 'beg-07',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-motion-differential-kinematics"],
-      lookUpWhileBuilding: ["fg-comp-tb6612fng", "fg-prog-program-structure"],
-      goDeeper: ["fg-comp-encoders-odometry"]
-    },
-    courseId: 'beginner',
-    sequence: 7,
-    code: 'BEGINNER 07',
-    title: 'Differential-Drive Movement and Route Control',
-    promise: 'By the end of this masterclass, you will master differential-drive robot kinematics, encapsulate low-level H-Bridge commands into clean C++ movement functions, understand the physics of open-loop dead reckoning drift, and choreograph autonomous floor routes.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01', 'Beginner 02', 'Beginner 03', 'Beginner 04', 'Beginner 05', 'Beginner 06'],
-    outcomes: [
-      'Formulate the mathematical kinematics of differential drive mobile robotics (linear velocity V and angular rotational rate ω).',
-      'Encapsulate low-level motor pin operations into modular, reusable C++ functions: forward(), reverse(), turnLeft(), turnRight(), and stopRobot().',
-      'Distinguish between zero-radius tank spins, single-wheel pivot turns, and sweeping arc maneuvers.',
-      'Explain why open-loop dead reckoning inevitably drifts over time due to gearbox tolerances, wheel slip, and battery voltage droop.',
-      'Calibrate software motor trim multipliers to achieve straight-line tracking on real classroom flooring.'
-    ],
-    vocabulary: [
-      { term: 'Differential Drive', plainMeaning: 'Steering a mobile robot by driving its left and right wheels at different speeds.', technicalMeaning: 'A mobile robotics drive architecture based on two independent coaxial drive wheels with velocities determining linear and angular motion.' },
-      { term: 'Kinematics', plainMeaning: 'The branch of physics that describes motion (speed, angles, distance) without worrying about forces.', technicalMeaning: 'The study of the geometry of motion of points, bodies, and systems of bodies without consideration of the forces that cause the motion.' },
-      { term: 'Dead Reckoning', plainMeaning: 'Navigating purely by estimating time and speed without looking at sensors or maps.', technicalMeaning: 'The process of calculating current position based on estimated velocity, course heading, and elapsed time from a known fix.' },
-      { term: 'Open-Loop Control', plainMeaning: 'Sending a command to a motor and blindly assuming it worked without checking sensor feedback.', technicalMeaning: 'A control system in which output has no feedback effect on the input quantity or control action.' },
-      { term: 'Software Motor Trim', plainMeaning: 'A tiny calibration number in code that slows down a faster motor so the robot drives straight.', technicalMeaning: 'A scaling multiplier applied to actuator control signals to compensate for physical mechanical asymmetric biases.' },
-      { term: 'Function Abstraction', plainMeaning: 'Hiding 12 lines of confusing pin code behind a clean English command like forward(150).', technicalMeaning: 'The software design practice of isolating low-level hardware manipulations behind a clean, parameter-driven application programming interface (API).' }
-    ],
-    teacherPrep: ['Mark test navigation arenas on classroom floor with painter’s tape (start line, 90° corner box, stop target).'],
-    verifiedMaterials: ['Assembled 2WD Smart Rover Chassis with dual TT gearmotors and caster', 'Arduino Uno Rev3', 'TB6612FNG Driver', '4xAA Battery Pack', 'Painter’s floor tape', 'Ruler / tape measure'],
-    safetyNotes: [
-      'Perform floor testing only in designated flat areas away from stairs, open doorways, and foot traffic.',
-      'Never pick up a moving robot by its spinning wheels; lift by the main acrylic chassis deck.',
-      'Ensure battery pack switch is OFF when carrying the rover between lab tables and testing zones.'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Display 120 lines of repetitive digitalWrite code versus 6 clean lines of function calls. Ask: "Which codebase would you rather debug in a national competition?"', 
-        studentAction: 'Analyze code readability and recognize the power of procedural software abstraction.' 
-      },
-      { 
-        segment: '10–25m Concept', 
-        minutes: 15, 
-        teacherAction: 'Derive differential drive kinematics on the whiteboard: V = (Vr + Vl)/2 and ω = (Vr - Vl)/W. Explain open-loop drift and why time-based navigation fails over long distances.', 
-        studentAction: 'Calculate wheel speed ratios for a 90° tank turn versus a wide sweeping arc turn.' 
-      },
-      { 
-        segment: '25–50m Floor Tests', 
-        minutes: 25, 
-        teacherAction: 'Facilitate floor testing on taped routes. Guide students in measuring steering drift and tuning software motor trim factors.', 
-        studentAction: 'Deploy rover on test track, calibrate turn timing to execute an exact 90° corner, and navigate around an obstacle cone.' 
-      },
-      { 
-        segment: '50–60m Exit Check', 
-        minutes: 10, 
-        teacherAction: 'Review empirical causes of dead reckoning error (tire traction, gearbox variance, battery voltage decline).', 
-        studentAction: 'Complete formative exit check and explain why closed-loop sensory feedback is required for true autonomy.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. Differential Drive Kinematic Equations & Heading Physics',
-        explanation: 'A two-wheeled differential drive rover moves in a two-dimensional plane $(x, y, \theta)$. Its instantaneous linear velocity ($V$) is the mathematical average of the left and right wheel surface velocities: $V = \frac{V_R + V_L}{2}$. Its angular rotational velocity ($\omega$) is determined by the velocity difference divided by the track width ($W$, the lateral distance between wheel contact patches): $\omega = \frac{V_R - V_L}{W}$. When both wheels rotate at identical forward velocities ($V_L = V_R$), angular velocity is zero ($\omega = 0$), producing pure linear translation. When velocities differ, the robot rotates about an Instantaneous Center of Curvature (ICC).',
-        instructorNote: 'Point out that increasing track width W makes a robot turn more slowly and predictably for a given wheel speed difference.'
-      },
-      {
-        title: '2. Software Function Abstraction & API Architecture',
-        explanation: 'In commercial robotics firmware, hardware engineers never scatter raw pin manipulations (`digitalWrite(7, HIGH)`) throughout navigational logic. Doing so creates fragile "spaghetti code" that is nearly impossible to maintain or debug. Instead, good architecture uses Function Abstraction: low-level H-Bridge operations are encapsulated inside dedicated motor driver functions: `setLeftMotor(speed)` and `setRightMotor(speed)`. High-level navigational commands like `forward(speed)`, `turnRight(speed)`, and `stopRobot()` simply call these driver primitives, presenting a clean, robust Application Programming Interface (API).',
-        instructorNote: 'Compare function abstraction to driving a modern car: you press the accelerator pedal; you do not manually squirt fuel into the engine cylinders!'
-      },
-      {
-        title: '3. Turn Topology: Tank Spins vs Pivot Turns vs Sweeping Arcs',
-        explanation: 'Differential steering enables three distinct turning topologies: 1. Tank Spin (Zero-Radius Turn): Wheels rotate at equal speeds in opposite directions ($V_L = -V_R$). The ICC is located at the center of the axle, causing the robot to rotate completely in place ($R = 0$). Ideal for tight maze escapes. 2. Pivot Turn: One wheel is locked at zero speed while the other drives forward ($V_L > 0, V_R = 0$). The robot pivots around the stationary tire with radius $R = W$. 3. Sweeping Arc: Both wheels drive forward at different non-zero speeds ($V_L > V_R > 0$). The robot navigates a smooth curve without shedding forward kinetic momentum, ideal for high-speed racing lines.',
-        instructorNote: 'Have students trace the three turn paths on the floor with their fingers to visualize the difference in turning radii.'
-      },
-      {
-        title: '4. The Inevitable Degradation of Open-Loop Dead Reckoning',
-        explanation: 'Open-loop control operates on pure faith: the software issues a command (`forward for 800ms`) and assumes the physical world complies perfectly without checking reality. In practice, dead reckoning degrades rapidly due to four physical factors: 1. Microscopic gearbox manufacturing tolerances (DC motors vary by ±10% in RPM); 2. Surface friction variations (tire slip on dust or tile grout); 3. Wheel diameter discrepancies (even 0.5mm variance curves travel); 4. Battery discharge curves (as voltage drops from 6.0V to 5.2V, motor RPM drops, shortening travel distance).',
-        instructorNote: 'Use this lesson to establish why upcoming lessons on Ultrasonic sensors (beg-09) and Line sensors (int-02) are essential for closed-loop correction.'
-      },
-      {
-        title: '5. Software Motor Trim & Straight-Line Calibration',
-        explanation: 'Because no two mass-produced DC motors have identical internal magnetic field strengths or gearbox friction, a differential drive robot will almost never drive in a perfectly straight line right out of the box! Rather than re-soldering hardware, robotics engineers compensate in firmware using Software Motor Trim. By defining scaling constants (e.g. `const float LEFT_TRIM = 1.00; const float RIGHT_TRIM = 0.92;`), we mathematically reduce the duty cycle delivered to the faster motor, equalizing wheel RPM and achieving straight-line tracking.',
-        instructorNote: 'Show students how to measure drift: run the robot 2 meters along a floor tile seam and measure how many centimeters it drifted off-center.'
-      },
-      {
-        title: '6. Dynamic Active Braking vs Passive Coasting in Rover Physics',
-        explanation: 'Stopping a moving rover is just as critical as accelerating it. When an autonomous vehicle reaches a target position, simply setting PWM to zero causes the robot to "coast"—rolling forward under its own linear momentum for 10cm to 30cm depending on chassis mass. To achieve crisp, repeatable positioning, the firmware must trigger Active Dynamic Braking: shorting both motor terminals together through the H-Bridge. As the armature continues spinning through the permanent magnets, it functions as an electrical generator. The shorted terminals cause Back-EMF to oppose motion, generating immediate electromagnetic braking torque.',
-        instructorNote: 'Demonstrate by pushing the rover across the desk with driver off (coasts easily) vs with motor terminals shorted (heavy resistance).'
-      }
-    ],
-    visualizerId: 'movement_route_sim',
-    project: {
-      name: 'Two-Wheel Autonomous Differential-Drive Rover',
-      deliverableType: 'physical_build',
-      successEvidence: [
-        'Fully assembled 2WD chassis with dual TT gearmotors, TB6612FNG driver, and front omnidirectional castor.',
-        'Modular C++ firmware implementing forward(), reverse(), turnLeft(), turnRight(), and stopRobot() functions.',
-        'Successfully calibrated 90° tank turn executing an exact square floor path and stopping within the target box.'
+    "id": "beg-08",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-electronics-ohms-law",
+        "fg-board-uno-anatomy"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-electronics-breadboards",
+        "fg-safety-lab-code"
+      ],
+      "goDeeper": [
+        "fg-testing-fmea-debugging",
+        "fg-arduino-ide-workflow"
       ]
     },
-    activity: {
-      title: 'Program and Calibrate Autonomous Floor Navigation',
-      steps: [
-        'Step 1: Prop rover on a bench block to verify wheel rotation directions before touching the floor.',
-        'Step 2: Upload modular movement firmware with left and right motor abstraction functions.',
-        'Step 3: Place rover on the starting line of the taped floor arena.',
-        'Step 4: Measure forward distance travel: tune delay duration to traverse exactly 1.0 meter.',
-        'Step 5: Calibrate 90-degree turn timing: adjust turn delay (approx 320ms–400ms) until rover pivots exactly 90° on a floor tile.',
-        'Step 6: Execute a 4-segment square path (Forward -> Turn -> Forward -> Turn -> Forward -> Turn -> Forward -> Stop) returning to start!'
-      ],
-      successCriteria: [
-        'Rover drives straight along a 1-meter floor line with less than 5cm of lateral drift.',
-        'Rover executes a clean 90-degree pivot turn without colliding with side boundaries.',
-        'Chassis comes to an immediate, crisp stop using dynamic braking.'
-      ],
-      extension: 'Implement a non-blocking navigation state machine that executes complex multi-waypoint routes without blocking delays.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['2WD Mobile Rover Chassis Kit', 'Dual Yellow TT DC Motors (1:48)', 'Toshiba TB6612FNG Dual Driver', 'Arduino Uno Rev3 DIP'],
-      componentList: [
-        { name: '2WD Laser-Cut Acrylic Chassis', exactVariant: 'Standard dual TT motor cutouts with caster mount', quantity: 1 },
-        { name: 'TT Yellow DC Gear Motors', exactVariant: 'Dual shaft, 3V-6V DC, 1:48 gear reduction ratio', quantity: 2 },
-        { name: 'High-Grip Rubber Drive Wheels', exactVariant: '65mm outer diameter with silicone rubber tread', quantity: 2 },
-        { name: 'Omnidirectional Ball Caster Wheel', exactVariant: 'Nylon / stainless steel ball transfer unit', quantity: 1 },
-        { name: 'TB6612FNG Dual Motor Driver Breakout', exactVariant: 'Carrier board with integrated flyback diodes', quantity: 1 },
-        { name: '4xAA Switched Battery Holder', exactVariant: '6.0V nominal DC supply with flying leads', quantity: 1 },
-        { name: 'Jumper Wires & Fasteners', exactVariant: 'M3 machine screws, standoffs, and 24AWG jumpers', quantity: 14 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/2wd_rover_wiring_plan.svg',
-      schematic: 'TB6612FNG Driver Pin Map:\nLeft Motor:  PWMA ── Arduino Pin 5 (~PWM) | AIN1 ── Pin 7 | AIN2 ── Pin 8\nRight Motor: PWMB ── Arduino Pin 6 (~PWM) | BIN1 ── Pin 9 | BIN2 ── Pin 10\nStandby:     STBY ── Arduino Pin 3 (HIGH = Enabled)\nPower:       VCC ── Arduino 5V | VM ── Battery (+) 6V | GND ── Battery (-) & Arduino GND\nOutputs:     A01/A02 ── Left Motor | B01/B02 ── Right Motor',
-      wireTable: [
-        { from: 'Arduino Pin 5 (~PWM)', to: 'TB6612FNG PWMA', wireOrPolarityNote: 'Left Motor Speed Signal' },
-        { from: 'Arduino Pin 7', to: 'TB6612FNG AIN1', wireOrPolarityNote: 'Left Motor Direction 1' },
-        { from: 'Arduino Pin 8', to: 'TB6612FNG AIN2', wireOrPolarityNote: 'Left Motor Direction 2' },
-        { from: 'Arduino Pin 6 (~PWM)', to: 'TB6612FNG PWMB', wireOrPolarityNote: 'Right Motor Speed Signal' },
-        { from: 'Arduino Pin 9', to: 'TB6612FNG BIN1', wireOrPolarityNote: 'Right Motor Direction 1' },
-        { from: 'Arduino Pin 10', to: 'TB6612FNG BIN2', wireOrPolarityNote: 'Right Motor Direction 2' },
-        { from: 'Arduino Pin 3', to: 'TB6612FNG STBY', wireOrPolarityNote: 'Master Standby Enable' },
-        { from: 'Arduino 5V Pin', to: 'TB6612FNG VCC', wireOrPolarityNote: 'Logic Supply (5.0V)' },
-        { from: 'Arduino GND Pin', to: 'TB6612FNG GND', wireOrPolarityNote: 'Common Ground Reference' },
-        { from: 'Battery Pack (+ 6V)', to: 'TB6612FNG VM', wireOrPolarityNote: 'Motor High-Current Supply' },
-        { from: 'Battery Pack (- GND)', to: 'TB6612FNG GND', wireOrPolarityNote: 'Common Battery Ground Return' },
-        { from: 'TB6612FNG A01/A02', to: 'Left TT Motor Terminals', wireOrPolarityNote: 'Left Drive Channel' },
-        { from: 'TB6612FNG B01/B02', to: 'Right TT Motor Terminals', wireOrPolarityNote: 'Right Drive Channel' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Fasten the two TT gear motors to the lower acrylic chassis using long M3 machine screws and nuts.',
-        '2. Mount the front omnidirectional castor wheel with standoffs so the chassis sits perfectly horizontal.',
-        '3. Secure the 4xAA battery pack over the center of the chassis to maintain balanced weight distribution.',
-        '4. Mount the Arduino Uno and TB6612FNG driver to the upper chassis plate using nylon standoffs.',
-        '5. Complete all wire connections as specified in the wire table, verifying the common ground link.',
-        '6. Elevate chassis on a stand, upload firmware, and verify both wheels spin forward during forward().',
-        '7. Place on floor arena, turn on battery pack, and commence path calibration.'
-      ],
-      powerAndSafetyChecks: [
-        'Ensure chassis fasteners are tightened securely; motor vibrations can loosen un-nutted screws.',
-        'Verify drive wires are clear of spinning wheel spokes and rubber tires.',
-        'Never connect battery 6V to any Arduino 5V or I/O pin.'
-      ],
-      testCases: [
-        { action: 'Call forward(140) on bench', expectedResult: 'Both left and right wheels spin forward in unison.' },
-        { action: 'Call turnRight(130) on bench', expectedResult: 'Left wheel spins forward, right wheel reverses (zero-radius spin).' },
-        { action: 'Call stopRobot() on moving rover', expectedResult: 'Chassis comes to an immediate, crisp stop via active dynamic braking.' }
+    "courseId": "beginner",
+    "sequence": 8,
+    "code": "BEGINNER 08",
+    "title": "MQ-2 Gas/Smoke, DHT11 Temp/Humidity, Soil Moisture & 5V Relay",
+    "subtitle": "Environmental transducers, tin-dioxide SnO2 gas heating chambers, single-bus digital timing protocols, and galvanic soil resistance with optocoupler relay isolation.",
+    "promise": "I can monitor air quality and environmental climate sensors, isolate high-power loads with 5V electromechanical relays, and build an automated greenhouse safety station.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01 through Beginner 07"
+    ],
+    "outcomes": [
+      "Explain the chemical heating and adsorption principles of the MQ-2 tin-dioxide (SnO2) gas sensor.",
+      "Decode single-wire digital serial packets (40-bit data stream) from the DHT11 humidity and temperature sensor.",
+      "Construct a galvanic soil moisture probe and map analog soil resistance to plant hydration percentages.",
+      "Deconstruct electromechanical relays: coil energization, flyback diode protection, Normally Open (NO) vs Normally Closed (NC).",
+      "Assemble and program an Autonomous Greenhouse Disaster Prevention Station: automatically switches high-power 5V DC fan/pump relays and sounds alarms."
+    ],
+    "vocabulary": [
+      {
+        "term": "MQ-2 Gas/Smoke Sensor",
+        "plainMeaning": "A sensor that heats up a tiny chemical chamber to detect combustible gases like LPG, propane, methane, and smoke.",
+        "technicalMeaning": "A chemo-resistive gas transducer utilizing tin dioxide (SnO2) whose surface conductivity increases in the presence of reducing gases at ~300°C."
+      },
+      {
+        "term": "DHT11 Sensor",
+        "plainMeaning": "A digital sensor that measures both ambient temperature and air humidity over a single communication pin.",
+        "technicalMeaning": "A combined sensor featuring a resistive humidity component, NTC thermistor, and internal 8-bit MCU transmitting 40-bit serial packets."
+      },
+      {
+        "term": "Soil Moisture Probe",
+        "plainMeaning": "Two gold-plated prongs pushed into soil that measure how easily electricity flows through moist dirt.",
+        "technicalMeaning": "A resistive soil moisture sensor measuring the electrical conductivity of the substrate, inversely proportional to volumetric water content."
+      },
+      {
+        "term": "5V Electromechanical Relay",
+        "plainMeaning": "A remote-controlled magnetic light switch that lets a tiny 5V Arduino signal safely turn on big fans, pumps, or lamps.",
+        "technicalMeaning": "An electrically operated switch utilizing an electromagnet coil to physically attract a mechanical armature, bridging high-voltage/high-current contacts."
+      },
+      {
+        "term": "Normally Open (NO) vs Closed (NC)",
+        "plainMeaning": "NO stays disconnected until Arduino turns on the magnet; NC stays connected until turned off.",
+        "technicalMeaning": "NO contacts remain open in the de-energized coil state; NC contacts maintain continuity until coil excitation forces the contact to break."
+      },
+      {
+        "term": "Galvanic Isolation / Optocoupler",
+        "plainMeaning": "Using a tiny light beam inside a chip to protect the Arduino from dangerous power surges on the motor/fan side.",
+        "technicalMeaning": "The electrical separation of two circuits via an optical barrier (LED and phototransistor) preventing transient voltage spikes from reaching the MCU."
+      }
+    ],
+    "teacherPrep": [
+      "Distribute MQ-2 gas sensors, DHT11 sensors, soil moisture probes, 1-channel 5V relay modules, and 5V mini DC fans.",
+      "Provide small cups of dry and damp soil for real-time plant hydration testing.",
+      "Ensure DHT11 library (by Adafruit) is installed in student IDE environments."
+    ],
+    "verifiedMaterials": [
+      "Arduino Uno R3 with USB cable",
+      "MQ-2 Flammable Gas & Smoke Sensor Module",
+      "DHT11 Digital Temperature & Humidity Sensor",
+      "Resistive Soil Moisture Sensor with LM393 comparator board",
+      "1-Channel 5V Optocoupler Relay Module",
+      "5V DC Mini Cooling Fan or Submersible Water Pump",
+      "Piezo Buzzer (Emergency Hazard Siren)",
+      "Solderless breadboard and jumper wires"
+    ],
+    "safetyNotes": [
+      "MQ-2 gas sensor metal cap becomes warm to the touch during normal operation: this is the internal 5V heating element and is normal.",
+      "Only switch low-voltage DC loads (5V to 12V fans/pumps) during student labs; never connect mains 220V AC wiring."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Introduce an automated greenhouse chamber. Spray a small alcohol swab or light an extinguished match near the MQ-2 sensor: instantly, the relay clicks loudly, the exhaust fan spins at full speed, and an alarm sounds!",
+        "studentAction": "Observe the environmental sensors and the mechanical \"click\" of the relay switch. Inspect the copper prongs of the soil moisture probe."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Explain SnO2 chemical adsorption, the DHT11 40-bit protocol, and how relay magnetic coils physically pull contacts. Teach NO vs NC.",
+        "studentAction": "Explore the IoT Greenhouse Dashboard on the portal: test humidity thresholds and relay switching states."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide wiring: DHT11 Data->D4, MQ-2 AOUT->A0, Soil Moisture AOUT->A1, Relay IN->D7, Buzzer->D8; connect 5V DC fan through Relay NO and COM terminals.",
+        "studentAction": "Wire the multi-sensor safety station. Double-check relay coil connections and Ground returns."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through dht.readTemperature(), dht.readHumidity(), analogRead() thresholds, and driving relay pins LOW to trigger active-low relays.",
+        "studentAction": "Upload the Greenhouse Safety firmware. Open Serial Monitor. Dip soil probe into dry vs wet soil: watch pump/fan relay click dynamically!"
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"Smart Agriculture Climate Defense Challenge\": calibrate trigger thresholds so the station survives simulated drought and heat!",
+        "studentAction": "Demonstrate live environmental triggers, log temperature and gas values in PPM, and complete the Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "How the MQ-2 \"Smells\" Smoke and Gas",
+        "explanation": "Inside the MQ-2 is a microscopic ceramic tube coated with Tin Dioxide (SnO2). When heated to ~300°C by a 5V coil, oxygen binds to the surface. When reducing gases (smoke, butane, LPG) enter the chamber, they react with the oxygen, freeing trapped electrons and causing electrical resistance to drop sharply.",
+        "instructorNote": "Point out the fine stainless-steel mesh window on the sensor—it protects the heating coil and prevents sparks from igniting external gas."
+      },
+      {
+        "title": "The Mechanical Magic of an Electromechanical Relay",
+        "explanation": "An Arduino output pin can only supply 20mA at 5V—far too weak to run a large cooling fan or water pump! A relay contains an electromagnet coil. When Arduino sends a tiny 5V signal, the coil generates a magnetic field that physically pulls a spring-loaded iron armature down, connecting heavy copper terminals that can carry up to 10 Amps!",
+        "instructorNote": "Have students listen for the crisp mechanical \"CLICK\" sound whenever the relay engages and disengages."
+      },
+      {
+        "title": "Active-LOW Relay Modules",
+        "explanation": "Most commercial hobby relay modules are active-LOW: writing digitalWrite(7, LOW) connects the optocoupler LED to GND, turning the relay ON; writing HIGH turns the relay OFF. This design ensures that if the microcontroller resets (pins default to high impedance), appliances stay safely OFF.",
+        "instructorNote": "Explain why keeping machinery OFF during bootup is a critical industrial safety standard."
+      }
+    ],
+    "visualizerId": "iot_dashboard_sim",
+    "project": {
+      "name": "Autonomous IoT Greenhouse Safety & Disaster Prevention Station",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Simultaneous multi-sensor telemetry (DHT11 temp/humidity, MQ-2 gas, and soil moisture) logged to Serial Monitor.",
+        "Audible mechanical relay clicking on when environmental thresholds are breached.",
+        "Active exhaust fan and emergency siren response to simulated smoke or dry soil conditions."
       ]
     },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - Differential-Drive Movement Architecture
-// Class: BEGINNER 07 - Modular Movement Functions & Route Choreography
-
-// Motor Driver Pin Mapping (TB6612FNG)
-const int PIN_PWMA = 5;   // Left Motor Speed (~PWM)
-const int PIN_AIN1 = 7;   // Left Motor Direction 1
-const int PIN_AIN2 = 8;   // Left Motor Direction 2
-
-const int PIN_PWMB = 6;   // Right Motor Speed (~PWM)
-const int PIN_BIN1 = 9;   // Right Motor Direction 1
-const int PIN_BIN2 = 10;  // Right Motor Direction 2
-
-const int PIN_STBY = 3;   // Standby Enable Pin (HIGH = Active)
-
-// Calibration Trim Multipliers (Compensates for motor manufacturing variance)
-const float LEFT_MOTOR_TRIM  = 1.00; // Baseline left motor scaling
-const float RIGHT_MOTOR_TRIM = 0.94; // Adjust right motor to eliminate drift
-
-// ---------------------------------------------------------------------------
-// LOW-LEVEL ACTUATOR PRIMITIVES
-// ---------------------------------------------------------------------------
-
-void setLeftMotor(int speedVal) {
-  int adjustedSpeed = (int)(abs(speedVal) * LEFT_MOTOR_TRIM);
-  adjustedSpeed = constrain(adjustedSpeed, 0, 255);
-
-  if (speedVal > 0) {
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, LOW);
-  } else if (speedVal < 0) {
-    digitalWrite(PIN_AIN1, LOW);
-    digitalWrite(PIN_AIN2, HIGH);
-  } else {
-    // Dynamic Active Brake
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, HIGH);
-  }
-  analogWrite(PIN_PWMA, adjustedSpeed);
-}
-
-void setRightMotor(int speedVal) {
-  int adjustedSpeed = (int)(abs(speedVal) * RIGHT_MOTOR_TRIM);
-  adjustedSpeed = constrain(adjustedSpeed, 0, 255);
-
-  if (speedVal > 0) {
-    digitalWrite(PIN_BIN1, HIGH);
-    digitalWrite(PIN_BIN2, LOW);
-  } else if (speedVal < 0) {
-    digitalWrite(PIN_BIN1, LOW);
-    digitalWrite(PIN_BIN2, HIGH);
-  } else {
-    // Dynamic Active Brake
-    digitalWrite(PIN_BIN1, HIGH);
-    digitalWrite(PIN_BIN2, HIGH);
-  }
-  analogWrite(PIN_PWMB, adjustedSpeed);
-}
-
-// ---------------------------------------------------------------------------
-// HIGH-LEVEL ROBOTIC NAVIGATION API
-// ---------------------------------------------------------------------------
-
-void forward(int speedVal) {
-  setLeftMotor(speedVal);
-  setRightMotor(speedVal);
-}
-
-void reverse(int speedVal) {
-  setLeftMotor(-speedVal);
-  setRightMotor(-speedVal);
-}
-
-// Zero-Radius Tank Spin (Left forward, Right reverse)
-void turnRight(int speedVal) {
-  setLeftMotor(speedVal);
-  setRightMotor(-speedVal);
-}
-
-// Zero-Radius Tank Spin (Left reverse, Right forward)
-void turnLeft(int speedVal) {
-  setLeftMotor(-speedVal);
-  setRightMotor(speedVal);
-}
-
-void stopRobot() {
-  setLeftMotor(0);
-  setRightMotor(0);
-}
-
-// ---------------------------------------------------------------------------
-// SETUP & AUTONOMOUS MISSION SEQUENCE
-// ---------------------------------------------------------------------------
-
-void setup() {
-  pinMode(PIN_PWMA, OUTPUT);
-  pinMode(PIN_AIN1, OUTPUT);
-  pinMode(PIN_AIN2, OUTPUT);
-
-  pinMode(PIN_PWMB, OUTPUT);
-  pinMode(PIN_BIN1, OUTPUT);
-  pinMode(PIN_BIN2, OUTPUT);
-
-  pinMode(PIN_STBY, OUTPUT);
-  digitalWrite(PIN_STBY, HIGH); // Enable driver
-
-  Serial.begin(9600);
-  Serial.println(F(">> ROBOBEE 2WD ROVER ONLINE. 3-second pre-flight countdown..."));
-  delay(3000); // Safety grace period: place rover on floor start line
-}
-
-void loop() {
-  Serial.println(F(">> Executing Autonomous Mission: Precision Square Route"));
-
-  // Traverse a 4-corner square path
-  for (int side = 1; side <= 4; side++) {
-    Serial.print(F("   Traversing Side "));
-    Serial.println(side);
-
-    forward(140);
-    delay(850); // Calibrated straight drive (~60cm)
-
-    stopRobot();
-    delay(300); // Settle chassis momentum
-
-    Serial.println(F("   Executing 90-degree Right Tank Turn"));
-    turnRight(130);
-    delay(340); // Calibrated 90-degree spin
-
-    stopRobot();
-    delay(300);
-  }
-
-  Serial.println(F("✅ Mission Complete. Rover docked at starting position."));
-  while (true) {
-    stopRobot(); // Mission finished: halt indefinitely
-  }
-}`,
-      pinMap: { 
-        'Pin 5': 'Left Motor PWMA speed (~PWM)', 
-        'Pin 7': 'Left Motor AIN1 direction', 
-        'Pin 8': 'Left Motor AIN2 direction', 
-        'Pin 6': 'Right Motor PWMB speed (~PWM)', 
-        'Pin 9': 'Right Motor BIN1 direction', 
-        'Pin 10': 'Right Motor BIN2 direction', 
-        'Pin 3': 'TB6612FNG STBY master enable' 
-      },
-      setupAndUpload: [
-        '1. Place the rover on a testing stand clear of desk surface.',
-        '2. Verify and upload sketch to the Arduino Uno.',
-        '3. Disconnect USB cable and transfer rover to the floor arena start tile.',
-        '4. Flip battery pack switch to ON; step back during the 3-second safety grace countdown!'
+    "activity": {
+      "title": "Assemble, Wire, and Program the Environmental Safety Hub",
+      "steps": [
+        "Step 1: Connect DHT11: VCC to 5V, GND to GND, Data pin to Arduino Digital Pin 4.",
+        "Step 2: Connect MQ-2 gas sensor: VCC to 5V, GND to GND, AOUT to Analog Pin A0.",
+        "Step 3: Connect Soil Moisture probe module: VCC to 5V, GND to GND, AOUT to Analog Pin A1.",
+        "Step 4: Connect 1-Channel Relay module: VCC to 5V, GND to GND, IN to Digital Pin 7.",
+        "Step 5: Wire 5V mini DC fan in series through the Relay COM (Common) and NO (Normally Open) terminals to the 5V power bus.",
+        "Step 6: Connect Piezo buzzer to Digital Pin 8 and GND.",
+        "Step 7: Upload firmware. Insert soil probe into dry cup: pump/fan activates; breathe warm air on DHT11: humidity rises on monitor!"
       ],
-      explanations: [
-        'RIGHT_MOTOR_TRIM: A software compensation multiplier that scales right wheel speed to match left wheel RPM.',
-        'setLeftMotor(speedVal): Encapsulates H-Bridge direction logic and PWM constrain limits in a single reusable function.',
-        'turnRight(speedVal): Implements zero-radius tank rotation by commanding opposite wheel directions (+V and -V).',
-        'while(true) { stopRobot(); }: Halts execution after completing the square path once, preventing runaway looping.'
+      "successCriteria": [
+        "Telemetry streams stable readings every 1000ms without NaN errors.",
+        "Relay triggers reliably when smoke threshold is exceeded or soil is dry.",
+        "Audible emergency alarm alerts instantly during simulated gas leaks."
       ],
-      expectedResult: 'Rover counts down 3 seconds, drives straight for ~60cm, executes an exact 90° right pivot, repeats 4 times to trace a complete closed square, and halts cleanly at the start mark.',
-      caveats: [
-        'Turn angles depend heavily on battery voltage and floor traction: a 340ms turn on tile will turn less on deep carpet.',
-        'Always ensure the castor wheel rotates freely and is not clogged with hair or dust.'
+      "extension": "Add an automatic irrigation cooldown timer: pump runs for 5 seconds, then pauses for 10 seconds to allow water absorption!"
+    },
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "MQ-2 Gas Sensor",
+        "DHT11 Sensor",
+        "1-Ch 5V Relay"
       ],
-      tweakTip: 'Mission Challenge: Modify the mission to execute an autonomous "Figure-8" pattern: forward, turn right 360°, forward, turn left 360°, and stop!'
-    },
-    troubleshooting: [
-      { 
-        symptom: 'Rover curves noticeably to the left or right instead of tracking in a straight line.', 
-        checks: [
-          'Step 1: Check which direction the rover veers — if it drifts left, the right motor is spinning faster.',
-          'Step 2: Adjust the `RIGHT_MOTOR_TRIM` variable in firmware (e.g. decrease from 0.94 to 0.90 to slow down the right motor).',
-          'Step 3: Inspect both wheels to verify rubber tires are fully seated on plastic rims.'
-        ], 
-        explanation: 'DC motors have natural mechanical tolerances of ±10%. Software trim equalizes motor speeds to achieve straight tracking.' 
-      },
-      { 
-        symptom: 'Rover executes a 70° turn or 110° turn instead of an exact 90° right angle.', 
-        checks: [
-          'Step 1: Check battery voltage — weak batteries spin motors slower, resulting in under-turning.',
-          'Step 2: Adjust `delay(340)` inside the turn sequence: increase delay for under-turns, decrease for over-turns.'
-        ], 
-        explanation: 'Open-loop timed turning is sensitive to battery voltage and floor friction coefficients.' 
-      },
-      { 
-        symptom: 'One wheel spins while the other wheel stays completely stationary.', 
-        checks: [
-          'Step 1: Inspect the non-spinning motor’s PWM pin connection (Pin 5 for Left, Pin 6 for Right).',
-          'Step 2: Check terminal block wire screws on the driver breakout to ensure wire strands are clamped securely.',
-          'Step 3: Test motor independently by applying 5V directly to its leads.'
-        ], 
-        explanation: 'A loose jumper wire on the driver’s direction or PWM pin prevents gate signals from activating that H-Bridge channel.' 
-      },
-      { 
-        symptom: 'Rover shakes violently or stutters without moving forward smoothly.', 
-        checks: [
-          'Step 1: Inspect the front castor wheel — is it jammed against the chassis or floor?',
-          'Step 2: Check battery level: dead batteries cannot deliver sufficient continuous current under dual-motor load.'
-        ], 
-        explanation: 'Excessive caster drag or severely depleted batteries prevent motors from delivering adequate rotational torque.' 
-      }
-    ],
-    checksForUnderstanding: [
-      'What are the linear and angular velocity equations that govern differential drive mobile robots?',
-      'Why do professional software engineers use function abstraction instead of scattering digitalWrite commands?',
-      'Why is open-loop dead reckoning navigation inherently unreliable over long distances?'
-    ],
-    exitTicket: [
-      { 
-        question: 'What wheel commands must be sent to execute a zero-radius tank spin toward the left?', 
-        rubricOrSampleReasoning: 'Command the left wheel in reverse (-speed) and the right wheel forward (+speed) at identical velocity magnitudes.' 
-      },
-      { 
-        question: 'What is the purpose of software motor trim, and how does it compensate for physical hardware limitations?', 
-        rubricOrSampleReasoning: 'Motor trim applies a scaling multiplier to the faster motor in code, equalizing wheel RPMs and eliminating steering drift caused by mechanical tolerances.' 
-      },
-      { 
-        question: 'Why will the exact same 340ms turn timing produce different physical turn angles on tile vs deep carpet?', 
-        rubricOrSampleReasoning: 'Carpet has a higher rotational friction and tire resistance, causing slower rotational acceleration and a smaller turn angle compared to slick tile.' 
-      }
-    ],
-    differentiation: {
-      support: ['Provide pre-calibrated trim tables based on classroom battery batch testing.'],
-      extension: ['Program an autonomous "Obstacle Slalom" route navigating around three cones in a serpentine path.'],
-      offlineOption: ['Use the interactive 2D kinematics simulator to model differential drive paths and turning radii.']
-    },
-    nextLessonId: 'beg-08',
-    nextLessonTeaser: 'Beginner 08: 3D Design for Robotics — Measure real hardware with precision calipers, learn 3D printing clearances (+0.4mm), and model a custom sensor bracket!',
-    sources: [{ title: 'Differential Drive Kinematics & Autonomous Mobile Robots — RoboBEE Innovators Academy', url: '' }],
-    assetCredits: [{ asset: 'Rover Chassis Layout', creator: 'RoboBEE Innovators Engineering Team', license: 'Proprietary', sourceUrl: 'team_info' }],
-    ipNotice: TRUSTED_ORG_INFO.ipStatement
-  },
-
-  // -----------------------------------------------------------------------
-  // BEGINNER 08: 3D DESIGN FOR ROBOTICS (SENSOR BRACKET)
-  // -----------------------------------------------------------------------
-  {
-    id: 'beg-08',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-design-cad-measurement"],
-      lookUpWhileBuilding: ["fg-design-cad-measurement"],
-      goDeeper: ["fg-comp-hc-sr04"]
-    },
-    courseId: 'beginner',
-    sequence: 8,
-    code: 'BEGINNER 08',
-    title: '3D Design for Robotics: Custom Sensor Mount',
-    promise: 'By the end of this masterclass, you will master precision digital metrology with vernier calipers, understand the polymer thermal physics of FDM 3D printing, apply engineering clearance fits (+0.4mm to +0.5mm), and model a parametric sensor bracket ready for 3D printing.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01', 'Beginner 02', 'Beginner 07'],
-    outcomes: [
-      'Use digital vernier calipers to measure real electronic hardware dimensions in millimeters with 0.01mm resolution (PCB profile, transducer barrels, fastener hole pitch).',
-      'Explain the thermal expansion and nozzle deposition physics of Fused Deposition Modeling (FDM) 3D printing that causes hole shrinkage.',
-      'Apply engineering clearance tolerance standards (+0.4mm to +0.5mm) to design smooth sliding fits for physical components.',
-      'Construct a 3D parametric CAD model of an ultrasonic sensor bracket with baseplate, M3 chassis slots, and cable clearance notches.',
-      'Evaluate structural layer orientation (anisotropy) to prevent mechanical failure under robot chassis vibrations.'
-    ],
-    vocabulary: [
-      { term: 'Metrology', plainMeaning: 'The science of making super-accurate physical measurements using precision tools.', technicalMeaning: 'The scientific study of measurement, establishing standard units, measuring instruments, and dimensional tolerances.' },
-      { term: 'Vernier Caliper', plainMeaning: 'A precision metal measuring jaw tool that reads millimeters down to two decimal places.', technicalMeaning: 'A measuring instrument with a calibrated main scale and sliding vernier jaw that measures internal, external, and depth dimensions.' },
-      { term: 'Clearance Fit (Tolerance)', plainMeaning: 'Extra wiggle room added to 3D models so plastic parts slide together without getting stuck.', technicalMeaning: 'The intentional dimensional allowance between mating parts ensuring a positive space for assembly without interference.' },
-      { term: 'FDM 3D Printing', plainMeaning: 'A printer that melts and stacks thin plastic spaghetti threads layer-by-layer to build a 3D object.', technicalMeaning: 'Fused Deposition Modeling: an additive manufacturing process using a continuous filament of thermoplastic material extruded through a heated nozzle.' },
-      { term: 'Parametric Modeling', plainMeaning: '3D CAD design where shapes are linked to editable numbers; changing one number updates the whole part.', technicalMeaning: 'A computer-aided design method where geometric features are driven by mathematical equations, parameters, and geometric constraints.' },
-      { term: 'Anisotropy (Layer Weakness)', plainMeaning: '3D printed plastic is strong along the print bed, but snaps easily along layer glue lines.', technicalMeaning: 'The property of being directionally dependent; FDM prints exhibit high tensile strength along X/Y filaments and lower interlaminar shear strength along the Z-axis.' },
-      { term: 'Extrude', plainMeaning: 'Stretching a flat 2D blueprint shape upward into a solid 3D block.', technicalMeaning: 'A CAD operation that projects a two-dimensional closed sketch profile along a linear vector to create three-dimensional solid volume.' }
-    ],
-    teacherPrep: ['Verify CAD software (Tinkercad, Onshape, or OpenSCAD) is logged in on workstations; calibrate digital vernier calipers with fresh batteries.'],
-    verifiedMaterials: ['Digital vernier calipers with depth probes', 'HC-SR04 ultrasonic sensor modules', 'M3 machine screws & nuts (M3x10mm)', 'CAD workstations / browsers', '3D printed demonstration parts (Zero-clearance vs +0.5mm clearance)'],
-    safetyNotes: [
-      'Handle digital vernier calipers carefully: measuring jaws have sharp ground edges that can scratch skin.',
-      'Never force electronic components into 3D printed brackets; if a part jams, re-check CAD dimensions and adjust hole clearances.'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Display two 3D printed parts: One designed with zero tolerance (fails to assemble, jammed!) and one designed with +0.5mm clearance (slides in like butter!). Explain why CAD is not magic.', 
-        studentAction: 'Attempt to assemble both physical test brackets and observe the mechanical reality of manufacturing tolerances.' 
-      },
-      { 
-        segment: '10–25m Measuring', 
-        minutes: 15, 
-        teacherAction: 'Demonstrate the 3-jaw digital caliper measurement protocol: External jaws (PCB width), Internal jaws (barrel spacing), Depth probe (transducer height).', 
-        studentAction: 'Measure physical HC-SR04 module with lab partner and record exact dimensions in their engineering notebook.' 
-      },
-      { 
-        segment: '25–50m CAD Modeling', 
-        minutes: 25, 
-        teacherAction: 'Guide parametric 3D CAD modeling: Create L-bracket baseplate (50x25x3mm), vertical faceplate, add +0.5mm cylinder cutouts (16.5mm dia at 26mm pitch), and cut M3 slots (3.4mm dia).', 
-        studentAction: 'Model the custom sensor mount in CAD, inspect cross-sections for cable clearance, and verify manifold geometry.' 
-      },
-      { 
-        segment: '50–60m Exit Check', 
-        minutes: 10, 
-        teacherAction: 'Inspect student 3D models before STL export, checking for wall thickness (>2.5mm) and print bed orientation.', 
-        studentAction: 'Export watertight .STL file, check slicer orientation, and complete the formative exit ticket.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. Precision Digital Metrology & Caliper Measurement Protocol',
-        explanation: 'Before designing any mechanical bracket in CAD, an engineer must accurately measure the real physical hardware using a digital vernier caliper. A quality caliper features three distinct measuring surfaces: 1. External Jaws for measuring outside widths and cylinder diameters; 2. Internal Jaws for measuring hole diameters and gap spacing; 3. Depth Probe blade for measuring cavity depths and step heights. Before taking any measurement, you must perform "Tare / Zero Calibration": wipe the jaws clean, close them gently, and press the ZERO button to ensure the digital display reads exactly 0.00 mm.',
-        instructorNote: 'Remind students: Never squeeze calipers too tightly! Bending the jaws flexes the stainless steel beam, producing a false negative measurement.'
-      },
-      {
-        title: '2. The Physics of FDM 3D Printing & Polymer Thermal Shrinkage',
-        explanation: 'Fused Deposition Modeling (FDM) operates by feeding a continuous 1.75mm thermoplastic filament (typically Polylactic Acid, PLA) into a heated brass hotend, melting it at 200°C–215°C, and extruding it through a microscopic 0.4mm nozzle onto a build plate. As molten plastic cools from 200°C down to room temperature (25°C), it undergoes thermal contraction, shrinking by approximately 0.5% to 1.0% in volume. Furthermore, as the extruder deposits perimeter toolpaths around circular holes, the tension pulls the liquid bead inward toward the hole center, causing circular holes to consistently print smaller than modeled!',
-        instructorNote: 'Explain the golden rule of 3D printing holes: Holes always print smaller, pins and outer walls always print slightly larger!'
-      },
-      {
-        title: '3. Engineering Tolerances & The +0.4mm to +0.5mm Clearance Rule',
-        explanation: 'In mechanical engineering (ANSI B4.1 / ISO 286 standards), fits between mating parts are classified into three types: Interference Fit (parts are pressed together with high force and never come apart), Transition Fit (snug fit requiring a light tap with a mallet), and Clearance Fit (parts slide together smoothly with zero binding). Because standard desktop 3D printers have an inherent mechanical positioning accuracy of ±0.15mm plus polymer shrinkage, modeling a hole at the exact measured size of a 16.0mm cylinder guarantees it will jam! Professional robotics engineers apply a standard Clearance Allowance of +0.4mm to +0.5mm, modeling the transducer holes at 16.5mm diameter.',
-        instructorNote: 'Show students the difference on the whiteboard: Nominal Dimension (16.0mm) + Clearance Allowance (0.5mm) = CAD Feature Dimension (16.5mm).'
-      },
-      {
-        title: '4. Fastener Standards: Metric M3 Threads & Screw Clearance Slots',
-        explanation: 'The universal fastener standard in lightweight autonomous robotics is the Metric M3 machine screw. An M3 screw has a nominal outer thread crest diameter of 3.00mm. If you design a mounting hole at 3.0mm in 3D CAD, the printed plastic will shrink to ~2.8mm, requiring you to force-thread the screw into the plastic! To allow an M3 screw to slide freely through a chassis bracket so it can be tightened securely with a nylon-insert locknut, the through-hole or adjustment slot must be modeled at 3.4mm diameter (ISO standard medium clearance fit).',
-        instructorNote: 'Show students why we design slots rather than circular holes for chassis mounting: slots allow sliding adjustment to compensate for chassis laser-cut offsets!'
-      },
-      {
-        title: '5. Structural Anisotropy & Print Bed Orientation',
-        explanation: 'Unlike injection-molded plastic parts which are isotropic (possessing identical strength in all directions), 3D printed parts are anisotropic. Molten filament lines fuse strongly along the continuous horizontal X-Y toolpath lines, but rely solely on microscopic thermal re-melting between vertical Z-axis layers. A part under tension along its Z-axis will snap along layer lines at approximately 40%–60% of its bulk tensile strength. When slicing our L-bracket, it must be oriented flat on the build plate so the mounting base and faceplate have continuous filament strands wrapping around the corner fillet.',
-        instructorNote: 'Compare 3D printing layers to wood grain: wood splits effortlessly along its grain, but is incredibly tough across its grain.'
-      },
-      {
-        title: '6. Parametric CAD Modeling Architecture & Constraint Geometry',
-        explanation: 'In commercial CAD engineering (e.g. OpenSCAD, Onshape, Fusion 360), models are never constructed by blindly dragging disconnected geometric shapes together. Instead, engineers use Parametric Modeling: defining dimensions as mathematical variables (`sensor_width = 45.0`, `cylinder_dia = 16.0`, `clearance = 0.5`, `wall_thick = 3.0`). Features are locked in place using geometric constraints (tangent, concentric, symmetric, parallel). If your team upgrades next month from an HC-SR04 to a waterproof ultrasonic sensor with 18mm barrels, changing a single variable instantly updates the entire bracket without re-drawing!',
-        instructorNote: 'Show how OpenSCAD code or parametric sketch equations save hours of re-work when hardware revisions occur.'
-      }
-    ],
-    visualizerId: 'cad_caliper_sim',
-    project: {
-      name: 'Rover Ultrasonic Sensor Bracket CAD Part',
-      deliverableType: 'cad_model',
-      successEvidence: [
-        'Dimensioned parametric 3D CAD model featuring 16.5mm transducer cutouts with verified +0.5mm clearance.',
-        'M3 chassis mounting slots (3.4mm width) allowing sliding focal alignment on the rover front deck.',
-        '8mm rear cable relief notch ensuring 4-pin female jumper connectors do not collide with bracket walls.',
-        'Watertight, manifold .STL export verified in 3D slicer software with zero non-manifold edges.'
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "MQ-2 Gas / Smoke Sensor",
+          "exactVariant": "4-pin analog/digital module",
+          "quantity": 1
+        },
+        {
+          "name": "DHT11 Temperature & Humidity Sensor",
+          "exactVariant": "3-pin single-bus digital module",
+          "quantity": 1
+        },
+        {
+          "name": "Soil Moisture Probe",
+          "exactVariant": "Dual-prong PCB with LM393 comparator board",
+          "quantity": 1
+        },
+        {
+          "name": "1-Channel 5V Relay Module",
+          "exactVariant": "Optocoupled 250VAC/10A rated",
+          "quantity": 1
+        },
+        {
+          "name": "5V DC Mini Cooling Fan",
+          "exactVariant": "40mm brushless 5V fan",
+          "quantity": 1
+        },
+        {
+          "name": "Piezo Buzzer",
+          "exactVariant": "5V passive transducer",
+          "quantity": 1
+        },
+        {
+          "name": "Solderless Breadboard & Jumpers",
+          "exactVariant": "Half-size 400 tie points and ribbon cables",
+          "quantity": 14
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "DHT11: VCC->5V | GND->GND | Data->D4; MQ-2: VCC->5V | GND->GND | AOUT->A0; Soil: VCC->5V | GND->GND | AOUT->A1; Relay: VCC->5V | GND->GND | IN->D7; Fan: 5V -> Relay COM | Relay NO -> Fan (+) | Fan (-) -> GND; Buzzer: D8 -> Buzzer (+) | (-) -> GND",
+      "wireTable": [
+        {
+          "from": "DHT11 Data Pin",
+          "to": "Arduino Digital Pin 4",
+          "wireOrPolarityNote": "Single-bus serial telemetry"
+        },
+        {
+          "from": "MQ-2 AOUT Pin",
+          "to": "Arduino Analog In A0",
+          "wireOrPolarityNote": "Gas / Smoke concentration voltage"
+        },
+        {
+          "from": "Soil Moisture AOUT Pin",
+          "to": "Arduino Analog In A1",
+          "wireOrPolarityNote": "Soil conductivity voltage"
+        },
+        {
+          "from": "Relay Module IN Pin",
+          "to": "Arduino Digital Pin 7",
+          "wireOrPolarityNote": "Active-LOW coil trigger"
+        },
+        {
+          "from": "Arduino Digital Pin 8",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Emergency Hazard Siren"
+        },
+        {
+          "from": "Arduino 5V Power Pin",
+          "to": "Breadboard Power Rail (+)",
+          "wireOrPolarityNote": "5V DC bus"
+        },
+        {
+          "from": "Arduino GND Pin",
+          "to": "Breadboard Ground Rail (-)",
+          "wireOrPolarityNote": "Common Ground return"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Verify USB is disconnected before wiring.",
+        "2. Mount DHT11, MQ-2, and soil probe comparator to breadboard.",
+        "3. Wire data pins to D4, A0, and A1.",
+        "4. Connect Relay module VCC, GND, and IN to D7.",
+        "5. Wire DC fan in series through Relay COM and NO terminals.",
+        "6. Connect Buzzer to D8, plug in USB, and observe initial sensor warmup."
+      ],
+      "powerAndSafetyChecks": [
+        "Do not short the relay COM and NO terminals directly to 5V and GND.",
+        "Ensure the MQ-2 sensor has at least 60 seconds to warm up its heating element."
+      ],
+      "testCases": [
+        {
+          "action": "Dip soil probe into dry soil (<300 ADC)",
+          "expectedResult": "Relay triggers ON (clicks); Fan/pump starts; Serial reports \"DRY SOIL\"."
+        },
+        {
+          "action": "Add water to soil cup (>600 ADC)",
+          "expectedResult": "Relay disengages (clicks); Fan/pump stops; Serial reports \"SOIL MOISTURE OPTIMAL\"."
+        },
+        {
+          "action": "Expose MQ-2 to smoke from extinguished match",
+          "expectedResult": "Gas reading spikes > 450; Siren sounds urgently; Exhaust fan triggers ON."
+        }
       ]
     },
-    activity: {
-      title: 'Measure, Model, and Prepare the Sensor Bracket for Fabrication',
-      steps: [
-        'Step 1: Use digital vernier calipers to measure real HC-SR04 hardware: PCB width (45.2mm), PCB height (20.3mm), transducer barrel diameter (16.0mm), and barrel center-to-center pitch (26.0mm).',
-        'Step 2: Log all measured dimensions and calculate target CAD dimensions by adding +0.5mm clearance allowance.',
-        'Step 3: Construct the 3D L-bracket solid in CAD: Extrude horizontal baseplate (50mm × 25mm × 3mm) and vertical faceplate (50mm × 28mm × 3mm).',
-        'Step 4: Cut out two concentric cylindrical holes at 16.5mm diameter spaced 26.0mm apart, elevated 15mm above the base.',
-        'Step 5: Cut out two 3.4mm × 8.0mm M3 chassis mounting slots on the baseplate for flexible positioning.',
-        'Step 6: Add a 3mm corner fillet to strengthen the L-joint against rover collision impacts and export to .STL!'
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 08: Greenhouse Climate & Safety Station\n * Board: Arduino Uno R3 (ATmega328P)\n * Required Library: DHT sensor library by Adafruit\n */\n\n#include \"DHT.h\"\n\n#define DHTPIN 4\n#define DHTTYPE DHT11\n\nconst int PIN_GAS    = A0; // MQ-2 Analog Out\nconst int PIN_SOIL   = A1; // Soil Moisture Analog Out\nconst int PIN_RELAY  = 7;  // 5V Relay IN (Active LOW)\nconst int PIN_BUZZER = 8;  // Hazard Siren\n\n// Safety Thresholds\nconst int GAS_DANGER_THRESHOLD = 450; // Gas reading indicating smoke/leak\nconst int SOIL_DRY_THRESHOLD   = 400; // Low reading = Dry soil\n\nDHT dht(DHTPIN, DHTTYPE);\n\nvoid setup() {\n  pinMode(PIN_RELAY, OUTPUT);\n  pinMode(PIN_BUZZER, OUTPUT);\n\n  // Active-LOW relay: HIGH = OFF, LOW = ON\n  digitalWrite(PIN_RELAY, HIGH);\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE IOT GREENHOUSE & HAZARD STATION ===\");\n  dht.begin();\n  delay(1500); // Allow sensors to stabilize\n}\n\nvoid loop() {\n  // Read Digital Temperature & Humidity\n  float humidity = dht.readHumidity();\n  float temperature = dht.readTemperature();\n\n  // Read Analog Gas and Soil Sensors\n  int gasPpm = analogRead(PIN_GAS);\n  int soilVal = analogRead(PIN_SOIL);\n\n  // Check if DHT reading is valid\n  if (isnan(humidity) || isnan(temperature)) {\n    Serial.println(\"Warning: Failed to read from DHT sensor!\");\n    humidity = 0;\n    temperature = 0;\n  }\n\n  // Print Telemetry to Serial Monitor\n  Serial.print(\"Temp: \"); Serial.print(temperature); Serial.print(\" C | \");\n  Serial.print(\"Humidity: \"); Serial.print(humidity); Serial.print(\" % | \");\n  Serial.print(\"Gas: \"); Serial.print(gasPpm); Serial.print(\" | \");\n  Serial.print(\"Soil: \"); Serial.println(soilVal);\n\n  bool danger = false;\n\n  // Hazard Check 1: Flammable Gas or Smoke\n  if (gasPpm > GAS_DANGER_THRESHOLD) {\n    Serial.println(\"!! EMERGENCY: High Gas / Smoke Concentration Detected !!\");\n    danger = true;\n    digitalWrite(PIN_RELAY, LOW); // Turn ON Exhaust Fan\n    // Sound urgent emergency siren\n    tone(PIN_BUZZER, 1500, 150);\n    delay(180);\n    tone(PIN_BUZZER, 900, 150);\n  }\n\n  // Hazard Check 2: Dry Soil (Needs Irrigation)\n  if (soilVal < SOIL_DRY_THRESHOLD && !danger) {\n    Serial.println(\">> SOIL DRY: Activating Water Pump Relay...\");\n    digitalWrite(PIN_RELAY, LOW); // Turn ON Pump\n  } else if (!danger) {\n    digitalWrite(PIN_RELAY, HIGH); // Turn OFF Relay\n  }\n\n  delay(1000); // 1.0 second sensor sampling cycle\n}\n",
+      "pinMap": {
+        "Pin 4": "DHT11 Data Line (Single-bus temperature & humidity protocol)",
+        "Pin A0": "MQ-2 Gas / Smoke Sensor Analog Out",
+        "Pin A1": "Soil Moisture Sensor Analog Out",
+        "Pin 7": "1-Channel 5V Relay IN (Active-LOW coil trigger)",
+        "Pin 8": "Emergency Alert Siren Buzzer"
+      },
+      "setupAndUpload": [
+        "Install \"DHT sensor library\" via Arduino IDE Library Manager.",
+        "Connect Arduino Uno via USB cable, select board and port, and upload sketch.",
+        "Open Serial Monitor at 9600 baud to view real-time environmental telemetry."
       ],
-      successCriteria: [
-        'CAD model passes slicer verification with 100% manifold geometry and clean layer toolpaths.',
-        'Transducer barrels seat smoothly into bracket cutouts without filing or cracking plastic.',
-        'Screw slots align perfectly with the laser-cut mounting holes on the 2WD rover acrylic chassis deck.'
+      "explanations": [
+        "dht.readTemperature() and readHumidity(): Decodes the 40-bit serial train sent by the DHT11 sensor.",
+        "digitalWrite(PIN_RELAY, LOW): Connects optocoupler cathode to GND, energizing the relay coil and switching the fan ON.",
+        "digitalWrite(PIN_RELAY, HIGH): Disengages the relay coil, returning contacts to default open state.",
+        "GAS_DANGER_THRESHOLD check: Prioritizes human life safety—smoke triggers immediate exhaust ventilation and sirens."
       ],
-      extension: 'Design a snap-fit locking retention clip that holds the sensor PCB securely without requiring zip-ties or glue.'
+      "expectedResult": "System monitors climate continuously; dry soil activates the pump relay; simulated smoke triggers the high-speed exhaust fan and alarm sirens.",
+      "caveats": [
+        "DHT11 cannot be read faster than once every 1–2 seconds: rapid sampling will return stale or NaN data.",
+        "MQ-2 requires a clean environment warmup before baseline calibration."
+      ],
+      "tweakTip": "Add an automated high-temperature threshold (> 35°C) that turns on the cooling fan even if gas levels are normal!"
     },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['HC-SR04 Ultrasonic Sonar Module', 'FDM 3D Printer (Optional physical fabrication)'],
-      componentList: [
-        { name: 'HC-SR04 Ultrasonic Distance Sensor', exactVariant: 'Standard 4-pin 5V dual-transducer module', quantity: 1 },
-        { name: 'M3x10mm Machine Screws', exactVariant: 'Stainless steel metric socket head cap screws', quantity: 2 },
-        { name: 'M3 Nylon-Insert Locknuts', exactVariant: 'DIN 985 zinc-plated locking nuts', quantity: 2 },
-        { name: 'Digital Vernier Caliper', exactVariant: '150mm stainless steel digital caliper (0.01mm resolution)', quantity: 1 },
-        { name: 'PLA 3D Printing Filament', exactVariant: '1.75mm premium PLA (density ~1.24 g/cm³)', quantity: 1 }
+    "troubleshooting": [
+      {
+        "symptom": "DHT11 outputs \"NaN\" (Not a Number) on Serial Monitor continuously.",
+        "checks": [
+          "Check data wire: verify connection to Digital Pin 4.",
+          "Ensure delay between reads is at least 1000ms.",
+          "Verify DHT11 is receiving 5V power and GND."
+        ],
+        "explanation": "The DHT11 uses precise microsecond timing pulses; loose wiring breaks the single-wire handshaking protocol."
+      },
+      {
+        "symptom": "Relay stays on all the time and never turns off.",
+        "checks": [
+          "Check relay logic: most relay boards are active-LOW (write HIGH to turn OFF).",
+          "Verify digitalWrite(PIN_RELAY, HIGH) in setup() to keep relay deactivated on startup."
+        ],
+        "explanation": "Writing LOW turns an active-LOW relay ON; invert the logic in code if needed."
+      },
+      {
+        "symptom": "MQ-2 sensor reads 1023 continuously.",
+        "checks": [
+          "Check if connected to Analog AOUT or Digital DOUT: must use AOUT for variable gas concentration.",
+          "Allow 60 seconds for internal heater to burn off residual factory coatings."
+        ],
+        "explanation": "Cold sensors exhibit high baseline conductivity until reaching the 300°C operating temperature."
+      }
+    ],
+    "checksForUnderstanding": [
+      "Why can’t an Arduino pin power a large cooling fan or water pump directly without a relay?",
+      "What does \"Active-LOW\" mean when controlling a hobby relay module?"
+    ],
+    "exitTicket": [
+      {
+        "question": "Explain the purpose of Normally Open (NO) versus Normally Closed (NC) contacts on a relay.",
+        "rubricOrSampleReasoning": "Normally Open (NO) contacts remain disconnected until the relay coil is energized by the microcontroller. Normally Closed (NC) contacts remain connected until the coil is energized. NO is preferred for safety so appliances stay OFF if power fails."
+      },
+      {
+        "question": "How does an optocoupler protect the Arduino microcontroller from motor power surges?",
+        "rubricOrSampleReasoning": "An optocoupler transmits the control signal using a beam of light (an internal infrared LED shining on a phototransistor). There is no physical electrical connection between the Arduino and the high-power relay circuit, isolating the MCU from voltage spikes."
+      },
+      {
+        "question": "Why does soil moisture decrease the electrical resistance between the probe prongs?",
+        "rubricOrSampleReasoning": "Water containing dissolved mineral ions acts as an electrical conductor. More water in the soil allows more current to flow between the prongs, lowering resistance and raising measured voltage."
+      }
+    ],
+    "differentiation": {
+      "support": [
+        "Provide color-coded stickers for relay terminals (COM, NO, NC)."
       ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/cad_ultrasonic_bracket_blueprint.svg',
-      schematic: 'L-Bracket Architecture:\nBaseplate: 50.0mm (X) × 25.0mm (Y) × 3.0mm (Z)\nFaceplate: 50.0mm (X) × 3.0mm (Y) × 28.0mm (Z)\nTransducer Cutouts: Two 16.5mm dia cylinders spaced 26.0mm center-to-center\nM3 Slots: Two 3.4mm × 8.0mm oblong slots spaced 32.0mm pitch\nRear Clearance: 8.0mm notch for 4-pin female jumper wire housings',
-      wireTable: [
-        { from: 'HC-SR04 Header Pins', to: 'Rear Cable Clearance Notch', wireOrPolarityNote: 'Requires 8mm minimum clearance depth behind PCB for female Dupont headers' }
+      "extension": [
+        "Implement a multi-stage irrigation algorithm with hysteresis and soil drying predictions."
       ],
-      assemblyAndPowerUpSteps: [
-        '1. Inspect digital caliper reading and calibrate zero with jaws closed.',
-        '2. Verify CAD part volume and manifold integrity using slicer software.',
-        '3. If 3D printing: slice with 3 perimeter walls, 20% gyroid infill, and 0.2mm layer height.',
-        '4. Print oriented flat on the baseplate without supports.',
-        '5. Test-fit the real HC-SR04 sensor into the printed bracket; verify smooth sliding fit.',
-        '6. Fasten bracket to front rover chassis using two M3 screws and locknuts.'
-      ],
-      powerAndSafetyChecks: [
-        'Verify bracket holds sensor perfectly horizontal; if sensor angles downward toward the floor, ground echoes will cause false obstacle detections!',
-        'Ensure M3 screw threads do not touch or short out any electronic components on the Arduino board.'
-      ],
-      testCases: [
-        { action: 'Insert real HC-SR04 module into bracket holes', expectedResult: 'Transducer barrels slide in smoothly with zero binding, seated firmly against vertical faceplate.' },
-        { action: 'Attach 4-pin female Dupont cable to rear sensor header', expectedResult: 'Cable fits comfortably through rear notch without bending pin leads.' },
-        { action: 'Tighten M3 screws to rover chassis', expectedResult: 'Bracket locks firmly into place with zero wobble under driving vibration.' }
+      "offlineOption": [
+        "Use the interactive IoT Greenhouse Dashboard on the RoboBee portal."
       ]
     },
-    codeLab: {
-      language: 'openscad',
-      code: `// RoboBEE Innovators Academy - Parametric Robotic CAD Architecture
-// Class: BEGINNER 08 - 3D Design: Custom HC-SR04 Sensor Bracket
-// Author: RoboBEE Engineering Team | License: Proprietary Educational Asset
-
-$fn = 60; // Set circle smoothness for high-resolution 3D printing
-
-// ---------------------------------------------------------------------------
-// PARAMETRIC SPECIFICATION CONSTANTS (All dimensions in millimeters)
-// ---------------------------------------------------------------------------
-BARREL_NOMINAL_DIA  = 16.0; // Measured transducer barrel diameter
-CLEARANCE_ALLOWANCE = 0.5;  // FDM thermal shrinkage clearance allowance
-BARREL_HOLE_DIA     = BARREL_NOMINAL_DIA + CLEARANCE_ALLOWANCE; // 16.5mm
-
-BARREL_PITCH        = 26.0; // Center-to-center distance between acoustic eyes
-BARREL_ELEVATION    = 15.0; // Height of barrel center from chassis deck
-
-BRACKET_WIDTH       = 52.0; // Overall bracket lateral width
-BASE_DEPTH          = 24.0; // Baseplate mounting footprint
-WALL_THICKNESS      = 3.0;  // High-durability structural wall thickness
-FACE_HEIGHT         = 28.0; // Vertical faceplate height
-
-M3_SLOT_DIA         = 3.4;  // Clearance diameter for standard M3 screws
-M3_SLOT_PITCH       = 34.0; // Spacing matching 2WD rover chassis cutouts
-
-// ---------------------------------------------------------------------------
-// PARAMETRIC SOLID GEOMETRY MODULE
-// ---------------------------------------------------------------------------
-module ultrasonicSensorBracket() {
-  difference() {
-    // 1. ADDITIVE SOLID: Extrude L-Bracket Frame
-    union() {
-      // Horizontal chassis mounting baseplate
-      cube([BRACKET_WIDTH, BASE_DEPTH, WALL_THICKNESS]);
-      
-      // Vertical structural faceplate holding the sensor barrels
-      cube([BRACKET_WIDTH, WALL_THICKNESS, FACE_HEIGHT]);
-      
-      // Diagonal corner gusset fillets for mechanical impact reinforcement
-      translate([0, 0, 0])
-        rotate([0, 0, 0])
-        cube([WALL_THICKNESS, BASE_DEPTH * 0.6, WALL_THICKNESS * 2]);
-        
-      translate([BRACKET_WIDTH - WALL_THICKNESS, 0, 0])
-        cube([WALL_THICKNESS, BASE_DEPTH * 0.6, WALL_THICKNESS * 2]);
-    }
-
-    // 2. SUBTRACTIVE CUTOUT: Left Ultrasonic Transducer Hole (16.5mm)
-    translate([(BRACKET_WIDTH - BARREL_PITCH)/2, -1, BARREL_ELEVATION])
-      rotate([-90, 0, 0])
-      cylinder(h = WALL_THICKNESS + 2, d = BARREL_HOLE_DIA);
-
-    // 3. SUBTRACTIVE CUTOUT: Right Ultrasonic Transducer Hole (16.5mm)
-    translate([(BRACKET_WIDTH + BARREL_PITCH)/2, -1, BARREL_ELEVATION])
-      rotate([-90, 0, 0])
-      cylinder(h = WALL_THICKNESS + 2, d = BARREL_HOLE_DIA);
-
-    // 4. SUBTRACTIVE CUTOUT: Left M3 Chassis Fastener Slot (3.4mm)
-    translate([(BRACKET_WIDTH - M3_SLOT_PITCH)/2, BASE_DEPTH/2 + 2, -1])
-      cylinder(h = WALL_THICKNESS + 2, d = M3_SLOT_DIA);
-
-    // 5. SUBTRACTIVE CUTOUT: Right M3 Chassis Fastener Slot (3.4mm)
-    translate([(BRACKET_WIDTH + M3_SLOT_PITCH)/2, BASE_DEPTH/2 + 2, -1])
-      cylinder(h = WALL_THICKNESS + 2, d = M3_SLOT_DIA);
-      
-    // 6. SUBTRACTIVE CUTOUT: Center Crystal Oscillator Relief Pocket
-    translate([BRACKET_WIDTH/2 - 6, -1, BARREL_ELEVATION - 4])
-      cube([12, WALL_THICKNESS + 2, 8]);
-  }
-}
-
-// Render the completed watertight solid part
-ultrasonicSensorBracket();`,
-      pinMap: { 
-        'Clearance': '16.5mm hole (+0.5mm clearance for 16.0mm barrel)', 
-        'M3 Slot': '3.4mm diameter slot for 3.0mm machine screw' 
-      },
-      setupAndUpload: [
-        '1. Copy the parametric OpenSCAD script into OpenSCAD, or replicate the dimensions in Tinkercad / Onshape.',
-        '2. Press F5 to preview solid geometry and inspect cross-sections.',
-        '3. Press F6 to compile and render the full CSG Boolean tree.',
-        '4. Export as ASCII or Binary .STL format ready for your 3D slicer.'
-      ],
-      explanations: [
-        'BARREL_HOLE_DIA = 16.0 + 0.5: Implements the critical +0.5mm clearance compensation for FDM plastic contraction.',
-        'difference(): Core Constructive Solid Geometry (CSG) operation subtracting holes and slots from the additive solid base.',
-        'cylinder(..., d = 3.4): Cuts standard ISO medium clearance fit holes for M3 metric machine screws.',
-        '$fn = 60: Divides circles into 60 polygon segments, producing ultra-smooth circular arcs without faceting.'
-      ],
-      expectedResult: 'Watertight, manifold 3D solid model with perfectly aligned transducer cutouts, gusset reinforcement, and M3 chassis slots.',
-      caveats: [
-        'Ensure the sensor bracket holds the sensor perpendicular to the ground (90° vertical); tilting downward causes floor reflections.',
-        'In slicer settings, set wall line count to 3 (1.2mm total perimeter thickness) to ensure robust screw retention.'
-      ],
-      tweakTip: 'Mission Challenge: Add a central vertical cable notch so jumper wires can route neatly underneath the chassis deck without dangling!'
-    },
-    troubleshooting: [
-      { 
-        symptom: 'Ultrasonic sensor barrels jam halfway into the 3D printed holes and cannot be pushed through.', 
-        checks: [
-          'Step 1: Check your CAD model dimensions — did you model the holes at 16.0mm instead of 16.5mm?',
-          'Step 2: Inspect your 3D printer’s flow rate / extrusion multiplier: over-extrusion causes inner hole walls to swell inward.',
-          'Step 3: Measure the physical printed hole with internal caliper jaws to check actual printed diameter.'
-        ], 
-        explanation: 'FDM toolpaths pull molten perimeter beads inward, shrinking inner diameters. A nominal 16.0mm hole will print at ~15.6mm without clearance compensation.' 
-      },
-      { 
-        symptom: 'The 3D printed bracket snaps in half along the corner joint when tightened to the chassis.', 
-        checks: [
-          'Step 1: Check slicer print orientation — was the bracket printed upright like a "tower" rather than flat on its base?',
-          'Step 2: Increase wall thickness from 2mm to 3mm and add corner gusset fillets in CAD.'
-        ], 
-        explanation: 'Printing upright aligns the weak interlaminar Z-axis across the high-stress corner joint; printing flat aligns strong X-Y continuous fibers across the bend.' 
-      },
-      { 
-        symptom: 'M3 machine screws cannot pass through the baseplate holes.', 
-        checks: [
-          'Step 1: Verify the hole diameter was set to 3.4mm in CAD, not 3.0mm.',
-          'Step 2: Use a 3.5mm twist drill bit by hand to clear out stringing or plastic burrs inside the hole.'
-        ], 
-        explanation: 'An M3 screw has an outer thread crest of 3.0mm. Holes printed at 3.0mm shrink to ~2.8mm, blocking clearance passage.' 
-      },
-      { 
-        symptom: 'Slicer software warns that the exported .STL file is "Non-Manifold" or has hole errors.', 
-        checks: [
-          'Step 1: In CAD, check that subtractive cylinders extend completely through the walls (e.g. thickness + 2mm).',
-          'Step 2: Ensure zero zero-thickness walls (infinitesimal geometry) exist in the Boolean difference tree.'
-        ], 
-        explanation: 'Coincident planar surfaces in Boolean operations can produce zero-thickness non-manifold edges that confuse slicing engines.' 
+    "nextLessonId": "beg-09",
+    "nextLessonTeaser": "Class 09: DC Gear Motors, L298N H-Bridge, 2WD Chassis Assembly & Choreographed Robot Dance! Build your first mobile robot chassis.",
+    "sources": [
+      {
+        "title": "Songle 5V Relay Technical Datasheet",
+        "url": "https://songle.com"
       }
     ],
-    checksForUnderstanding: [
-      'Why does a 16.0mm cylinder require a 16.5mm hole when fabricating parts with FDM 3D printing?',
-      'What are the three distinct measuring features on a digital vernier caliper?',
-      'Why is an L-bracket significantly stronger when 3D printed flat on its base rather than standing upright?'
-    ],
-    exitTicket: [
-      { 
-        question: 'Explain what causes circular holes in 3D printed plastic to shrink smaller than their modeled CAD size.', 
-        rubricOrSampleReasoning: 'Thermal contraction of molten plastic as it cools, combined with nozzle perimeter tension pulling the curved molten bead toward the center of the hole.' 
-      },
-      { 
-        question: 'Why do mechanical engineers design mounting slots at 3.4mm diameter for standard M3 screws instead of 3.0mm?', 
-        rubricOrSampleReasoning: 'M3 screws measure 3.0mm across thread crests; a 3.4mm hole provides standard clearance so the screw slides through freely without jamming after plastic shrinkage.' 
-      },
-      { 
-        question: 'What is anisotropy in 3D printed parts, and how do engineers orient brackets to prevent layer splitting?', 
-        rubricOrSampleReasoning: 'Anisotropy means directional strength variance; parts are weak between Z-layers. Engineers orient brackets flat on the print bed so continuous X-Y plastic fibers absorb mechanical bending loads.' 
+    "assetCredits": [
+      {
+        "asset": "Greenhouse Station Schematic",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
       }
     ],
-    differentiation: {
-      support: ['Provide starter Tinkercad template with pre-aligned 16.5mm cylinders and 3.4mm M3 slots.'],
-      extension: ['Model an integrated servo horn pocket on the bottom of the bracket to enable 180° pan-tilt obstacle scanning.'],
-      offlineOption: ['Use the interactive web 2D/3D caliper and tolerance simulator to practice reading vernier scales.']
-    },
-    nextLessonId: 'beg-09',
-    nextLessonTeaser: 'Beginner 09: Build an Obstacle-Avoiding Rover — System Integration! Combine mechanical chassis, ultrasonic sonar, TB6612FNG driver, and autonomous firmware into one unified robot!',
-    sources: [{ title: 'OpenSCAD Parametric CAD User Manual & Mechanical Engineering Standards', url: 'https://openscad.org' }],
-    assetCredits: [{ asset: 'Parametric CAD Model', creator: 'RoboBEE Innovators Engineering Team', license: 'Proprietary', sourceUrl: 'team_info' }],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
   {
-    id: 'beg-09',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-comp-hc-sr04", "fg-comp-tb6612fng"],
-      lookUpWhileBuilding: ["fg-board-uno-anatomy", "fg-safety-lab-code"],
-      goDeeper: ["fg-motion-differential-kinematics", "fg-prog-millis-vs-delay"]
-    },
-    courseId: 'beginner',
-    sequence: 9,
-    code: 'BEGINNER 09',
-    title: 'Build an Obstacle-Avoiding Rover: System Integration',
-    promise: 'By the end of this masterclass, you will integrate mechanical, electrical, sensory, and firmware subsystems into a unified cyber-physical machine, calibrate ultrasonic echolocation at 40 kHz, and implement an autonomous reactive collision avoidance state machine.',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01', 'Beginner 02', 'Beginner 06', 'Beginner 07', 'Beginner 08'],
-    outcomes: [
-      'Synthesize mechanical chassis, TB6612FNG dual motor driver, HC-SR04 ultrasonic sensor, and Arduino brain into a fully integrated mobile rover.',
-      'Derive the acoustic time-of-flight distance formula using the speed of sound in air (343 m/s = 0.0343 cm/μs) and round-trip division.',
-      'Execute the mandatory pre-flight Subsystem Startup Protocol (Smoke Test) to verify ground continuity and sensor streams before motor power-up.',
-      'Program an autonomous reactive decision state machine: Cruise Forward -> Active Dynamic Brake -> Reverse Recovery -> Scan Pivot -> Resume.',
-      'Identify acoustic blind spots caused by specular reflections, absorbent soft surfaces, and sensor dead-bands.'
-    ],
-    vocabulary: [
-      { term: 'System Integration', plainMeaning: 'Connecting mechanics, electronics, sensors, and code so they function together as one machine.', technicalMeaning: 'The engineering process of linking disparate sub-systems into a single unified cyber-physical architecture.' },
-      { term: 'Ultrasonic Sonar', plainMeaning: 'Measuring distance by broadcasting high-frequency sound chirps and timing the echo return.', technicalMeaning: 'An active acoustic sensor emitting 40 kHz ultrasound bursts to determine target range via time-of-flight.' },
-      { term: 'Time-of-Flight (ToF)', plainMeaning: 'Calculating distance by timing how many microseconds it takes for a sound pulse to bounce back.', technicalMeaning: 'The measurement of the time taken by an acoustic or electromagnetic wave to travel from transmitter to reflector and back.' },
-      { term: 'Safety Zone Threshold', plainMeaning: 'The minimum safety distance (e.g. 20 cm) that triggers the robot to slam the brakes.', technicalMeaning: 'A programmatic spatial decision boundary that shifts the autonomous controller from forward navigation to an evasive state.' },
-      { term: 'Specular Reflection', plainMeaning: 'When sound bounces off an angled wall like light off a mirror, missing the sensor completely.', technicalMeaning: 'Mirror-like reflection of acoustic waves occurring when an incident angle exceeds critical detection limits, deflecting the echo.' },
-      { term: 'Cyber-Physical System', plainMeaning: 'A computer brain that uses software logic to manipulate real physical moving hardware in the world.', technicalMeaning: 'A mechanism controlled or monitored by computer-based algorithms, tightly integrated with the internet and physical actuators.' }
-    ],
-    teacherPrep: ['Set up controlled test arenas with cardboard boxes / foam blocks; verify all rover batteries measure >= 5.8V under load.'],
-    verifiedMaterials: ['Fully assembled 2WD Rover Chassis', 'HC-SR04 Ultrasonic Sensor Module', '3D Printed Sensor Bracket (Class 08)', 'TB6612FNG Motor Driver', 'Arduino Uno Rev3 DIP', '4xAA Switched Battery Pack', 'Stationary cardboard test boxes'],
-    safetyNotes: [
-      'ALWAYS test rovers against stationary, non-fragile obstacles (cardboard boxes or foam blocks).',
-      'NEVER test rovers by driving them toward human bystanders or classroom pets.',
-      'Always perform the Subsystem Startup Protocol with motor battery power switched OFF before live floor deployment.'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Ask: "How do bats fly through pitch-black caves at 40 km/h without hitting jagged rocks?" Introduce 40 kHz piezoelectric ultrasound physics.', 
-        studentAction: 'Calculate round-trip echo time for an object 30 cm away (approx 1,749 microseconds).' 
-      },
-      { 
-        segment: '10–25m Subsystems', 
-        minutes: 15, 
-        teacherAction: 'Guide the 4-phase pre-flight bring-up protocol: 1. Mechanical clearance; 2. Ground return continuity; 3. Sonar serial stream; 4. High-power motor arming.', 
-        studentAction: 'Perform pre-power inspection checklist and verify live sonar distance stream in Serial Monitor with motor switch OFF.' 
-      },
-      { 
-        segment: '25–50m Floor Integration', 
-        minutes: 25, 
-        teacherAction: 'Supervise autonomous rover floor testing in a challenging cardboard obstacle arena. Coach students on tuning reverse pulses and turning angles.', 
-        studentAction: 'Deploy autonomous rover; calibrate safe distance threshold (20cm) and verify evasive maneuvers when trapped in dead-end corners.' 
-      },
-      { 
-        segment: '50–60m Exit Check', 
-        minutes: 10, 
-        teacherAction: 'Review causes of sensor failure (specular reflection on angled walls, cloth absorption).', 
-        studentAction: 'Complete formative exit ticket and defend why active braking must precede turning.' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. Cyber-Physical System Integration (The Robotics Convergence)',
-        explanation: 'System Integration is the ultimate milestone of robotics engineering. Up until today, you have tested individual components in isolation: LEDs, pushbuttons, motor drivers, and 3D printed brackets. When combining these subsystems into an autonomous cyber-physical machine, they interact dynamically: motors pull high current that can brown out the logic rail; motor vibrations can rattle sensor pins loose; and software timing bugs can drive the chassis into walls. Successful integration requires methodical subsystem-by-subsystem bring-up rather than flipping all power switches at once.',
-        instructorNote: 'Compare system integration to an orchestra: the strings, brass, and percussion may sound great individually, but they need a conductor to play together in harmony!'
-      },
-      {
-        title: '2. The Physics of Ultrasonic Echolocation (Time-of-Flight)',
-        explanation: 'The HC-SR04 ultrasonic distance sensor consists of two aluminum cylindrical canisters containing piezoelectric crystals: a Transmitter (T) and a Receiver (R). When the Arduino sends a 10-microsecond HIGH pulse to the TRIG pin, the transmitter generates a burst of 8 ultrasonic sound waves at 40,000 Hz (40 kHz)—well above human hearing range (~20 kHz). The sound waves travel through ambient air at approximately 343 meters per second (at 20°C). When the wave collides with an obstacle, acoustic energy bounces back to the receiver, pulling the ECHO pin HIGH for the exact duration of the flight. Because the wave traveled OUT to the obstacle and BACK to the receiver, the one-way distance formula is: $\text{Distance (cm)} = \frac{\Delta t (\mu s) \times 0.0343 \text{ cm/\mu s}}{2.0}$.',
-        instructorNote: 'Walk through the math: 343 m/s = 34,300 cm/s = 0.0343 cm/μs. Inverting this: 1 cm of travel takes 29.15 microseconds (or 58.3 μs round-trip).'
-      },
-      {
-        title: '3. Acoustic Blind Spots: Specular Reflection, Absorption & Dead-Bands',
-        explanation: 'Ultrasonic sensors are powerful, but they have distinct physical limitations that every robotics engineer must understand: 1. Specular Reflection: Like a flashlight beam reflecting off a mirror, if an ultrasonic wavefront strikes a smooth hard surface at an angle greater than ~45°, the echo bounces away into the room instead of returning to the receiver, making the wall completely invisible! 2. Acoustic Absorption: Soft materials like thick foam, drapery, or pet fur absorb sound energy rather than reflecting it. 3. Minimum Dead-Band: The sensor cannot accurately measure objects closer than ~2 cm because the piezoelectric crystal is still physically ringing from transmission.',
-        instructorNote: 'Demonstrate specular reflection by holding a cardboard sheet at a sharp 45-degree angle in front of the rover—the sensor reads 999cm!'
-      },
-      {
-        title: '4. The Reactive Obstacle Avoidance State Machine',
-        explanation: 'Autonomous navigation requires deterministic state-based decision logic. Our rover executes a 4-state Finite State Machine: 1. `STATE_CRUISE_FORWARD`: Default state. Both motors drive forward at cruise speed (PWM 140) while polling distance every 30ms. 2. `STATE_ACTIVE_BRAKE`: Triggered when `distance < SAFE_DISTANCE_CM` (20cm). Both motor channels trigger dynamic braking immediately to halt linear inertia. 3. `STATE_REVERSE_PULSE`: Rover drives backward for 300ms to open up clearance space. 4. `STATE_SCAN_PIVOT`: Rover executes a 90° tank spin to orient toward an open heading before resuming cruise.',
-        instructorNote: 'Emphasize why we reverse before turning: if a rover stops 10cm from a flat wall and immediately tries to turn, its outer corner bumper will scrape against the wall!'
-      },
-      {
-        title: '5. Pre-Power Subsystem Startup Checklist (Smoke Test Protocol)',
-        explanation: 'In aerospace and defense engineering, technicians never power up a new satellite without executing a rigorous Pre-Flight Checklist. In robotics, turning on motor power prematurely can short-circuit batteries or cause runaway robots to smash onto the floor. Our mandatory bring-up sequence: Step 1 (Mechanical): Spin both drive wheels and caster by hand to confirm zero physical binding. Step 2 (Continuity): Verify common ground wire bridges Arduino GND and Battery GND. Step 3 (Sensor Stream): Plug in USB with motor battery OFF; verify live sonar telemetry in Serial Monitor. Step 4 (Live Arming): Disconnect USB, place on floor, and flip motor battery switch ON.',
-        instructorNote: 'Enforce this checklist strictly: any team that powers up motors before verifying sensor telemetry in Serial Monitor must step back and restart.'
-      },
-      {
-        title: '6. Software Glitch Filtering & Moving Average Windowing',
-        explanation: 'Real-world sensors are noisy. An ultrasonic ping can occasionally return 0 (timeout) or 999 (echo deflected by air turbulence). If your firmware blindly triggers an emergency evasive maneuver on a single erroneous ping, your rover will twitch and turn erratically in empty rooms! Professional firmware implements a Software Glitch Filter: taking three consecutive readings and computing a running median, or discarding obvious outliers (`distance == 0 || distance > 400`). Only when two consecutive valid pings confirm an obstacle does the state machine trigger an avoidance maneuver.',
-        instructorNote: 'Show students the difference in Serial Monitor between raw unfiltered data and filtered rolling-average data.'
-      }
-    ],
-    visualizerId: 'obstacle_avoiding_rover_sim',
-    project: {
-      name: 'Autonomous Obstacle-Avoiding Rover',
-      deliverableType: 'physical_build',
-      successEvidence: [
-        'Fully integrated 2WD autonomous mobile rover with forward-facing HC-SR04 sonar on custom 3D bracket.',
-        'Deterministic obstacle detection at 20cm initiating active brake, reverse clearance pulse, and 90° pivot.',
-        'Successfully navigates an irregular cardboard obstacle arena for 3 minutes continuously with zero collisions.'
+    "id": "beg-09",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-motion-differential-kinematics",
+        "fg-safety-lab-code"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-electronics-breadboards"
+      ],
+      "goDeeper": [
+        "fg-testing-fmea-debugging",
+        "fg-comp-tournament-prep"
       ]
     },
-    activity: {
-      title: 'Integrate, Calibrate, and Test the Autonomous Rover',
-      steps: [
-        'Step 1: Mount the 3D printed sensor bracket to the front of the rover chassis, pointing dead horizontal.',
-        'Step 2: Wire HC-SR04: VCC to 5V, GND to GND, TRIG to Pin 12, ECHO to Pin 11.',
-        'Step 3: Connect TB6612FNG motor driver pins to Arduino: Left (PWMA:5, AIN1:7, AIN2:8), Right (PWMB:6, BIN1:9, BIN2:10), STBY:3.',
-        'Step 4: Execute the Pre-Flight bring-up protocol: Verify Common Ground and stream distance data in Serial Monitor with motor battery OFF.',
-        'Step 5: Disconnect USB, place rover on floor facing a stationary cardboard box 1 meter away, and switch battery pack ON.',
-        'Step 6: Observe autonomous obstacle detection, braking, reverse clearance, and escape turning!'
-      ],
-      successCriteria: [
-        'Rover detects cardboard obstacle at exactly 20cm, comes to a full dynamic brake, reverses 10cm, and pivots right.',
-        'Rover completes 3 consecutive obstacle approaches without physical collision.',
-        'Firmware includes glitch filtering that eliminates false-trigger stops in open hallways.'
-      ],
-      extension: 'Add a micro servo motor beneath the ultrasonic bracket to scan left (45°) and right (135°) before choosing the clearest escape path.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['2WD Mobile Rover Chassis', 'HC-SR04 Ultrasonic Sonar Module', 'TB6612FNG Dual Driver', 'Arduino Uno Rev3 DIP'],
-      componentList: [
-        { name: '2WD Rover Acrylic Chassis Assembly', exactVariant: 'Dual TT gearmotors (1:48), rubber wheels, front caster', quantity: 1 },
-        { name: 'HC-SR04 Ultrasonic Sensor Module', exactVariant: 'Standard 4-pin 5V dual-transducer module (2cm–400cm range)', quantity: 1 },
-        { name: '3D Printed Sensor Bracket', exactVariant: 'Class 08 Parametric CAD part with M3 fastener slots', quantity: 1 },
-        { name: 'TB6612FNG Motor Driver Breakout', exactVariant: 'Dual H-Bridge carrier with integrated flyback diodes', quantity: 1 },
-        { name: 'Arduino Uno Rev3 DIP', exactVariant: 'Standard ATmega328P DIP board with USB cable', quantity: 1 },
-        { name: '4xAA Battery Pack with Switch', exactVariant: '6.0V nominal DC high-current motor power supply', quantity: 1 },
-        { name: 'Stationary Cardboard Obstacle Box', exactVariant: 'Standard 30cm × 20cm cardboard testing target', quantity: 1 },
-        { name: 'Jumper Wires & Hardware', exactVariant: 'Male-to-Female and Male-to-Male 24AWG jumpers, M3 screws', quantity: 16 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/obstacle_avoiding_rover_complete_wiring.svg',
-      schematic: 'Sensor Wiring:\nHC-SR04 VCC ── Arduino 5V\nHC-SR04 GND ── Arduino GND\nHC-SR04 TRIG ── Arduino Pin 12\nHC-SR04 ECHO ── Arduino Pin 11\n\nMotor Driver Wiring (TB6612FNG):\nLeft Motor:  PWMA ── Pin 5 (~PWM) | AIN1 ── Pin 7 | AIN2 ── Pin 8\nRight Motor: PWMB ── Pin 6 (~PWM) | BIN1 ── Pin 9 | BIN2 ── Pin 10\nStandby:     STBY ── Pin 3 (HIGH = Enabled)\nPower Rails: VCC ── Arduino 5V | VM ── Battery (+) 6V | GND ── Shared Ground',
-      wireTable: [
-        { from: 'HC-SR04 VCC Pin', to: 'Arduino 5V Pin', wireOrPolarityNote: 'Red 5V Sensor Power Wire' },
-        { from: 'HC-SR04 GND Pin', to: 'Arduino GND Pin', wireOrPolarityNote: 'Black Sensor Ground Wire' },
-        { from: 'HC-SR04 TRIG Pin', to: 'Arduino Digital Pin 12', wireOrPolarityNote: 'Green Ultrasonic Trigger Signal' },
-        { from: 'HC-SR04 ECHO Pin', to: 'Arduino Digital Pin 11', wireOrPolarityNote: 'Yellow Ultrasonic Echo Signal' },
-        { from: 'TB6612FNG PWMA', to: 'Arduino Digital Pin 5 (~PWM)', wireOrPolarityNote: 'Blue Left Motor Speed Wire' },
-        { from: 'TB6612FNG AIN1', to: 'Arduino Digital Pin 7', wireOrPolarityNote: 'Yellow Left Motor Direction 1' },
-        { from: 'TB6612FNG AIN2', to: 'Arduino Digital Pin 8', wireOrPolarityNote: 'Green Left Motor Direction 2' },
-        { from: 'TB6612FNG PWMB', to: 'Arduino Digital Pin 6 (~PWM)', wireOrPolarityNote: 'Blue Right Motor Speed Wire' },
-        { from: 'TB6612FNG BIN1', to: 'Arduino Digital Pin 9', wireOrPolarityNote: 'Yellow Right Motor Direction 1' },
-        { from: 'TB6612FNG BIN2', to: 'Arduino Digital Pin 10', wireOrPolarityNote: 'Green Right Motor Direction 2' },
-        { from: 'TB6612FNG STBY', to: 'Arduino Digital Pin 3', wireOrPolarityNote: 'Orange Standby Enable Wire' },
-        { from: '4xAA Battery (+ 6V)', to: 'TB6612FNG VM', wireOrPolarityNote: 'Red Motor High-Current Power' },
-        { from: '4xAA Battery (- GND)', to: 'TB6612FNG GND', wireOrPolarityNote: 'Black Battery Ground Return' },
-        { from: 'Arduino GND Pin', to: 'TB6612FNG GND', wireOrPolarityNote: 'CRITICAL SHARED COMMON GROUND' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Mount sensor bracket to front chassis with M3 screws, ensuring horizontal alignment.',
-        '2. Insert HC-SR04 module and connect female jumper wires according to wire table.',
-        '3. Inspect all motor driver logic connections to Arduino pins 3, 5, 6, 7, 8, 9, 10.',
-        '4. Connect the critical Black Common Ground wire between Arduino GND and Battery GND.',
-        '5. Connect Arduino via USB with motor battery switch OFF; verify live distance telemetry in Serial Monitor.',
-        '6. Disconnect USB, place rover on floor start line facing target, and flip battery switch ON.'
-      ],
-      powerAndSafetyChecks: [
-        'Ensure the battery pack 6V (+) is connected ONLY to driver VM, NEVER to Arduino 5V or any I/O pin.',
-        'Confirm sensor points horizontally; downward tilt will catch floor seams and cause constant spinning.',
-        'Always test against non-fragile stationary cardboard boxes in an open floor space.'
-      ],
-      testCases: [
-        { action: 'Obstacle placed at 50cm', expectedResult: 'Rover drives forward in cruise state at commanded speed.' },
-        { action: 'Obstacle detected within 20cm', expectedResult: 'Rover active-brakes, reverses 10cm, executes 90° right tank turn, and resumes forward path.' },
-        { action: 'Sensor unplugged or covered', expectedResult: 'Glitch filter detects timeout (>400cm or 0) and holds safe cruise or stops safely.' }
+    "courseId": "beginner",
+    "sequence": 9,
+    "code": "BEGINNER 09",
+    "title": "DC Gear Motors, L298N H-Bridge, 2WD Chassis Assembly & Robot Dance",
+    "subtitle": "Inductive motor loads, back-EMF flyback diodes, H-Bridge transistor matrix topology, dual full-bridge drivers, and 2WD differential robot chassis assembly with choreographed motion routines.",
+    "promise": "I can assemble a 2WD differential robot chassis, wire an L298N dual H-bridge motor driver, and program a calibrated 30-second choreographed robot victory dance routine.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01 through Beginner 08"
+    ],
+    "outcomes": [
+      "Explain the physics of brushed DC motors, electromagnetic coils, gear reduction (1:48), and inductive back-EMF.",
+      "Deconstruct the H-Bridge transistor matrix (4 switching transistors per motor allowing forward, reverse, dynamic braking, and freewheeling coast).",
+      "Assemble a complete 2WD robot chassis: dual TT gear motors, rubber drive wheels, omnidirectional ball caster, and battery box.",
+      "Wire an L298N dual full-bridge driver, configuring logic inputs (IN1–IN4) and PWM speed control pins (ENA, ENB).",
+      "Write a modular robotics motion library (forward, backward, turnLeft, turnRight, pivotSpin, brake) and choreograph a synchronized 30-second victory dance."
+    ],
+    "vocabulary": [
+      {
+        "term": "H-Bridge",
+        "plainMeaning": "A 4-switch electronic bridge that lets a motor spin forward or backwards by flipping the direction electricity flows through it.",
+        "technicalMeaning": "An electronic circuit topology composed of four solid-state switching elements (BJTs or MOSFETs) configured in an \"H\" formation enabling bidirectional DC motor control and active braking."
+      },
+      {
+        "term": "L298N Motor Driver",
+        "plainMeaning": "A high-power amplifier chip with a big heat sink that powers two robot motors from a battery pack.",
+        "technicalMeaning": "A high-voltage, high-current dual full-bridge driver capable of driving inductive loads up to 46V and 2A continuous per channel."
+      },
+      {
+        "term": "Differential Steering (Skid Steer)",
+        "plainMeaning": "Steering like a tank: to turn left, you stop or reverse the left wheel while the right wheel drives forward.",
+        "technicalMeaning": "A mobile robotics drive architecture where vehicle heading and angular velocity are governed by the differential speed ratio between left and right drive wheels."
+      },
+      {
+        "term": "PWM Speed Control (ENA / ENB)",
+        "plainMeaning": "Removing the jumper and pulsing the enable pin to control motor driving speed from crawl to sprint.",
+        "technicalMeaning": "Modulating the duty cycle (0–255) supplied to the L298N enable pins to govern average motor voltage and rotor RPM."
+      },
+      {
+        "term": "Back-Electromotive Force (Back-EMF)",
+        "plainMeaning": "A reverse voltage spike generated by spinning motor coils when stopped, safely absorbed by flyback diodes.",
+        "technicalMeaning": "The counter-electromotive force induced in an inductive armature winding opposing current change according to Faraday’s and Lenz’s laws."
+      },
+      {
+        "term": "Active Dynamic Braking",
+        "plainMeaning": "Connecting both sides of the motor to 5V or Ground to stop coasting instantly.",
+        "technicalMeaning": "Short-circuiting motor armature terminals, converting kinetic rotational energy into electromagnetic resistance that rapidly decelerates the rotor."
+      }
+    ],
+    "teacherPrep": [
+      "Unbox 2WD Robot Chassis acrylic base plates, 2x TT gear motors, wheels, casters, L298N drivers, and screws.",
+      "Distribute AA battery boxes (4x AA = 6V) or 2x 18650 Li-ion battery holders with rocker power switches.",
+      "Verify screwdrivers and hardware trays are placed on all student workbenches."
+    ],
+    "verifiedMaterials": [
+      "Arduino Uno R3 development board with USB cable",
+      "L298N Dual H-Bridge Motor Driver Module with heatsink",
+      "2WD Robot Chassis kit (acrylic deck, 2x TT DC gear motors 1:48 ratio, 2x wheels, 1x caster ball)",
+      "4x AA Battery Box (6V) or 2x 18650 Battery Holder (7.4V) with toggle switch",
+      "Chassis assembly screws, brass standoffs, and nuts",
+      "Small Phillips and flathead screwdrivers",
+      "10x Male-to-Female and 6x Male-to-Male jumper wires"
+    ],
+    "safetyNotes": [
+      "Always prop the robot chassis up on a block or mug during initial testing so wheels spin freely in the air.",
+      "Never connect motor battery pack wires directly to the 5V pin of the Arduino; power the L298N screw terminals directly from the battery pack.",
+      "Ensure battery polarity is correct (+ to 12V terminal, - to GND terminal)."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Place an assembled 2WD robot on the arena floor: cue energetic music and watch the robot perform a synchronized victory dance routine (pirouette spins, figure-8s, and celebratory bows)!",
+        "studentAction": "Cheer on the robot dancer! Inspect the motorized chassis components and mechanical gearbox on their bench trays."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Deconstruct the H-Bridge schematic on the whiteboard: trace current paths for Forward, Reverse, Coast, and Active Dynamic Braking.",
+        "studentAction": "Interact with the Motor Driver & H-Bridge Sim on the portal: click virtual transistor switches to reverse DC motor rotation."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide mechanical chassis assembly: mount TT motors to acrylic deck; attach rubber wheels; install front ball caster; wire L298N driver.",
+        "studentAction": "Assemble the mechanical 2WD rover chassis. Fasten motors, wheels, and L298N driver securely with screws and standoffs."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through the modular movement library: forward(), backward(), turnLeft(), turnRight(), pivotSpin(), and activeBrake().",
+        "studentAction": "Prop robot on bench block; upload code; verify both wheels turn forward together; adjust motor lead polarity if one wheel runs backwards."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"RoboBee Dance-Off Showcase\": play music tracks while teams deploy custom choreographed 30-second dance routines!",
+        "studentAction": "Place robots on the arena floor; execute choreographed dance routines; measure turn symmetry; complete Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "How an H-Bridge Controls Direction",
+        "explanation": "To make a DC motor spin forward, current must flow from Left to Right through the coils. To reverse, current must flow from Right to Left! An H-Bridge uses 4 transistors (switches Q1, Q2, Q3, Q4). Closing Q1 and Q4 spins the motor forward; closing Q2 and Q3 reverses current and spins the motor backwards!",
+        "instructorNote": "CRITICAL SAFETY RULE: Never close Q1 and Q2 at the same time! That connects 12V directly to Ground—a destructive condition known as \"Shoot-Through\". The L298N logic chip prevents this."
+      },
+      {
+        "title": "Active Dynamic Braking vs Coasting",
+        "explanation": "When a robot turns off its motors (coasting), kinetic momentum causes it to skid forward 10–20 cm. By setting both motor inputs to LOW or both to HIGH, the H-Bridge shorts the motor terminals. The spinning rotor acts as a generator, creating magnetic resistance that halts wheels instantly!",
+        "instructorNote": "Demonstrate by spinning a disconnected motor by hand vs spinning a motor with its two leads touched together."
+      },
+      {
+        "title": "Skid-Steer Differential Physics",
+        "explanation": "To turn right, our 2WD robot slows down or stops the right wheel while driving the left wheel forward. To spin on a dime (pivot turn), the left wheel drives forward at full speed while the right wheel drives backward at full speed!",
+        "instructorNote": "Explain that the center of rotation lies directly in the center of the wheel axle during a pivot spin."
+      }
+    ],
+    "visualizerId": "motor_driver_pwm_sim",
+    "project": {
+      "name": "2WD Mobile Robot Chassis Assembly & Choreographed Dance Bot",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Fully assembled mechanical 2WD chassis with dual TT gear motors, rubber tires, and omnidirectional caster.",
+        "L298N motor driver wired to Arduino pins (ENA D5, IN1 D7, IN2 D8, IN3 D9, IN4 D10, ENB D6) and battery pack.",
+        "Flawless execution of a 30-second choreographed robot dance routine featuring forward rushes, sharp pivots, and victory spins."
       ]
     },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - Autonomous Obstacle-Avoiding Mobile Rover
-// Class: BEGINNER 09 - System Integration & Cyber-Physical Navigation Loop
-
-// Ultrasonic Sonar Pin Assignments
-const int PIN_TRIG = 12; // Output: 10µs ultrasonic trigger chirp
-const int PIN_ECHO = 11; // Input: Echo time-of-flight pulse
-
-// Motor Driver Pin Mapping (TB6612FNG Dual Driver)
-const int PIN_PWMA = 5;  // Left Motor Speed (~PWM)
-const int PIN_AIN1 = 7;  // Left Motor Direction 1
-const int PIN_AIN2 = 8;  // Left Motor Direction 2
-
-const int PIN_PWMB = 6;  // Right Motor Speed (~PWM)
-const int PIN_BIN1 = 9;  // Right Motor Direction 1
-const int PIN_BIN2 = 10; // Right Motor Direction 2
-
-const int PIN_STBY = 3;  // Driver Standby Enable (HIGH = Operational)
-
-// Navigational & Safety Thresholds
-const int   SAFE_DISTANCE_CM   = 22;   // Obstacle avoidance threshold distance
-const int   CRUISE_SPEED       = 140;  // Standard forward cruise throttle (0-255)
-const int   ESCAPE_TURN_SPEED  = 130;  // Zero-radius tank turn throttle
-const float LEFT_TRIM          = 1.00; // Left motor calibration trim multiplier
-const float RIGHT_TRIM         = 0.94; // Right motor calibration trim multiplier
-
-// ---------------------------------------------------------------------------
-// LOW-LEVEL ACTUATOR PRIMITIVES (Dynamic Active Braking Supported)
-// ---------------------------------------------------------------------------
-
-void setLeftMotor(int speedVal) {
-  int adjustedSpeed = (int)(abs(speedVal) * LEFT_TRIM);
-  adjustedSpeed = constrain(adjustedSpeed, 0, 255);
-
-  if (speedVal > 0) {
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, LOW);
-  } else if (speedVal < 0) {
-    digitalWrite(PIN_AIN1, LOW);
-    digitalWrite(PIN_AIN2, HIGH);
-  } else {
-    // Dynamic Active Brake: Short motor windings to GND
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, HIGH);
-  }
-  analogWrite(PIN_PWMA, adjustedSpeed);
-}
-
-void setRightMotor(int speedVal) {
-  int adjustedSpeed = (int)(abs(speedVal) * RIGHT_TRIM);
-  adjustedSpeed = constrain(adjustedSpeed, 0, 255);
-
-  if (speedVal > 0) {
-    digitalWrite(PIN_BIN1, HIGH);
-    digitalWrite(PIN_BIN2, LOW);
-  } else if (speedVal < 0) {
-    digitalWrite(PIN_BIN1, LOW);
-    digitalWrite(PIN_BIN2, HIGH);
-  } else {
-    // Dynamic Active Brake: Short motor windings to GND
-    digitalWrite(PIN_BIN1, HIGH);
-    digitalWrite(PIN_BIN2, HIGH);
-  }
-  analogWrite(PIN_PWMB, adjustedSpeed);
-}
-
-void forward(int speedVal) {
-  setLeftMotor(speedVal);
-  setRightMotor(speedVal);
-}
-
-void reverse(int speedVal) {
-  setLeftMotor(-speedVal);
-  setRightMotor(-speedVal);
-}
-
-void turnRight(int speedVal) {
-  setLeftMotor(speedVal);
-  setRightMotor(-speedVal); // Tank spin right
-}
-
-void stopRobot() {
-  setLeftMotor(0);
-  setRightMotor(0);
-}
-
-// ---------------------------------------------------------------------------
-// SENSORY PERCEPTION PRIMITIVE (Acoustic Time-of-Flight with Glitch Filter)
-// ---------------------------------------------------------------------------
-
-float readSonarDistanceCm() {
-  // Clear the trigger pin to ensure clean HIGH pulse
-  digitalWrite(PIN_TRIG, LOW);
-  delayMicroseconds(2);
-
-  // Send exact 10-microsecond ultrasound trigger burst
-  digitalWrite(PIN_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(PIN_TRIG, LOW);
-
-  // Measure echo return duration (timeout after 25,000µs = ~4.2 meters max range)
-  unsigned long durationUs = pulseIn(PIN_ECHO, HIGH, 25000);
-
-  // Glitch Filter: If echo timed out, return safe out-of-range value
-  if (durationUs == 0) {
-    return 999.0;
-  }
-
-  // Derive distance: speed of sound = 0.0343 cm/µs; divide by 2 for round-trip
-  return (durationUs * 0.0343) / 2.0;
-}
-
-// ---------------------------------------------------------------------------
-// SETUP & AUTONOMOUS REACTIVE NAVIGATION LOOP
-// ---------------------------------------------------------------------------
-
-void setup() {
-  pinMode(PIN_TRIG, OUTPUT);
-  pinMode(PIN_ECHO, INPUT);
-
-  pinMode(PIN_PWMA, OUTPUT);
-  pinMode(PIN_AIN1, OUTPUT);
-  pinMode(PIN_AIN2, OUTPUT);
-
-  pinMode(PIN_PWMB, OUTPUT);
-  pinMode(PIN_BIN1, OUTPUT);
-  pinMode(PIN_BIN2, OUTPUT);
-
-  pinMode(PIN_STBY, OUTPUT);
-  digitalWrite(PIN_STBY, HIGH); // Wake up motor driver
-
-  Serial.begin(9600);
-  Serial.println(F("========================================"));
-  Serial.println(F("  ROBOBEE AUTONOMOUS OBSTACLE ROVER     "));
-  Serial.println(F("========================================"));
-  Serial.println(F("Status: Pre-Flight Check Complete."));
-  Serial.println(F("Arming autonomous loop in 3 seconds...\n"));
-  
-  delay(3000); // 3-second safety grace window for floor placement
-}
-
-void loop() {
-  // 1. SENSE: Sample physical distance ahead
-  float distanceAhead = readSonarDistanceCm();
-
-  Serial.print(F("Sonar Distance: "));
-  Serial.print(distanceAhead);
-  Serial.println(F(" cm"));
-
-  // 2. DECIDE & ACT: Evaluate safety boundary condition
-  if (distanceAhead < SAFE_DISTANCE_CM) {
-    Serial.println(F("⚠️ [OBSTACLE DETECTED] Initiating Evasive Collision Avoidance!"));
-
-    // Phase A: Active Dynamic Brake (halt forward momentum immediately)
-    stopRobot();
-    delay(150);
-
-    // Phase B: Reverse Recovery Pulse (back away from trap to open turn clearance)
-    Serial.println(F("   Backing away 10cm..."));
-    reverse(CRUISE_SPEED - 10);
-    delay(320);
-    stopRobot();
-    delay(150);
-
-    // Phase C: 90-Degree Escape Tank Turn (pivot right to find open vector)
-    Serial.println(F("   Executing 90-degree escape pivot..."));
-    turnRight(ESCAPE_TURN_SPEED);
-    delay(350); // Calibrated 90-degree tank spin
-    stopRobot();
-    delay(150);
-
-    Serial.println(F("✅ Escape Complete. Resuming forward cruise.\n"));
-  } else {
-    // Path is clear: Cruise forward
-    forward(CRUISE_SPEED);
-  }
-
-  delay(40); // 25Hz control loop refresh rate
-}`,
-      pinMap: { 
-        'Pin 12': 'HC-SR04 TRIG trigger pulse output', 
-        'Pin 11': 'HC-SR04 ECHO return pulse input', 
-        'Pin 5': 'Left Motor PWMA speed (~PWM)', 
-        'Pin 7': 'Left Motor AIN1 direction 1', 
-        'Pin 8': 'Left Motor AIN2 direction 2', 
-        'Pin 6': 'Right Motor PWMB speed (~PWM)', 
-        'Pin 9': 'Right Motor BIN1 direction 1', 
-        'Pin 10': 'Right Motor BIN2 direction 2', 
-        'Pin 3': 'TB6612FNG STBY master enable' 
-      },
-      setupAndUpload: [
-        '1. Complete all wiring and inspect common ground connection.',
-        '2. Connect USB with battery pack switch OFF and upload sketch.',
-        '3. Open Serial Monitor at 9600 baud and wave your hand in front of sonar to test distance streaming.',
-        '4. Disconnect USB, place rover on floor facing test box at 1.0m distance, and switch battery pack ON.'
+    "activity": {
+      "title": "Assemble the 2WD Rover Chassis and Choreograph Robot Dance",
+      "steps": [
+        "Step 1: Mount the two yellow TT gear motors to the acrylic deck using long M3 machine screws and motor brackets.",
+        "Step 2: Press rubber drive wheels firmly onto the motor axle flats; mount omnidirectional ball caster to the front.",
+        "Step 3: Fasten L298N driver module and Arduino Uno to the upper chassis plate using brass standoffs.",
+        "Step 4: Wire Left Motor to L298N OUT1/OUT2 and Right Motor to OUT3/OUT4 screw terminals.",
+        "Step 5: Connect battery box (+ Red) to L298N 12V terminal and (- Black) to L298N GND terminal.",
+        "Step 6: Connect a jumper from L298N GND to Arduino GND (MANDATORY COMMON GROUND).",
+        "Step 7: Connect control pins: ENA (D5), IN1 (D7), IN2 (D8), IN3 (D9), IN4 (D10), ENB (D6).",
+        "Step 8: Upload motion library and calibrate wheel direction; choreograph a 30-second multi-move victory dance!"
       ],
-      explanations: [
-        'pulseIn(PIN_ECHO, HIGH, 25000): Waits for echo pin to go HIGH and returns duration in microseconds with a 25ms timeout.',
-        'readSonarDistanceCm(): Emits a 10μs trigger pulse and calculates one-way distance using the speed of sound (343 m/s).',
-        'stopRobot() followed by reverse(130): Eliminates chassis momentum and backs away from the obstacle before rotating.',
-        'turnRight(ESCAPE_TURN_SPEED): Executes zero-radius tank turn to steer chassis toward an unobstructed heading.'
+      "successCriteria": [
+        "Both wheels spin forward smoothly without grinding or stalling.",
+        "Robot drives straight across a 2-meter floor line with minimal drift (< 10cm).",
+        "Dance choreography executes all 6 motion commands synchronously."
       ],
-      expectedResult: 'Rover cruises straight forward toward stationary box; at exactly 22cm, it slams brakes, reverses 10cm, spins 90° right, and continues cruising in the new clear direction.',
-      caveats: [
-        'Curved or fabric-covered obstacles will absorb ultrasound, requiring an increased SAFE_DISTANCE_CM margin (e.g. 28cm).',
-        'If the rover turns repeatedly in empty open spaces, check whether the sensor is angled slightly down toward the floor.'
-      ],
-      tweakTip: 'Mission Challenge: Implement a dual-sided obstacle escape: if the obstacle is still detected after turning right, pivot 180° to check the left corridor!'
+      "extension": "Add a motor trim calibration offset in code to correct for slight manufacturing speed differences between left and right motors!"
     },
-    troubleshooting: [
-      { 
-        symptom: 'Rover repeatedly stops, reverses, and turns in an empty room with no obstacles ahead.', 
-        checks: [
-          'Step 1: Inspect the physical mounting angle of the HC-SR04 sensor bracket — is it tilted downward even 3 degrees?',
-          'Step 2: Level the bracket so transducers point perfectly parallel to the floor.',
-          'Step 3: Check floor seams or tile grout lines that can echo sound back prematurely.'
-        ], 
-        explanation: 'The HC-SR04 has a 15-degree acoustic cone. If angled downward, sound echoes off the floor tiles, producing a false obstacle trigger.' 
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "L298N Dual H-Bridge Module",
+        "2WD Chassis Kit"
+      ],
+      "componentList": [
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "L298N Dual H-Bridge Driver",
+          "exactVariant": "Standard red board with aluminum heatsink",
+          "quantity": 1
+        },
+        {
+          "name": "2WD Robot Chassis Acrylic Deck",
+          "exactVariant": "Laser-cut with mounting slots",
+          "quantity": 1
+        },
+        {
+          "name": "TT DC Gear Motors (1:48)",
+          "exactVariant": "3V–6V dual-shaft yellow gearboxes",
+          "quantity": 2
+        },
+        {
+          "name": "Rubber Drive Wheels",
+          "exactVariant": "65mm diameter high-traction tires",
+          "quantity": 2
+        },
+        {
+          "name": "Omnidirectional Ball Caster",
+          "exactVariant": "Metal/plastic roller caster",
+          "quantity": 1
+        },
+        {
+          "name": "4x AA Battery Box with Switch",
+          "exactVariant": "Holds 4x 1.5V alkaline or NiMH cells (6V)",
+          "quantity": 1
+        },
+        {
+          "name": "Jumper Wires & Hardware",
+          "exactVariant": "Male-to-Female ribbons and M3 screws",
+          "quantity": 16
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "Battery: (+) -> L298N 12V | (-) -> L298N GND -> Arduino GND; L298N 5V Out -> Arduino 5V In (if onboard 5V regulator enabled); Left Motor -> L298N OUT1/OUT2; Right Motor -> L298N OUT3/OUT4; Control: IN1->D7 | IN2->D8 | IN3->D9 | IN4->D10 | ENA->D5 (PWM) | ENB->D6 (PWM)",
+      "wireTable": [
+        {
+          "from": "Battery Box (+) Positive (Red)",
+          "to": "L298N 12V Power Screw Terminal",
+          "wireOrPolarityNote": "Motor power supply (6V–9V)"
+        },
+        {
+          "from": "Battery Box (-) Negative (Black)",
+          "to": "L298N GND Screw Terminal",
+          "wireOrPolarityNote": "Power Ground"
+        },
+        {
+          "from": "L298N GND Screw Terminal",
+          "to": "Arduino GND Pin",
+          "wireOrPolarityNote": "MANDATORY Common Logic Ground"
+        },
+        {
+          "from": "L298N 5V Screw Terminal",
+          "to": "Arduino Vin or 5V Pin",
+          "wireOrPolarityNote": "Powers Arduino from onboard 78M05 regulator"
+        },
+        {
+          "from": "Arduino Digital Pin 5 (PWM)",
+          "to": "L298N ENA (Left Speed)",
+          "wireOrPolarityNote": "Remove onboard ENA jumper"
+        },
+        {
+          "from": "Arduino Digital Pin 7",
+          "to": "L298N IN1 (Left Dir A)",
+          "wireOrPolarityNote": "Left motor direction A"
+        },
+        {
+          "from": "Arduino Digital Pin 8",
+          "to": "L298N IN2 (Left Dir B)",
+          "wireOrPolarityNote": "Left motor direction B"
+        },
+        {
+          "from": "Arduino Digital Pin 9",
+          "to": "L298N IN3 (Right Dir A)",
+          "wireOrPolarityNote": "Right motor direction A"
+        },
+        {
+          "from": "Arduino Digital Pin 10",
+          "to": "L298N IN4 (Right Dir B)",
+          "wireOrPolarityNote": "Right motor direction B"
+        },
+        {
+          "from": "Arduino Digital Pin 6 (PWM)",
+          "to": "L298N ENB (Right Speed)",
+          "wireOrPolarityNote": "Remove onboard ENB jumper"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Prop chassis up on a bench block so wheels do not touch ground.",
+        "2. Fasten TT gear motors with M3 screws and press wheels onto axle flats.",
+        "3. Connect motor leads to OUT1/OUT2 (Left) and OUT3/OUT4 (Right).",
+        "4. Connect battery pack to 12V and GND terminals.",
+        "5. Connect common Ground wire to Arduino GND.",
+        "6. Connect control pins ENA, IN1, IN2, IN3, IN4, ENB.",
+        "7. Power on battery switch; upload test sketch; verify forward rotation."
+      ],
+      "powerAndSafetyChecks": [
+        "NEVER omit the common Ground wire between L298N and Arduino GND: without it, control signals have no reference potential and motors will behave erratically.",
+        "Keep hair, ties, and loose wires away from spinning motor shafts."
+      ],
+      "testCases": [
+        {
+          "action": "Command forward(200)",
+          "expectedResult": "Both wheels spin forward smoothly at medium speed."
+        },
+        {
+          "action": "Command pivotSpin(true, 200) (Turn Right)",
+          "expectedResult": "Left wheel spins forward while right wheel spins reverse; robot rotates in place."
+        },
+        {
+          "action": "Command activeBrake()",
+          "expectedResult": "Both motors halt immediately with zero coasting drift."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 09: 2WD Robot Chassis & Victory Dance\n * Board: Arduino Uno R3 (ATmega328P) + L298N Motor Driver\n */\n\n// Left Motor Pins\nconst int PIN_ENA = 5;  // PWM Speed Control (0-255)\nconst int PIN_IN1 = 7;  // Direction A\nconst int PIN_IN2 = 8;  // Direction B\n\n// Right Motor Pins\nconst int PIN_IN3 = 9;  // Direction A\nconst int PIN_IN4 = 10; // Direction B\nconst int PIN_ENB = 6;  // PWM Speed Control (0-255)\n\nvoid setup() {\n  pinMode(PIN_ENA, OUTPUT);\n  pinMode(PIN_IN1, OUTPUT);\n  pinMode(PIN_IN2, OUTPUT);\n  pinMode(PIN_IN3, OUTPUT);\n  pinMode(PIN_IN4, OUTPUT);\n  pinMode(PIN_ENB, OUTPUT);\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE 2WD CHOREOGRAPHED DANCE BOT ===\");\n  delay(2000); // 2-second grace period before starting dance\n}\n\n// Low-Level Motor Control Functions\nvoid setMotors(int leftSpeed, int rightSpeed) {\n  // Left Motor Direction\n  if (leftSpeed > 0) {\n    digitalWrite(PIN_IN1, HIGH);\n    digitalWrite(PIN_IN2, LOW);\n  } else if (leftSpeed < 0) {\n    digitalWrite(PIN_IN1, LOW);\n    digitalWrite(PIN_IN2, HIGH);\n  } else {\n    digitalWrite(PIN_IN1, LOW);\n    digitalWrite(PIN_IN2, LOW);\n  }\n\n  // Right Motor Direction\n  if (rightSpeed > 0) {\n    digitalWrite(PIN_IN3, HIGH);\n    digitalWrite(PIN_IN4, LOW);\n  } else if (rightSpeed < 0) {\n    digitalWrite(PIN_IN3, LOW);\n    digitalWrite(PIN_IN4, HIGH);\n  } else {\n    digitalWrite(PIN_IN3, LOW);\n    digitalWrite(PIN_IN4, LOW);\n  }\n\n  // Apply PWM speeds (0 to 255)\n  analogWrite(PIN_ENA, abs(leftSpeed));\n  analogWrite(PIN_ENB, abs(rightSpeed));\n}\n\n// High-Level Motion Library\nvoid forward(int speed, int ms) {\n  setMotors(speed, speed);\n  delay(ms);\n}\n\nvoid backward(int speed, int ms) {\n  setMotors(-speed, -speed);\n  delay(ms);\n}\n\nvoid turnLeft(int speed, int ms) {\n  setMotors(0, speed);\n  delay(ms);\n}\n\nvoid turnRight(int speed, int ms) {\n  setMotors(speed, 0);\n  delay(ms);\n}\n\nvoid pivotSpin(bool spinRight, int speed, int ms) {\n  if (spinRight) {\n    setMotors(speed, -speed);\n  } else {\n    setMotors(-speed, speed);\n  }\n  delay(ms);\n}\n\nvoid activeBrake(int ms = 200) {\n  // Dynamic braking: set all inputs HIGH\n  digitalWrite(PIN_IN1, HIGH);\n  digitalWrite(PIN_IN2, HIGH);\n  digitalWrite(PIN_IN3, HIGH);\n  digitalWrite(PIN_IN4, HIGH);\n  analogWrite(PIN_ENA, 255);\n  analogWrite(PIN_ENB, 255);\n  delay(ms);\n  setMotors(0, 0);\n}\n\nvoid loop() {\n  Serial.println(\">> COMMENCING CHOREOGRAPHED VICTORY DANCE <<\");\n\n  // Move 1: Forward Rush & Sudden Stop\n  forward(220, 1000);\n  activeBrake(150);\n\n  // Move 2: Backwards retreat\n  backward(180, 800);\n  activeBrake(150);\n\n  // Move 3: 360-degree high-speed pirouette spin to the right\n  pivotSpin(true, 250, 1200);\n  activeBrake(200);\n\n  // Move 4: 360-degree reverse pirouette spin to the left\n  pivotSpin(false, 250, 1200);\n  activeBrake(200);\n\n  // Move 5: Zig-Zag shimmy dance\n  for (int i = 0; i < 3; i++) {\n    turnRight(220, 250);\n    turnLeft(220, 250);\n  }\n  activeBrake(200);\n\n  // Move 6: Grand Finale Victory Bow (quick pulses)\n  for (int i = 0; i < 4; i++) {\n    forward(200, 150);\n    backward(200, 150);\n  }\n  activeBrake(500);\n\n  Serial.println(\">> DANCE ROUTINE COMPLETE. Pausing 5 seconds...\");\n  delay(5000); // Wait 5s before repeating\n}\n",
+      "pinMap": {
+        "Pin 5 (PWM)": "L298N ENA (Left Motor Speed: 0 = Stop, 255 = Full Speed)",
+        "Pin 7": "L298N IN1 (Left Motor Forward Logic)",
+        "Pin 8": "L298N IN2 (Left Motor Reverse Logic)",
+        "Pin 9": "L298N IN3 (Right Motor Forward Logic)",
+        "Pin 10": "L298N IN4 (Right Motor Reverse Logic)",
+        "Pin 6 (PWM)": "L298N ENB (Right Motor Speed: 0 = Stop, 255 = Full Speed)",
+        "GND": "Common Logic Ground connection"
       },
-      { 
-        symptom: 'Rover crashes directly into stationary cardboard boxes without ever slowing down.', 
-        checks: [
-          'Step 1: Open Serial Monitor with USB connected and test if distance numbers change when holding a book in front.',
-          'Step 2: Verify Pin 12 is connected to TRIG and Pin 11 to ECHO — swapped trigger/echo wires disable distance measurements completely.',
-          'Step 3: Check if the obstacle surface is angled at >45°, causing specular reflection.'
-        ], 
-        explanation: 'If TRIG and ECHO pins are reversed, pulseIn() never sees a start edge and times out, returning 999cm continuously.' 
+      "setupAndUpload": [
+        "Prop robot up on a block or mug so wheels cannot take off during upload.",
+        "Connect Arduino via USB, select Uno board and port, and upload sketch.",
+        "Turn on battery pack power switch and watch wheels execute dance routine."
+      ],
+      "explanations": [
+        "setMotors(leftSpeed, rightSpeed): Universal low-level routine taking signed speeds (-255 to +255) for complete vector control.",
+        "analogWrite(ENA, speed): Varies PWM duty cycle to smoothly govern wheel rotational velocity.",
+        "activeBrake(): Applies counter-electromotive braking by driving both legs of each motor HIGH.",
+        "pivotSpin(true/false): Rotates left and right wheels in opposite directions, allowing zero-radius in-place turns."
+      ],
+      "expectedResult": "Robot executes the full 30-second synchronized dance routine with rapid accelerations, clean turns, and dynamic stops.",
+      "caveats": [
+        "Do not test on a narrow table: always test ground movement on the open floor or enclosed arena.",
+        "If one motor turns backward when commanded forward, simply swap its two motor wires in the L298N screw terminal."
+      ],
+      "tweakTip": "Adjust timing parameters in milliseconds to calibrate an exact 360-degree spin on your classroom floor surface!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "One motor spins forward but the other spins backward when forward() is called.",
+        "checks": [
+          "Turn off battery power.",
+          "Swap the two wires of the backwards motor in its L298N screw terminal (OUT1/OUT2 or OUT3/OUT4)."
+        ],
+        "explanation": "DC motor rotational direction depends on polarity. Inverting the two terminal wires reverses rotation."
       },
-      { 
-        symptom: 'Arduino resets or reboots the instant the rover detects an obstacle and tries to reverse.', 
-        checks: [
-          'Step 1: Check battery voltage — if 4xAA cells drop below 4.5V under load, sudden motor reversal causes a brownout reset.',
-          'Step 2: Inspect the delay between forward, braking, and reverse — ensure `stopRobot()` and a 150ms settling pause are executed before reversing.'
-        ], 
-        explanation: 'Reversing a spinning DC motor instantaneously creates a massive Back-EMF current spike that sags the logic supply rail unless dynamic braking is applied first.' 
+      {
+        "symptom": "Motors hum or squeal loudly but do not spin.",
+        "checks": [
+          "Increase PWM speed: TT gear motors typically require at least PWM 120–140 to overcome internal gearbox friction.",
+          "Check battery voltage: exhausted batteries cannot deliver the stall current needed to start motors."
+        ],
+        "explanation": "Overcoming static friction in a 1:48 gear train requires sufficient initial voltage and current."
       },
-      { 
-        symptom: 'Rover backs away but then turns back directly into the obstacle.', 
-        checks: [
-          'Step 1: Increase the turn delay in code from 350ms to 420ms to achieve a full 90-degree escape angle.',
-          'Step 2: Ensure wheels are not slipping on dusty floors during the turn maneuver.'
-        ], 
-        explanation: 'An under-calibrated turn timing leaves the robot still partially pointed at the obstacle, re-triggering the avoidance loop immediately.' 
+      {
+        "symptom": "Arduino resets or disconnects from computer when motors start spinning.",
+        "checks": [
+          "Verify common Ground: confirm L298N GND connects to Arduino GND.",
+          "Ensure motors are powered from battery pack, NOT from the Arduino 5V pin.",
+          "Add a 100µF electrolytic capacitor across the L298N 12V and GND terminals to filter voltage dips."
+        ],
+        "explanation": "Motor inrush current can pull the power rail down below 4.5V, triggering the MCU Brown-Out Reset."
       }
     ],
-    checksForUnderstanding: [
-      'Why is the ultrasonic echo travel time divided by 2.0 in the distance equation?',
-      'What is specular acoustic reflection, and how can it cause an autonomous rover to hit a wall?',
-      'Why must a mobile robot execute dynamic active braking and a brief reverse pulse before attempting to turn in a tight corner?'
+    "checksForUnderstanding": [
+      "How does an H-Bridge reverse the direction of a DC motor without rewiring anything physically?",
+      "Why is active dynamic braking superior to simply letting motors coast to a stop?"
     ],
-    exitTicket: [
-      { 
-        question: 'Calculate the echo return time in microseconds for an obstacle located 50 cm away from the rover (speed of sound = 0.0343 cm/μs).', 
-        rubricOrSampleReasoning: 'Round-trip distance = 50cm × 2 = 100cm. Time = 100cm / 0.0343 cm/μs = approximately 2,915 microseconds.' 
+    "exitTicket": [
+      {
+        "question": "Which transistors in an H-Bridge must be turned on to drive a motor in the Forward direction?",
+        "rubricOrSampleReasoning": "Transistors Q1 (high-side left) and Q4 (low-side right) must be turned on, allowing current to flow from +12V through the motor from left to right to Ground."
       },
-      { 
-        question: 'What are the four discrete behavioral states of our autonomous obstacle avoidance state machine, and what triggers each transition?', 
-        rubricOrSampleReasoning: '1. Cruise Forward (default clear path); 2. Active Brake (triggered by distance < safe threshold); 3. Reverse Clearance (timed back-up); 4. Escape Turn (timed 90° pivot before resuming cruise).' 
+      {
+        "question": "Why is a common Ground connection between the L298N driver and the Arduino mandatory?",
+        "rubricOrSampleReasoning": "Voltage is a relative potential difference. Without a shared Ground return reference, the logic signals from Arduino pins (5V/0V) cannot be interpreted correctly by the L298N input circuitry, resulting in erratic or dead motor behavior."
       },
-      { 
-        question: 'Why is performing a pre-flight checklist with motor battery power switched OFF mandatory before testing an integrated cyber-physical robot?', 
-        rubricOrSampleReasoning: 'It isolates electrical and sensor bugs safely, verifying live telemetry in software without risking high-current shorts, motor runaway, or physical chassis damage.' 
+      {
+        "question": "How do you execute a zero-radius pivot spin on a 2WD differential robot?",
+        "rubricOrSampleReasoning": "Drive the left motor forward at speed +V while driving the right motor backward at speed -V (or vice versa). The opposing forces cause the chassis to rotate directly about its central vertical axis."
       }
     ],
-    differentiation: {
-      support: ['Increase SAFE_DISTANCE_CM to 30cm to provide wider reaction margins for slower student builds.'],
-      extension: ['Implement a 3-point sonar scanning head using a micro servo (Pin 4) that scans Left, Center, and Right before deciding which way to turn.'],
-      offlineOption: ['Use the interactive 2D autonomous obstacle-avoiding simulator with tunable sensor cones and obstacle placement.']
+    "differentiation": {
+      "support": [
+        "Provide chassis kits with pre-soldered motor wires and color-coded labels."
+      ],
+      "extension": [
+        "Implement speed acceleration ramping in code so the robot accelerates smoothly without wheel slip."
+      ],
+      "offlineOption": [
+        "Use the Movement Route Simulator on the RoboBee portal to plan dance choreographies."
+      ]
     },
-    nextLessonId: 'beg-10',
-    nextLessonTeaser: 'Beginner 10: Rover Reliability Showcase — Run 3 standardized arena trials, log stopping distance data, optimize momentum compensation, and present your team capstone!',
-    sources: [{ title: 'HC-SR04 Ultrasonic Distance Sensor Datasheet & Acoustic Principles', url: 'https://sparkfun.com' }],
-    assetCredits: [{ asset: 'Integrated Rover Illustration', creator: 'RoboBEE Innovators Engineering Team', license: 'Proprietary', sourceUrl: 'team_info' }],
+    "nextLessonId": "beg-10",
+    "nextLessonTeaser": "Class 10 (Major Project Build Day 2): Smartphone Bluetooth RC Car & 2v2 Robo-Soccer Match! Transform your chassis into a wireless soccer athlete.",
+    "sources": [
+      {
+        "title": "STMicroelectronics L298 Dual Full-Bridge Driver Technical Datasheet",
+        "url": "https://st.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "2WD Chassis Assembly Diagram",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
+    ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 
   {
-    id: 'beg-10',
-    fieldGuideLinks: {
-      readBeforeClass: ["fg-testing-fmea-debugging"],
-      lookUpWhileBuilding: ["fg-testing-fmea-debugging", "fg-comp-hc-sr04"],
-      goDeeper: ["fg-comp-tournament-prep"]
-    },
-    courseId: 'beginner',
-    sequence: 10,
-    code: 'BEGINNER 10',
-    title: 'Rover Reliability Showcase: Data-Driven Improvement',
-    promise: 'By the end of this capstone masterclass, you will conduct standardized 3-trial engineering test runs, measure empirical stopping distance datasets, apply data-driven momentum compensation to eliminate coasting drift, and defend your robot in an authentic Engineering Showcase presentation!',
-    status: 'published',
-    proposedAudience: 'Classes 5–8 (Ages 10–14)',
-    durationMinutes: 60,
-    prerequisites: ['Beginner 01 through Beginner 09'],
-    outcomes: [
-      'Execute 3 standardized, repeatable engineering test trials under controlled arena conditions, logging stopping distance in centimeters.',
-      'Differentiate between anecdotal guesswork and empirical data-driven engineering decision-making.',
-      'Analyze Failure Mode and Effects Analysis (FMEA) vectors in autonomous mobile robotics (battery droop, caster drag, momentum drift).',
-      'Implement an active counter-torque reverse braking pulse in C++ firmware to eliminate mechanical coasting.',
-      'Deliver an authentic 2-minute technical engineering presentation defending system architecture, sensor perception, and measured improvements.'
-    ],
-    vocabulary: [
-      { term: 'Empirical Evidence', plainMeaning: 'Real measured facts, numbers, and test results, not optimistic guesses.', technicalMeaning: 'Information acquired by rigorous scientific observation or experimentation recorded as quantitative data.' },
-      { term: 'Repeatability', plainMeaning: 'Getting the exact same performance outcome every single time you run a test trial.', technicalMeaning: 'The closeness of agreement between successive measurements of the same measurand carried out under identical conditions.' },
-      { term: 'Failure Mode & Effects Analysis (FMEA)', plainMeaning: 'Brainstorming everything that could possibly go wrong before it fails on the competition field.', technicalMeaning: 'A systematic, proactive method for identifying where and how a process or hardware system might fail and assessing relative impacts.' },
-      { term: 'Voltage Droop', plainMeaning: 'The decline in battery voltage as energy is drained, causing motors to slow down over time.', technicalMeaning: 'The loss in terminal output voltage of a power supply under increasing electrical load or state-of-charge depletion.' },
-      { term: 'Counter-Torque Braking Pulse', plainMeaning: 'A split-second burst of reverse motor power that stops forward coasting instantly.', technicalMeaning: 'A transient reverse electromagnetic torque applied to an inductive motor to rapidly decelerate rotor and chassis inertia.' },
-      { term: 'Technical Showcase Defense', plainMeaning: 'Standing up in front of fellow engineers to explain and prove why your machine works.', technicalMeaning: 'A structured peer-review presentation defending design trade-offs, empirical performance data, and safety architectures.' }
-    ],
-    teacherPrep: ['Mark standardized 1.5-meter test arena track on the floor; print 3-Trial Engineering Test Data Sheets and Judging Rubrics.'],
-    verifiedMaterials: ['Integrated Autonomous Obstacle-Avoiding Rover (Class 09)', 'Millimeter-graduated meter stick / measuring tape', 'Stationary cardboard obstacle box', 'Digital multimeter for battery health logging', 'Team Engineering Showcase Rubrics'],
-    safetyNotes: [
-      'Conduct all test runs in the marked standardized arena corridor; keep spectator students behind the safety line.',
-      'Never catch a running robot by the rotating wheels; pick up firmly by the chassis deck plates.',
-      'Verify battery voltage before and after testing trials to account for discharge effects.'
-    ],
-    classRhythm: [
-      { 
-        segment: '0–10m Hook', 
-        minutes: 10, 
-        teacherAction: 'Display telemetry dashboards from Formula 1 racing and SpaceX Falcon landings. Explain: "Elite engineers do not say I think it works; they show empirical data!"', 
-        studentAction: 'Define their team’s target stopping distance specification: Halt between 10cm and 15cm from obstacle without touching.' 
-      },
-      { 
-        segment: '10–30m 3-Trial Testing', 
-        minutes: 20, 
-        teacherAction: 'Supervise standardized trial runs from the 1.5-meter start mark. Verify and witness student stopping distance measurements with a meter stick.', 
-        studentAction: 'Execute Trial 1, Trial 2, and Trial 3 under identical arena conditions; record stopping distance in cm and log battery terminal voltage.' 
-      },
-      { 
-        segment: '30–45m Iteration', 
-        minutes: 15, 
-        teacherAction: 'Coach data analysis: Calculate average stopping distance and variance. Guide implementation of the C++ active counter-torque braking pulse.', 
-        studentAction: 'Modify firmware with calibrated activeBrake() pulse; re-run verification trial to prove empirical performance gain.' 
-      },
-      { 
-        segment: '45–60m Showcase', 
-        minutes: 15, 
-        teacherAction: 'Host the official RoboBEE Beginner Capstone Showcase: Time student presentations, evaluate against rubric, and award Beginner Certificates!', 
-        studentAction: 'Deliver 2-minute technical defense, demonstrate live obstacle avoidance run, field questions, and celebrate graduation!' 
-      }
-    ],
-    concepts: [
-      {
-        title: '1. Empirical Data-Driven Engineering vs Anecdotal Guesswork',
-        explanation: 'Novice hobbyists build a robot, watch it succeed once by sheer luck, and declare: "It works!" Professional robotics engineers conduct Standardized Repeatable Testing. When a robot fails to stop before hitting a wall, a hobbyist blindly guesses and tweaks random numbers. An empirical engineer measures the exact stopping distance across multiple trials, calculates the mean and standard deviation, and analyzes the physical mechanism causing the error: Was it sensor latency? Acoustic absorption? Or chassis momentum sliding across low-friction floor tiles?',
-        instructorNote: 'Teach the engineering mantra: "In God we trust; all others must bring empirical data!"'
-      },
-      {
-        title: '2. Failure Mode and Effects Analysis (FMEA) in Autonomous Systems',
-        explanation: 'Before deploying any autonomous rover in a tournament or real-world mission, aerospace engineers perform Failure Mode and Effects Analysis (FMEA). FMEA systematically categorizes potential failures by Severity (how bad is the impact?), Occurrence (how likely is it to happen?), and Detection (can our software catch it before disaster strikes?). In our 2WD rover: 1. Battery Droop (High occurrence, drops motor RPM); 2. Front Caster Hair Drag (Medium occurrence, curves steering); 3. Ultrasonic Specular Blind Spot (Low occurrence on flat boxes, high on angled corners). Anticipating failures allows engineers to build software fail-safes.',
-        instructorNote: 'Have teams identify the single weakest component on their rover and devise a software or mechanical redundancy.'
-      },
-      {
-        title: '3. Battery Voltage Droop & Actuator Degradation Curves',
-        explanation: 'Chemical batteries (Alkaline, NiMH, or Li-ion) are not infinite ideal voltage sources. As a battery pack discharges chemical energy, its internal electrical resistance ($R_{int}$) increases according to electrochemistry. Under a dual-motor load of 800mA, terminal voltage drops from an initial 6.2V down to 5.0V or lower! Because DC motor rotational speed is directly proportional to applied voltage ($V = I \cdot R + K_e \cdot \omega$), a rover driving at PWM 140 on fresh batteries will travel 30% faster than on half-drained batteries! This voltage droop changes both linear travel distance and turn calibration over the course of a day.',
-        instructorNote: 'Show students how to use a digital multimeter to measure battery pack voltage before every official trial run.'
-      },
-      {
-        title: '4. Active Counter-Torque Braking & Momentum Compensation',
-        explanation: 'Newton’s First Law of Motion states that an object in motion remains in motion unless acted upon by an external force. When our 400-gram rover cruises forward at 40 cm/s, it possesses significant kinetic momentum ($p = m \cdot v$). If firmware simply sets motor pins to `digitalWrite(LOW, LOW)` (Coast mode), the rubber tires slide forward on smooth tile for 10cm to 20cm before friction brings it to rest! To achieve razor-sharp, predictable stops, firmware must execute an Active Counter-Torque Braking Pulse: commanding the H-Bridge into reverse at PWM 160 for exactly 100ms–140ms, using motor electromagnetic torque to violently cancel chassis forward inertia.',
-        instructorNote: 'Demonstrate the difference: a rover coasting past the target line vs a rover snapping to an instant, crisp halt.'
-      },
-      {
-        title: '5. The 2-Minute Technical Defense & Engineering Presentation',
-        explanation: 'In the real world of technology, great engineering that cannot be communicated is useless. Professional engineers must defend their designs to project managers, venture capitalists, and academic review boards. The RoboBEE Showcase Presentation follows a structured 4-part framework: 1. The Challenge (What problem does your rover solve?); 2. System Architecture (How do the mechanical chassis, TB6612FNG driver, and HC-SR04 sensor interact?); 3. Empirical Test Data (Presenting the 3-trial dataset and before/after improvements); 4. Live Demonstration & Future Roadmap.',
-        instructorNote: 'Coach students on public speaking: stand tall, speak with confidence, point to physical hardware, and let data prove your claims!'
-      },
-      {
-        title: '6. Code Hardening & Competition Reliability Protocols',
-        explanation: 'Building a prototype on a breadboard is only 50% of the battle; preparing it for real-world deployment requires Code Hardening and Hardware Ruggedization: 1. Wire Harness Dressing: Jumper wires must be bundled and strain-relieved with zip-ties so motor vibrations cannot shake pins loose; 2. Fail-Safe Defaults: If sensor readings return invalid data, firmware must default to a safe stop rather than driving blindly; 3. Clean Documentation: Code must feature descriptive variable names, inline comments, and zero magic numbers.',
-        instructorNote: 'Perform the "Gentle Shake Test": lift the rover 5cm off the table and set it down firmly—no wires should come loose!'
-      }
-    ],
-    visualizerId: 'test_log_sim',
-    project: {
-      name: 'Rover Reliability Showcase & Technical Defense',
-      deliverableType: 'dataset',
-      successEvidence: [
-        'Completed 3-Trial standardized engineering data sheet recording measured stopping distances in cm.',
-        'Documented before/after empirical improvement using firmware active counter-torque braking.',
-        'Flawless live autonomous demonstration navigating past obstacle box within the 10cm–15cm target zone.',
-        'Successful 2-minute team technical defense delivered to instructors and peers, earning Beginner Graduation Certificate.'
+    "id": "beg-10",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-motion-differential-kinematics",
+        "fg-comp-tournament-prep"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-testing-fmea-debugging"
+      ],
+      "goDeeper": [
+        "fg-safety-lab-code",
+        "fg-arduino-ide-workflow"
       ]
     },
-    activity: {
-      title: 'Execute Standardized Trials, Calibrate Braking, and Present',
-      steps: [
-        'Step 1: Lay out the standardized test arena: Starting line exactly 150 cm from stationary cardboard obstacle target.',
-        'Step 2: Measure initial battery pack voltage using a digital multimeter and record in the test log.',
-        'Step 3: Run Baseline Trial 1, Trial 2, and Trial 3 from identical starting headings. Measure stopping distance from bumper to box using a meter stick.',
-        'Step 4: Calculate average stopping distance and identify coasting drift error.',
-        'Step 5: Implement firmware counter-torque braking: add calibrated `activeBrake()` pulse (120ms reverse burst) to firmware.',
-        'Step 6: Run verification trials, record improved stopping precision, and present your team showcase defense to the class!'
-      ],
-      successCriteria: [
-        'All 3 official test trials logged with quantitative millimeter measurements.',
-        'Empirical improvement demonstrated: stopping distance variance reduced by at least 50% after braking calibration.',
-        'Every team member speaks during the 2-minute technical defense, correctly using engineering vocabulary.'
-      ],
-      extension: 'Calculate standard deviation and 95% confidence intervals across 6 repeated test trials.'
-    },
-    physicalBuildPack: {
-      verifiedBoardAndModules: ['Fully Integrated 2WD Autonomous Obstacle Rover', 'Standardized 1.5m Test Arena'],
-      componentList: [
-        { name: 'Completed Autonomous Rover', exactVariant: 'Hardware verified across Classes 01–09', quantity: 1 },
-        { name: 'Millimeter Meter Stick', exactVariant: '100cm stainless steel / hardwood measuring rule', quantity: 1 },
-        { name: 'Standardized Obstacle Target', exactVariant: '30cm × 20cm stationary cardboard box', quantity: 1 },
-        { name: 'Digital Multimeter', exactVariant: 'Handheld DMM for DC voltage monitoring', quantity: 1 },
-        { name: 'Showcase Evaluation Rubric', exactVariant: 'RoboBEE Academy Official Capstone Score Sheet', quantity: 1 }
-      ],
-      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/3_trial_arena_test_setup.svg',
-      schematic: 'Standardized Test Arena Layout:\n[Start Line: 0.0m] ───────────────── (1.50m Travel Track) ─────────────────► [Target Box: 1.50m]\nOptimal Stopping Zone: 10.0cm to 15.0cm before obstacle\nSafe Turn Vector: 90° Right pivot corridor',
-      wireTable: [
-        { from: 'Rover Chassis Alignment Mark', to: 'Arena Start Line', wireOrPolarityNote: 'Maintain identical wheel heading and battery charge for all trials' }
-      ],
-      assemblyAndPowerUpSteps: [
-        '1. Measure battery voltage before commencing official trials; replace cells if < 5.4V.',
-        '2. Inspect drive wheels and front caster for hair, lint, or mechanical friction.',
-        '3. Place rover front bumper exactly touching the Start Line tape edge.',
-        '4. Release rover autonomously; do not touch or shadow rover during trial run.',
-        '5. Measure stopping distance from front bumper edge to target cardboard face.',
-        '6. Log measurements immediately on official scoring sheet.'
-      ],
-      powerAndSafetyChecks: [
-        'Keep arena run corridor clear of stray backpacks, shoes, and loose cables.',
-        'Spectator students must remain behind the designated safety tape boundary.'
-      ],
-      testCases: [
-        { action: 'Trial 1 Run (Baseline)', expectedResult: 'Log measured stopping distance (e.g. 19.5cm coasting drift).' },
-        { action: 'Implement activeBrake() firmware', expectedResult: 'Log improved stopping distance (target: 12.0cm ± 1.5cm crisp halt).' },
-        { action: 'Live Showcase Defense Run', expectedResult: 'Clean autonomous obstacle detection, braking, and 90° escape with zero collision.' }
+    "courseId": "beginner",
+    "sequence": 10,
+    "code": "BEGINNER 10",
+    "title": "Major Build 2: Smartphone Bluetooth RC Car & 2v2 Robo-Soccer Match",
+    "subtitle": "Major Project Milestone Day 2 — Asynchronous UART serial communication, HC-05/06 2.4GHz wireless Bluetooth SPP transceivers, 3.3V logic level shifting, and competitive 2v2 Robo-Soccer arena match tactics.",
+    "promise": "I can configure UART serial communication with HC-05 Bluetooth, build a smartphone-controlled 2WD rover, and compete in a high-speed 2v2 Robo-Soccer match!",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01 through Beginner 09"
+    ],
+    "outcomes": [
+      "Explain the fundamentals of asynchronous serial UART communication: baud rate (9600 bps), TX (Transmit), RX (Receive), and frame formatting.",
+      "Construct a 5V-to-3.3V resistive voltage divider (1kΩ and 2kΩ) on the HC-05 RX pin to protect the sensitive 3.3V Bluetooth baseband transceiver.",
+      "Parse single-character command packets ('F', 'B', 'L', 'R', 'S', 'V' for horn, 'W' for turbo speed) in real-time embedded C++.",
+      "Implement an automatic communication watchdog timer that halts motors if Bluetooth packets drop for over 500ms (preventing runaway crashes).",
+      "Compete in an authentic Robo-Soccer Tournament: field a 2-robot alliance, execute offensive dribbling and defensive blocking, and defend engineering telemetry."
+    ],
+    "vocabulary": [
+      {
+        "term": "UART (Universal Asynchronous Receiver-Transmitter)",
+        "plainMeaning": "A 2-wire serial conversation method where chips send bytes one bit at a time over TX and RX lines.",
+        "technicalMeaning": "A physical circuit for asynchronous serial communication with configurable baud rates, start/stop framing, and parity error checking."
+      },
+      {
+        "term": "Bluetooth SPP (Serial Port Profile)",
+        "plainMeaning": "A wireless radio link that acts just like a virtual serial cable between your smartphone and the Arduino.",
+        "technicalMeaning": "A Bluetooth Classic protocol profile emulating an RS-232 serial cable over 2.4 GHz Gaussian Frequency Shift Keying (GFSK) RF channels."
+      },
+      {
+        "term": "HC-05 / HC-06 Transceiver",
+        "plainMeaning": "A tiny blue radio module that connects wirelessly to Android and iOS phone apps.",
+        "technicalMeaning": "A baseband Bluetooth v2.0+EDR module operating at 3.3V logic featuring AT command mode configuration and ~10 meter operating range."
+      },
+      {
+        "term": "Logic Level Shifting",
+        "plainMeaning": "Stepping down the Arduino 5V signal so it does not overload the delicate 3.3V Bluetooth receiver pin.",
+        "technicalMeaning": "Voltage level translation using a voltage divider or bidirectional MOSFET converter ensuring signal voltage compatibility across logic families."
+      },
+      {
+        "term": "Watchdog Failsafe",
+        "plainMeaning": "A safety timer that slams the brakes automatically if your phone goes out of range or disconnects.",
+        "technicalMeaning": "An autonomous supervisory timer routine that forces actuators into a safe default state (all motors STOP) upon loss of continuous communication heartbeat."
+      },
+      {
+        "term": "Robo-Soccer Tactics",
+        "plainMeaning": "Teamwork strategies including striker offense, goalkeeper wedge blocking, and differential spin turns.",
+        "technicalMeaning": "Multi-agent cooperative and competitive game strategies in constrained arena environments optimizing velocity, traction, and ball intercept angles."
+      }
+    ],
+    "teacherPrep": [
+      "Mark a 2m × 1.5m Robo-Soccer arena on the floor with white/black perimeter borders and tape goals.",
+      "Ensure standard Bluetooth RC Controller apps (e.g. \"Arduino Bluetooth Controller\" or \"RoboBee RC\") are installed on classroom tablets/phones.",
+      "Prepare mini ping-pong or lightweight foam soccer balls."
+    ],
+    "verifiedMaterials": [
+      "Assembled 2WD Robot Chassis from Class 09",
+      "Arduino Uno R3 with L298N motor driver",
+      "HC-05 or HC-06 Bluetooth Module with breakout pins",
+      "1x 1kΩ Resistor and 1x 2kΩ Resistor (for 3.3V RX level divider)",
+      "1x Piezo Buzzer (Robot Honk Horn on command)",
+      "Rechargeable 4x AA or 2x 18650 Battery Pack",
+      "Smartphone or Tablet with Bluetooth",
+      "Mini soccer ball and goal posts"
+    ],
+    "safetyNotes": [
+      "Never disconnect the common Ground wire: floating grounds cause corrupted serial packets.",
+      "Do not connect the Arduino 5V TX pin directly to the HC-05 RX pin without the 1kΩ/2kΩ level shifter resistor divider.",
+      "Spectators must remain outside the Robo-Soccer arena tape perimeter during match play."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Drive a smartphone-controlled RoboBee soccer bot across the arena at high speed, intercept a ball, execute a pivot spin, and score a goal! Blare the onboard horn!",
+        "studentAction": "Cheer the goal! Inspect the blinking HC-05 radio module and understand today’s tournament objective."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Deconstruct UART TX/RX crossovers and the 5V->3.3V voltage divider on the whiteboard. Teach packet parsing and watchdog failsafe architecture.",
+        "studentAction": "Interact with the Sumo Arena & RC Control Sim on the portal: test smartphone joystick inputs and command packets."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide wiring: HC-05 VCC->5V, GND->GND, TX->D2 (Arduino RX), RX->divider from D3 (Arduino TX); Buzzer->D12.",
+        "studentAction": "Wire the Bluetooth module and voltage divider on breadboard. Pair smartphone with HC-05 (Default PIN: 1234)."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through SoftwareSerial btSerial(2, 3), parsing chars ('F', 'B', 'L', 'R', 'S', 'V'), and the 500ms watchdog timer.",
+        "studentAction": "Upload code. Connect app. Test directional driving, horn honking, and verify failsafe stop when phone Bluetooth is toggled off."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the official RoboBee 2v2 Robo-Soccer World Cup: 3-minute matches with alliance scoring and sportsmanship awards!",
+        "studentAction": "Compete in high-stakes 2v2 soccer matches, execute defensive blocks, score goals, and complete the Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "UART Serial Crossover: TX Meets RX",
+        "explanation": "In serial UART, communication is a conversation between two people. Your mouth (TX - Transmit) speaks to the other person's ear (RX - Receive)! Therefore, the Arduino TX pin connects to the Bluetooth RX pin, and the Bluetooth TX pin connects to the Arduino RX pin. Connecting TX to TX or RX to RX results in complete silence.",
+        "instructorNote": "Draw two faces on the whiteboard showing Mouth -> Ear crossover paths."
+      },
+      {
+        "title": "The 3.3V Protection Divider",
+        "explanation": "The HC-05 Bluetooth chip is a 3.3V low-power device. While its VCC pin can accept 5V (because of an onboard regulator), its RX data pin connects directly to the bare silicon. A 5V signal from the Arduino can degrade or burn the chip over time. A 1kΩ and 2kΩ divider scales 5V down to safe 3.33V: 5V * (2k / (1k + 2k)) = 3.33V!",
+        "instructorNote": "Emphasize that the HC-05 TX pin outputs 3.3V, which the Arduino Uno easily recognizes as a logic HIGH (Uno threshold is 3.0V), so no stepping is needed in reverse."
+      },
+      {
+        "title": "Watchdog Timer Failsafe Architecture",
+        "explanation": "If a smartphone moves out of range or the app crashes while the robot is driving forward at full speed, what happens? Without a watchdog, the robot will drive endlessly into a wall or down the stairs! A watchdog logs lastPacketTime = millis(); if millis() - lastPacketTime > 500ms, it forces all motors to STOP immediately.",
+        "instructorNote": "Demonstrate by turning off phone Bluetooth while the robot is driving: the robot stops in half a second!"
+      }
+    ],
+    "visualizerId": "sumo_arena_sim",
+    "project": {
+      "name": "Major Milestone 2: Smartphone Bluetooth RC Rover & Robo-Soccer Striker",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Fully operational wireless Bluetooth rover paired with smartphone controller app.",
+        "Instantaneous response (< 50ms latency) to Forward, Reverse, Left, Right, Brake, and Horn commands.",
+        "Active participation in 2v2 Robo-Soccer match with autonomous watchdog failsafe protection."
       ]
     },
-    codeLab: {
-      language: 'cpp',
-      code: `// RoboBEE Innovators Academy - Capstone Engineering Showcase
-// Class: BEGINNER 10 - Data-Driven Improvement & Momentum Compensation
-
-// Ultrasonic Sonar Pin Mapping
-const int PIN_TRIG = 12;
-const int PIN_ECHO = 11;
-
-// Motor Driver Pin Mapping (TB6612FNG)
-const int PIN_PWMA = 5;  // Left Motor Speed (~PWM)
-const int PIN_AIN1 = 7;  // Left Motor Direction 1
-const int PIN_AIN2 = 8;  // Left Motor Direction 2
-
-const int PIN_PWMB = 6;  // Right Motor Speed (~PWM)
-const int PIN_BIN1 = 9;  // Right Motor Direction 1
-const int PIN_BIN2 = 10; // Right Motor Direction 2
-
-const int PIN_STBY = 3;  // Standby Enable
-
-// Calibrated Navigational Parameters (Post-Trial 1 Empirical Optimization)
-const int   SAFE_DISTANCE_CM    = 24;   // Increased from 18cm to compensate for inertia
-const int   CRUISE_SPEED        = 140;  // Standard forward cruise throttle
-const int   BRAKE_PULSE_MS      = 110;  // Calibrated reverse counter-torque burst
-const float LEFT_TRIM           = 1.00; // Left motor trim
-const float RIGHT_TRIM          = 0.94; // Right motor trim
-
-// ---------------------------------------------------------------------------
-// ACTUATOR PRIMITIVES
-// ---------------------------------------------------------------------------
-
-void setLeftMotor(int speedVal) {
-  int adjustedSpeed = (int)(abs(speedVal) * LEFT_TRIM);
-  adjustedSpeed = constrain(adjustedSpeed, 0, 255);
-
-  if (speedVal > 0) {
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, LOW);
-  } else if (speedVal < 0) {
-    digitalWrite(PIN_AIN1, LOW);
-    digitalWrite(PIN_AIN2, HIGH);
-  } else {
-    digitalWrite(PIN_AIN1, HIGH);
-    digitalWrite(PIN_AIN2, HIGH);
-  }
-  analogWrite(PIN_PWMA, adjustedSpeed);
-}
-
-void setRightMotor(int speedVal) {
-  int adjustedSpeed = (int)(abs(speedVal) * RIGHT_TRIM);
-  adjustedSpeed = constrain(adjustedSpeed, 0, 255);
-
-  if (speedVal > 0) {
-    digitalWrite(PIN_BIN1, HIGH);
-    digitalWrite(PIN_BIN2, LOW);
-  } else if (speedVal < 0) {
-    digitalWrite(PIN_BIN1, LOW);
-    digitalWrite(PIN_BIN2, HIGH);
-  } else {
-    digitalWrite(PIN_BIN1, HIGH);
-    digitalWrite(PIN_BIN2, HIGH);
-  }
-  analogWrite(PIN_PWMB, adjustedSpeed);
-}
-
-void forward(int speedVal) {
-  setLeftMotor(speedVal);
-  setRightMotor(speedVal);
-}
-
-void reverse(int speedVal) {
-  setLeftMotor(-speedVal);
-  setRightMotor(-speedVal);
-}
-
-void turnRight(int speedVal) {
-  setLeftMotor(speedVal);
-  setRightMotor(-speedVal);
-}
-
-void stopRobot() {
-  setLeftMotor(0);
-  setRightMotor(0);
-}
-
-// ---------------------------------------------------------------------------
-// DATA-DRIVEN MOMENTUM COMPENSATION (Active Counter-Torque Braking)
-// ---------------------------------------------------------------------------
-
-void activeCounterTorqueBrake() {
-  // Fire high-torque reverse pulse to cancel forward chassis momentum
-  reverse(160);
-  delay(BRAKE_PULSE_MS); // Calibrated 110ms reverse pulse
-
-  // Lock motor terminals together for dynamic electromagnetic braking
-  stopRobot();
-}
-
-// ---------------------------------------------------------------------------
-// ACOUSTIC DISTANCE SENSING
-// ---------------------------------------------------------------------------
-
-float readSonarDistanceCm() {
-  digitalWrite(PIN_TRIG, LOW);
-  delayMicroseconds(2);
-  digitalWrite(PIN_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(PIN_TRIG, LOW);
-
-  unsigned long durationUs = pulseIn(PIN_ECHO, HIGH, 25000);
-  if (durationUs == 0) return 999.0;
-  return (durationUs * 0.0343) / 2.0;
-}
-
-// ---------------------------------------------------------------------------
-// SETUP & SHOWCASE CAPSTONE SEQUENCE
-// ---------------------------------------------------------------------------
-
-void setup() {
-  pinMode(PIN_TRIG, OUTPUT);
-  pinMode(PIN_ECHO, INPUT);
-
-  pinMode(PIN_PWMA, OUTPUT);
-  pinMode(PIN_AIN1, OUTPUT);
-  pinMode(PIN_AIN2, OUTPUT);
-
-  pinMode(PIN_PWMB, OUTPUT);
-  pinMode(PIN_BIN1, OUTPUT);
-  pinMode(PIN_BIN2, OUTPUT);
-
-  pinMode(PIN_STBY, OUTPUT);
-  digitalWrite(PIN_STBY, HIGH);
-
-  Serial.begin(9600);
-  Serial.println(F("========================================"));
-  Serial.println(F("  ROBOBEE BEGINNER SHOWCASE CAPSTONE    "));
-  Serial.println(F("========================================"));
-  Serial.println(F("Firmware Feature: Active Counter-Torque Momentum Braking"));
-  Serial.println(F("Place rover on official arena start line."));
-  Serial.println(F("Starting autonomous trial run in 3s...\n"));
-  
-  delay(3000);
-}
-
-void loop() {
-  float distanceAhead = readSonarDistanceCm();
-
-  if (distanceAhead < SAFE_DISTANCE_CM) {
-    Serial.println(F("🚨 [TARGET DETECTED] Triggering Active Counter-Torque Brake!"));
-    
-    // 1. DATA-DRIVEN BRAKING: Eliminate coasting drift!
-    activeCounterTorqueBrake();
-    delay(200); // Settle chassis momentum
-
-    // 2. ESCAPE NAVIGATION
-    Serial.println(F("   Executing calibrated 90-degree escape pivot..."));
-    turnRight(135);
-    delay(340);
-    stopRobot();
-    delay(200);
-
-    Serial.println(F("✅ Obstacle Cleared. Continuing autonomous mission.\n"));
-  } else {
-    forward(CRUISE_SPEED);
-  }
-
-  delay(35);
-}`,
-      pinMap: { 
-        'Pin 12': 'HC-SR04 TRIG trigger', 
-        'Pin 11': 'HC-SR04 ECHO pulse', 
-        'Pins 5,7,8': 'Left Motor Channel (PWMA, AIN1, AIN2)', 
-        'Pins 6,9,10': 'Right Motor Channel (PWMB, BIN1, BIN2)', 
-        'Pin 3': 'STBY enable' 
-      },
-      setupAndUpload: [
-        '1. Connect Arduino via USB and upload the showcase sketch.',
-        '2. Disconnect USB and inspect battery terminal voltage with multimeter.',
-        '3. Position rover on the arena start line facing the obstacle box.',
-        '4. Switch battery pack ON, step back, and record stopping distance with meter stick.'
+    "activity": {
+      "title": "Integrate Wireless Bluetooth RC Rover and Compete in Robo-Soccer",
+      "steps": [
+        "Step 1: Mount HC-05 Bluetooth module to the breadboard on the 2WD chassis.",
+        "Step 2: Wire HC-05 VCC to 5V and GND to GND.",
+        "Step 3: Connect HC-05 TX to Arduino Pin 2 (SoftwareSerial RX).",
+        "Step 4: Build voltage divider: Pin 3 (SoftwareSerial TX) -> 1kΩ -> HC-05 RX -> 2kΩ -> GND.",
+        "Step 5: Connect Piezo horn buzzer to Digital Pin 12 and GND.",
+        "Step 6: Upload firmware. Pair phone with \"HC-05\" using PIN 1234 or 0000 in phone Bluetooth settings.",
+        "Step 7: Open Bluetooth Controller app, map D-pad keys to F, B, L, R, S, and enter the soccer arena!",
+        "Step 8: Compete in 2v2 Robo-Soccer tournament: score goals, defend the net, and test watchdog failsafe."
       ],
-      explanations: [
-        'activeCounterTorqueBrake(): Delivers a calibrated 110ms burst of reverse power, applying electromagnetic counter-torque to immediately cancel forward kinetic inertia.',
-        'SAFE_DISTANCE_CM = 24: Empirically adjusted threshold compensating for deceleration distance to achieve final resting distance of ~12cm.',
-        'BRAKE_PULSE_MS = 110: Determined through trial data: shorter pulses cause coasting overshoots; longer pulses cause unwanted backward motion.'
+      "successCriteria": [
+        "Rover pairs and connects reliably on the first attempt.",
+        "D-pad controls drive vehicle accurately with tight steering and zero lag.",
+        "Robot halts instantly if Bluetooth connection is broken."
       ],
-      expectedResult: 'Rover drives forward at cruise speed, encounters obstacle, snaps to an instant drift-free halt at ~12cm, pivots 90°, and clears the arena.',
-      caveats: [
-        'If the rover jerks backward before turning, reduce BRAKE_PULSE_MS from 110ms to 90ms.',
-        'If the rover still coasts too close to the obstacle, increase SAFE_DISTANCE_CM to 26cm.'
-      ],
-      tweakTip: 'Mission Challenge: Log battery voltage before Trial 1 and after Trial 6; calculate how many milliseconds of turn timing drift occurs per 0.1V of battery discharge!'
+      "extension": "Add a turbo-boost button in the app that pulses motor PWM to 255 for 1.5 seconds for breakaway sprint shots!"
     },
-    troubleshooting: [
-      { 
-        symptom: 'Stopping distance decreases steadily on each consecutive test run (rover gets closer to wall).', 
-        checks: [
-          'Step 1: Measure battery voltage with a multimeter across the 4xAA pack terminals.',
-          'Step 2: Compare voltage to fresh cells — if pack has dropped below 5.2V, motor RPM is lower, reducing forward speed.'
-        ], 
-        explanation: 'Battery discharge droop reduces motor operating voltage, lowering cruise velocity and resulting in shorter travel before detection.' 
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "L298N Motor Driver",
+        "HC-05 Bluetooth",
+        "2WD Chassis"
+      ],
+      "componentList": [
+        {
+          "name": "Assembled 2WD Robot Chassis",
+          "exactVariant": "Chassis from Class 09 with dual TT gear motors",
+          "quantity": 1
+        },
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "L298N Dual H-Bridge Driver",
+          "exactVariant": "With heatsink and screw terminals",
+          "quantity": 1
+        },
+        {
+          "name": "HC-05 Bluetooth Module",
+          "exactVariant": "6-pin breakout board (VCC, GND, TXD, RXD, STATE, EN)",
+          "quantity": 1
+        },
+        {
+          "name": "1kΩ Axial Resistor",
+          "exactVariant": "1/4 Watt, 5% (Brown-Black-Red)",
+          "quantity": 1
+        },
+        {
+          "name": "2kΩ Axial Resistor",
+          "exactVariant": "1/4 Watt, 5% (Red-Black-Red)",
+          "quantity": 1
+        },
+        {
+          "name": "Piezo Buzzer (Horn)",
+          "exactVariant": "5V passive transducer",
+          "quantity": 1
+        },
+        {
+          "name": "Battery Pack (6V–7.4V)",
+          "exactVariant": "4x AA or 2x 18650 holder with toggle switch",
+          "quantity": 1
+        },
+        {
+          "name": "Jumper Wires",
+          "exactVariant": "Male-to-Male and Male-to-Female flexible jumpers",
+          "quantity": 14
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "HC-05: VCC->5V | GND->GND | TX->D2 (SoftRX) | RX <- 1kΩ <- D3 (SoftTX) & RX -> 2kΩ -> GND; L298N: ENA->D5 | IN1->D7 | IN2->D8 | IN3->D9 | IN4->D10 | ENB->D6; Buzzer: D12 -> Buzzer (+) | (-) -> GND",
+      "wireTable": [
+        {
+          "from": "HC-05 VCC Pin",
+          "to": "Breadboard 5V Rail",
+          "wireOrPolarityNote": "Red wire — Module power"
+        },
+        {
+          "from": "HC-05 GND Pin",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Module Ground"
+        },
+        {
+          "from": "HC-05 TXD Pin",
+          "to": "Arduino Digital Pin 2 (SoftRX)",
+          "wireOrPolarityNote": "Blue wire — Bluetooth data to Arduino"
+        },
+        {
+          "from": "Arduino Digital Pin 3 (SoftTX)",
+          "to": "1kΩ Resistor Input",
+          "wireOrPolarityNote": "Arduino data out to divider"
+        },
+        {
+          "from": "1kΩ / 2kΩ Resistor Midpoint",
+          "to": "HC-05 RXD Pin",
+          "wireOrPolarityNote": "Stepped 3.3V data line"
+        },
+        {
+          "from": "2kΩ Resistor Other Lead",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Divider Ground reference"
+        },
+        {
+          "from": "Arduino Digital Pin 12",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Horn audio output"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Prop robot on bench block.",
+        "2. Wire HC-05 Bluetooth and 1kΩ/2kΩ divider on breadboard.",
+        "3. Wire Buzzer to Pin 12.",
+        "4. Power Arduino via USB, upload firmware, then disconnect USB.",
+        "5. Turn on battery pack switch; confirm HC-05 LED flashes rapidly (waiting for pair).",
+        "6. Pair smartphone; open RC app; verify HC-05 LED blinks slowly (connected).",
+        "7. Drive robot in arena!"
+      ],
+      "powerAndSafetyChecks": [
+        "Confirm 1kΩ is connected between Pin 3 and RXD, and 2kΩ is between RXD and GND.",
+        "Ensure the L298N and Arduino share common Ground."
+      ],
+      "testCases": [
+        {
+          "action": "Press 'F' in phone app",
+          "expectedResult": "Both motors drive forward at programmed speed."
+        },
+        {
+          "action": "Press 'V' in phone app",
+          "expectedResult": "Piezo buzzer sounds a dual-tone automotive horn honk."
+        },
+        {
+          "action": "Release all buttons or walk out of room",
+          "expectedResult": "Watchdog triggers after 500ms; robot halts all motors immediately."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 10: Smartphone Bluetooth RC Car & Soccer Bot\n * Major Project Milestone Day 2\n * Board: Arduino Uno R3 + L298N Driver + HC-05 Bluetooth\n */\n\n#include <SoftwareSerial.h>\n\n// SoftwareSerial Pins for HC-05 (Leaves hardware Serial free for USB debug!)\nSoftwareSerial btSerial(2, 3); // RX = Pin 2, TX = Pin 3\n\n// Motor Driver Pins\nconst int PIN_ENA = 5;  // PWM Left\nconst int PIN_IN1 = 7;\nconst int PIN_IN2 = 8;\nconst int PIN_IN3 = 9;\nconst int PIN_IN4 = 10;\nconst int PIN_ENB = 6;  // PWM Right\nconst int PIN_HORN = 12; // Horn Buzzer\n\nint driveSpeed = 220; // Default competitive speed (0-255)\nunsigned long lastPacketTime = 0;\nconst unsigned long WATCHDOG_TIMEOUT = 500; // 500ms failsafe timeout\n\nvoid setup() {\n  pinMode(PIN_ENA, OUTPUT);\n  pinMode(PIN_IN1, OUTPUT);\n  pinMode(PIN_IN2, OUTPUT);\n  pinMode(PIN_IN3, OUTPUT);\n  pinMode(PIN_IN4, OUTPUT);\n  pinMode(PIN_ENB, OUTPUT);\n  pinMode(PIN_HORN, OUTPUT);\n\n  Serial.begin(9600);\n  btSerial.begin(9600); // Standard HC-05 default baud rate\n\n  Serial.println(\"=== ROBOBEE BLUETOOTH RC SOCCER BOT READY ===\");\n  lastPacketTime = millis();\n}\n\nvoid setMotors(int leftSpeed, int rightSpeed) {\n  if (leftSpeed > 0) {\n    digitalWrite(PIN_IN1, HIGH); digitalWrite(PIN_IN2, LOW);\n  } else if (leftSpeed < 0) {\n    digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, HIGH);\n  } else {\n    digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, LOW);\n  }\n\n  if (rightSpeed > 0) {\n    digitalWrite(PIN_IN3, HIGH); digitalWrite(PIN_IN4, LOW);\n  } else if (rightSpeed < 0) {\n    digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, HIGH);\n  } else {\n    digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, LOW);\n  }\n\n  analogWrite(PIN_ENA, abs(leftSpeed));\n  analogWrite(PIN_ENB, abs(rightSpeed));\n}\n\nvoid soundHorn() {\n  tone(PIN_HORN, 440, 150); delay(160);\n  tone(PIN_HORN, 554, 250);\n}\n\nvoid loop() {\n  // Read incoming wireless Bluetooth characters\n  if (btSerial.available()) {\n    char cmd = btSerial.read();\n    lastPacketTime = millis(); // Refresh watchdog heartbeat\n\n    Serial.print(\"BT Command: \");\n    Serial.println(cmd);\n\n    switch (cmd) {\n      case 'F': // Drive Forward\n        setMotors(driveSpeed, driveSpeed);\n        break;\n      case 'B': // Drive Backward\n        setMotors(-driveSpeed, -driveSpeed);\n        break;\n      case 'L': // Turn Left (Spin)\n        setMotors(-driveSpeed, driveSpeed);\n        break;\n      case 'R': // Turn Right (Spin)\n        setMotors(driveSpeed, -driveSpeed);\n        break;\n      case 'S': // Stop / Brake\n        setMotors(0, 0);\n        break;\n      case 'V': // Honk Horn\n        soundHorn();\n        break;\n      case 'W': // Turbo Speed Boost\n        driveSpeed = 255;\n        break;\n      case 'w': // Normal Speed\n        driveSpeed = 200;\n        break;\n    }\n  }\n\n  // Watchdog Failsafe Check: If connection drops, halt motors!\n  if (millis() - lastPacketTime > WATCHDOG_TIMEOUT) {\n    setMotors(0, 0); // Safety Stop\n  }\n}\n",
+      "pinMap": {
+        "Pin 2": "SoftwareSerial RX (Receives 3.3V data from HC-05 TXD)",
+        "Pin 3": "SoftwareSerial TX (Transmits data via 1k/2k divider to HC-05 RXD)",
+        "Pins 5, 7, 8": "L298N Left Motor Speed and Direction (ENA, IN1, IN2)",
+        "Pins 6, 9, 10": "L298N Right Motor Speed and Direction (ENB, IN3, IN4)",
+        "Pin 12": "Horn Buzzer Output"
       },
-      { 
-        symptom: 'Rover kicks violently backward into a reverse slide when triggering the brake.', 
-        checks: [
-          'Step 1: Check the `BRAKE_PULSE_MS` value in firmware — is it set too high (e.g. 250ms)?',
-          'Step 2: Reduce `BRAKE_PULSE_MS` by 20ms decrements until the rover comes to a dead stop without reversing.'
-        ], 
-        explanation: 'Excessive reverse pulse duration applies more counter-torque than required to cancel forward momentum, reversing direction.' 
+      "setupAndUpload": [
+        "Connect Arduino via USB, select Uno board and port, and upload sketch.",
+        "Unplug USB; connect battery pack; verify HC-05 LED blinks rapidly.",
+        "Pair phone with \"HC-05\" (PIN 1234); open RC app and drive!"
+      ],
+      "explanations": [
+        "SoftwareSerial btSerial(2, 3): Emulates a hardware UART on general digital pins, keeping pins 0/1 free for USB flashing.",
+        "lastPacketTime = millis(): Watchdog heartbeat mechanism tracking the exact arrival of every radio packet.",
+        "millis() - lastPacketTime > WATCHDOG_TIMEOUT: Shuts off motor power if no command is received for 500ms, preventing crashes.",
+        "case 'V': soundHorn(): Plays a celebratory automotive fanfare on command during soccer matches."
+      ],
+      "expectedResult": "Smartphone app connects to robot; pressing buttons moves robot instantly with rapid turning, aggressive soccer dribbling, and automatic failsafe stops.",
+      "caveats": [
+        "Always disconnect Bluetooth or use SoftwareSerial when uploading code so USB serial programming is not disrupted.",
+        "Ensure the app transmits standard uppercase characters (F, B, L, R, S)."
+      ],
+      "tweakTip": "Implement proportional joystick speed control by parsing speed values (0–255) sent from advanced app sliders!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "Phone discovers \"HC-05\" in settings, but app says \"Connection Failed\".",
+        "checks": [
+          "Unpair HC-05 in phone Bluetooth settings, restart phone Bluetooth, and pair again with PIN 1234.",
+          "Ensure the app is configured to connect to \"Bluetooth Classic\" and not \"Bluetooth Low Energy (BLE)\"."
+        ],
+        "explanation": "HC-05 uses Bluetooth Classic 2.0 SPP; some modern apps default to BLE mode."
       },
-      { 
-        symptom: 'Rover stops at wildly different distances on every run (e.g. 10cm, 25cm, 8cm).', 
-        checks: [
-          'Step 1: Inspect the target obstacle — is it tilted or made of textured fabric that absorbs ultrasound?',
-          'Step 2: Ensure the starting line alignment and vehicle heading are identical on every trial.'
-        ], 
-        explanation: 'Non-standardized test conditions introduce confounding variables; testing against angled surfaces causes fluctuating echo returns.' 
+      {
+        "symptom": "Robot drives forward when Left is pressed and spins when Forward is pressed.",
+        "checks": [
+          "Check motor wiring: verify Left motor is wired to OUT1/OUT2 and Right to OUT3/OUT4.",
+          "Swap motor leads in the screw terminals to align physical direction with code logic."
+        ],
+        "explanation": "Inverted motor polarities create crossed differential steering vectors."
       },
-      { 
-        symptom: 'One team member dominates the showcase presentation while others stay silent.', 
-        checks: [
-          'Step 1: Divide the presentation into 4 distinct roles: Team Lead (Problem), Hardware Lead (Chassis/Driver), Firmware Lead (Sonar/Code), Quality Lead (Data/FMEA).',
-          'Step 2: Practice transitions between speakers before stepping up to the judging podium.'
-        ], 
-        explanation: 'Professional engineering reviews evaluate team collaboration and equal mastery of multidisciplinary subsystems.' 
+      {
+        "symptom": "Robot takes one command, drives, and then ignores all future commands.",
+        "checks": [
+          "Check SoftwareSerial baud rate: must match HC-05 baud rate (standard is 9600).",
+          "Verify voltage divider on HC-05 RX pin: ensure 1kΩ and 2kΩ resistors are securely grounded."
+        ],
+        "explanation": "A baud rate mismatch causes incoming serial bytes to be read as corrupt framing errors."
       }
     ],
-    checksForUnderstanding: [
-      'What is the difference between anecdotal testing and empirical engineering data?',
-      'How does Failure Mode and Effects Analysis (FMEA) help an engineering team prepare for competitions?',
-      'Why does an active counter-torque reverse pulse stop a mobile robot faster than setting motor pins to zero?'
+    "checksForUnderstanding": [
+      "Why must the Arduino TX pin connect to the Bluetooth RX pin and not TX to TX?",
+      "What does the watchdog timer do if your phone battery dies while driving the robot?"
     ],
-    exitTicket: [
-      { 
-        question: 'What empirical evidence did your team collect today, and what specific design decision did you change based on that data?', 
-        rubricOrSampleReasoning: 'Student cites quantitative numbers (e.g. "Trial 1 showed 19cm stopping distance with 5cm coasting drift, so we added a 110ms counter-torque brake pulse, reducing stopping distance to 12cm").' 
+    "exitTicket": [
+      {
+        "question": "Calculate the output voltage delivered to the HC-05 RX pin when an Arduino Uno 5.0V TX pin drives a voltage divider with R1 = 1kΩ and R2 = 2kΩ.",
+        "rubricOrSampleReasoning": "Vout = Vin × (R2 / (R1 + R2)) = 5.0V × (2k / (1k + 2k)) = 5.0V × (2/3) ≈ 3.33 Volts. This safely matches the 3.3V logic level of the HC-05 chip."
       },
-      { 
-        question: 'What is battery voltage droop, and how does it affect autonomous robot performance over time?', 
-        rubricOrSampleReasoning: 'Voltage droop is the loss of battery terminal voltage as cells discharge. It reduces motor rotational speed, causing straight driving and turn angles to drift over time.' 
+      {
+        "question": "Why do we use SoftwareSerial on Pins 2 and 3 instead of hardware Serial on Pins 0 and 1 for the Bluetooth module?",
+        "rubricOrSampleReasoning": "Pins 0 and 1 are hardwired to the onboard USB-to-Serial converter. Using them for Bluetooth interferes with uploading code from the computer and locks the USB Serial Monitor. SoftwareSerial leaves USB programming completely unhindered."
       },
-      { 
-        question: 'Explain the Sense → Decide → Act cycle of your completed autonomous rover as you would present it to a competition judge.', 
-        rubricOrSampleReasoning: '1. SENSE: HC-SR04 ultrasonic sensor measures distance ahead via 40kHz acoustic time-of-flight; 2. DECIDE: Arduino ATmega328P compares distance to 24cm safety boundary in software; 3. ACT: TB6612FNG motor driver fires active counter-torque brake and executes a 90° pivot.' 
+      {
+        "question": "Explain how the watchdog timer prevents a runaway robot crash.",
+        "rubricOrSampleReasoning": "Every time a valid command packet arrives, the code updates lastPacketTime = millis(). If the wireless signal is lost or drops for more than 500ms, the condition millis() - lastPacketTime > 500 becomes true, instantly setting all motor speeds to 0 to prevent crashes."
       }
     ],
-    differentiation: {
-      support: ['Provide printed data table templates with pre-calculated mean and variance formulas.'],
-      extension: ['Plot a 2D scatter graph of stopping distance versus battery voltage in Google Sheets or Python.'],
-      offlineOption: ['Use the interactive web 3-trial engineering test logging simulator with exportable graphs.']
+    "differentiation": {
+      "support": [
+        "Provide pre-configured tablet devices with the RoboBee RC app already paired to specific team robot IDs."
+      ],
+      "extension": [
+        "Program a 2-button defensive goalie mode that oscillates rapidly back and forth between goalposts."
+      ],
+      "offlineOption": [
+        "Use the interactive Sumo Arena Simulator on the RoboBee portal to test driving tactics."
+      ]
     },
-    nextLessonId: 'int-01',
-    nextLessonTeaser: 'Graduate to Intermediate Robotics: Engineering workflows, reflectance sensor calibration, state machines, and competition line followers!',
-    sources: [{ title: 'RoboBEE Innovators Engineering Showcase Rubric & FMEA Standards', url: '' }],
-    assetCredits: [{ asset: 'Showcase Rubric & Test Arena', creator: 'RoboBEE Innovators Engineering Team', license: 'Proprietary', sourceUrl: 'team_info' }],
+    "nextLessonId": "beg-11",
+    "nextLessonTeaser": "Class 11: TCRT5000 IR Sensor, Edge-Detection Table-Avoider Sumo & Line-Follower! Enter autonomous optical surface navigation.",
+    "sources": [
+      {
+        "title": "HC-05 Bluetooth Module User Instruction & AT Command Manual",
+        "url": "https://sparkfun.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "Bluetooth RC Car Schematic and Soccer Pitch Layout",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
+    ],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+
+  {
+    "id": "beg-11",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-comp-tournament-prep",
+        "fg-motion-differential-kinematics"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-board-uno-anatomy",
+        "fg-testing-fmea-debugging"
+      ],
+      "goDeeper": [
+        "fg-safety-lab-code",
+        "fg-arduino-ide-workflow"
+      ]
+    },
+    "courseId": "beginner",
+    "sequence": 11,
+    "code": "BEGINNER 11",
+    "title": "TCRT5000 IR Sensor, Edge-Detection Table-Avoider Sumo & Line-Follower",
+    "subtitle": "Optoelectronic infrared reflectance, black absorption vs white reflection, LM393 comparator potentiometer calibration, cliff avoidance algorithms, and dual-sensor proportional line following.",
+    "promise": "I can calibrate infrared reflectance sensors for black absorption vs white reflection, program cliff-avoiding table sumo bots, and build an autonomous line-following racer.",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01 through Beginner 10"
+    ],
+    "outcomes": [
+      "Explain the physics of optoelectronic reflectance: 940nm infrared LED emission and phototransistor detection.",
+      "Differentiate between specular/diffuse white surface reflection and carbon-black electrical tape absorption.",
+      "Calibrate onboard LM393 comparator sensitivity potentiometers to achieve crisp digital switching.",
+      "Program an Autonomous Table-Edge Cliff Avoider: detect sudden surface drop-offs, execute emergency reverse braking, and pivot away safely.",
+      "Implement a 2-sensor closed-loop Black Line Following algorithm with proportional steering and track-loss recovery."
+    ],
+    "vocabulary": [
+      {
+        "term": "TCRT5000 IR Reflectance Sensor",
+        "plainMeaning": "An infrared eye that bounces invisible light off the floor to see whether the ground is black, white, or missing completely.",
+        "technicalMeaning": "An optoelectronic reflective sensor comprising an infrared GaAs emitter diode (940nm) and an NPN phototransistor in a light-blocking enclosure."
+      },
+      {
+        "term": "Light Absorption vs Reflection",
+        "plainMeaning": "White surfaces reflect light back into the sensor; black tape absorbs light so none bounces back.",
+        "technicalMeaning": "High diffuse reflectance on high-albedo white surfaces reflects photons into the phototransistor base; carbon-black pigment absorbs infrared photons."
+      },
+      {
+        "term": "LM393 Comparator & Trimmer Pot",
+        "plainMeaning": "A tiny chip on the sensor board with a screw dial that tunes how sensitive the sensor is to black lines.",
+        "technicalMeaning": "A precision dual-voltage comparator IC evaluating sensor analog voltage against a reference potential tuned via a multi-turn trimmer potentiometer."
+      },
+      {
+        "term": "Cliff Edge Detection",
+        "plainMeaning": "Detecting when the floor disappears (like the edge of a table) so the robot does not plunge to its death.",
+        "technicalMeaning": "An optical boundary condition where total absence of return reflectance signifies infinite distance (surface drop-off / table edge)."
+      },
+      {
+        "term": "Line Following Logic",
+        "plainMeaning": "If the left sensor sees black, turn left; if the right sensor sees black, turn right; if both see white, go straight.",
+        "technicalMeaning": "A closed-loop trajectory tracking control loop using differential sensory error feedback to maintain vehicle alignment along a high-contrast path."
+      },
+      {
+        "term": "Recovery Search Spin",
+        "plainMeaning": "A search maneuver where the robot sweeps left and right to find the line again if it drifts off the track.",
+        "technicalMeaning": "A heuristic search routine initiated upon loss of target trajectory to re-acquire the navigation line within a bounded angular corridor."
+      }
+    ],
+    "teacherPrep": [
+      "Set up black electrical tape tracks (smooth curves and 90° turns) on white poster boards on the classroom floor.",
+      "Prepare an elevated testing table with edge drop-offs for the Cliff Avoider trial.",
+      "Distribute 2-channel or 3-channel TCRT5000 IR sensor modules to student teams."
+    ],
+    "verifiedMaterials": [
+      "Assembled 2WD Robot Chassis with L298N driver and battery pack",
+      "Arduino Uno R3 development board",
+      "2x TCRT5000 Infrared Reflectance Sensor Modules (with LM393 comparators)",
+      "Sensor mounting bracket or double-sided tape for front chassis mounting",
+      "Black electrical tape (18mm width) and white foam boards",
+      "Piezo Buzzer (Warning alarm)",
+      "10x Female-to-Male jumper wires"
+    ],
+    "safetyNotes": [
+      "When running the Table-Edge Cliff Avoider test on an elevated table, students MUST stand ready to catch the robot in case of calibration failure!",
+      "Mount IR sensors approximately 5mm to 10mm above the floor surface: mounting too high reduces return signal drastically."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Place a 2WD robot on a tall table with NO walls: let it speed forward towards the edge at full speed! 2cm from the fatal drop, it detects the cliff, stops instantly, reverses, and pivots away safely!",
+        "studentAction": "Gasp at the near-drop! Inspect the downward-pointing TCRT5000 infrared sensor eyes on the front bumper."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Explain IR phototransistor physics and LM393 comparator thresholding. Teach the 4-case line following truth table on the whiteboard.",
+        "studentAction": "Open the Line Follower & Sumo Arena Sim on the portal: test sensor thresholds and observe track following corrections."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide mounting: secure Left IR and Right IR sensors 2cm apart facing downward at 8mm ground clearance; wire to D2 and D3.",
+        "studentAction": "Mount sensors to front chassis. Turn the blue trimmer pot on each module with a screwdriver until the indicator LED turns ON over white floor and OFF over black tape."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through Mode 1 (Cliff Avoider reverse-turn logic) and Mode 2 (Closed-loop line follower algorithm).",
+        "studentAction": "Upload the Dual-Mode Navigation sketch. Test table-edge avoidance on a desk; then place on the floor race track to test line following."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the \"RoboBee Mini-Sumo & Line Drag Race\": time robots around the black tape circuit and crown the champion!",
+        "studentAction": "Race around the track, tune motor speeds for maximum cornering grip, log lap times, and complete the Exit Ticket."
+      }
+    ],
+    "concepts": [
+      {
+        "title": "How TCRT5000 \"Sees\" in the Dark",
+        "explanation": "The blue LED on the TCRT5000 is an Infrared Emitter flashing invisible 940nm photons down at the floor. The black component is an Infrared Phototransistor. When passing over white tile, light bounces back and turns the phototransistor ON. When passing over black tape, the carbon pigment absorbs the light; no photons return, and the phototransistor turns OFF!",
+        "instructorNote": "View the IR emitter through a smartphone camera—the phone camera sensor reveals the invisible purple glow!"
+      },
+      {
+        "title": "Calibrating the LM393 Comparator Trimmer",
+        "explanation": "Every floor has different ambient reflectivity. The blue multi-turn potentiometer sets the reference switching voltage for the internal LM393 comparator. Turning it clockwise increases sensitivity; turning it counter-clockwise decreases sensitivity. When calibrated properly, the onboard indicator LED turns ON over white and OFF over black.",
+        "instructorNote": "Have students verify their calibration by sliding the robot back and forth across a strip of electrical tape."
+      },
+      {
+        "title": "Closed-Loop Line Following Logic",
+        "explanation": "Two sensors straddle the black line like two feet: Left Sensor on white, Right Sensor on white. If robot drifts right: Left sensor touches black! The code immediately stops the left wheel and speeds up the right wheel, steering the robot back onto center in milliseconds!",
+        "instructorNote": "Show the 4-case truth table: (0,0) = Straight; (1,0) = Turn Left; (0,1) = Turn Right; (1,1) = Intersection / Crossline."
+      }
+    ],
+    "visualizerId": "line_follower_sim",
+    "project": {
+      "name": "Autonomous Table-Edge Cliff Avoider & Line-Following Racer",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Dual TCRT5000 IR sensors mounted with 8mm ground clearance and calibrated via LM393 potentiometers.",
+        "100% reliable cliff edge avoidance on elevated table (5 consecutive trials without falling).",
+        "Autonomous navigation around a 3-meter closed-loop black tape racing circuit."
+      ]
+    },
+    "activity": {
+      "title": "Assemble, Calibrate, and Race the Autonomous Optical Rover",
+      "steps": [
+        "Step 1: Mount Left IR and Right IR sensors to the front underside of the chassis facing down (8mm from floor).",
+        "Step 2: Connect Left IR: VCC to 5V, GND to GND, OUT to Digital Pin 2.",
+        "Step 3: Connect Right IR: VCC to 5V, GND to GND, OUT to Digital Pin 3.",
+        "Step 4: Connect Buzzer to Digital Pin 12 and GND.",
+        "Step 5: Calibrate sensors: slide sensor over white paper, adjust potentiometer until indicator LED lights up; slide over black tape, confirm LED turns off.",
+        "Step 6: Upload firmware. Mode 1 (Cliff Avoider): test on tabletop with ready hands; verify robot stops and retreats at edge.",
+        "Step 7: Mode 2 (Line Racer): place on black tape circuit on floor; observe autonomous trajectory tracking!"
+      ],
+      "successCriteria": [
+        "Sensors trigger cleanly between white floor and black tape without jitter.",
+        "Robot never falls off the edge of the testing table during 5 consecutive trials.",
+        "Robot completes full lap of the line tracking course without derailing."
+      ],
+      "extension": "Add dynamic speed cornering: slow down inside wheel during sharp turns and burst forward on straightaways!"
+    },
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "L298N Motor Driver",
+        "2x TCRT5000 IR Modules",
+        "2WD Chassis"
+      ],
+      "componentList": [
+        {
+          "name": "Assembled 2WD Robot Chassis",
+          "exactVariant": "With dual TT gear motors and rubber wheels",
+          "quantity": 1
+        },
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "L298N Dual H-Bridge Driver",
+          "exactVariant": "With heatsink and screw terminals",
+          "quantity": 1
+        },
+        {
+          "name": "TCRT5000 IR Sensor Modules",
+          "exactVariant": "With LM393 comparator and trimmer pots",
+          "quantity": 2
+        },
+        {
+          "name": "Piezo Buzzer",
+          "exactVariant": "5V passive transducer",
+          "quantity": 1
+        },
+        {
+          "name": "Battery Box (6V–7.4V)",
+          "exactVariant": "4x AA or 2x 18650 holder with switch",
+          "quantity": 1
+        },
+        {
+          "name": "Black Electrical Tape & White Board",
+          "exactVariant": "Standard 18mm PVC tape and white poster board",
+          "quantity": 1
+        },
+        {
+          "name": "Jumper Wires & Mounting Tape",
+          "exactVariant": "Female-to-Male and Male-to-Male jumpers",
+          "quantity": 14
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "Left IR: VCC->5V | GND->GND | OUT->D2; Right IR: VCC->5V | GND->GND | OUT->D3; L298N: ENA->D5 | IN1->D7 | IN2->D8 | IN3->D9 | IN4->D10 | ENB->D6; Buzzer: D12 -> Buzzer (+) | (-) -> GND",
+      "wireTable": [
+        {
+          "from": "Left TCRT5000 VCC Pin",
+          "to": "Breadboard 5V Rail",
+          "wireOrPolarityNote": "Red wire — Sensor power"
+        },
+        {
+          "from": "Left TCRT5000 GND Pin",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Sensor Ground"
+        },
+        {
+          "from": "Left TCRT5000 OUT Pin",
+          "to": "Arduino Digital Pin 2",
+          "wireOrPolarityNote": "Left reflectance signal"
+        },
+        {
+          "from": "Right TCRT5000 VCC Pin",
+          "to": "Breadboard 5V Rail",
+          "wireOrPolarityNote": "Red wire — Sensor power"
+        },
+        {
+          "from": "Right TCRT5000 GND Pin",
+          "to": "Breadboard Ground Rail",
+          "wireOrPolarityNote": "Black wire — Sensor Ground"
+        },
+        {
+          "from": "Right TCRT5000 OUT Pin",
+          "to": "Arduino Digital Pin 3",
+          "wireOrPolarityNote": "Right reflectance signal"
+        },
+        {
+          "from": "Arduino Digital Pin 12",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Cliff warning audio alert"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Prop robot on bench block.",
+        "2. Mount Left and Right IR sensors to front bumper 20mm apart, 8mm above ground.",
+        "3. Wire VCC, GND, and signals to D2 and D3.",
+        "4. Power on battery; tune trimmer pots with screwdriver until LEDs switch cleanly between black and white.",
+        "5. Upload navigation code; test on table and floor tracks."
+      ],
+      "powerAndSafetyChecks": [
+        "ALWAYS assign a student \"catcher\" at the table edge during cliff avoidance testing.",
+        "Ensure sensor wires are tucked away and cannot tangle in the rotating drive wheels."
+      ],
+      "testCases": [
+        {
+          "action": "Both sensors over white floor",
+          "expectedResult": "Both IR LEDs ON; robot drives straight forward."
+        },
+        {
+          "action": "Left sensor encounters black line",
+          "expectedResult": "Left IR LED turns OFF; robot pivots left until back on white."
+        },
+        {
+          "action": "Both sensors pass over table edge (infinite dark)",
+          "expectedResult": "Both IR LEDs OFF; robot halts immediately, sounds buzzer, reverses 20cm, and pivots 120° away."
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 11: Table-Edge Cliff Avoider & Line Racer\n * Board: Arduino Uno R3 + L298N + Dual TCRT5000 IR Sensors\n */\n\n// IR Sensor Pins\nconst int PIN_IR_LEFT  = 2;  // Left TCRT5000 Digital OUT\nconst int PIN_IR_RIGHT = 3;  // Right TCRT5000 Digital OUT\n\n// Motor Driver Pins\nconst int PIN_ENA = 5;  // PWM Left\nconst int PIN_IN1 = 7;\nconst int PIN_IN2 = 8;\nconst int PIN_IN3 = 9;\nconst int PIN_IN4 = 10;\nconst int PIN_ENB = 6;  // PWM Right\nconst int PIN_BUZZER = 12; // Warning Buzzer\n\n// Speed Presets\nconst int BASE_SPEED = 180; // Cruising speed\nconst int TURN_SPEED = 190; // Pivot speed\n\n// Mode Selector: Set to true for Table Cliff Avoider; false for Line Follower\nconst bool MODE_CLIFF_AVOIDER = false;\n\nvoid setup() {\n  pinMode(PIN_IR_LEFT, INPUT);\n  pinMode(PIN_IR_RIGHT, INPUT);\n  pinMode(PIN_ENA, OUTPUT);\n  pinMode(PIN_IN1, OUTPUT);\n  pinMode(PIN_IN2, OUTPUT);\n  pinMode(PIN_IN3, OUTPUT);\n  pinMode(PIN_IN4, OUTPUT);\n  pinMode(PIN_ENB, OUTPUT);\n  pinMode(PIN_BUZZER, OUTPUT);\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE AUTONOMOUS OPTICAL NAVIGATION READY ===\");\n  delay(1500); // Calibration delay\n}\n\nvoid setMotors(int leftSpeed, int rightSpeed) {\n  if (leftSpeed > 0) {\n    digitalWrite(PIN_IN1, HIGH); digitalWrite(PIN_IN2, LOW);\n  } else if (leftSpeed < 0) {\n    digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, HIGH);\n  } else {\n    digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, LOW);\n  }\n\n  if (rightSpeed > 0) {\n    digitalWrite(PIN_IN3, HIGH); digitalWrite(PIN_IN4, LOW);\n  } else if (rightSpeed < 0) {\n    digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, HIGH);\n  } else {\n    digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, LOW);\n  }\n\n  analogWrite(PIN_ENA, abs(leftSpeed));\n  analogWrite(PIN_ENB, abs(rightSpeed));\n}\n\nvoid activeBrake(int ms = 150) {\n  digitalWrite(PIN_IN1, HIGH); digitalWrite(PIN_IN2, HIGH);\n  digitalWrite(PIN_IN3, HIGH); digitalWrite(PIN_IN4, HIGH);\n  analogWrite(PIN_ENA, 255); analogWrite(PIN_ENB, 255);\n  delay(ms);\n  setMotors(0, 0);\n}\n\nvoid loop() {\n  // Read IR sensors: LM393 output: LOW = White Floor, HIGH = Black Tape / Drop-Off\n  int leftIR  = digitalRead(PIN_IR_LEFT);\n  int rightIR = digitalRead(PIN_IR_RIGHT);\n\n  if (MODE_CLIFF_AVOIDER) {\n    // ==========================================\n    // MODE 1: TABLE-EDGE CLIFF AVOIDER & SUMO\n    // ==========================================\n    // If either sensor sees drop-off (HIGH): EMERGENCY ESCAPE!\n    if (leftIR == HIGH || rightIR == HIGH) {\n      Serial.println(\"!! CLIFF DETECTED: Emergency Reverse & Pivot !!\");\n      activeBrake(100);\n      tone(PIN_BUZZER, 1800, 200); // Warning chirp\n\n      // Reverse away from edge\n      setMotors(-200, -200);\n      delay(400);\n\n      // Pivot 120 degrees away from danger\n      if (leftIR == HIGH) {\n        setMotors(210, -210); // Pivot right\n      } else {\n        setMotors(-210, 210); // Pivot left\n      }\n      delay(450);\n      activeBrake(100);\n    } else {\n      // Safe white floor: cruise forward\n      setMotors(BASE_SPEED, BASE_SPEED);\n    }\n\n  } else {\n    // ==========================================\n    // MODE 2: HIGH-SPEED BLACK LINE RACER\n    // ==========================================\n    // Case 1: Both on white floor -> Go Straight\n    if (leftIR == LOW && rightIR == LOW) {\n      setMotors(BASE_SPEED, BASE_SPEED);\n    }\n    // Case 2: Left sensor on black line -> Steer Left\n    else if (leftIR == HIGH && rightIR == LOW) {\n      setMotors(-60, TURN_SPEED); // Sharp differential left turn\n    }\n    // Case 3: Right sensor on black line -> Steer Right\n    else if (leftIR == LOW && rightIR == HIGH) {\n      setMotors(TURN_SPEED, -60); // Sharp differential right turn\n    }\n    // Case 4: Both on black line (Intersection / Finish Line)\n    else if (leftIR == HIGH && rightIR == HIGH) {\n      setMotors(BASE_SPEED, BASE_SPEED); // Cross intersection smoothly\n    }\n  }\n\n  delay(10); // 100 Hz control loop\n}\n",
+      "pinMap": {
+        "Pin 2": "Left TCRT5000 IR Sensor Digital Output",
+        "Pin 3": "Right TCRT5000 IR Sensor Digital Output",
+        "Pins 5, 7, 8": "L298N Left Motor Speed and Direction (ENA, IN1, IN2)",
+        "Pins 6, 9, 10": "L298N Right Motor Speed and Direction (ENB, IN3, IN4)",
+        "Pin 12": "Cliff Warning Alarm Buzzer"
+      },
+      "setupAndUpload": [
+        "Mount sensors to front bumper; calibrate trimmer pots over white floor and black tape.",
+        "Connect Arduino via USB, select Uno board and port, and upload sketch.",
+        "Select MODE_CLIFF_AVOIDER (true) or LINE_RACER (false) and deploy onto testing track."
+      ],
+      "explanations": [
+        "digitalRead(PIN_IR_LEFT): Reads LM393 comparator output (LOW = white floor reflection, HIGH = black absorption or cliff).",
+        "Cliff Avoider logic: Instantly triggers active dynamic brake, reverses 400ms, and executes a 120° pivot spin away from the edge.",
+        "Line Following logic: Implements 4-case differential skid steering to keep the black line centered between the two sensors.",
+        "100 Hz control loop: Executes sensory evaluations every 10ms for instant high-speed cornering corrections."
+      ],
+      "expectedResult": "In Cliff mode, the robot cruises on a table and recoils safely whenever it approaches the edge. In Line mode, it traces the black electrical tape course smoothly.",
+      "caveats": [
+        "Direct sunlight or bright incandescent stage lights contain infrared that can saturate phototransistors: test indoors under LED lights.",
+        "Ensure the black tape has high contrast against the floor surface."
+      ],
+      "tweakTip": "Change the reverse speed in line following from -60 to 0 for gentle curves or -120 for extreme hairpin turns!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "Robot crosses the black line and keeps going without turning.",
+        "checks": [
+          "Check sensor height: verify distance between sensor face and floor is between 5mm and 10mm.",
+          "Recalibrate trimmer pot: turn slowly until onboard LED extinguishes over black tape and lights up over white floor."
+        ],
+        "explanation": "If sensors are mounted too high, the reflected infrared beam is too weak to trigger the comparator."
+      },
+      {
+        "symptom": "Robot shakes or oscillates violently left and right while following the line.",
+        "checks": [
+          "Reduce turn speed: lower TURN_SPEED from 190 to 160 in code.",
+          "Increase cruising speed slightly or move sensors slightly further apart."
+        ],
+        "explanation": "Over-aggressive steering causes proportional control hunting (over-correcting back and forth)."
+      },
+      {
+        "symptom": "Robot drives off the edge of the table during Cliff Avoidance test.",
+        "checks": [
+          "Verify sensors point downward at the ground ahead of the wheels, not straight forward.",
+          "Ensure BASE_SPEED is moderate so momentum does not carry the wheels over before braking takes effect."
+        ],
+        "explanation": "Excessive speed combined with front-heavy chassis momentum can overshoot the table edge."
+      }
+    ],
+    "checksForUnderstanding": [
+      "Why does black electrical tape prevent infrared light from reflecting back into the sensor?",
+      "What happens when the robot encounters a 90-degree hairpin turn in the black line?"
+    ],
+    "exitTicket": [
+      {
+        "question": "Explain why a phototransistor turns ON when passing over white poster board and turns OFF over black electrical tape.",
+        "rubricOrSampleReasoning": "White poster board exhibits high diffuse reflectance, bouncing the 940nm infrared photons back into the phototransistor base, allowing current to flow (ON). Black electrical tape contains carbon pigment that absorbs infrared photons, starving the base of light and turning the transistor OFF."
+      },
+      {
+        "question": "How does an autonomous mobile robot detect an empty cliff (table edge) using downward-pointing IR reflectance sensors?",
+        "rubricOrSampleReasoning": "When the sensor passes over the edge of the table, the emitted infrared beam travels into open air and never returns. The complete absence of return light produces the exact same signal as black absorption, signaling the microcontroller that the floor is gone."
+      },
+      {
+        "question": "What is the purpose of the multi-turn trimmer potentiometer on the TCRT5000 module?",
+        "rubricOrSampleReasoning": "It adjusts the reference threshold voltage for the onboard LM393 comparator. This allows the user to tune the exact sensitivity point where the digital output flips between HIGH and LOW based on ambient room light and specific floor reflectivity."
+      }
+    ],
+    "differentiation": {
+      "support": [
+        "Provide calibration strips of white cardstock and black tape taped directly to the workbench."
+      ],
+      "extension": [
+        "Implement PID (Proportional-Integral-Derivative) control for ultra-smooth high-speed competition racing."
+      ],
+      "offlineOption": [
+        "Simulate line follower algorithms on the RoboBee portal simulator."
+      ]
+    },
+    "nextLessonId": "beg-12",
+    "nextLessonTeaser": "Class 12 (Final Capstone Build Day 3): Autonomous Obstacle-Avoiding & Maze Explorer Robot! Master full system integration and graduate from Beginner Robotics.",
+    "sources": [
+      {
+        "title": "Vishay TCRT5000 Reflective Optical Sensor Datasheet",
+        "url": "https://vishay.com"
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "Line Follower Truth Table Diagram",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
+    ],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+
+  {
+    "id": "beg-12",
+    "fieldGuideLinks": {
+      "readBeforeClass": [
+        "fg-testing-fmea-debugging",
+        "fg-comp-tournament-prep"
+      ],
+      "lookUpWhileBuilding": [
+        "fg-motion-differential-kinematics",
+        "fg-comp-hc-sr04"
+      ],
+      "goDeeper": [
+        "fg-safety-lab-code",
+        "fg-arduino-ide-workflow"
+      ]
+    },
+    "courseId": "beginner",
+    "sequence": 12,
+    "code": "BEGINNER 12",
+    "title": "Final Capstone Build 3: Autonomous Obstacle-Avoiding & Maze Explorer Robot",
+    "subtitle": "Final Capstone Milestone Day 3 — Complete multi-subsystem engineering integration, active ultrasonic servo scanning head, spatial clearance matrices, dead-end escape maneuvers, and capstone graduation defense.",
+    "promise": "I can integrate ultrasonic sonar scanning turrets with differential chassis drive, program autonomous maze navigation algorithms, and graduate from Beginner Robotics!",
+    "status": "published",
+    "proposedAudience": "Classes 5–8 (Ages 10–14)",
+    "durationMinutes": 120,
+    "compactDurationMinutes": 60,
+    "prerequisites": [
+      "Beginner 01 through Beginner 11"
+    ],
+    "outcomes": [
+      "Synthesize all five core robotics subsystems: Sensing (Sonar), Thinking (Arduino), Actuating (DC Motors & Servos), Structure (Chassis), and Power (Batteries).",
+      "Mount and calibrate an active motorized scanning turret (SG90 servo panning HC-SR04 sonar across 45° Left, 90° Center, 135° Right).",
+      "Implement a Spatial Decision Matrix in C++: detect forward obstacles < 25cm, halt with active braking, pan head, compare clearance paths, and turn toward maximum open space.",
+      "Program an intelligent Dead-End Escape Maneuver: detect trapped corridors (Left and Right blocked) and execute an automatic 180° reverse-pivot retreat.",
+      "Deliver an authentic 3-minute Capstone Engineering Defense, demonstrate autonomous maze navigation, and celebrate Beginner Robotics Graduation!"
+    ],
+    "vocabulary": [
+      {
+        "term": "Autonomous Navigation",
+        "plainMeaning": "A robot driving, exploring, and making its own smart decisions without any human touching a remote control.",
+        "technicalMeaning": "The capability of a mobile robotic system to execute mission objectives across unknown environments without human intervention."
+      },
+      {
+        "term": "Active Scanning Turret",
+        "plainMeaning": "A motorized neck that pans the robot’s ultrasonic eyes left and right to look around corners before turning.",
+        "technicalMeaning": "An articulated pan-tilt sensor payload actuated by a servomotor expanding the spatial field of view beyond a single fixed axis."
+      },
+      {
+        "term": "Spatial Clearance Matrix",
+        "plainMeaning": "A decision chart where the robot compares Left Distance vs Right Distance to pick the widest open hallway.",
+        "technicalMeaning": "A multi-point spatial distance array evaluating environmental clearance vectors to select an optimal collision-free trajectory."
+      },
+      {
+        "term": "Dead-End Escape Maneuver",
+        "plainMeaning": "Recognizing when you are trapped in a corner with no way out, backing up, and turning 180 degrees around.",
+        "technicalMeaning": "A state-machine recovery behavior triggered when all forward directional clearance vectors fall below safe operating thresholds."
+      },
+      {
+        "term": "Full System Integration",
+        "plainMeaning": "All the pieces working together in harmony: brain, eyes, neck, wheels, chassis, and battery pack.",
+        "technicalMeaning": "The successful synthesis of electrical power, embedded firmware, mechanical drive, and sensory feedback into one unified machine."
+      },
+      {
+        "term": "Capstone Engineering Defense",
+        "plainMeaning": "Standing up in front of fellow engineers and parents to explain and prove why your autonomous machine works.",
+        "technicalMeaning": "A structured peer-review presentation defending design trade-offs, empirical sensor data, and firmware architectures."
+      }
+    ],
+    "teacherPrep": [
+      "Build a cardboard or foam board maze arena with corridors, dead-ends, and 90-degree turns on the classroom floor.",
+      "Mount HC-SR04 sensors onto SG90 servo horns using sensor brackets or zip-ties.",
+      "Prepare printed RoboBee Beginner Robotics Graduation Certificates for all students!"
+    ],
+    "verifiedMaterials": [
+      "Fully integrated 2WD Robot Chassis (from Classes 09, 10, 11)",
+      "Arduino Uno R3 development board with USB cable",
+      "L298N Dual H-Bridge Motor Driver",
+      "SG90 9g Micro Servo with mounting bracket",
+      "HC-SR04 Ultrasonic Sonar Sensor",
+      "Status Indicator RGB LED with 220Ω resistors",
+      "Piezo Buzzer (Celebratory victory fanfare)",
+      "4x AA or 2x 18650 Battery Pack with toggle switch",
+      "Cardboard maze obstacles and corridor walls"
+    ],
+    "safetyNotes": [
+      "Conduct all maze trials on the marked floor arena; keep spectator students seated outside the boundary line.",
+      "Never pick up the robot by its delicate servo scanner head; always lift firmly by the chassis deck plates.",
+      "Verify battery terminal voltage before the final graduation trials to ensure consistent motor speeds."
+    ],
+    "classRhythm": [
+      {
+        "segment": "00–15m: Hook & Live Demo",
+        "minutes": 15,
+        "teacherAction": "Place the master prototype inside a complex 3-corridor maze: step back and raise hands in the air! The robot drives forward, encounters a dead-end, halts, pans its head left and right, picks the open path, navigates to the exit, and sounds a triumphant victory fanfare!",
+        "studentAction": "Cheer the autonomous escape! Realize that today they will combine every skill learned from Class 01 to Class 11 into this ultimate build."
+      },
+      {
+        "segment": "15–40m: Interactive Concept & Pinout",
+        "minutes": 25,
+        "teacherAction": "Deconstruct the full system block diagram. Teach the active scanning turret geometry (45° Left, 90° Center, 135° Right) and the dead-end escape state machine.",
+        "studentAction": "Interact with the Obstacle Avoiding Rover Sim on the portal: test scanning head sweeps and maze escape algorithms."
+      },
+      {
+        "segment": "40–75m: Breadboard Wiring & Assembly",
+        "minutes": 35,
+        "teacherAction": "Guide mounting: fasten SG90 servo to front chassis center; mount HC-SR04 to servo horn; wire Servo to D11, Sonar to D9/D10, Buzzer to D3.",
+        "studentAction": "Assemble the scanning turret and complete all final wiring. Calibrate 90° center alignment so sonar points dead ahead."
+      },
+      {
+        "segment": "75–100m: Code & Serial Debugging",
+        "minutes": 25,
+        "teacherAction": "Walk through lookLeft(), lookRight(), activeBrake(), comparing distances, and executing the 180° dead-end retreat maneuver.",
+        "studentAction": "Upload the Capstone Maze Explorer firmware. Prop robot on bench block; place hands at various angles to verify head panning and motor steering."
+      },
+      {
+        "segment": "100–120m: Game Challenge & Showoff",
+        "minutes": 20,
+        "teacherAction": "Host the Official RoboBee Beginner Capstone Maze Showcase: time autonomous runs, evaluate against engineering rubrics, and award Graduation Certificates!",
+        "studentAction": "Deploy robot into the maze; watch it solve the course 100% autonomously; celebrate graduation with parents, peers, and instructors!"
+      }
+    ],
+    "concepts": [
+      {
+        "title": "Full Cybernetic Sense → Decide → Act Loop",
+        "explanation": "Our Capstone Robot represents the pinnacle of cybernetic engineering: SENSE: HC-SR04 ultrasonic sonar measures acoustic distance; DECIDE: ATmega328P compares clearance vectors against spatial safety boundaries; ACT: L298N motors execute skid-steering maneuvers while SG90 servo scans the path ahead.",
+        "instructorNote": "Remind students of Class 01 where they first blinked an LED—now they are commanding an autonomous multi-subsystem vehicle!"
+      },
+      {
+        "title": "Active Sensor Panning vs Fixed Sensors",
+        "explanation": "A fixed sonar can only see directly ahead. If an obstacle is angled or a wall blocks the path, a fixed-sensor robot gets permanently stuck! By mounting the sonar on a servomotor, the robot pans 45° to the left and 135° to the right, mapping out alternative corridors before making its turn.",
+        "instructorNote": "Demonstrate that turning the \"head\" uses almost zero battery power compared to turning the entire robot chassis."
+      },
+      {
+        "title": "Handling Trapped Dead-Ends",
+        "explanation": "What if the robot drives into a narrow box where forward, left, AND right are all blocked? A basic obstacle avoider will thrash back and forth helplessly. Our firmware checks: if leftDistance < 20cm AND rightDistance < 20cm, it recognizes a DEAD-END, reverses 30cm, and executes a 180° spin to escape!",
+        "instructorNote": "Highlight that solving edge cases separates amateur gadgets from professional autonomous robotics."
+      }
+    ],
+    "visualizerId": "obstacle_avoiding_rover_sim",
+    "project": {
+      "name": "Final Capstone Project: Autonomous Obstacle-Avoiding & Maze Explorer Robot",
+      "deliverableType": "physical_build",
+      "successEvidence": [
+        "Complete physical 2WD autonomous rover with motorized SG90 scanning turret and HC-SR04 sonar.",
+        "Active path scanning: stops < 25cm from obstacle, pans head Left (45°) and Right (135°), and selects clearest corridor.",
+        "Successful 100% autonomous navigation through a multi-turn labyrinth arena and celebratory victory graduation fanfare."
+      ]
+    },
+    "activity": {
+      "title": "Assemble, Integrate, and Defend the Capstone Maze Explorer",
+      "steps": [
+        "Step 1: Secure SG90 micro servo firmly to the front center of the top acrylic chassis deck facing forward.",
+        "Step 2: Attach HC-SR04 sonar module to the servo horn bracket; align so 90° commands point dead ahead.",
+        "Step 3: Connect Servo signal to Digital Pin 11; Sonar Trig to Pin 9, Echo to Pin 10; Buzzer to Pin 3.",
+        "Step 4: Verify L298N motor driver connections (ENA D5, IN1 D7, IN2 D8, IN3 D9, IN4 D10, ENB D6).",
+        "Step 5: Connect common Ground and power from the battery pack; upload Capstone firmware.",
+        "Step 6: Place robot inside the testing maze; observe autonomous forward drive, scanning pauses, and wall avoidance.",
+        "Step 7: Deliver 2-minute technical showcase defense, demonstrate maze solve, and receive RoboBee Beginner Graduation Certificate!"
+      ],
+      "successCriteria": [
+        "Rover never collides with or scrapes maze walls during testing.",
+        "Scanning turret rotates cleanly across 45°, 90°, and 135° angles without wire snagging.",
+        "Robot successfully solves the maze and plays the graduation melody."
+      ],
+      "extension": "Add a non-volatile EEPROM memory run log recording total distance traveled and number of turns executed!"
+    },
+    "physicalBuildPack": {
+      "verifiedBoardAndModules": [
+        "Arduino Uno R3",
+        "L298N Driver",
+        "SG90 Servo",
+        "HC-SR04 Sonar",
+        "2WD Chassis"
+      ],
+      "componentList": [
+        {
+          "name": "Complete 2WD Robot Chassis",
+          "exactVariant": "With dual TT gear motors, rubber wheels, and caster",
+          "quantity": 1
+        },
+        {
+          "name": "Arduino Uno R3 Board",
+          "exactVariant": "Standard Rev3",
+          "quantity": 1
+        },
+        {
+          "name": "L298N Dual H-Bridge Driver",
+          "exactVariant": "With heatsink and screw terminals",
+          "quantity": 1
+        },
+        {
+          "name": "SG90 9g Micro Servo",
+          "exactVariant": "Motorized scanning turret actuator",
+          "quantity": 1
+        },
+        {
+          "name": "HC-SR04 Ultrasonic Sonar",
+          "exactVariant": "Mounted to servo horn bracket",
+          "quantity": 1
+        },
+        {
+          "name": "Piezo Buzzer",
+          "exactVariant": "Victory celebration sound generator",
+          "quantity": 1
+        },
+        {
+          "name": "Status Indicator RGB LED",
+          "exactVariant": "Common cathode with 220Ω resistors",
+          "quantity": 1
+        },
+        {
+          "name": "Battery Pack (6V–7.4V)",
+          "exactVariant": "4x AA or 2x 18650 holder with toggle switch",
+          "quantity": 1
+        },
+        {
+          "name": "Cardboard Maze Arena Kit",
+          "exactVariant": "Corridor walls (30cm height)",
+          "quantity": 1
+        }
+      ],
+      "connectionPhotoOrClearlyLabeledIllustration": "/illustrations/2wd_rover_wiring_plan.svg",
+      "schematic": "L298N: ENA->D5 | IN1->D7 | IN2->D8 | IN3->D9 | IN4->D10 | ENB->D6; SG90 Servo: Signal->D11 | 5V | GND; HC-SR04: Trig->A2 | Echo->A3; Buzzer: D3 -> Buzzer (+) | (-) -> GND; Common Ground shared across all modules",
+      "wireTable": [
+        {
+          "from": "SG90 Servo Signal (Orange)",
+          "to": "Arduino Digital Pin 11 (PWM)",
+          "wireOrPolarityNote": "Turret pan angle control"
+        },
+        {
+          "from": "HC-SR04 Trig Pin",
+          "to": "Arduino Analog In A2 (as Digital Output)",
+          "wireOrPolarityNote": "Sonar trigger pulse"
+        },
+        {
+          "from": "HC-SR04 Echo Pin",
+          "to": "Arduino Analog In A3 (as Digital Input)",
+          "wireOrPolarityNote": "Sonar echo return"
+        },
+        {
+          "from": "Arduino Digital Pin 3",
+          "to": "Piezo Buzzer (+) Pin",
+          "wireOrPolarityNote": "Victory fanfare chime"
+        },
+        {
+          "from": "Arduino Digital Pin 5 (PWM)",
+          "to": "L298N ENA (Left Speed)",
+          "wireOrPolarityNote": "Left motor speed"
+        },
+        {
+          "from": "Arduino Digital Pin 7",
+          "to": "L298N IN1",
+          "wireOrPolarityNote": "Left forward logic"
+        },
+        {
+          "from": "Arduino Digital Pin 8",
+          "to": "L298N IN2",
+          "wireOrPolarityNote": "Left reverse logic"
+        },
+        {
+          "from": "Arduino Digital Pin 9",
+          "to": "L298N IN3",
+          "wireOrPolarityNote": "Right forward logic"
+        },
+        {
+          "from": "Arduino Digital Pin 10",
+          "to": "L298N IN4",
+          "wireOrPolarityNote": "Right reverse logic"
+        },
+        {
+          "from": "Arduino Digital Pin 6 (PWM)",
+          "to": "L298N ENB (Right Speed)",
+          "wireOrPolarityNote": "Right motor speed"
+        },
+        {
+          "from": "Battery Pack (-)",
+          "to": "L298N GND & Arduino GND",
+          "wireOrPolarityNote": "Common Ground Return"
+        }
+      ],
+      "assemblyAndPowerUpSteps": [
+        "1. Mount SG90 servo securely to front center of chassis plate.",
+        "2. Fasten HC-SR04 sonar module to servo horn arm.",
+        "3. Wire Servo to Pin 11, Sonar to A2/A3, Motors to Pins 5–10, and Buzzer to Pin 3.",
+        "4. Connect common Ground across L298N, Arduino, and Battery.",
+        "5. Power on battery switch; upload Capstone firmware; place in maze corridor."
+      ],
+      "powerAndSafetyChecks": [
+        "Verify the servo wires do not bind or pull taut when the head pans to 45° or 135°.",
+        "Ensure the battery pack provides at least 6.0V under motor load."
+      ],
+      "testCases": [
+        {
+          "action": "Obstacle appears directly ahead (< 25cm)",
+          "expectedResult": "Rover halts with active brake; pans head Left (45°), then Right (135°)."
+        },
+        {
+          "action": "Left clearance is 50cm, Right clearance is 15cm",
+          "expectedResult": "Rover pivots 90° to the Left and resumes forward drive."
+        },
+        {
+          "action": "Dead-end: both Left and Right are blocked (< 20cm)",
+          "expectedResult": "Rover reverses 25cm and executes full 180° turnaround."
+        },
+        {
+          "action": "Reaches maze exit (open space > 100cm for 5s)",
+          "expectedResult": "Rover halts and plays triumphant 5-tone graduation melody!"
+        }
+      ]
+    },
+    "codeLab": {
+      "language": "cpp",
+      "code": "/*\n * RoboBEE Innovators — Class 12: Final Capstone Autonomous Maze Explorer\n * Major Project Milestone Day 3\n * Board: Arduino Uno R3 + L298N + SG90 Servo Turret + HC-SR04 Sonar\n */\n\n#include <Servo.h>\n\n// Sonar Pins (Using Analog pins as Digital to prevent conflict with PWM pins)\nconst int PIN_TRIG   = A2;\nconst int PIN_ECHO   = A3;\n\n// Motor Driver Pins\nconst int PIN_ENA    = 5;\nconst int PIN_IN1    = 7;\nconst int PIN_IN2    = 8;\nconst int PIN_IN3    = 9;\nconst int PIN_IN4    = 10;\nconst int PIN_ENB    = 6;\n\n// Scanning Turret Servo & Buzzer\nconst int PIN_SERVO  = 11;\nconst int PIN_BUZZER = 3;\n\n// Navigation Thresholds\nconst int STOP_DIST   = 25; // Stop when obstacle closer than 25cm\nconst int CRUISE_SPD  = 180; // Cruising motor speed\nconst int PIVOT_SPD   = 200; // Turning motor speed\n\nServo headServo;\n\nvoid setup() {\n  pinMode(PIN_TRIG, OUTPUT);\n  pinMode(PIN_ECHO, INPUT);\n  pinMode(PIN_ENA, OUTPUT);\n  pinMode(PIN_IN1, OUTPUT);\n  pinMode(PIN_IN2, OUTPUT);\n  pinMode(PIN_IN3, OUTPUT);\n  pinMode(PIN_IN4, OUTPUT);\n  pinMode(PIN_ENB, OUTPUT);\n  pinMode(PIN_BUZZER, OUTPUT);\n\n  headServo.attach(PIN_SERVO);\n  headServo.write(90); // Center head dead ahead\n\n  Serial.begin(9600);\n  Serial.println(\"=== ROBOBEE CAPSTONE AUTONOMOUS MAZE EXPLORER READY ===\");\n  delay(2000); // 2-second grace period before autonomous drive\n}\n\nlong getDistance() {\n  digitalWrite(PIN_TRIG, LOW);\n  delayMicroseconds(2);\n  digitalWrite(PIN_TRIG, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(PIN_TRIG, LOW);\n\n  long duration = pulseIn(PIN_ECHO, HIGH, 25000);\n  if (duration == 0) return 999;\n  return (duration * 0.0343) / 2;\n}\n\nvoid setMotors(int leftSpeed, int rightSpeed) {\n  if (leftSpeed > 0) {\n    digitalWrite(PIN_IN1, HIGH); digitalWrite(PIN_IN2, LOW);\n  } else if (leftSpeed < 0) {\n    digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, HIGH);\n  } else {\n    digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, LOW);\n  }\n\n  if (rightSpeed > 0) {\n    digitalWrite(PIN_IN3, HIGH); digitalWrite(PIN_IN4, LOW);\n  } else if (rightSpeed < 0) {\n    digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, HIGH);\n  } else {\n    digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, LOW);\n  }\n\n  analogWrite(PIN_ENA, abs(leftSpeed));\n  analogWrite(PIN_ENB, abs(rightSpeed));\n}\n\nvoid activeBrake(int ms = 150) {\n  digitalWrite(PIN_IN1, HIGH); digitalWrite(PIN_IN2, HIGH);\n  digitalWrite(PIN_IN3, HIGH); digitalWrite(PIN_IN4, HIGH);\n  analogWrite(PIN_ENA, 255); analogWrite(PIN_ENB, 255);\n  delay(ms);\n  setMotors(0, 0);\n}\n\nvoid playVictoryFanfare() {\n  tone(PIN_BUZZER, 523, 150); delay(180); // C5\n  tone(PIN_BUZZER, 659, 150); delay(180); // E5\n  tone(PIN_BUZZER, 784, 150); delay(180); // G5\n  tone(PIN_BUZZER, 1046, 400); delay(450); // C6\n}\n\nvoid loop() {\n  headServo.write(90); // Look forward\n  long distAhead = getDistance();\n\n  Serial.print(\"Ahead: \");\n  Serial.print(distAhead);\n  Serial.println(\" cm\");\n\n  // Path is Clear: Cruise Forward!\n  if (distAhead > STOP_DIST) {\n    setMotors(CRUISE_SPD, CRUISE_SPD);\n    delay(40);\n  }\n  // Obstacle Detected: Execute Scanning Decision Matrix!\n  else {\n    Serial.println(\">> OBSTACLE AHEAD! Halting and Scanning Corridors...\");\n    activeBrake(200);\n\n    // Pan Head to the Left (45 degrees)\n    headServo.write(45);\n    delay(350);\n    long distLeft = getDistance();\n    Serial.print(\"  Left Clearance: \"); Serial.print(distLeft); Serial.println(\" cm\");\n\n    // Pan Head to the Right (135 degrees)\n    headServo.write(135);\n    delay(400);\n    long distRight = getDistance();\n    Serial.print(\"  Right Clearance: \"); Serial.print(distRight); Serial.println(\" cm\");\n\n    // Return Head to Center\n    headServo.write(90);\n    delay(250);\n\n    // Decision Logic\n    // Case 1: Dead End (Both sides blocked < 20cm) -> 180 Turnaround!\n    if (distLeft < 20 && distRight < 20) {\n      Serial.println(\">> DEAD END TRAP! Executing 180 Turnaround...\");\n      tone(PIN_BUZZER, 600, 150);\n      setMotors(-180, -180); // Back up 25cm\n      delay(400);\n      setMotors(PIVOT_SPD, -PIVOT_SPD); // Pivot 180 degrees\n      delay(750);\n      activeBrake(150);\n    }\n    // Case 2: Left has greater clearance -> Turn Left!\n    else if (distLeft >= distRight) {\n      Serial.println(\">> Left Path Clear: Turning Left...\");\n      setMotors(-PIVOT_SPD, PIVOT_SPD); // Turn Left\n      delay(400);\n      activeBrake(100);\n    }\n    // Case 3: Right has greater clearance -> Turn Right!\n    else {\n      Serial.println(\">> Right Path Clear: Turning Right...\");\n      setMotors(PIVOT_SPD, -PIVOT_SPD); // Turn Right\n      delay(400);\n      activeBrake(100);\n    }\n  }\n}\n",
+      "pinMap": {
+        "Pin A2": "HC-SR04 Trig Pin (Fires ultrasonic chirp pulses)",
+        "Pin A3": "HC-SR04 Echo Pin (Reads return acoustic time-of-flight)",
+        "Pin 11 (PWM)": "SG90 Micro Servo turret pan control (45° Left to 135° Right)",
+        "Pins 5, 7, 8": "L298N Left Motor Speed and Direction (ENA, IN1, IN2)",
+        "Pins 6, 9, 10": "L298N Right Motor Speed and Direction (ENB, IN3, IN4)",
+        "Pin 3": "Victory Celebration Fanfare Buzzer Output"
+      },
+      "setupAndUpload": [
+        "Connect Arduino via USB, select Uno board and port, and upload Capstone sketch.",
+        "Disconnect USB; place robot inside maze corridor; switch on battery pack.",
+        "Watch robot navigate corridors, scan corners, avoid dead ends, and celebrate graduation!"
+      ],
+      "explanations": [
+        "Active Scanning Turret: Panning the SG90 servo between 45° and 135° allows spatial distance mapping without vehicle movement.",
+        "Spatial Decision Matrix: Evaluates distLeft vs distRight to make intelligent autonomous steering choices.",
+        "Dead-End Recovery: Reversing and pivoting 180° prevents the robot from ever becoming permanently trapped in corners.",
+        "Full System Synthesis: Integrates all sensors, actuators, and code algorithms mastered across the 12-class curriculum."
+      ],
+      "expectedResult": "Robot travels autonomously through complex maze corridors, stops safely before walls, scans left and right, navigates cleanly around corners, escapes dead ends, and solves the maze without human intervention.",
+      "caveats": [
+        "Ensure the servo wires have sufficient slack to rotate 45° to 135° without binding or catching on chassis standoffs.",
+        "Calibrate battery voltage so pivot turns execute exact 90° and 180° rotations."
+      ],
+      "tweakTip": "Add an autonomous maze exit detection: if distance stays > 100cm for 5 consecutive seconds, trigger the celebratory graduation fanfare!"
+    },
+    "troubleshooting": [
+      {
+        "symptom": "Robot stops at an obstacle, but the servo does not pan left or right.",
+        "checks": [
+          "Check servo wire connection: confirm signal wire is in Digital Pin 11.",
+          "Verify headServo.attach(11) in setup().",
+          "Check 5V power rail voltage: an under-voltage battery pack cannot power the servo."
+        ],
+        "explanation": "Low battery voltage causes the servo motor to draw brown-out currents, failing to rotate."
+      },
+      {
+        "symptom": "Robot turns towards the blocked wall instead of the open hallway.",
+        "checks": [
+          "Check servo angle mapping: verify 45° points Left and 135° points Right (swap if servo is mounted backwards).",
+          "Verify Left and Right motor wiring is not reversed."
+        ],
+        "explanation": "An inverted servo orientation causes distLeft and distRight variables to be swapped in memory."
+      },
+      {
+        "symptom": "Robot gets stuck in a corner oscillating between Left and Right.",
+        "checks": [
+          "Verify the Dead-End check: confirm distLeft < 20 && distRight < 20 triggers the 180° reverse retreat.",
+          "Ensure the reverse maneuver runs long enough (400ms) to clear the corner walls."
+        ],
+        "explanation": "Without sufficient reverse travel, the robot remains within the obstacle envelope and re-triggers."
+      }
+    ],
+    "checksForUnderstanding": [
+      "How does an active motorized scanning turret improve robot navigation compared to a fixed sensor?",
+      "What are the five core subsystems of an autonomous mobile robot and how do they communicate?"
+    ],
+    "exitTicket": [
+      {
+        "question": "Explain how the robot’s Spatial Decision Matrix chooses between turning Left versus turning Right when encountering an obstacle.",
+        "rubricOrSampleReasoning": "When obstacle < 25cm is detected ahead, the robot halts and pans its servo to 45° (measuring distLeft) and 135° (measuring distRight). It compares the two distances: if distLeft >= distRight, it executes a pivot turn to the left; otherwise, it pivots to the right toward the greater clearance path."
+      },
+      {
+        "question": "How does the robot detect and escape from a trapped Dead-End corridor?",
+        "rubricOrSampleReasoning": "If both distLeft and distRight are less than 20cm, the robot recognizes that all forward and lateral paths are blocked. It triggers the dead-end state: backing up 25cm, executing an active 180-degree pivot turnaround, and resuming forward drive out of the trap."
+      },
+      {
+        "question": "Defend how your completed Capstone Robot embodies the universal Sense → Decide → Act cybernetic loop.",
+        "rubricOrSampleReasoning": "1. SENSE: HC-SR04 ultrasonic sonar and SG90 scanning turret gather real-time acoustic time-of-flight distance data; 2. DECIDE: The ATmega328P microcontroller evaluates spatial clearance matrices, dead-end states, and safety boundaries in software; 3. ACT: The L298N H-bridge driver commands TT gear motors to execute forward rushes, differential pivot turns, and active dynamic braking."
+      }
+    ],
+    "differentiation": {
+      "support": [
+        "Provide maze corridors with high-contrast colored walls for clean ultrasonic reflection."
+      ],
+      "extension": [
+        "Implement a wall-following \"right-hand rule\" algorithm for guaranteed mathematical maze escape."
+      ],
+      "offlineOption": [
+        "Simulate the complete Capstone Maze Explorer on the RoboBee portal."
+      ]
+    },
+    "nextLessonId": "int-01",
+    "nextLessonTeaser": "Graduate to Intermediate Robotics & Systems (Classes 01–10): State machines, multi-channel IR arrays, PID line tracking, and servo grippers!",
+    "sources": [
+      {
+        "title": "RoboBEE Innovators Capstone Showcase & Graduation Rubric",
+        "url": ""
+      }
+    ],
+    "assetCredits": [
+      {
+        "asset": "Capstone Autonomous Maze Explorer Drawing",
+        "creator": "RoboBEE Innovators Engineering Team",
+        "license": "Proprietary",
+        "sourceUrl": "team_info"
+      }
+    ],
     ipNotice: TRUSTED_ORG_INFO.ipStatement
   },
 

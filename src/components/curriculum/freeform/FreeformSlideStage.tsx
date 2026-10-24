@@ -285,35 +285,42 @@ export function FreeformSlideStage({
 
     const coords = getStageCoords(e.clientX, e.clientY);
 
-    files.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const resultUrl = uploadEvent.target?.result as string;
-        if (!resultUrl) return;
-
-        const newImageElement: SlideElement = {
-          id: `el-img-${Date.now()}-${index}`,
-          type: "image",
-          x: Math.min(STAGE_WIDTH - 300, Math.max(20, coords.x + index * 30)),
-          y: Math.min(STAGE_HEIGHT - 220, Math.max(20, coords.y + index * 30)),
-          width: 480,
-          height: 320,
-          zIndex: (elements.length || 0) + 1,
-          content: resultUrl,
-          caption: file.name.replace(/\.[^/.]+$/, ""),
-          style: {
-            borderRadius: 16,
-            borderColor: palette.cardBorder,
-            borderWidth: 1,
-            boxShadow: palette.cardShadow,
-            objectFit: "cover",
-          },
-        };
-
-        onUpdateSlide?.({ elements: [...(slide.elements || []), newImageElement] });
-        onSelectElement?.(newImageElement.id);
-      };
-      reader.readAsDataURL(file);
+    Promise.all(
+      files.map(
+        (file, index) =>
+          new Promise<SlideElement>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (uploadEvent) => {
+              const resultUrl = (uploadEvent.target?.result as string) || "";
+              resolve({
+                id: `el-img-${Date.now()}-${index}`,
+                type: "image",
+                x: Math.min(STAGE_WIDTH - 300, Math.max(20, coords.x + index * 30)),
+                y: Math.min(STAGE_HEIGHT - 220, Math.max(20, coords.y + index * 30)),
+                width: 480,
+                height: 320,
+                zIndex: (elements.length || 0) + 1 + index,
+                content: resultUrl,
+                caption: file.name.replace(/\.[^/.]+$/, ""),
+                style: {
+                  borderRadius: 16,
+                  borderColor: palette.cardBorder,
+                  borderWidth: 1,
+                  boxShadow: palette.cardShadow,
+                  objectFit: "cover",
+                },
+              });
+            };
+            reader.readAsDataURL(file);
+          })
+      )
+    ).then((newImageElements) => {
+      onUpdateSlide?.({
+        elements: [...(slide.elements || []), ...newImageElements],
+      });
+      if (newImageElements.length > 0) {
+        onSelectElement?.(newImageElements[newImageElements.length - 1].id);
+      }
     });
   };
 
@@ -504,6 +511,19 @@ export function FreeformSlideStage({
               </div>
             );
           })}
+
+        {/* Drag Shield: prevents iframes and embedded widgets from intercepting pointermove/up */}
+        {isEditor && dragState !== null && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 99998,
+              cursor: dragState.handle ? "crosshair" : "grabbing",
+              pointerEvents: "auto",
+            }}
+          />
+        )}
 
         {/* Presenter Spotlight Overlay */}
         {!isEditor && spotlightActive && spotlightPos && stageRef.current && (

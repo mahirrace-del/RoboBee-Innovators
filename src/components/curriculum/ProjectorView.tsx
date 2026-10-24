@@ -69,6 +69,14 @@ interface ProjectorViewProps {
   onEditDeck?: (deck: EditableClassDeck, slideIdx: number) => void;
 }
 
+export const FRIDAY_LAB_5_STAGES = [
+  { id: 1, range: "00–15m", label: "Hook & Live Demo", startMin: 0, endMin: 15, duration: 15, desc: "Hook & Live Demo" },
+  { id: 2, range: "15–40m", label: "Interactive Concept & Pinout", startMin: 15, endMin: 40, duration: 25, desc: "Interactive Concept & Pinout" },
+  { id: 3, range: "40–75m", label: "Breadboard Wiring & Assembly", startMin: 40, endMin: 75, duration: 35, desc: "Breadboard Wiring & Assembly" },
+  { id: 4, range: "75–100m", label: "Code & Serial Debugging", startMin: 75, endMin: 100, duration: 25, desc: "Code & Serial Debugging" },
+  { id: 5, range: "100–120m", label: "Game Challenge & Showoff", startMin: 100, endMin: 120, duration: 20, desc: "Game Challenge & Showoff" },
+];
+
 export function ProjectorView({
   lesson,
   onClose,
@@ -319,6 +327,9 @@ export function ProjectorView({
         }
       } else if (e.key.toLowerCase() === "f") {
         toggleFullScreen();
+      } else if (e.key.toLowerCase() === "g") {
+        setShowThumbnailStrip((prev) => !prev);
+        playPop(soundEnabled);
       } else if (e.key.toLowerCase() === "l") {
         setLaserActive((prev) => !prev);
         setSpotlightActive(false);
@@ -332,8 +343,23 @@ export function ProjectorView({
       } else if (e.key.toLowerCase() === "m") {
         toggleSound();
       } else if (e.key.toLowerCase() === "z") {
-        setIsZenMode((prev) => !prev);
-        playPop(soundEnabled);
+        if (zoomedMedia) {
+          setZoomedMedia(null);
+        } else {
+          const slideImg =
+            activeSlide.elements?.find((el) => el.type === "image")?.content ||
+            activeSlide.heroImage;
+          if (slideImg) {
+            setZoomedMedia({
+              src: slideImg,
+              caption: activeSlide.imageCaption || activeSlide.title,
+            });
+            playPop(soundEnabled);
+          } else {
+            setIsZenMode((prev) => !prev);
+            playPop(soundEnabled);
+          }
+        }
       } else if (e.key.toLowerCase() === "n") {
         setShowSpeakerNotes((prev) => !prev);
       } else if (e.key.toLowerCase() === "h") {
@@ -454,6 +480,31 @@ export function ProjectorView({
               Step {Math.min(stepRevealCount, stepRevealElements.length)} / {stepRevealElements.length}
             </span>
           )}
+        </div>
+
+        {/* 2-Hour (120-Minute) Friday Lab 5-Stage Phase Tracker */}
+        <div className={styles.phaseTracker} title="2-Hour Friday Lab 5-Stage Pacing Engine">
+          {FRIDAY_LAB_5_STAGES.map((stg) => {
+            const elapsedMinutes = Math.max(0, Math.floor(((defaultDuration * 60) - timerSeconds) / 60));
+            const isActive = elapsedMinutes >= stg.startMin && elapsedMinutes < stg.endMin;
+            const isCompleted = elapsedMinutes >= stg.endMin;
+
+            return (
+              <button
+                key={stg.id}
+                type="button"
+                onClick={() => {
+                  setTimerSeconds(Math.max(0, (defaultDuration - stg.startMin) * 60));
+                  playPop(soundEnabled);
+                }}
+                className={`${styles.phasePill} ${isActive ? styles.phasePillActive : isCompleted ? styles.phasePillCompleted : ""}`}
+                title={`Phase ${stg.id}: ${stg.desc} (${stg.range}) • Click to jump timer to this phase`}
+              >
+                <span className={styles.phaseTimeTag}>{stg.range}</span>
+                <span>{isCompleted ? `✓ ${stg.label}` : stg.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Classroom Rhythm Timer */}
@@ -1097,6 +1148,46 @@ export function ProjectorView({
             <span>Laser (L)</span>
           </button>
 
+          {/* High-Res Image Zoom Lightbox (Z) */}
+          <button
+            type="button"
+            onClick={() => {
+              if (zoomedMedia) {
+                setZoomedMedia(null);
+              } else {
+                const slideImg =
+                  activeSlide.elements?.find((el) => el.type === "image")?.content ||
+                  activeSlide.heroImage;
+                if (slideImg) {
+                  setZoomedMedia({
+                    src: slideImg,
+                    caption: activeSlide.imageCaption || activeSlide.title,
+                  });
+                  playPop(soundEnabled);
+                }
+              }
+            }}
+            className={`${styles.barToolBtn} ${zoomedMedia ? styles.barToolBtnActive : ""}`}
+            title="High-Res Circuit Diagram & Image Zoom Lightbox (Key: Z)"
+          >
+            <ZoomIn size={13} color="#38BDF8" />
+            <span>Zoom (Z)</span>
+          </button>
+
+          {/* Slide Grid Sorter (G) */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowThumbnailStrip((prev) => !prev);
+              playPop(soundEnabled);
+            }}
+            className={`${styles.barToolBtn} ${showThumbnailStrip ? styles.barToolBtnActive : ""}`}
+            title="Open Slide Grid Sorter Filmstrip (Key: G)"
+          >
+            <LayoutGrid size={13} color="#00F5D4" />
+            <span>Grid (G)</span>
+          </button>
+
           {/* Spotlight Tool (S) */}
           <button
             type="button"
@@ -1152,10 +1243,10 @@ export function ProjectorView({
               border: "1px solid #10B981",
               color: "#6EE7B7",
             }}
-            title="Open Virtual Breadboard & Circuit Simulator (Key: H)"
+            title="Open Interactive Hardware Pinout & Circuit Simulator Lab (Key: H)"
           >
             <Cpu size={13} color="#10B981" />
-            <span>Lab Sim (H)</span>
+            <span>Pinout & Lab Sim (H)</span>
           </button>
 
           {/* Speaker Notes (N) */}

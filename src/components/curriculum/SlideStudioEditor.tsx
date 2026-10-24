@@ -117,7 +117,7 @@ export function SlideStudioEditor({
     }
   };
 
-  // Keyboard Copy / Paste / Undo / Redo listeners
+  // Keyboard Copy / Paste / Undo / Redo listeners & Clipboard Image Paste (Ctrl+V)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const isInput =
@@ -152,9 +152,94 @@ export function SlideStudioEditor({
       }
     };
 
+    const handlePaste = (e: ClipboardEvent) => {
+      const isInput =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement;
+      if (isInput) return;
+
+      // 1. Check for clipboard image files
+      const items = e.clipboardData?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.type.indexOf("image") !== -1) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (uploadEvt) => {
+                const url = uploadEvt.target?.result as string;
+                if (url) {
+                  const newEl: SlideElement = {
+                    id: `el-img-${Date.now()}`,
+                    type: "image",
+                    x: 360,
+                    y: 180,
+                    width: 540,
+                    height: 380,
+                    zIndex: elements.length + 1,
+                    content: url,
+                    caption: "Pasted Clipboard Image",
+                    style: {
+                      borderRadius: 16,
+                      borderColor: palette.cardBorder,
+                      borderWidth: 1.5,
+                      boxShadow: palette.cardShadow,
+                      objectFit: "cover",
+                    },
+                  };
+                  handleUpdateElements([...elements, newEl]);
+                  setSelectedElementId(newEl.id);
+                }
+              };
+              reader.readAsDataURL(file);
+              return;
+            }
+          }
+        }
+      }
+
+      // 2. Check if clipboard text is an image URL
+      const text = e.clipboardData?.getData("text")?.trim();
+      if (
+        text &&
+        (text.startsWith("http://") || text.startsWith("https://")) &&
+        (text.match(/\.(png|jpg|jpeg|svg|webp|gif)($|\?)/i) ||
+          text.includes("unsplash.com") ||
+          text.includes("cloudinary.com"))
+      ) {
+        e.preventDefault();
+        const newEl: SlideElement = {
+          id: `el-img-${Date.now()}`,
+          type: "image",
+          x: 360,
+          y: 180,
+          width: 540,
+          height: 380,
+          zIndex: elements.length + 1,
+          content: text,
+          caption: "Pasted Image URL",
+          style: {
+            borderRadius: 16,
+            borderColor: palette.cardBorder,
+            borderWidth: 1.5,
+            boxShadow: palette.cardShadow,
+            objectFit: "cover",
+          },
+        };
+        handleUpdateElements([...elements, newEl]);
+        setSelectedElementId(newEl.id);
+      }
+    };
+
     window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [selectedElement, elements, copyElement, pasteElement, handleUpdateElements]);
+    window.addEventListener("paste", handlePaste);
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, [selectedElement, elements, copyElement, pasteElement, handleUpdateElements, palette]);
 
   // Save Deck
   const handleSave = async () => {
@@ -329,33 +414,40 @@ export function SlideStudioEditor({
 
   const handleInsertImages = (files: FileList) => {
     const fileList = Array.from(files);
-    fileList.forEach((file, idx) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const url = e.target?.result as string;
-        if (!url) return;
-        const newEl: SlideElement = {
-          id: `el-img-${Date.now()}-${idx}`,
-          type: "image",
-          x: 200 + idx * 40,
-          y: 180 + idx * 40,
-          width: 520,
-          height: 360,
-          zIndex: elements.length + 1 + idx,
-          content: url,
-          caption: file.name.replace(/\.[^/.]+$/, ""),
-          style: {
-            borderRadius: 16,
-            borderColor: palette.cardBorder,
-            borderWidth: 1,
-            boxShadow: palette.cardShadow,
-            objectFit: "cover",
-          },
-        };
-        handleUpdateElements([...elements, newEl]);
-        setSelectedElementId(newEl.id);
-      };
-      reader.readAsDataURL(file);
+    Promise.all(
+      fileList.map(
+        (file, idx) =>
+          new Promise<SlideElement>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const url = (e.target?.result as string) || "";
+              resolve({
+                id: `el-img-${Date.now()}-${idx}`,
+                type: "image",
+                x: 200 + idx * 40,
+                y: 180 + idx * 40,
+                width: 520,
+                height: 360,
+                zIndex: elements.length + 1 + idx,
+                content: url,
+                caption: file.name.replace(/\.[^/.]+$/, ""),
+                style: {
+                  borderRadius: 16,
+                  borderColor: palette.cardBorder,
+                  borderWidth: 1,
+                  boxShadow: palette.cardShadow,
+                  objectFit: "cover",
+                },
+              });
+            };
+            reader.readAsDataURL(file);
+          })
+      )
+    ).then((newElements) => {
+      if (newElements.length > 0) {
+        handleUpdateElements([...elements, ...newElements]);
+        setSelectedElementId(newElements[newElements.length - 1].id);
+      }
     });
   };
 
@@ -424,7 +516,68 @@ export function SlideStudioEditor({
     setSelectedElementId(newEl.id);
   };
 
+  const handleInsertDiagram = () => {
+    const newEl: SlideElement = {
+      id: `el-diag-${Date.now()}`,
+      type: "diagram",
+      diagramType: "ultrasonic-radar",
+      x: 360,
+      y: 190,
+      width: 620,
+      height: 440,
+      zIndex: elements.length + 1,
+      content: "",
+      caption: "Interactive Hardware Simulation",
+      style: {
+        borderRadius: 18,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        boxShadow: palette.cardShadow,
+      },
+    };
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+  };
+
+  const handleInsertImageUrl = () => {
+    const url = window.prompt("Enter direct image URL (PNG, JPG, SVG, WebP):");
+    if (!url || !url.trim()) return;
+    const cleanUrl = url.trim();
+    const newEl: SlideElement = {
+      id: `el-img-${Date.now()}`,
+      type: "image",
+      x: 360,
+      y: 180,
+      width: 540,
+      height: 380,
+      zIndex: elements.length + 1,
+      content: cleanUrl,
+      caption: "Web Image Visual",
+      style: {
+        borderRadius: 16,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        boxShadow: palette.cardShadow,
+        objectFit: "cover",
+      },
+    };
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+  };
+
   // Layering & Ordering
+  const handleBringToFront = () => {
+    if (!selectedElement) return;
+    const maxZ = elements.reduce((m, el) => Math.max(m, el.zIndex || 1), 1);
+    handleUpdateElement(selectedElement.id, { zIndex: maxZ + 1 });
+  };
+
+  const handleSendToBack = () => {
+    if (!selectedElement) return;
+    const minZ = elements.reduce((m, el) => Math.min(m, el.zIndex || 1), 1);
+    handleUpdateElement(selectedElement.id, { zIndex: Math.max(1, minZ - 1) });
+  };
+
   const handleBringForward = () => {
     if (!selectedElement) return;
     const currentZ = selectedElement.zIndex || 1;
@@ -683,7 +836,9 @@ export function SlideStudioEditor({
         onInsertSubheading={handleInsertSubheading}
         onInsertTextBox={handleInsertTextBox}
         onInsertImages={handleInsertImages}
+        onInsertImageUrl={handleInsertImageUrl}
         onInsertCodeBlock={handleInsertCodeBlock}
+        onInsertDiagram={handleInsertDiagram}
         onInsertShape={handleInsertShape}
         onInsertVideo={handleInsertVideo}
         selectedElement={selectedElement}
@@ -692,6 +847,8 @@ export function SlideStudioEditor({
         }}
         onBringForward={handleBringForward}
         onSendBackward={handleSendBackward}
+        onBringToFront={handleBringToFront}
+        onSendToBack={handleSendToBack}
         onDuplicateElement={handleDuplicateElement}
         onToggleLockElement={handleToggleLockElement}
         onDeleteElement={handleDeleteElement}

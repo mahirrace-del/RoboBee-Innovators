@@ -20,8 +20,13 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  AlignJustify,
   BringToFront,
   SendToBack,
+  ChevronsUp,
+  ChevronsDown,
+  Activity,
+  Link as LinkIcon,
   Copy,
   Lock,
   Unlock,
@@ -56,7 +61,9 @@ interface TopRibbonBarProps {
   onInsertSubheading: () => void;
   onInsertTextBox: () => void;
   onInsertImages: (files: FileList) => void;
+  onInsertImageUrl?: () => void;
   onInsertCodeBlock: () => void;
+  onInsertDiagram?: () => void;
   onInsertShape: (shapeType: "rectangle" | "circle" | "arrow-right") => void;
   onInsertVideo: () => void;
   // Selected Element formatting
@@ -64,6 +71,8 @@ interface TopRibbonBarProps {
   onUpdateSelectedElement?: (patch: Partial<SlideElement>) => void;
   onBringForward?: () => void;
   onSendBackward?: () => void;
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
   onDuplicateElement?: () => void;
   onToggleLockElement?: () => void;
   onDeleteElement?: () => void;
@@ -89,13 +98,17 @@ export function TopRibbonBar({
   onInsertSubheading,
   onInsertTextBox,
   onInsertImages,
+  onInsertImageUrl,
   onInsertCodeBlock,
+  onInsertDiagram,
   onInsertShape,
   onInsertVideo,
   selectedElement,
   onUpdateSelectedElement,
   onBringForward,
   onSendBackward,
+  onBringToFront,
+  onSendToBack,
   onDuplicateElement,
   onToggleLockElement,
   onDeleteElement,
@@ -293,6 +306,17 @@ export function TopRibbonBar({
             <ImageIcon size={14} color="#F43F5E" />
             <span>Image(s)</span>
           </button>
+          {onInsertImageUrl && (
+            <button
+              type="button"
+              onClick={onInsertImageUrl}
+              style={ribbonBtnStyle}
+              title="Insert Image by Web URL"
+            >
+              <LinkIcon size={14} color="#F43F5E" />
+              <span>URL</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onInsertCodeBlock}
@@ -302,6 +326,17 @@ export function TopRibbonBar({
             <Code2 size={14} color="#A855F7" />
             <span>Code</span>
           </button>
+          {onInsertDiagram && (
+            <button
+              type="button"
+              onClick={onInsertDiagram}
+              style={ribbonBtnStyle}
+              title="Insert Interactive Circuit / Sensor Diagram"
+            >
+              <Activity size={14} color="#00F5D4" />
+              <span>Diagram</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onInsertShape("rectangle")}
@@ -488,17 +523,93 @@ export function TopRibbonBar({
             >
               <AlignRight size={13} />
             </button>
+            <button
+              type="button"
+              onClick={() =>
+                onUpdateSelectedElement?.({
+                  style: { ...selectedElement.style, textAlign: "justify" },
+                })
+              }
+              style={{
+                ...iconBtnStyle,
+                background:
+                  selectedElement.style.textAlign === "justify"
+                    ? "rgba(56, 189, 248, 0.2)"
+                    : "transparent",
+              }}
+              title="Align Justify"
+            >
+              <AlignJustify size={13} />
+            </button>
+
+            {/* Text Color Picker */}
+            <div style={{ display: "flex", alignItems: "center", gap: "2px", marginLeft: "4px" }} title="Text Color">
+              <input
+                type="color"
+                value={selectedElement.style.color || "#FFFFFF"}
+                onChange={(e) =>
+                  onUpdateSelectedElement?.({
+                    style: { ...selectedElement.style, color: e.target.value },
+                  })
+                }
+                style={{
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  background: "transparent",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              />
+            </div>
+
+            {/* Background Color Picker */}
+            <div style={{ display: "flex", alignItems: "center", gap: "2px" }} title="Background Fill Color">
+              <input
+                type="color"
+                value={
+                  selectedElement.style.backgroundColor?.startsWith("#")
+                    ? selectedElement.style.backgroundColor
+                    : "#1E2533"
+                }
+                onChange={(e) =>
+                  onUpdateSelectedElement?.({
+                    style: { ...selectedElement.style, backgroundColor: e.target.value },
+                  })
+                }
+                style={{
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  background: "transparent",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              />
+            </div>
           </div>
         )}
 
         {/* Layer & Alignment controls (when any element selected) */}
         {selectedElement && (
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            {onBringToFront && (
+              <button
+                type="button"
+                onClick={onBringToFront}
+                style={iconBtnStyle}
+                title="Bring to Front (Top Layer)"
+              >
+                <ChevronsUp size={13} />
+              </button>
+            )}
             <button
               type="button"
               onClick={onBringForward}
               style={iconBtnStyle}
-              title="Bring Forward"
+              title="Bring Forward (Up 1 Layer)"
             >
               <BringToFront size={13} />
             </button>
@@ -506,10 +617,20 @@ export function TopRibbonBar({
               type="button"
               onClick={onSendBackward}
               style={iconBtnStyle}
-              title="Send Backward"
+              title="Send Backward (Down 1 Layer)"
             >
               <SendToBack size={13} />
             </button>
+            {onSendToBack && (
+              <button
+                type="button"
+                onClick={onSendToBack}
+                style={iconBtnStyle}
+                title="Send to Back (Bottom Layer)"
+              >
+                <ChevronsDown size={13} />
+              </button>
+            )}
             <button
               type="button"
               onClick={onDuplicateElement}
