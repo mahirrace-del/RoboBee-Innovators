@@ -20,6 +20,7 @@ import {
   deleteDeckFromStorageAndCloud,
   syncDecksFromFirestore,
   createBlankSlide,
+  normalizeDeckToFreeform,
 } from "@/lib/slideStudioStore";
 import { SlideStudioEditor } from "@/components/curriculum/SlideStudioEditor";
 import { HardwareLabDrawer } from "@/components/curriculum/HardwareLabDrawer";
@@ -266,7 +267,7 @@ export default function AdminCurriculumPage() {
     setShowCreateModal(false);
     setNewClassTitle("");
     setNewClassSubtitle("");
-    setStudioDeck(createdDeck);
+    setStudioDeck(normalizeDeckToFreeform(createdDeck));
   };
 
   // Duplicate Class Deck
@@ -1054,7 +1055,7 @@ export default function AdminCurriculumPage() {
                       type="button"
                       onClick={() => {
                         setProjectorInitialSlide(0);
-                        setProjectorDeck(deck);
+                        setProjectorDeck(normalizeDeckToFreeform(deck));
                       }}
                       style={{
                         padding: "0.6rem 0.75rem",
@@ -1076,7 +1077,7 @@ export default function AdminCurriculumPage() {
 
                     <button
                       type="button"
-                      onClick={() => setStudioDeck(deck)}
+                      onClick={() => setStudioDeck(normalizeDeckToFreeform(deck))}
                       style={{
                         padding: "0.6rem 0.75rem",
                         borderRadius: "8px",
@@ -1660,7 +1661,7 @@ export default function AdminCurriculumPage() {
           onClose={() => setProjectorDeck(null)}
           onEditDeck={(deckToEdit) => {
             setProjectorDeck(null);
-            setStudioDeck(deckToEdit);
+            setStudioDeck(normalizeDeckToFreeform(deckToEdit));
           }}
         />
       )}

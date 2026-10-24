@@ -13,7 +13,9 @@ import {
   EditableClassDeck,
   getOrBuildDeckForLesson,
   SEED_CLASS_01_DECK,
+  normalizeDeckToFreeform,
 } from "@/lib/slideStudioStore";
+import { FreeformSlideStage } from "./freeform/FreeformSlideStage";
 import { EditableSlideCanvas } from "./EditableSlideCanvas";
 import { HardwareLabDrawer } from "./HardwareLabDrawer";
 import {
@@ -63,9 +65,10 @@ export function ProjectorView({
 }: ProjectorViewProps) {
   const [mounted, setMounted] = useState<boolean>(false);
   const [activeDeck, setActiveDeck] = useState<EditableClassDeck>(
-    () => customDeck || getOrBuildDeckForLesson(lesson)
+    () => normalizeDeckToFreeform(customDeck || getOrBuildDeckForLesson(lesson))
   );
   const [currentSlide, setCurrentSlide] = useState<number>(initialSlide);
+  const [stepRevealCount, setStepRevealCount] = useState<number>(0);
 
   // Dynamic Multi-Palette Theme Override ('auto' or one of the curated themes)
   const [themeOverride, setThemeOverride] = useState<SlideColorTheme | "auto">(
@@ -118,11 +121,15 @@ export function ProjectorView({
 
   useEffect(() => {
     if (customDeck) {
-      setActiveDeck(customDeck);
+      setActiveDeck(normalizeDeckToFreeform(customDeck));
     } else {
-      setActiveDeck(getOrBuildDeckForLesson(lesson));
+      setActiveDeck(normalizeDeckToFreeform(getOrBuildDeckForLesson(lesson)));
     }
   }, [customDeck, lesson]);
+
+  useEffect(() => {
+    setStepRevealCount(0);
+  }, [currentSlide]);
 
   const slides = activeDeck.slides.length > 0 ? activeDeck.slides : SEED_CLASS_01_DECK.slides;
   const totalSlides = slides.length;
@@ -191,6 +198,26 @@ export function ProjectorView({
     setCurrentSlide((prev) => (prev > 0 ? prev - 1 : prev));
   }, []);
 
+  const stepRevealElements = (activeSlide.elements || []).filter(
+    (el) => el.animation?.type === "step-reveal"
+  );
+
+  const handleAdvanceStepOrSlide = useCallback(() => {
+    if (stepRevealCount < stepRevealElements.length) {
+      setStepRevealCount((prev) => prev + 1);
+    } else {
+      nextSlide();
+    }
+  }, [stepRevealCount, stepRevealElements.length, nextSlide]);
+
+  const handleStepBackOrSlide = useCallback(() => {
+    if (stepRevealCount > 0) {
+      setStepRevealCount((prev) => prev - 1);
+    } else {
+      prevSlide();
+    }
+  }, [stepRevealCount, prevSlide]);
+
   const toggleFullScreen = useCallback(() => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
@@ -210,7 +237,7 @@ export function ProjectorView({
     );
   }, [activeSlide]);
 
-  // Keyboard navigation: ArrowRight/Space (Next), ArrowLeft (Prev), L (Laser), Z (Zoom), H (Hardware Lab), F (Fullscreen), N (Notes), Escape
+  // Keyboard navigation: ArrowRight/Space (Next/Step), ArrowLeft (Prev/Step), L (Laser), Z (Zoom), H (Hardware Lab), F (Fullscreen), N (Notes), Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (showHardwareLab) {
@@ -221,10 +248,10 @@ export function ProjectorView({
       }
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
-        nextSlide();
+        handleAdvanceStepOrSlide();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        prevSlide();
+        handleStepBackOrSlide();
       } else if (e.key === "Escape") {
         if (zoomedMedia) {
           setZoomedMedia(null);
@@ -250,8 +277,8 @@ export function ProjectorView({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
-    nextSlide,
-    prevSlide,
+    handleAdvanceStepOrSlide,
+    handleStepBackOrSlide,
     onClose,
     toggleFullScreen,
     toggleZoomCurrentSlide,
@@ -312,8 +339,8 @@ export function ProjectorView({
       onTouchEnd={(e) => {
         if (touchStartX.current === null) return;
         const deltaX = (e.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
-        if (deltaX < -50) nextSlide();
-        if (deltaX > 50) prevSlide();
+        if (deltaX < -50) handleAdvanceStepOrSlide();
+        if (deltaX > 50) handleStepBackOrSlide();
         touchStartX.current = null;
       }}
       style={{
@@ -562,11 +589,12 @@ export function ProjectorView({
             fontSize: `${fontScale}%`,
           }}
         >
-          <EditableSlideCanvas
+          <FreeformSlideStage
             slide={activeSlide}
+            mode="presenter"
             themeOverride={themeOverride}
-            onNextSlide={nextSlide}
             onZoomImage={(src, caption) => setZoomedMedia({ src, caption })}
+            stepRevealCount={stepRevealCount}
           />
 
           {/* Collapsible Speaker Notes Drawer */}
@@ -972,8 +1000,8 @@ export function ProjectorView({
         {/* Prev Slide Button */}
         <button
           type="button"
-          onClick={prevSlide}
-          disabled={safeSlideIndex === 0}
+          onClick={handleStepBackOrSlide}
+          disabled={safeSlideIndex === 0 && stepRevealCount === 0}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -1024,7 +1052,7 @@ export function ProjectorView({
         {/* Next Slide Button */}
         <button
           type="button"
-          onClick={nextSlide}
+          onClick={handleAdvanceStepOrSlide}
           disabled={safeSlideIndex === totalSlides - 1}
           style={{
             display: "inline-flex",

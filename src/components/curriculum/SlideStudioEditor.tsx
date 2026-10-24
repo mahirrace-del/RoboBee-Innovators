@@ -1,41 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   EditableClassDeck,
   EditableSlide,
-  EditableSlideCard,
-  EditableHotspotPin,
-  SlideImageItem,
+  SlideElement,
+  SlideColorTheme,
+  normalizeDeckToFreeform,
   createBlankSlide,
   saveDeckToStorageAndCloud,
-} from "@/lib/slideStudioStore";
-import {
   THEME_PALETTE_CONFIG,
-  SlideColorTheme,
-} from "@/components/curriculum/Class1WorkshopDeck";
-import { EditableSlideCanvas } from "@/components/curriculum/EditableSlideCanvas";
-import {
-  ArrowLeft,
-  Save,
-  Tv,
-  Plus,
-  Trash2,
-  Copy,
-  ArrowUp,
-  ArrowDown,
-  Palette,
-  Layout,
-  Type,
-  Sparkles,
-  Image as ImageIcon,
-  Layers,
-  MapPin,
-  Check,
-  Upload,
-  AlignLeft,
-  AlignCenter,
-} from "lucide-react";
+} from "@/lib/slideStudioStore";
+import { TopRibbonBar } from "./freeform/TopRibbonBar";
+import { SlideFilmstrip } from "./freeform/SlideFilmstrip";
+import { FreeformSlideStage } from "./freeform/FreeformSlideStage";
+import { InspectorPanel } from "./freeform/InspectorPanel";
+import { useCanvasHistory } from "./freeform/useCanvasHistory";
 
 interface SlideStudioEditorProps {
   initialDeck: EditableClassDeck;
@@ -52,15 +32,34 @@ export function SlideStudioEditor({
   onDeckSaved,
   onLaunchProjector,
 }: SlideStudioEditorProps) {
-  const [deck, setDeck] = useState<EditableClassDeck>(initialDeck);
+  // Normalize deck so all slides immediately possess freeform coordinates (1280x720)
+  const [deck, setDeck] = useState<EditableClassDeck>(() =>
+    normalizeDeckToFreeform(initialDeck)
+  );
   const [activeSlideIdx, setActiveSlideIdx] = useState<number>(0);
-  const [inspectorTab, setInspectorTab] = useState<"design" | "text" | "media">("design");
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [savedToast, setSavedToast] = useState<boolean>(false);
 
-  const currentSlide: EditableSlide = deck.slides[activeSlideIdx] || deck.slides[0];
-  const palette = THEME_PALETTE_CONFIG[currentSlide?.theme || "robobee-dark"] || THEME_PALETTE_CONFIG["robobee-dark"];
+  const currentSlide: EditableSlide =
+    deck.slides[activeSlideIdx] || deck.slides[0];
+  const elements = currentSlide.elements || [];
+  const selectedElement = elements.find((el) => el.id === selectedElementId) || null;
+
+  const palette =
+    THEME_PALETTE_CONFIG[currentSlide.theme || "robobee-dark"] ||
+    THEME_PALETTE_CONFIG["robobee-dark"];
+
+  // History hook for Undo/Redo & Clipboard
+  const {
+    pushState,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    copyElement,
+    pasteElement,
+  } = useCanvasHistory(elements);
 
   const relabelSlides = (slides: EditableSlide[]): EditableSlide[] =>
     slides.map((s, idx) => ({
@@ -68,14 +67,96 @@ export function SlideStudioEditor({
       numberLabel: String(idx + 1).padStart(2, "0"),
     }));
 
-  const updateCurrentSlide = (patch: Partial<EditableSlide>) => {
-    setDeck((prev) => {
-      const nextSlides = [...prev.slides];
-      nextSlides[activeSlideIdx] = { ...nextSlides[activeSlideIdx], ...patch };
-      return { ...prev, slides: nextSlides };
-    });
+  const updateCurrentSlide = useCallback(
+    (patch: Partial<EditableSlide>) => {
+      setDeck((prev) => {
+        const nextSlides = [...prev.slides];
+        nextSlides[activeSlideIdx] = {
+          ...nextSlides[activeSlideIdx],
+          ...patch,
+        };
+        return { ...prev, slides: nextSlides };
+      });
+    },
+    [activeSlideIdx]
+  );
+
+  // Update specific element
+  const handleUpdateElement = useCallback(
+    (elementId: string, patch: Partial<SlideElement>) => {
+      const nextElements = elements.map((el) =>
+        el.id === elementId ? { ...el, ...patch } : el
+      );
+      updateCurrentSlide({ elements: nextElements });
+      pushState(nextElements);
+    },
+    [elements, updateCurrentSlide, pushState]
+  );
+
+  // Update current slide elements array directly
+  const handleUpdateElements = useCallback(
+    (newElements: SlideElement[]) => {
+      updateCurrentSlide({ elements: newElements });
+      pushState(newElements);
+    },
+    [updateCurrentSlide, pushState]
+  );
+
+  // Undo / Redo handlers
+  const handleUndo = () => {
+    const prevElements = undo();
+    if (prevElements) {
+      updateCurrentSlide({ elements: prevElements });
+    }
   };
 
+  const handleRedo = () => {
+    const nextElements = redo();
+    if (nextElements) {
+      updateCurrentSlide({ elements: nextElements });
+    }
+  };
+
+  // Keyboard Copy / Paste / Undo / Redo listeners
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const isInput =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        if (!isInput) {
+          e.preventDefault();
+          handleUndo();
+        }
+      } else if (
+        (e.ctrlKey || e.metaKey) &&
+        (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey))
+      ) {
+        if (!isInput) {
+          e.preventDefault();
+          handleRedo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+        if (!isInput && selectedElement) {
+          copyElement(selectedElement);
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+        if (!isInput) {
+          const pasted = pasteElement();
+          if (pasted) {
+            handleUpdateElements([...elements, pasted]);
+            setSelectedElementId(pasted.id);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [selectedElement, elements, copyElement, pasteElement, handleUpdateElements]);
+
+  // Save Deck
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -89,9 +170,54 @@ export function SlideStudioEditor({
     }
   };
 
-  // Slide Filmstrip Operations
-  const handleAddSlide = () => {
-    const newSlide = createBlankSlide(deck.slides.length + 1, currentSlide?.theme || "robobee-dark");
+  // Export JSON
+  const handleExportJson = () => {
+    const dataStr =
+      "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(deck, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute(
+      "download",
+      `${deck.id || "deck"}_robobee_slides.json`
+    );
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  // Import JSON
+  const handleImportJson = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target?.result as string);
+        if (parsed && Array.isArray(parsed.slides)) {
+          const normalized = normalizeDeckToFreeform(parsed);
+          setDeck(normalized);
+          setActiveSlideIdx(0);
+          saveDeckToStorageAndCloud(normalized);
+          alert("Deck imported successfully!");
+        } else {
+          alert("Invalid deck JSON structure.");
+        }
+      } catch {
+        alert("Failed to parse deck JSON.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Slide Filmstrip Actions
+  const handleAddSlide = (presetKey: string = "blank") => {
+    const newSlide = createBlankSlide(
+      deck.slides.length + 1,
+      currentSlide.theme || "robobee-dark"
+    );
+
+    if (presetKey !== "blank") {
+      applyLayoutPresetToSlide(newSlide, presetKey);
+    }
+
     const nextSlides = relabelSlides([
       ...deck.slides.slice(0, activeSlideIdx + 1),
       newSlide,
@@ -99,6 +225,7 @@ export function SlideStudioEditor({
     ]);
     setDeck((prev) => ({ ...prev, slides: nextSlides }));
     setActiveSlideIdx(activeSlideIdx + 1);
+    setSelectedElementId(null);
   };
 
   const handleDuplicateSlide = (idx: number) => {
@@ -125,6 +252,7 @@ export function SlideStudioEditor({
     const nextSlides = relabelSlides(deck.slides.filter((_, i) => i !== idx));
     setDeck((prev) => ({ ...prev, slides: nextSlides }));
     setActiveSlideIdx(Math.max(0, Math.min(activeSlideIdx, nextSlides.length - 1)));
+    setSelectedElementId(null);
   };
 
   const handleMoveSlide = (idx: number, direction: -1 | 1) => {
@@ -138,106 +266,388 @@ export function SlideStudioEditor({
     setActiveSlideIdx(targetIdx);
   };
 
-  // Card Operations
-  const handleAddCard = () => {
-    const newCard: EditableSlideCard = {
-      id: `card-${Date.now()}`,
-      badge: `POINT 0${currentSlide.cards.length + 1}`,
-      title: "New Engineering Callout Card",
-      body: "Click in the right inspector panel to customize this card's text, badge, and accent color.",
-      accentColor: palette.accentPrimary,
+  // Insert Elements Tools
+  const handleInsertHeading = () => {
+    const newEl: SlideElement = {
+      id: `el-heading-${Date.now()}`,
+      type: "heading",
+      x: 100,
+      y: 120,
+      width: 800,
+      height: 60,
+      zIndex: elements.length + 1,
+      content: "Enter Big Bold Headline Here",
+      style: {
+        fontSize: 36,
+        fontWeight: 900,
+        color: palette.headingColor,
+      },
     };
-    updateCurrentSlide({ cards: [...currentSlide.cards, newCard] });
-    setSelectedElementId(newCard.id);
-    setInspectorTab("media");
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
   };
 
-  const handleUpdateCard = (cardId: string, patch: Partial<EditableSlideCard>) => {
-    const nextCards = currentSlide.cards.map((c) => (c.id === cardId ? { ...c, ...patch } : c));
-    updateCurrentSlide({ cards: nextCards });
-  };
-
-  const handleDeleteCard = (cardId: string) => {
-    updateCurrentSlide({ cards: currentSlide.cards.filter((c) => c.id !== cardId) });
-  };
-
-  // Hotspot Pin Operations
-  const handleAddHotspot = () => {
-    const nextNum = currentSlide.hotspots.length + 1;
-    const newPin: EditableHotspotPin = {
-      id: `hs-${Date.now()}`,
-      number: nextNum,
-      xPercent: 50,
-      yPercent: 50,
-      title: `Component Pin #${nextNum}`,
-      badge: `PIN 0${nextNum} • HARDWARE`,
-      description: "Drag this numbered pin directly on the slide image to position it, and edit its description here.",
-      color: "#F5B800",
+  const handleInsertSubheading = () => {
+    const newEl: SlideElement = {
+      id: `el-sub-${Date.now()}`,
+      type: "subheading",
+      x: 100,
+      y: 190,
+      width: 700,
+      height: 40,
+      zIndex: elements.length + 1,
+      content: "Add your concise engineering explanation or classroom prompt here.",
+      style: {
+        fontSize: 18,
+        fontWeight: 500,
+        color: palette.mutedColor,
+      },
     };
-    updateCurrentSlide({
-      layout: "interactive-hotspot",
-      hotspots: [...currentSlide.hotspots, newPin],
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+  };
+
+  const handleInsertTextBox = () => {
+    const newEl: SlideElement = {
+      id: `el-text-${Date.now()}`,
+      type: "textbox",
+      x: 100,
+      y: 250,
+      width: 500,
+      height: 180,
+      zIndex: elements.length + 1,
+      content: "• First key engineering takeaway\n• Second key engineering takeaway\n• Third key takeaway or task checklist",
+      style: {
+        fontSize: 15,
+        color: palette.bodyColor,
+        lineHeight: 1.6,
+      },
+    };
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+  };
+
+  const handleInsertImages = (files: FileList) => {
+    const fileList = Array.from(files);
+    fileList.forEach((file, idx) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const url = e.target?.result as string;
+        if (!url) return;
+        const newEl: SlideElement = {
+          id: `el-img-${Date.now()}-${idx}`,
+          type: "image",
+          x: 200 + idx * 40,
+          y: 180 + idx * 40,
+          width: 520,
+          height: 360,
+          zIndex: elements.length + 1 + idx,
+          content: url,
+          caption: file.name.replace(/\.[^/.]+$/, ""),
+          style: {
+            borderRadius: 16,
+            borderColor: palette.cardBorder,
+            borderWidth: 1,
+            boxShadow: palette.cardShadow,
+            objectFit: "cover",
+          },
+        };
+        handleUpdateElements([...elements, newEl]);
+        setSelectedElementId(newEl.id);
+      };
+      reader.readAsDataURL(file);
     });
-    setSelectedElementId(newPin.id);
-    setInspectorTab("media");
   };
 
-  const handleUpdateHotspot = (pinId: string, patch: Partial<EditableHotspotPin>) => {
-    const nextPins = currentSlide.hotspots.map((h) => (h.id === pinId ? { ...h, ...patch } : h));
-    updateCurrentSlide({ hotspots: nextPins });
-  };
-
-  const handleDeleteHotspot = (pinId: string) => {
-    const filtered = currentSlide.hotspots
-      .filter((h) => h.id !== pinId)
-      .map((h, i) => ({ ...h, number: i + 1 }));
-    updateCurrentSlide({ hotspots: filtered });
-  };
-
-  // Multi-Photo Gallery Operations
-  const handleAddGalleryPhoto = () => {
-    const newImg: SlideImageItem = {
-      id: `img-${Date.now()}`,
-      url: "/illustrations/class1-external-blink-wiring.svg",
-      caption: `Gallery Photo #${(currentSlide.galleryImages?.length || 0) + 2}`,
-      fallbackVariant: "arduino",
+  const handleInsertCodeBlock = () => {
+    const newEl: SlideElement = {
+      id: `el-code-${Date.now()}`,
+      type: "code",
+      x: 580,
+      y: 200,
+      width: 620,
+      height: 440,
+      zIndex: elements.length + 1,
+      language: "cpp",
+      content: `void setup() {\n  pinMode(13, OUTPUT);\n}\n\nvoid loop() {\n  digitalWrite(13, HIGH);\n  delay(1000);\n  digitalWrite(13, LOW);\n  delay(1000);\n}`,
+      style: {
+        fontSize: 13,
+        borderRadius: 14,
+        borderColor: "#2E374B",
+      },
     };
-    updateCurrentSlide({
-      galleryImages: [...(currentSlide.galleryImages || []), newImg],
-    });
-    setInspectorTab("media");
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
   };
 
-  const handleUpdateGalleryPhoto = (imgId: string, patch: Partial<SlideImageItem>) => {
-    const nextImgs = (currentSlide.galleryImages || []).map((img) =>
-      img.id === imgId ? { ...img, ...patch } : img
-    );
-    updateCurrentSlide({ galleryImages: nextImgs });
-  };
-
-  const handleDeleteGalleryPhoto = (imgId: string) => {
-    updateCurrentSlide({
-      galleryImages: (currentSlide.galleryImages || []).filter((img) => img.id !== imgId),
-    });
-  };
-
-  // Local Image File Upload (converts user's local image to Data URL for immediate embedding)
-  const handleFileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    target: "hero" | string
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result || "");
-      if (target === "hero") {
-        updateCurrentSlide({ heroImage: result });
-      } else {
-        handleUpdateGalleryPhoto(target, { url: result });
-      }
+  const handleInsertShape = (shapeType: "rectangle" | "circle" | "arrow-right") => {
+    const newEl: SlideElement = {
+      id: `el-shape-${Date.now()}`,
+      type: "shape",
+      shapeType,
+      x: 200,
+      y: 200,
+      width: shapeType === "arrow-right" ? 180 : 120,
+      height: shapeType === "arrow-right" ? 50 : 120,
+      zIndex: elements.length + 1,
+      content: "",
+      style: {
+        backgroundColor: shapeType === "arrow-right" ? "transparent" : "rgba(245, 183, 0, 0.2)",
+        borderColor: "#F5B700",
+        borderWidth: 2,
+        borderRadius: shapeType === "circle" ? 999 : 12,
+        color: "#F5B700",
+      },
     };
-    reader.readAsDataURL(file);
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+  };
+
+  const handleInsertVideo = () => {
+    const newEl: SlideElement = {
+      id: `el-video-${Date.now()}`,
+      type: "video",
+      x: 580,
+      y: 200,
+      width: 600,
+      height: 380,
+      zIndex: elements.length + 1,
+      content: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      caption: "Classroom Demo Video",
+      style: {
+        borderRadius: 16,
+        borderColor: palette.cardBorder,
+        borderWidth: 1,
+      },
+    };
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+  };
+
+  // Layering & Ordering
+  const handleBringForward = () => {
+    if (!selectedElement) return;
+    const currentZ = selectedElement.zIndex || 1;
+    handleUpdateElement(selectedElement.id, { zIndex: currentZ + 1 });
+  };
+
+  const handleSendBackward = () => {
+    if (!selectedElement) return;
+    const currentZ = selectedElement.zIndex || 1;
+    handleUpdateElement(selectedElement.id, { zIndex: Math.max(1, currentZ - 1) });
+  };
+
+  const handleDuplicateElement = () => {
+    if (!selectedElement) return;
+    const cloned: SlideElement = {
+      ...selectedElement,
+      id: `el-${Date.now()}`,
+      x: Math.min(1280 - selectedElement.width, selectedElement.x + 24),
+      y: Math.min(720 - selectedElement.height, selectedElement.y + 24),
+      zIndex: (selectedElement.zIndex || 1) + 1,
+    };
+    handleUpdateElements([...elements, cloned]);
+    setSelectedElementId(cloned.id);
+  };
+
+  const handleToggleLockElement = () => {
+    if (!selectedElement) return;
+    handleUpdateElement(selectedElement.id, { locked: !selectedElement.locked });
+  };
+
+  const handleDeleteElement = () => {
+    if (!selectedElement) return;
+    handleUpdateElements(elements.filter((el) => el.id !== selectedElement.id));
+    setSelectedElementId(null);
+  };
+
+  // Re-layout Presets Helper
+  const applyLayoutPresetToSlide = (targetSlide: EditableSlide, presetKey: string) => {
+    const pal =
+      THEME_PALETTE_CONFIG[targetSlide.theme || "robobee-dark"] ||
+      THEME_PALETTE_CONFIG["robobee-dark"];
+
+    if (presetKey === "title") {
+      targetSlide.elements = [
+        {
+          id: `el-badge-${Date.now()}`,
+          type: "callout",
+          x: 440,
+          y: 120,
+          width: 400,
+          height: 36,
+          zIndex: 1,
+          content: "ROBOBEE INNOVATORS • MASTERCLASS",
+          style: {
+            fontSize: 13,
+            fontWeight: 800,
+            color: pal.badgeText,
+            backgroundColor: pal.badgeBg,
+            borderColor: pal.accentPrimary,
+            borderWidth: 1,
+            borderRadius: 999,
+            textAlign: "center",
+          },
+        },
+        {
+          id: `el-title-${Date.now()}`,
+          type: "heading",
+          x: 100,
+          y: 180,
+          width: 1080,
+          height: 100,
+          zIndex: 2,
+          content: targetSlide.title || "Welcome to Robotics Engineering",
+          style: {
+            fontSize: 48,
+            fontWeight: 900,
+            color: pal.headingColor,
+            textAlign: "center",
+          },
+        },
+        {
+          id: `el-sub-${Date.now()}`,
+          type: "subheading",
+          x: 140,
+          y: 290,
+          width: 1000,
+          height: 50,
+          zIndex: 3,
+          content: targetSlide.subtitle || "Build, Code, and Innovate with RoboBee",
+          style: {
+            fontSize: 20,
+            color: pal.mutedColor,
+            textAlign: "center",
+          },
+        },
+        {
+          id: `el-img-${Date.now()}`,
+          type: "image",
+          x: 240,
+          y: 360,
+          width: 800,
+          height: 320,
+          zIndex: 4,
+          content:
+            targetSlide.heroImage ||
+            "/illustrations/class1-external-blink-wiring.svg",
+          caption: "RoboBee Laboratory Workbench",
+          style: {
+            borderRadius: 18,
+            objectFit: "cover",
+            borderColor: pal.cardBorder,
+            borderWidth: 1,
+            boxShadow: pal.cardShadow,
+          },
+        },
+      ];
+    } else if (presetKey === "code-split") {
+      targetSlide.elements = [
+        {
+          id: `el-title-${Date.now()}`,
+          type: "heading",
+          x: 60,
+          y: 50,
+          width: 1160,
+          height: 50,
+          zIndex: 1,
+          content: targetSlide.title || "Circuit & Arduino Code Lab",
+          style: { fontSize: 32, fontWeight: 900, color: pal.headingColor },
+        },
+        {
+          id: `el-img-${Date.now()}`,
+          type: "image",
+          x: 60,
+          y: 120,
+          width: 550,
+          height: 540,
+          zIndex: 2,
+          content:
+            targetSlide.heroImage ||
+            "/illustrations/class1-external-blink-wiring.svg",
+          caption: "Point-to-point breadboard wiring diagram",
+          style: {
+            borderRadius: 16,
+            objectFit: "contain",
+            backgroundColor: "rgba(0,0,0,0.3)",
+            borderColor: pal.cardBorder,
+            borderWidth: 1,
+          },
+        },
+        {
+          id: `el-code-${Date.now()}`,
+          type: "code",
+          x: 640,
+          y: 120,
+          width: 580,
+          height: 540,
+          zIndex: 3,
+          language: "cpp",
+          content: `// RoboBee Innovators Lab Code\nvoid setup() {\n  pinMode(13, OUTPUT);\n}\n\nvoid loop() {\n  digitalWrite(13, HIGH);\n  delay(1000);\n  digitalWrite(13, LOW);\n  delay(1000);\n}`,
+          style: { fontSize: 13, borderRadius: 16 },
+        },
+      ];
+    } else if (presetKey === "gallery") {
+      targetSlide.elements = [
+        {
+          id: `el-title-${Date.now()}`,
+          type: "heading",
+          x: 60,
+          y: 50,
+          width: 1160,
+          height: 50,
+          zIndex: 1,
+          content: targetSlide.title || "Lab Photo Gallery",
+          style: { fontSize: 32, fontWeight: 900, color: pal.headingColor },
+        },
+        {
+          id: `el-img-1-${Date.now()}`,
+          type: "image",
+          x: 60,
+          y: 140,
+          width: 360,
+          height: 500,
+          zIndex: 2,
+          content:
+            "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+          caption: "Workbench & Sensors",
+          style: { borderRadius: 14, objectFit: "cover" },
+        },
+        {
+          id: `el-img-2-${Date.now()}`,
+          type: "image",
+          x: 460,
+          y: 140,
+          width: 360,
+          height: 500,
+          zIndex: 3,
+          content:
+            "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
+          caption: "Code Meets Hardware",
+          style: { borderRadius: 14, objectFit: "cover" },
+        },
+        {
+          id: `el-img-3-${Date.now()}`,
+          type: "image",
+          x: 860,
+          y: 140,
+          width: 360,
+          height: 500,
+          zIndex: 4,
+          content:
+            "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80",
+          caption: "Competition Arena",
+          style: { borderRadius: 14, objectFit: "cover" },
+        },
+      ];
+    }
+  };
+
+  const handleApplyLayoutPreset = (presetKey: string) => {
+    const updated = { ...currentSlide };
+    applyLayoutPresetToSlide(updated, presetKey);
+    updateCurrentSlide(updated);
+    pushState(updated.elements || []);
   };
 
   return (
@@ -245,959 +655,99 @@ export function SlideStudioEditor({
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 95000,
-        background: "#161B26",
-        color: "#FFFFFF",
+        zIndex: 9999,
+        backgroundColor: "#0B0E14",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
       }}
     >
-      {/* =================================================================== */}
-      {/* SINGLE-ROW H-14 (56px) STUDIO HEADER (NO WRAPPING TOOLBAR COLLISION) */}
-      {/* =================================================================== */}
-      <header
+      {/* ZONE A: TOP POWERPOINT RIBBON BAR (56px) */}
+      <TopRibbonBar
+        deckTitle={deck.title}
+        onUpdateDeckTitle={(newTitle) => setDeck((p) => ({ ...p, title: newTitle }))}
+        courseBadge={deck.classCode || "RoboBee Studio"}
+        onClose={onClose}
+        onSave={handleSave}
+        isSaving={saving}
+        savedToast={savedToast}
+        onLaunchProjector={() => onLaunchProjector(deck, activeSlideIdx)}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onExportJson={handleExportJson}
+        onImportJson={handleImportJson}
+        onResetSlide={() => handleApplyLayoutPreset("hardware-2col")}
+        onInsertHeading={handleInsertHeading}
+        onInsertSubheading={handleInsertSubheading}
+        onInsertTextBox={handleInsertTextBox}
+        onInsertImages={handleInsertImages}
+        onInsertCodeBlock={handleInsertCodeBlock}
+        onInsertShape={handleInsertShape}
+        onInsertVideo={handleInsertVideo}
+        selectedElement={selectedElement}
+        onUpdateSelectedElement={(patch) => {
+          if (selectedElement) handleUpdateElement(selectedElement.id, patch);
+        }}
+        onBringForward={handleBringForward}
+        onSendBackward={handleSendBackward}
+        onDuplicateElement={handleDuplicateElement}
+        onToggleLockElement={handleToggleLockElement}
+        onDeleteElement={handleDeleteElement}
+      />
+
+      {/* WORKSPACE: LEFT FILMSTRIP (Zone B) + CENTER CANVAS (Zone C) + RIGHT INSPECTOR (Zone D) */}
+      <div
         style={{
-          height: "56px",
-          minHeight: "56px",
-          maxHeight: "56px",
-          background: "#1E2533",
-          borderBottom: "1px solid #2E374B",
-          padding: "0 1.25rem",
+          flex: 1,
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "1rem",
-          flexShrink: 0,
+          overflow: "hidden",
+          position: "relative",
         }}
       >
-        {/* Left: <- Back + Class Code + Editable Class Title */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minWidth: 0, flex: 1 }}>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: "#161B26",
-              color: "#E2E8F0",
-              border: "1px solid #2E374B",
-              borderRadius: "8px",
-              padding: "0.42rem 0.85rem",
-              fontSize: "0.8rem",
-              fontWeight: 800,
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              flexShrink: 0,
-            }}
-          >
-            <ArrowLeft size={15} /> Back
-          </button>
+        {/* ZONE B: LEFT FILMSTRIP (240px) */}
+        <SlideFilmstrip
+          slides={deck.slides}
+          activeSlideIdx={activeSlideIdx}
+          onSelectSlide={(idx) => {
+            setActiveSlideIdx(idx);
+            setSelectedElementId(null);
+          }}
+          onAddSlide={handleAddSlide}
+          onDuplicateSlide={handleDuplicateSlide}
+          onDeleteSlide={handleDeleteSlide}
+          onMoveSlide={handleMoveSlide}
+        />
 
-          <span
-            style={{
-              background: "rgba(245, 184, 0, 0.14)",
-              border: "1px solid rgba(245, 184, 0, 0.4)",
-              color: "#F5B800",
-              padding: "0.22rem 0.6rem",
-              borderRadius: "6px",
-              fontSize: "0.72rem",
-              fontWeight: 900,
-              flexShrink: 0,
-            }}
-          >
-            {deck.classCode}
-          </span>
-
-          <input
-            type="text"
-            value={deck.title}
-            onChange={(e) => setDeck((prev) => ({ ...prev, title: e.target.value }))}
-            style={{
-              background: "transparent",
-              border: "1px solid transparent",
-              color: "#FFFFFF",
-              fontSize: "0.95rem",
-              fontWeight: 800,
-              padding: "0.25rem 0.5rem",
-              borderRadius: "6px",
-              width: "100%",
-              maxWidth: "460px",
-            }}
-            title="Click to rename class presentation title"
+        {/* ZONE C: CENTER 16:9 FREEFORM STAGE */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          <FreeformSlideStage
+            slide={currentSlide}
+            mode="editor"
+            selectedElementId={selectedElementId}
+            onSelectElement={(id) => setSelectedElementId(id)}
+            onUpdateElement={handleUpdateElement}
+            onUpdateSlide={updateCurrentSlide}
           />
         </div>
 
-        {/* Right: Preview Projector & Save Changes */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", flexShrink: 0 }}>
-          <button
-            type="button"
-            onClick={async () => {
-              await saveDeckToStorageAndCloud(deck);
-              onSaveDeck?.(deck);
-              onDeckSaved?.(deck);
-              onLaunchProjector(deck, activeSlideIdx);
-            }}
-            style={{
-              background: "#161B26",
-              color: "#FFFFFF",
-              border: "1px solid #2E374B",
-              borderRadius: "8px",
-              padding: "0.45rem 0.9rem",
-              fontSize: "0.8rem",
-              fontWeight: 800,
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
-          >
-            <Tv size={15} color="#F5B800" /> Preview Projector
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            style={{
-              background: savedToast ? "#10B981" : "#6B0F24",
-              color: "#FFFFFF",
-              border: "1px solid #F5B800",
-              borderRadius: "8px",
-              padding: "0.45rem 1.05rem",
-              fontSize: "0.82rem",
-              fontWeight: 800,
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
-          >
-            {savedToast ? <Check size={15} /> : <Save size={15} color="#F5B800" />}
-            {savedToast ? "Saved!" : saving ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
-      </header>
-
-      {/* =================================================================== */}
-      {/* 3-COLUMN WORKSPACE: LEFT FILMSTRIP | CENTER STAGE | RIGHT INSPECTOR */}
-      {/* =================================================================== */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "250px 1fr 370px", overflow: "hidden" }}>
-        {/* 1. LEFT SIDEBAR: SLIDE FILMSTRIP & SORTER */}
-        <div
-          style={{
-            background: "#161B26",
-            borderRight: "1px solid #2E374B",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              padding: "0.85rem 1rem",
-              borderBottom: "1px solid #2E374B",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontSize: "0.76rem", fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              Slides ({deck.slides.length})
-            </span>
-            <button
-              type="button"
-              onClick={handleAddSlide}
-              style={{
-                background: "#F5B800",
-                color: "#161B26",
-                border: "none",
-                borderRadius: "6px",
-                padding: "0.28rem 0.6rem",
-                fontSize: "0.74rem",
-                fontWeight: 900,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.25rem",
-              }}
-            >
-              <Plus size={13} /> New Slide
-            </button>
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "0.75rem",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.65rem",
-            }}
-          >
-            {deck.slides.map((s, idx) => {
-              const isSelected = idx === activeSlideIdx;
-              const sPalette = THEME_PALETTE_CONFIG[s.theme] || THEME_PALETTE_CONFIG["robobee-dark"];
-              return (
-                <div
-                  key={s.id}
-                  onClick={() => setActiveSlideIdx(idx)}
-                  style={{
-                    background: isSelected ? "#1E2533" : "#161B26",
-                    border: `2px solid ${isSelected ? "#F5B800" : "#2E374B"}`,
-                    borderRadius: "10px",
-                    padding: "0.65rem",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                    <span
-                      style={{
-                        fontSize: "0.68rem",
-                        fontWeight: 800,
-                        padding: "0.14rem 0.45rem",
-                        borderRadius: "6px",
-                        background: sPalette.canvasBg,
-                        color: sPalette.headingColor,
-                        border: `1px solid ${sPalette.cardBorder}`,
-                      }}
-                    >
-                      {s.numberLabel} • {sPalette.name.split(" ")[0]}
-                    </span>
-
-                    <div style={{ display: "flex", gap: "0.2rem" }} onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveSlide(idx, -1)}
-                        disabled={idx === 0}
-                        style={{ background: "transparent", border: "none", color: idx === 0 ? "#334155" : "#94A3B8", cursor: "pointer", padding: "2px" }}
-                        title="Move Slide Up"
-                      >
-                        <ArrowUp size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveSlide(idx, 1)}
-                        disabled={idx === deck.slides.length - 1}
-                        style={{ background: "transparent", border: "none", color: idx === deck.slides.length - 1 ? "#334155" : "#94A3B8", cursor: "pointer", padding: "2px" }}
-                        title="Move Slide Down"
-                      >
-                        <ArrowDown size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDuplicateSlide(idx)}
-                        style={{ background: "transparent", border: "none", color: "#F5B800", cursor: "pointer", padding: "2px" }}
-                        title="Duplicate Slide"
-                      >
-                        <Copy size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteSlide(idx)}
-                        style={{ background: "transparent", border: "none", color: "#F43F5E", cursor: "pointer", padding: "2px" }}
-                        title="Delete Slide"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: 800,
-                      color: "#F8FAFC",
-                      lineHeight: 1.3,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {s.title}
-                  </div>
-                  <div style={{ fontSize: "0.68rem", color: "#94A3B8", marginTop: "0.25rem", textTransform: "uppercase", fontWeight: 700 }}>
-                    {s.layout} • {1 + (s.galleryImages?.length || 0)} photo(s)
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 2. CENTER STAGE: LIVE WYSIWYG SLIDE CANVAS */}
-        <div
-          style={{
-            background: "#0F141D",
-            overflowY: "auto",
-            padding: "1.5rem",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          {/* Quick Action Strip Above Canvas */}
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "1120px",
-              marginBottom: "0.85rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "0.5rem",
-            }}
-          >
-            <div style={{ fontSize: "0.8rem", color: "#94A3B8", fontWeight: 700 }}>
-              Editing <strong>Slide {currentSlide.numberLabel} of {String(deck.slides.length).padStart(2, "0")}</strong> • Theme: <strong style={{ color: "#F5B800" }}>{palette.name}</strong>
-            </div>
-
-            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-              <button
-                type="button"
-                onClick={handleAddCard}
-                style={{
-                  background: "#1E2533",
-                  color: "#F5B800",
-                  border: "1px solid #2E374B",
-                  borderRadius: "8px",
-                  padding: "0.35rem 0.7rem",
-                  fontSize: "0.75rem",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.3rem",
-                }}
-              >
-                <Plus size={13} /> Add Callout Card
-              </button>
-              <button
-                type="button"
-                onClick={handleAddGalleryPhoto}
-                style={{
-                  background: "#1E2533",
-                  color: "#E2E8F0",
-                  border: "1px solid #2E374B",
-                  borderRadius: "8px",
-                  padding: "0.35rem 0.7rem",
-                  fontSize: "0.75rem",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.3rem",
-                }}
-              >
-                <ImageIcon size={13} /> Add Extra Photo
-              </button>
-              <button
-                type="button"
-                onClick={handleAddHotspot}
-                style={{
-                  background: "#1E2533",
-                  color: "#E2E8F0",
-                  border: "1px solid #2E374B",
-                  borderRadius: "8px",
-                  padding: "0.35rem 0.7rem",
-                  fontSize: "0.75rem",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.3rem",
-                }}
-              >
-                <MapPin size={13} /> Add Hotspot Pin
-              </button>
-            </div>
-          </div>
-
-          {/* 16:9 Live Slide Stage */}
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "1120px",
-              minHeight: "620px",
-              background: palette.canvasBg,
-              backgroundImage: palette.gridOverlay
-                ? `${palette.gridOverlay}, ${palette.canvasBg}`
-                : palette.canvasBg,
-              backgroundSize: palette.gridOverlay ? "24px 24px, 100% 100%" : "100% 100%",
-              border: `2px solid ${palette.cardBorder}`,
-              borderRadius: "20px",
-              padding: "2rem",
-              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.55)",
-            }}
-          >
-            <EditableSlideCanvas
-              slide={currentSlide}
-              isEditorMode={true}
-              onUpdateSlide={(updated) => updateCurrentSlide(updated)}
-              selectedElementId={selectedElementId}
-              onSelectElement={(id) => {
-                setSelectedElementId(id);
-                setInspectorTab("media");
-              }}
-            />
-          </div>
-        </div>
-
-        {/* 3. RIGHT SIDEBAR: INSPECTOR PANEL (1. DESIGN & LAYOUT | 2. TEXT & NOTES | 3. MEDIA & CARDS) */}
-        <div
-          style={{
-            background: "#161B26",
-            borderLeft: "1px solid #2E374B",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          {/* Inspector Tabs */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              borderBottom: "1px solid #2E374B",
-              background: "#1E2533",
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setInspectorTab("design")}
-              style={{
-                background: inspectorTab === "design" ? "#161B26" : "transparent",
-                color: inspectorTab === "design" ? "#F5B800" : "#94A3B8",
-                border: "none",
-                borderBottom: inspectorTab === "design" ? "2px solid #F5B800" : "2px solid transparent",
-                padding: "0.75rem 0.35rem",
-                fontSize: "0.73rem",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              1. Design &amp; Layout
-            </button>
-            <button
-              type="button"
-              onClick={() => setInspectorTab("text")}
-              style={{
-                background: inspectorTab === "text" ? "#161B26" : "transparent",
-                color: inspectorTab === "text" ? "#F5B800" : "#94A3B8",
-                border: "none",
-                borderBottom: inspectorTab === "text" ? "2px solid #F5B800" : "2px solid transparent",
-                padding: "0.75rem 0.35rem",
-                fontSize: "0.73rem",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              2. Text &amp; Notes
-            </button>
-            <button
-              type="button"
-              onClick={() => setInspectorTab("media")}
-              style={{
-                background: inspectorTab === "media" ? "#161B26" : "transparent",
-                color: inspectorTab === "media" ? "#F5B800" : "#94A3B8",
-                border: "none",
-                borderBottom: inspectorTab === "media" ? "2px solid #F5B800" : "2px solid transparent",
-                padding: "0.75rem 0.35rem",
-                fontSize: "0.73rem",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              3. Media &amp; Cards
-            </button>
-          </div>
-
-          {/* Inspector Scroll Body */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "1.1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {/* TAB 1: DESIGN & LAYOUT (Theme, Layout Template, Typography Font/Size, Alignment, Animation) */}
-            {inspectorTab === "design" && (
-              <>
-                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Palette size={14} /> Slide Color Theme
-                  </div>
-                  <select
-                    value={currentSlide.theme}
-                    onChange={(e) => updateCurrentSlide({ theme: e.target.value as SlideColorTheme })}
-                    style={{ width: "100%", padding: "0.55rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.82rem", fontWeight: 700 }}
-                  >
-                    <option value="robobee-dark">RoboBEE Dark Studio (#161B26 / #F5B800)</option>
-                    <option value="daylight-studio">Daylight Studio (Projector High-Contrast Light)</option>
-                    <option value="electric-indigo">Electric Indigo</option>
-                    <option value="arduino-teal">Arduino Teal</option>
-                    <option value="cyber-blueprint">Cyber Blueprint</option>
-                  </select>
-                </div>
-
-                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Layout size={14} /> Slide Layout Template
-                  </div>
-                  <select
-                    value={currentSlide.layout}
-                    onChange={(e) => updateCurrentSlide({ layout: e.target.value as EditableSlide["layout"] })}
-                    style={{ width: "100%", padding: "0.55rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.82rem", fontWeight: 700 }}
-                  >
-                    <option value="hero-title">Hero Title Banner</option>
-                    <option value="split-media">Split Media + Cards</option>
-                    <option value="interactive-grid">Interactive Bento Grid</option>
-                    <option value="timeline-stepper">120-Minute Timeline Stepper</option>
-                    <option value="interactive-hotspot">Hardware Hotspot Pins</option>
-                    <option value="photo-gallery">Multi-Photo Gallery</option>
-                  </select>
-                </div>
-
-                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Type size={14} /> Typography &amp; Alignment
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
-                      Font Family
-                    </label>
-                    <select
-                      value={currentSlide.fontFamily || "sans"}
-                      onChange={(e) => updateCurrentSlide({ fontFamily: e.target.value as EditableSlide["fontFamily"] })}
-                      style={{ width: "100%", padding: "0.5rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.8rem" }}
-                    >
-                      <option value="sans">Inter Sans (Clean UI)</option>
-                      <option value="display">Space Display (Headlines)</option>
-                      <option value="mono">JetBrains Mono (Code &amp; Schematics)</option>
-                      <option value="serif">Editorial Serif</option>
-                    </select>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.5rem", alignItems: "end" }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
-                        Headline Size
-                      </label>
-                      <select
-                        value={currentSlide.titleSize || "standard"}
-                        onChange={(e) => updateCurrentSlide({ titleSize: e.target.value as EditableSlide["titleSize"] })}
-                        style={{ width: "100%", padding: "0.5rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.8rem" }}
-                      >
-                        <option value="compact">Compact</option>
-                        <option value="standard">Standard</option>
-                        <option value="large">Large</option>
-                        <option value="hero">Hero XL</option>
-                      </select>
-                    </div>
-
-                    <div style={{ display: "inline-flex", background: "#161B26", borderRadius: "8px", border: "1px solid #2E374B", overflow: "hidden" }}>
-                      <button
-                        type="button"
-                        onClick={() => updateCurrentSlide({ textAlign: "left" })}
-                        style={{
-                          background: currentSlide.textAlign !== "center" ? "#F5B800" : "transparent",
-                          color: currentSlide.textAlign !== "center" ? "#161B26" : "#CBD5E1",
-                          border: "none",
-                          padding: "0.5rem 0.65rem",
-                          cursor: "pointer",
-                        }}
-                        title="Align Left"
-                      >
-                        <AlignLeft size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateCurrentSlide({ textAlign: "center" })}
-                        style={{
-                          background: currentSlide.textAlign === "center" ? "#F5B800" : "transparent",
-                          color: currentSlide.textAlign === "center" ? "#161B26" : "#CBD5E1",
-                          border: "none",
-                          padding: "0.5rem 0.65rem",
-                          cursor: "pointer",
-                        }}
-                        title="Align Center"
-                      >
-                        <AlignCenter size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#F5B800", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Sparkles size={14} /> Slide Transition Animation
-                  </div>
-                  <select
-                    value={currentSlide.animation || "fade-up"}
-                    onChange={(e) => updateCurrentSlide({ animation: e.target.value as EditableSlide["animation"] })}
-                    style={{ width: "100%", padding: "0.5rem", borderRadius: "8px", background: "#161B26", border: "1px solid #2E374B", color: "#FFFFFF", fontSize: "0.8rem" }}
-                  >
-                    <option value="fade-up">Fade &amp; Rise</option>
-                    <option value="zoom-in">Keynote Zoom</option>
-                    <option value="slide-right">Slide Glide</option>
-                    <option value="cyber-glow">Subtle Highlight</option>
-                    <option value="none">Instant (No Animation)</option>
-                  </select>
-                </div>
-              </>
-            )}
-
-            {/* TAB 2: SLIDE HEADLINES & SPEAKER NOTES */}
-            {inspectorTab === "text" && (
-              <>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#94A3B8", marginBottom: "0.3rem" }}>
-                    Top Pill Badge Text
-                  </label>
-                  <input
-                    type="text"
-                    value={currentSlide.badge}
-                    onChange={(e) => updateCurrentSlide({ badge: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.84rem" }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#94A3B8", marginBottom: "0.3rem" }}>
-                    Slide Headline Title
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={currentSlide.title}
-                    onChange={(e) => updateCurrentSlide({ title: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.9rem", fontWeight: 700 }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#94A3B8", marginBottom: "0.3rem" }}>
-                    Slide Subtitle / Key Takeaway
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={currentSlide.subtitle}
-                    onChange={(e) => updateCurrentSlide({ subtitle: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.84rem" }}
-                  />
-                </div>
-
-                {currentSlide.layout === "hero-title" && (
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#94A3B8", marginBottom: "0.3rem" }}>
-                      CTA Button Label (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={currentSlide.ctaText || ""}
-                      onChange={(e) => updateCurrentSlide({ ctaText: e.target.value })}
-                      placeholder="e.g. Begin 120-Minute Session ->"
-                      style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.84rem" }}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.3rem" }}>
-                    Instructor Speaker Notes (Shown in Presenter Dock)
-                  </label>
-                  <textarea
-                    rows={5}
-                    value={currentSlide.speakerNotes}
-                    onChange={(e) => updateCurrentSlide({ speakerNotes: e.target.value })}
-                    style={{ width: "100%", padding: "0.55rem 0.7rem", borderRadius: "8px", background: "#1E2533", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.82rem", lineHeight: 1.5 }}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* TAB 3: MEDIA, GALLERY, CARDS & HOTSPOTS */}
-            {inspectorTab === "media" && (
-              <>
-                <div style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "12px", padding: "0.9rem" }}>
-                  <div style={{ fontSize: "0.78rem", fontWeight: 900, color: "#F5B800", marginBottom: "0.5rem" }}>
-                    Primary Slide Photo / Local SVG Diagram
-                  </div>
-                  <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
-                    Image URL or Local SVG Path (/illustrations/*.svg)
-                  </label>
-                  <input
-                    type="text"
-                    value={currentSlide.heroImage}
-                    onChange={(e) => updateCurrentSlide({ heroImage: e.target.value })}
-                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.8rem", marginBottom: "0.5rem" }}
-                  />
-
-                  <label
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                      background: "#161B26",
-                      color: "#F5B800",
-                      border: "1px solid #2E374B",
-                      borderRadius: "6px",
-                      padding: "0.38rem 0.7rem",
-                      fontSize: "0.75rem",
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      marginBottom: "0.65rem",
-                    }}
-                  >
-                    <Upload size={13} /> Upload Image From Computer
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, "hero")}
-                      style={{ display: "none" }}
-                    />
-                  </label>
-
-                  <label style={{ display: "block", fontSize: "0.72rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
-                    Caption Bar Text (Labeled Reference Illustration / Photo)
-                  </label>
-                  <input
-                    type="text"
-                    value={currentSlide.imageCaption}
-                    onChange={(e) => updateCurrentSlide({ imageCaption: e.target.value })}
-                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.8rem" }}
-                  />
-                </div>
-
-                {/* Multi-Photo Gallery List */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.25rem" }}>
-                  <span style={{ fontSize: "0.8rem", fontWeight: 900, color: "#F8FAFC" }}>
-                    Additional Slide Photos ({currentSlide.galleryImages?.length || 0})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleAddGalleryPhoto}
-                    style={{
-                      background: "#1E2533",
-                      color: "#F5B800",
-                      border: "1px solid #2E374B",
-                      borderRadius: "6px",
-                      padding: "0.32rem 0.65rem",
-                      fontSize: "0.74rem",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.25rem",
-                    }}
-                  >
-                    <Plus size={13} /> Add Photo
-                  </button>
-                </div>
-
-                {(currentSlide.galleryImages || []).map((img, i) => (
-                  <div
-                    key={img.id}
-                    style={{
-                      background: "#1E2533",
-                      border: "1px solid #2E374B",
-                      borderRadius: "10px",
-                      padding: "0.8rem",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                      <strong style={{ fontSize: "0.76rem", color: "#F5B800" }}>Gallery Photo #{i + 2}</strong>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteGalleryPhoto(img.id)}
-                        style={{ background: "transparent", border: "none", color: "#F43F5E", cursor: "pointer" }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={img.url}
-                      onChange={(e) => handleUpdateGalleryPhoto(img.id, { url: e.target.value })}
-                      placeholder="Image URL"
-                      style={{ width: "100%", padding: "0.45rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.78rem", marginBottom: "0.4rem" }}
-                    />
-                    <label
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.3rem",
-                        background: "#161B26",
-                        color: "#E2E8F0",
-                        borderRadius: "6px",
-                        padding: "0.28rem 0.55rem",
-                        fontSize: "0.72rem",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        marginBottom: "0.4rem",
-                      }}
-                    >
-                      <Upload size={12} /> Upload File
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileUpload(e, img.id)}
-                        style={{ display: "none" }}
-                      />
-                    </label>
-                    <input
-                      type="text"
-                      value={img.caption}
-                      onChange={(e) => handleUpdateGalleryPhoto(img.id, { caption: e.target.value })}
-                      placeholder="Photo caption"
-                      style={{ width: "100%", padding: "0.45rem", borderRadius: "6px", background: "#161B26", border: "1px solid #2E374B", color: "#F8FAFC", fontSize: "0.78rem" }}
-                    />
-                  </div>
-                ))}
-
-                {/* Slide Cards & Hotspot Pins */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
-                  <span style={{ fontSize: "0.8rem", fontWeight: 900, color: "#F5B800" }}>
-                    Slide Cards ({currentSlide.cards.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleAddCard}
-                    style={{
-                      background: "#F5B800",
-                      color: "#161B26",
-                      border: "none",
-                      borderRadius: "6px",
-                      padding: "0.28rem 0.6rem",
-                      fontSize: "0.73rem",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                  >
-                    + Add Card
-                  </button>
-                </div>
-
-                {currentSlide.cards.map((card, cIdx) => (
-                  <div
-                    key={card.id}
-                    style={{
-                      background: selectedElementId === card.id ? "#1E293B" : "#0F172A",
-                      border: `1px solid ${selectedElementId === card.id ? "#FBBF24" : "#334155"}`,
-                      borderRadius: "10px",
-                      padding: "0.8rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.45rem",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <strong style={{ fontSize: "0.75rem", color: "#FBBF24" }}>Card #{cIdx + 1}</strong>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCard(card.id)}
-                        style={{ background: "transparent", border: "none", color: "#F43F5E", cursor: "pointer" }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={card.badge || ""}
-                      onChange={(e) => handleUpdateCard(card.id, { badge: e.target.value })}
-                      placeholder="Badge (e.g. STEP 01)"
-                      style={{ width: "100%", padding: "0.4rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.76rem" }}
-                    />
-                    <input
-                      type="text"
-                      value={card.title}
-                      onChange={(e) => handleUpdateCard(card.id, { title: e.target.value })}
-                      placeholder="Card Title"
-                      style={{ width: "100%", padding: "0.4rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.8rem", fontWeight: 700 }}
-                    />
-                    <textarea
-                      rows={2}
-                      value={card.body}
-                      onChange={(e) => handleUpdateCard(card.id, { body: e.target.value })}
-                      placeholder="Card explanation"
-                      style={{ width: "100%", padding: "0.4rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.76rem" }}
-                    />
-                    <input
-                      type="text"
-                      value={card.detail || ""}
-                      onChange={(e) => handleUpdateCard(card.id, { detail: e.target.value })}
-                      placeholder="Optional expandable tip / detail"
-                      style={{ width: "100%", padding: "0.4rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.75rem" }}
-                    />
-                  </div>
-                ))}
-
-                {/* Hotspot Pins Editor */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.65rem" }}>
-                  <span style={{ fontSize: "0.8rem", fontWeight: 900, color: "#FBBF24" }}>
-                    Hotspot Pins ({currentSlide.hotspots.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleAddHotspot}
-                    style={{
-                      background: "#FBBF24",
-                      color: "#090D16",
-                      border: "none",
-                      borderRadius: "6px",
-                      padding: "0.28rem 0.6rem",
-                      fontSize: "0.73rem",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                  >
-                    + Add Pin
-                  </button>
-                </div>
-
-                {currentSlide.hotspots.map((pin) => (
-                  <div
-                    key={pin.id}
-                    style={{
-                      background: "#0F172A",
-                      border: "1px solid #334155",
-                      borderRadius: "10px",
-                      padding: "0.8rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.45rem",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <strong style={{ fontSize: "0.76rem", color: pin.color }}>
-                        Pin #{pin.number} (X: {pin.xPercent}%, Y: {pin.yPercent}%)
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteHotspot(pin.id)}
-                        style={{ background: "transparent", border: "none", color: "#F43F5E", cursor: "pointer" }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={pin.title}
-                      onChange={(e) => handleUpdateHotspot(pin.id, { title: e.target.value })}
-                      placeholder="Pin Title"
-                      style={{ width: "100%", padding: "0.4rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.78rem", fontWeight: 700 }}
-                    />
-                    <textarea
-                      rows={2}
-                      value={pin.description}
-                      onChange={(e) => handleUpdateHotspot(pin.id, { description: e.target.value })}
-                      placeholder="Pin explanation"
-                      style={{ width: "100%", padding: "0.4rem", borderRadius: "6px", background: "#070B14", border: "1px solid #334155", color: "#F8FAFC", fontSize: "0.75rem" }}
-                    />
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
+        {/* ZONE D: RIGHT INSPECTOR PANEL (300px) */}
+        <InspectorPanel
+          slide={currentSlide}
+          selectedElement={selectedElement}
+          onUpdateElement={handleUpdateElement}
+          onUpdateSlide={updateCurrentSlide}
+          onApplyLayoutPreset={handleApplyLayoutPreset}
+        />
       </div>
     </div>
   );

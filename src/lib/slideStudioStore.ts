@@ -1,6 +1,13 @@
 "use client";
 
-import { SlideColorTheme, SlideLayoutType } from "@/components/curriculum/Class1WorkshopDeck";
+import {
+  SlideColorTheme,
+  SlideLayoutType,
+  THEME_PALETTE_CONFIG,
+} from "@/components/curriculum/Class1WorkshopDeck";
+
+export type { SlideColorTheme };
+export { THEME_PALETTE_CONFIG };
 import { ALL_ROBOTICS_LESSONS, COURSE_SPACES, CourseTier, RoboticsLesson } from "@/lib/curriculumData";
 import { db } from "@/lib/firebase";
 import { collection, doc, getDocs, setDoc, deleteDoc } from "firebase/firestore";
@@ -15,6 +22,69 @@ export type ClassTrackCategory = CurriculumTrackName;
 export type SlideFontFamily = "sans" | "display" | "mono" | "serif";
 export type SlideTitleSize = "compact" | "standard" | "large" | "hero";
 export type SlideEntranceAnimation = "fade-up" | "zoom-in" | "slide-right" | "cyber-glow" | "none";
+
+// ============================================================================
+// FREEFORM PRESENTATION ENGINE TYPES (1280 x 720 STAGE)
+// ============================================================================
+export type SlideElementType =
+  | "heading"
+  | "subheading"
+  | "textbox"
+  | "image"
+  | "code"
+  | "shape"
+  | "callout"
+  | "video"
+  | "pinout-card";
+
+export interface SlideElementStyle {
+  fontFamily?: SlideFontFamily | string;
+  fontSize?: number; // In px on 1280x720 canvas
+  fontWeight?: number | string;
+  fontStyle?: "normal" | "italic";
+  textDecoration?: "none" | "underline" | "line-through";
+  textAlign?: "left" | "center" | "right" | "justify";
+  color?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  borderStyle?: "solid" | "dashed" | "dotted" | "none";
+  borderRadius?: number;
+  opacity?: number;
+  padding?: number | string;
+  boxShadow?: string;
+  objectFit?: "contain" | "cover" | "fill";
+  lineHeight?: number | string;
+  letterSpacing?: number | string;
+  backdropFilter?: string;
+}
+
+export interface SlideElementAnimation {
+  type: "none" | "fade" | "slide-up" | "zoom" | "step-reveal";
+  order?: number;
+}
+
+export interface SlideElement {
+  id: string;
+  type: SlideElementType;
+  x: number; // 0 to 1280
+  y: number; // 0 to 720
+  width: number;
+  height: number;
+  rotation?: number; // 0 to 360 deg
+  zIndex: number;
+  locked?: boolean;
+  animation?: SlideElementAnimation;
+  content: string; // rich text, image URL, code snippet, shape type, or video URL
+  style: SlideElementStyle;
+  // Type-specific metadata
+  language?: "cpp" | "python" | "arduino" | "bash" | "javascript";
+  shapeType?: "rectangle" | "circle" | "arrow-right" | "arrow-left" | "line" | "badge";
+  caption?: string;
+  videoUrl?: string;
+  badgeText?: string;
+  pinItems?: { number: number; label: string; pinName: string; note: string }[];
+}
 
 export interface SlideImageItem {
   id: string;
@@ -71,6 +141,11 @@ export interface EditableSlide {
   hotspots: EditableHotspotPin[];
   speakerNotes: string;
   ctaText?: string;
+  // Freeform 16:9 Presentation Engine Extensions
+  elements?: SlideElement[];
+  backgroundColor?: string;
+  backgroundImage?: string;
+  backgroundOverlayOpacity?: number;
 }
 
 export interface EditableClassDeck {
@@ -2333,6 +2408,125 @@ export async function syncDecksFromFirestore(): Promise<EditableClassDeck[]> {
 
 export function createBlankSlide(slideNumber: number, theme: SlideColorTheme = "electric-indigo"): EditableSlide {
   const numStr = String(slideNumber).padStart(2, "0");
+  const palette = THEME_PALETTE_CONFIG[theme] || THEME_PALETTE_CONFIG["electric-indigo"];
+
+  const initialElements: SlideElement[] = [
+    {
+      id: `el-badge-${Date.now()}`,
+      type: "callout",
+      x: 60,
+      y: 40,
+      width: 280,
+      height: 32,
+      zIndex: 1,
+      content: `SLIDE ${numStr} • ROBOBEE INNOVATORS`,
+      style: {
+        fontSize: 12,
+        fontWeight: 800,
+        color: palette.badgeText,
+        backgroundColor: palette.badgeBg,
+        borderColor: palette.accentPrimary,
+        borderWidth: 1,
+        borderRadius: 999,
+        padding: "6px 14px",
+        textAlign: "center",
+      },
+    },
+    {
+      id: `el-title-${Date.now()}`,
+      type: "heading",
+      x: 60,
+      y: 84,
+      width: 1160,
+      height: 64,
+      zIndex: 2,
+      content: `New Slide ${numStr}: Click to Edit Headline`,
+      style: {
+        fontSize: 34,
+        fontWeight: 900,
+        color: palette.headingColor,
+        textAlign: "left",
+        lineHeight: 1.2,
+      },
+    },
+    {
+      id: `el-sub-${Date.now()}`,
+      type: "subheading",
+      x: 60,
+      y: 154,
+      width: 1160,
+      height: 40,
+      zIndex: 3,
+      content: "Add your concise engineering takeaway, lesson concept, or classroom prompt here.",
+      style: {
+        fontSize: 17,
+        fontWeight: 500,
+        color: palette.mutedColor,
+        textAlign: "left",
+        lineHeight: 1.4,
+      },
+    },
+    {
+      id: `el-card-1-${Date.now()}`,
+      type: "callout",
+      x: 60,
+      y: 220,
+      width: 560,
+      height: 200,
+      zIndex: 4,
+      badgeText: "KEY POINT 01",
+      content: "### First Core Engineering Concept\nExplain the concept clearly in 1–2 punchy sentences for the classroom projector. Double click to customize this text.",
+      style: {
+        backgroundColor: palette.cardBg,
+        borderColor: palette.cardBorder,
+        borderWidth: 1,
+        borderRadius: 16,
+        padding: "20px 24px",
+        color: palette.bodyColor,
+        boxShadow: palette.cardShadow,
+      },
+    },
+    {
+      id: `el-card-2-${Date.now()}`,
+      type: "callout",
+      x: 60,
+      y: 440,
+      width: 560,
+      height: 200,
+      zIndex: 5,
+      badgeText: "KEY POINT 02",
+      content: "### Second Core Engineering Concept\nAdd real-world hardware examples, pin numbers, or interactive questions. Double click to customize.",
+      style: {
+        backgroundColor: palette.cardBg,
+        borderColor: palette.cardBorder,
+        borderWidth: 1,
+        borderRadius: 16,
+        padding: "20px 24px",
+        color: palette.bodyColor,
+        boxShadow: palette.cardShadow,
+      },
+    },
+    {
+      id: `el-img-${Date.now()}`,
+      type: "image",
+      x: 650,
+      y: 220,
+      width: 570,
+      height: 420,
+      zIndex: 6,
+      content: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+      caption: "RoboBee Lab Illustration • Double click or use Inspector to replace or add images",
+      style: {
+        borderRadius: 16,
+        borderColor: palette.cardBorder,
+        borderWidth: 1,
+        objectFit: "cover",
+        boxShadow: palette.cardShadow,
+        backgroundColor: "rgba(0, 0, 0, 0.2)",
+      },
+    },
+  ];
+
   return {
     id: `slide-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     numberLabel: numStr,
@@ -2356,14 +2550,14 @@ export function createBlankSlide(slideNumber: number, theme: SlideColorTheme = "
         badge: "KEY POINT 01",
         title: "First Core Engineering Concept",
         body: "Explain the concept clearly in 1–2 punchy sentences for the classroom projector.",
-        accentColor: "#00F5D4",
+        accentColor: palette.accentPrimary,
       },
       {
         id: `card-${Date.now()}-2`,
         badge: "KEY POINT 02",
         title: "Second Core Engineering Concept",
         body: "Add real-world hardware examples, pin numbers, or interactive questions.",
-        accentColor: "#38BDF8",
+        accentColor: palette.accentSecondary,
       },
     ],
     hotspots: [
@@ -2379,5 +2573,298 @@ export function createBlankSlide(slideNumber: number, theme: SlideColorTheme = "
       },
     ],
     speakerNotes: "Instructor speaker notes for this slide...",
+    elements: initialElements,
+  };
+}
+
+// ============================================================================
+// AUTO-MIGRATION ADAPTER: NORMALIZE LEGACY SLIDES TO 16:9 FREEFORM STAGE (1280x720)
+// ============================================================================
+export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
+  // If the slide already has customized freeform elements, preserve them 100%
+  if (slide.elements && slide.elements.length > 0) {
+    return slide;
+  }
+
+  const themeKey = slide.theme || "robobee-dark";
+  const palette = THEME_PALETTE_CONFIG[themeKey] || THEME_PALETTE_CONFIG["robobee-dark"];
+  const elements: SlideElement[] = [];
+  let zCounter = 1;
+
+  // 1. Badge Pill (Top Left)
+  if (slide.badge) {
+    const estimatedWidth = Math.min(540, Math.max(220, slide.badge.length * 9 + 36));
+    elements.push({
+      id: `${slide.id}-migrated-badge`,
+      type: "callout",
+      x: 60,
+      y: 38,
+      width: estimatedWidth,
+      height: 32,
+      zIndex: zCounter++,
+      content: slide.badge,
+      style: {
+        fontSize: 12,
+        fontWeight: 800,
+        color: palette.badgeText,
+        backgroundColor: palette.badgeBg,
+        borderColor: palette.accentPrimary,
+        borderWidth: 1,
+        borderRadius: 999,
+        padding: "6px 14px",
+        textAlign: "center",
+      },
+    });
+  }
+
+  // 2. Title Heading
+  elements.push({
+    id: `${slide.id}-migrated-title`,
+    type: "heading",
+    x: 60,
+    y: 78,
+    width: 1160,
+    height: 64,
+    zIndex: zCounter++,
+    content: slide.title || "Untitled Slide",
+    style: {
+      fontSize: slide.titleSize === "hero" ? 40 : slide.titleSize === "large" ? 36 : 32,
+      fontWeight: 900,
+      color: palette.headingColor,
+      textAlign: slide.textAlign || "left",
+      lineHeight: 1.2,
+      fontFamily: slide.fontFamily || "sans",
+    },
+  });
+
+  // 3. Subtitle
+  if (slide.subtitle) {
+    elements.push({
+      id: `${slide.id}-migrated-subtitle`,
+      type: "subheading",
+      x: 60,
+      y: 148,
+      width: 1160,
+      height: 42,
+      zIndex: zCounter++,
+      content: slide.subtitle,
+      style: {
+        fontSize: 16,
+        fontWeight: 500,
+        color: palette.mutedColor,
+        textAlign: slide.textAlign || "left",
+        lineHeight: 1.4,
+        fontFamily: slide.fontFamily || "sans",
+      },
+    });
+  }
+
+  // 4. Content Area Layout
+  const cards = slide.cards || [];
+  const hasHeroImage = Boolean(slide.heroImage);
+
+  if (hasHeroImage) {
+    // 2-Column Split: Cards on left (or code/pinout), Image on right
+    const imgX = 660;
+    const imgY = 208;
+    const imgW = 560;
+    const imgH = 440;
+
+    elements.push({
+      id: `${slide.id}-migrated-hero-img`,
+      type: "image",
+      x: imgX,
+      y: imgY,
+      width: imgW,
+      height: imgH,
+      zIndex: zCounter++,
+      content: slide.heroImage,
+      caption: slide.imageCaption || "",
+      style: {
+        borderRadius: 16,
+        borderColor: palette.cardBorder,
+        borderWidth: 1,
+        boxShadow: palette.cardShadow,
+        objectFit: slide.heroImage.endsWith(".svg") ? "contain" : "cover",
+        backgroundColor: "rgba(0,0,0,0.25)",
+      },
+    });
+
+    // Left Column Cards
+    const leftX = 60;
+    const startY = 208;
+    const colW = 570;
+
+    if (cards.length === 1) {
+      elements.push({
+        id: `${cards[0].id || `${slide.id}-c0`}`,
+        type: "callout",
+        x: leftX,
+        y: startY,
+        width: colW,
+        height: 440,
+        zIndex: zCounter++,
+        badgeText: cards[0].badge,
+        content: `### ${cards[0].title}\n\n${cards[0].body}${cards[0].detail ? `\n\n> ${cards[0].detail}` : ""}`,
+        style: {
+          backgroundColor: palette.cardBg,
+          borderColor: cards[0].accentColor || palette.cardBorder,
+          borderWidth: 1,
+          borderRadius: 16,
+          padding: "24px",
+          color: palette.bodyColor,
+          boxShadow: palette.cardShadow,
+        },
+      });
+    } else if (cards.length === 2) {
+      const cardH = 210;
+      const gap = 20;
+      cards.forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: leftX,
+          y: startY + idx * (cardH + gap),
+          width: colW,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          content: `### ${c.title}\n${c.body}${c.detail ? `\n\n*${c.detail}*` : ""}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1,
+            borderRadius: 16,
+            padding: "18px 22px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    } else {
+      // 3 or more cards: stacked compact cards
+      const visibleCards = cards.slice(0, 3);
+      const cardH = 135;
+      const gap = 16;
+      visibleCards.forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: leftX,
+          y: startY + idx * (cardH + gap),
+          width: colW,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          content: `**${c.title}**\n${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1,
+            borderRadius: 14,
+            padding: "14px 18px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    }
+  } else {
+    // No hero image: Full-width Grid
+    if (cards.length === 3) {
+      const cardW = 360;
+      const cardH = 450;
+      const gap = 40;
+      cards.forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: 60 + idx * (cardW + gap),
+          y: 208,
+          width: cardW,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          content: `### ${c.title}\n\n${c.body}${c.detail ? `\n\n> ${c.detail}` : ""}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1,
+            borderRadius: 16,
+            padding: "24px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    } else if (cards.length === 2) {
+      const cardW = 560;
+      const cardH = 450;
+      const gap = 40;
+      cards.forEach((c, idx) => {
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: 60 + idx * (cardW + gap),
+          y: 208,
+          width: cardW,
+          height: cardH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          content: `### ${c.title}\n\n${c.body}${c.detail ? `\n\n> ${c.detail}` : ""}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1,
+            borderRadius: 16,
+            padding: "28px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    } else if (cards.length >= 4) {
+      // 2x2 grid
+      const colW = 560;
+      const rowH = 210;
+      const gapX = 40;
+      const gapY = 20;
+      cards.slice(0, 4).forEach((c, idx) => {
+        const col = idx % 2;
+        const row = Math.floor(idx / 2);
+        elements.push({
+          id: `${c.id || `${slide.id}-c${idx}`}`,
+          type: "callout",
+          x: 60 + col * (colW + gapX),
+          y: 208 + row * (rowH + gapY),
+          width: colW,
+          height: rowH,
+          zIndex: zCounter++,
+          badgeText: c.badge,
+          content: `**${c.title}**\n${c.body}`,
+          style: {
+            backgroundColor: palette.cardBg,
+            borderColor: c.accentColor || palette.cardBorder,
+            borderWidth: 1,
+            borderRadius: 14,
+            padding: "16px 20px",
+            color: palette.bodyColor,
+            boxShadow: palette.cardShadow,
+          },
+        });
+      });
+    }
+  }
+
+  return {
+    ...slide,
+    elements,
+  };
+}
+
+export function normalizeDeckToFreeform(deck: EditableClassDeck): EditableClassDeck {
+  return {
+    ...deck,
+    slides: (deck.slides || []).map((slide) => normalizeSlideToFreeform(slide)),
   };
 }

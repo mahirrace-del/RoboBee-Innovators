@@ -1,0 +1,476 @@
+"use client";
+
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  EditableSlide,
+  SlideElement,
+  THEME_PALETTE_CONFIG,
+  SlideColorTheme,
+} from "@/lib/slideStudioStore";
+import { SnapLine, ResizeHandle, DragState, CanvasMode } from "./types";
+import { SnapGuidesOverlay } from "./SnapGuidesOverlay";
+import { ElementRenderer } from "./ElementRenderer";
+
+interface FreeformSlideStageProps {
+  slide: EditableSlide;
+  mode?: CanvasMode;
+  themeOverride?: SlideColorTheme | "auto";
+  selectedElementId?: string | null;
+  onSelectElement?: (id: string | null) => void;
+  onUpdateElement?: (elementId: string, patch: Partial<SlideElement>) => void;
+  onUpdateSlide?: (patch: Partial<EditableSlide>) => void;
+  onZoomImage?: (src: string, caption: string) => void;
+  stepRevealCount?: number; // In presenter mode, how many step-reveal elements are currently visible
+}
+
+export const STAGE_WIDTH = 1280;
+export const STAGE_HEIGHT = 720;
+const SNAP_THRESHOLD = 6;
+
+export function FreeformSlideStage({
+  slide,
+  mode = "editor",
+  themeOverride = "auto",
+  selectedElementId = null,
+  onSelectElement,
+  onUpdateElement,
+  onUpdateSlide,
+  onZoomImage,
+  stepRevealCount = 999,
+}: FreeformSlideStageProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+
+  const [scale, setScale] = useState<number>(1);
+  const [editingElementId, setEditingElementId] = useState<string | null>(null);
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [snapLines, setSnapLines] = useState<SnapLine[]>([]);
+
+  const isEditor = mode === "editor";
+  const effectiveTheme: SlideColorTheme =
+    themeOverride === "auto" ? slide.theme || "robobee-dark" : themeOverride;
+  const palette =
+    THEME_PALETTE_CONFIG[effectiveTheme] || THEME_PALETTE_CONFIG["robobee-dark"];
+
+  // Responsive 1280x720 scaling via ResizeObserver
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          const s = Math.min(width / STAGE_WIDTH, height / STAGE_HEIGHT);
+          setScale(s);
+        }
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const elements = slide.elements || [];
+  const selectedElement = elements.find((e) => e.id === selectedElementId);
+
+  // Convert client pointer coordinates to 1280x720 virtual stage coordinates
+  const getStageCoords = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!stageRef.current) return { x: 0, y: 0 };
+      const rect = stageRef.current.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left) / scale,
+        y: (clientY - rect.top) / scale,
+      };
+    },
+    [scale]
+  );
+
+  // Keyboard controls in Editor mode (Nudge, Delete, Duplicate)
+  useEffect(() => {
+    if (!isEditor) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if editing text inside an input or textarea
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (!selectedElement) return;
+
+      const step = e.shiftKey ? 10 : 1;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        onUpdateElement?.(selectedElement.id, {
+          x: Math.max(0, selectedElement.x - step),
+        });
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        onUpdateElement?.(selectedElement.id, {
+          x: Math.min(STAGE_WIDTH - selectedElement.width, selectedElement.x + step),
+        });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        onUpdateElement?.(selectedElement.id, {
+          y: Math.max(0, selectedElement.y - step),
+        });
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        onUpdateElement?.(selectedElement.id, {
+          y: Math.min(STAGE_HEIGHT - selectedElement.height, selectedElement.y + step),
+        });
+      } else if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        const nextElements = elements.filter((el) => el.id !== selectedElement.id);
+        onUpdateSlide?.({ elements: nextElements });
+        onSelectElement?.(null);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        // Duplicate
+        const cloned: SlideElement = {
+          ...selectedElement,
+          id: `el-${Date.now()}`,
+          x: Math.min(STAGE_WIDTH - selectedElement.width, selectedElement.x + 24),
+          y: Math.min(STAGE_HEIGHT - selectedElement.height, selectedElement.y + 24),
+          zIndex: (selectedElement.zIndex || 1) + 1,
+        };
+        onUpdateSlide?.({ elements: [...elements, cloned] });
+        onSelectElement?.(cloned.id);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isEditor, selectedElement, elements, onUpdateElement, onUpdateSlide, onSelectElement]);
+
+  // Pointer Down for Dragging / Resizing
+  const handlePointerDown = (
+    e: React.PointerEvent,
+    element: SlideElement,
+    handle?: ResizeHandle
+  ) => {
+    if (!isEditor) return;
+    e.stopPropagation();
+
+    if (element.locked) {
+      onSelectElement?.(element.id);
+      return;
+    }
+
+    onSelectElement?.(element.id);
+    const coords = getStageCoords(e.clientX, e.clientY);
+
+    setDragState({
+      elementId: element.id,
+      startX: coords.x,
+      startY: coords.y,
+      origElemX: element.x,
+      origElemY: element.y,
+      origWidth: element.width,
+      origHeight: element.height,
+      handle,
+    });
+  };
+
+  // Pointer Move (Drag or Resize with Magnetic Snapping)
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragState || !isEditor) return;
+    const coords = getStageCoords(e.clientX, e.clientY);
+    const dx = coords.x - dragState.startX;
+    const dy = coords.y - dragState.startY;
+
+    const el = elements.find((item) => item.id === dragState.elementId);
+    if (!el) return;
+
+    if (!dragState.handle) {
+      // Moving element
+      let nextX = dragState.origElemX + dx;
+      let nextY = dragState.origElemY + dy;
+
+      const activeSnapLines: SnapLine[] = [];
+
+      // Magnetic snap to stage center
+      const centerX = nextX + el.width / 2;
+      const centerY = nextY + el.height / 2;
+
+      if (Math.abs(centerX - STAGE_WIDTH / 2) < SNAP_THRESHOLD) {
+        nextX = STAGE_WIDTH / 2 - el.width / 2;
+        activeSnapLines.push({ orientation: "vertical", position: STAGE_WIDTH / 2 });
+      } else if (Math.abs(nextX - 60) < SNAP_THRESHOLD) {
+        nextX = 60;
+        activeSnapLines.push({ orientation: "vertical", position: 60 });
+      }
+
+      if (Math.abs(centerY - STAGE_HEIGHT / 2) < SNAP_THRESHOLD) {
+        nextY = STAGE_HEIGHT / 2 - el.height / 2;
+        activeSnapLines.push({ orientation: "horizontal", position: STAGE_HEIGHT / 2 });
+      } else if (Math.abs(nextY - 40) < SNAP_THRESHOLD) {
+        nextY = 40;
+        activeSnapLines.push({ orientation: "horizontal", position: 40 });
+      }
+
+      setSnapLines(activeSnapLines);
+      onUpdateElement?.(el.id, {
+        x: Math.round(nextX),
+        y: Math.round(nextY),
+      });
+    } else {
+      // Resizing element via handle
+      const h = dragState.handle;
+      let { origElemX, origElemY, origWidth, origHeight } = dragState;
+      let newX = origElemX;
+      let newY = origElemY;
+      let newW = origWidth;
+      let newH = origHeight;
+
+      if (h.includes("e")) newW = Math.max(30, origWidth + dx);
+      if (h.includes("s")) newH = Math.max(20, origHeight + dy);
+      if (h.includes("w")) {
+        const potentialW = origWidth - dx;
+        if (potentialW >= 30) {
+          newW = potentialW;
+          newX = origElemX + dx;
+        }
+      }
+      if (h.includes("n")) {
+        const potentialH = origHeight - dy;
+        if (potentialH >= 20) {
+          newH = potentialH;
+          newY = origElemY + dy;
+        }
+      }
+
+      setSnapLines([]);
+      onUpdateElement?.(el.id, {
+        x: Math.round(newX),
+        y: Math.round(newY),
+        width: Math.round(newW),
+        height: Math.round(newH),
+      });
+    }
+  };
+
+  const handlePointerUp = () => {
+    setDragState(null);
+    setSnapLines([]);
+  };
+
+  // Drag and drop image files directly onto the stage
+  const handleStageDrop = (e: React.DragEvent) => {
+    if (!isEditor) return;
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    if (files.length === 0) return;
+
+    const coords = getStageCoords(e.clientX, e.clientY);
+
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        const resultUrl = uploadEvent.target?.result as string;
+        if (!resultUrl) return;
+
+        const newImageElement: SlideElement = {
+          id: `el-img-${Date.now()}-${index}`,
+          type: "image",
+          x: Math.min(STAGE_WIDTH - 300, Math.max(20, coords.x + index * 30)),
+          y: Math.min(STAGE_HEIGHT - 220, Math.max(20, coords.y + index * 30)),
+          width: 480,
+          height: 320,
+          zIndex: (elements.length || 0) + 1,
+          content: resultUrl,
+          caption: file.name.replace(/\.[^/.]+$/, ""),
+          style: {
+            borderRadius: 16,
+            borderColor: palette.cardBorder,
+            borderWidth: 1,
+            boxShadow: palette.cardShadow,
+            objectFit: "cover",
+          },
+        };
+
+        onUpdateSlide?.({ elements: [...(slide.elements || []), newImageElement] });
+        onSelectElement?.(newImageElement.id);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Stage Background Styling
+  const stageBackground = slide.backgroundColor
+    ? slide.backgroundColor
+    : slide.backgroundImage
+    ? `url(${slide.backgroundImage}) center/cover no-repeat`
+    : palette.canvasBg;
+
+  // Render 8 Resize Handles on selected element
+  const renderResizeHandles = (el: SlideElement) => {
+    const handleSize = 10;
+    const handles: { h: ResizeHandle; cursor: string; top: string; left: string }[] = [
+      { h: "nw", cursor: "nwse-resize", top: "0%", left: "0%" },
+      { h: "n", cursor: "ns-resize", top: "0%", left: "50%" },
+      { h: "ne", cursor: "nesw-resize", top: "0%", left: "100%" },
+      { h: "e", cursor: "ew-resize", top: "50%", left: "100%" },
+      { h: "se", cursor: "nwse-resize", top: "100%", left: "100%" },
+      { h: "s", cursor: "ns-resize", top: "100%", left: "50%" },
+      { h: "sw", cursor: "nesw-resize", top: "100%", left: "0%" },
+      { h: "w", cursor: "ew-resize", top: "50%", left: "0%" },
+    ];
+
+    return (
+      <>
+        {handles.map(({ h, cursor, top, left }) => (
+          <div
+            key={h}
+            onPointerDown={(e) => handlePointerDown(e, el, h)}
+            style={{
+              position: "absolute",
+              top,
+              left,
+              width: `${handleSize}px`,
+              height: `${handleSize}px`,
+              backgroundColor: "#F5B700",
+              border: "2px solid #0F172A",
+              borderRadius: "2px",
+              transform: "translate(-50%, -50%)",
+              cursor,
+              zIndex: 1000,
+            }}
+          />
+        ))}
+      </>
+    );
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        overflow: "hidden",
+        backgroundColor: "#0B0E14",
+      }}
+      onClick={() => {
+        if (isEditor) {
+          onSelectElement?.(null);
+          setEditingElementId(null);
+        }
+      }}
+    >
+      {/* 16:9 Scaled Virtual Canvas Container */}
+      <div
+        ref={stageRef}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onDragOver={(e) => isEditor && e.preventDefault()}
+        onDrop={handleStageDrop}
+        style={{
+          width: `${STAGE_WIDTH}px`,
+          height: `${STAGE_HEIGHT}px`,
+          transform: `scale(${scale})`,
+          transformOrigin: "center center",
+          position: "relative",
+          background: stageBackground,
+          backgroundImage:
+            palette.gridOverlay && !slide.backgroundColor && !slide.backgroundImage
+              ? `${palette.gridOverlay}, ${palette.canvasBg}`
+              : undefined,
+          backgroundSize: palette.gridOverlay ? "24px 24px, 100% 100%" : undefined,
+          boxShadow: isEditor
+            ? "0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08)"
+            : "none",
+          overflow: "hidden",
+          flexShrink: 0,
+        }}
+      >
+        {/* Background Dark Overlay if custom image */}
+        {slide.backgroundImage && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `rgba(15, 23, 42, ${slide.backgroundOverlayOpacity ?? 0.65})`,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+        )}
+
+        {/* Snap guidelines overlay */}
+        <SnapGuidesOverlay snapLines={snapLines} />
+
+        {/* Elements Layer */}
+        {elements
+          .slice()
+          .sort((a, b) => (a.zIndex || 1) - (b.zIndex || 1))
+          .map((el, idx) => {
+            const isSelected = isEditor && selectedElementId === el.id;
+            const isEditing = isEditor && editingElementId === el.id;
+
+            // Step reveal calculation in presenter mode
+            const isStepReveal = el.animation?.type === "step-reveal";
+            const isVisible =
+              isEditor || !isStepReveal || (el.animation?.order ?? idx) <= stepRevealCount;
+
+            return (
+              <div
+                key={el.id}
+                onPointerDown={(e) => handlePointerDown(e, el)}
+                style={{
+                  position: "absolute",
+                  left: `${el.x}px`,
+                  top: `${el.y}px`,
+                  width: `${el.width}px`,
+                  height: `${el.height}px`,
+                  transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                  zIndex: el.zIndex || 1,
+                  cursor: isEditor ? (el.locked ? "not-allowed" : "move") : "default",
+                  boxSizing: "border-box",
+                }}
+              >
+                {/* Element Render Body */}
+                <ElementRenderer
+                  element={el}
+                  isEditorMode={isEditor}
+                  isSelected={isSelected}
+                  isEditing={isEditing}
+                  onStartEditing={() => setEditingElementId(el.id)}
+                  onFinishEditing={() => setEditingElementId(null)}
+                  onUpdateElement={(patch) => onUpdateElement?.(el.id, patch)}
+                  onZoomImage={onZoomImage}
+                  stepRevealVisible={isVisible}
+                />
+
+                {/* Selection Bounding Box & Resize Handles */}
+                {isSelected && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "2px solid #F5B700",
+                      pointerEvents: "none",
+                      boxShadow: "0 0 12px rgba(245, 183, 0, 0.4)",
+                    }}
+                  >
+                    {!el.locked && renderResizeHandles(el)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+      </div>
+    </div>
+  );
+}
