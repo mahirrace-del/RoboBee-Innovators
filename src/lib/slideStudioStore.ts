@@ -84,6 +84,12 @@ export interface SlideElement {
   videoUrl?: string;
   badgeText?: string;
   pinItems?: { number: number; label: string; pinName: string; note: string }[];
+  isQuizCard?: boolean;
+  quizVerdict?: string;
+  quizIsPositive?: boolean;
+  isPollCard?: boolean;
+  pollInitialVotes?: number;
+  hotspotPins?: EditableHotspotPin[];
 }
 
 export interface SlideImageItem {
@@ -2680,6 +2686,7 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
       zIndex: zCounter++,
       content: slide.heroImage,
       caption: slide.imageCaption || "",
+      hotspotPins: slide.hotspots && slide.hotspots.length > 0 ? slide.hotspots : undefined,
       style: {
         borderRadius: 16,
         borderColor: palette.cardBorder,
@@ -2705,6 +2712,11 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
         height: 440,
         zIndex: zCounter++,
         badgeText: cards[0].badge,
+        isQuizCard: cards[0].isQuizCard,
+        quizVerdict: cards[0].quizVerdict,
+        quizIsPositive: cards[0].quizIsPositive,
+        isPollCard: cards[0].isPollCard,
+        pollInitialVotes: cards[0].pollInitialVotes,
         content: `### ${cards[0].title}\n\n${cards[0].body}${cards[0].detail ? `\n\n> ${cards[0].detail}` : ""}`,
         style: {
           backgroundColor: palette.cardBg,
@@ -2729,6 +2741,11 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           height: cardH,
           zIndex: zCounter++,
           badgeText: c.badge,
+          isQuizCard: c.isQuizCard,
+          quizVerdict: c.quizVerdict,
+          quizIsPositive: c.quizIsPositive,
+          isPollCard: c.isPollCard,
+          pollInitialVotes: c.pollInitialVotes,
           content: `### ${c.title}\n${c.body}${c.detail ? `\n\n*${c.detail}*` : ""}`,
           style: {
             backgroundColor: palette.cardBg,
@@ -2756,6 +2773,11 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           height: cardH,
           zIndex: zCounter++,
           badgeText: c.badge,
+          isQuizCard: c.isQuizCard,
+          quizVerdict: c.quizVerdict,
+          quizIsPositive: c.quizIsPositive,
+          isPollCard: c.isPollCard,
+          pollInitialVotes: c.pollInitialVotes,
           content: `**${c.title}**\n${c.body}`,
           style: {
             backgroundColor: palette.cardBg,
@@ -2785,6 +2807,11 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           height: cardH,
           zIndex: zCounter++,
           badgeText: c.badge,
+          isQuizCard: c.isQuizCard,
+          quizVerdict: c.quizVerdict,
+          quizIsPositive: c.quizIsPositive,
+          isPollCard: c.isPollCard,
+          pollInitialVotes: c.pollInitialVotes,
           content: `### ${c.title}\n\n${c.body}${c.detail ? `\n\n> ${c.detail}` : ""}`,
           style: {
             backgroundColor: palette.cardBg,
@@ -2811,6 +2838,11 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           height: cardH,
           zIndex: zCounter++,
           badgeText: c.badge,
+          isQuizCard: c.isQuizCard,
+          quizVerdict: c.quizVerdict,
+          quizIsPositive: c.quizIsPositive,
+          isPollCard: c.isPollCard,
+          pollInitialVotes: c.pollInitialVotes,
           content: `### ${c.title}\n\n${c.body}${c.detail ? `\n\n> ${c.detail}` : ""}`,
           style: {
             backgroundColor: palette.cardBg,
@@ -2841,6 +2873,11 @@ export function normalizeSlideToFreeform(slide: EditableSlide): EditableSlide {
           height: rowH,
           zIndex: zCounter++,
           badgeText: c.badge,
+          isQuizCard: c.isQuizCard,
+          quizVerdict: c.quizVerdict,
+          quizIsPositive: c.quizIsPositive,
+          isPollCard: c.isPollCard,
+          pollInitialVotes: c.pollInitialVotes,
           content: `**${c.title}**\n${c.body}`,
           style: {
             backgroundColor: palette.cardBg,

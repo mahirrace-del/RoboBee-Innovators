@@ -21,6 +21,9 @@ interface FreeformSlideStageProps {
   onUpdateSlide?: (patch: Partial<EditableSlide>) => void;
   onZoomImage?: (src: string, caption: string) => void;
   stepRevealCount?: number;
+  soundEnabled?: boolean;
+  spotlightActive?: boolean;
+  spotlightPos?: { x: number; y: number };
 }
 
 export const STAGE_WIDTH = 1280;
@@ -37,6 +40,9 @@ export function FreeformSlideStage({
   onUpdateSlide,
   onZoomImage,
   stepRevealCount = 999,
+  soundEnabled = true,
+  spotlightActive = false,
+  spotlightPos,
 }: FreeformSlideStageProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -370,7 +376,7 @@ export function FreeformSlideStage({
         justifyContent: "center",
         position: "relative",
         overflow: "hidden",
-        backgroundColor: "#0B0E14",
+        backgroundColor: isEditor ? "#0B0E14" : "transparent",
       }}
       onClick={(e) => {
         // Deselect only if clicking the outer workspace background directly
@@ -407,9 +413,11 @@ export function FreeformSlideStage({
               ? `${palette.gridOverlay}, ${palette.canvasBg}`
               : undefined,
           backgroundSize: palette.gridOverlay ? "24px 24px, 100% 100%" : undefined,
+          borderRadius: isEditor ? "0px" : "20px",
+          border: isEditor ? "none" : "1px solid rgba(255, 255, 255, 0.14)",
           boxShadow: isEditor
             ? "0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08)"
-            : "none",
+            : "0 25px 65px -15px rgba(0, 0, 0, 0.75), 0 0 35px -10px rgba(0, 0, 0, 0.5)",
           overflow: "hidden",
           flexShrink: 0,
         }}
@@ -475,6 +483,7 @@ export function FreeformSlideStage({
                   onUpdateElement={(patch) => onUpdateElement?.(el.id, patch)}
                   onZoomImage={onZoomImage}
                   stepRevealVisible={isVisible}
+                  soundEnabled={soundEnabled}
                 />
 
                 {/* Selection Bounding Box & Resize Handles */}
@@ -494,6 +503,20 @@ export function FreeformSlideStage({
               </div>
             );
           })}
+
+        {/* Presenter Spotlight Overlay */}
+        {!isEditor && spotlightActive && spotlightPos && stageRef.current && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              zIndex: 99999,
+              background: `radial-gradient(circle 160px at ${(spotlightPos.x - stageRef.current.getBoundingClientRect().left) / scale}px ${(spotlightPos.y - stageRef.current.getBoundingClientRect().top) / scale}px, rgba(0,0,0,0) 0%, rgba(5, 8, 16, 0.88) 100%)`,
+              transition: "background 0.04s ease-out",
+            }}
+          />
+        )}
       </div>
     </div>
   );

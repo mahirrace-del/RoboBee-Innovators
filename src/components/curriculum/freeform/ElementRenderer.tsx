@@ -11,8 +11,22 @@ import {
   ArrowRight,
   ArrowLeft,
   Pin,
-  ExternalLink,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  Sparkles,
+  Plus,
+  HelpCircle,
+  Trophy,
+  Zap,
+  Award,
 } from "lucide-react";
+import {
+  playPop,
+  playChime,
+  playClick,
+  launchConfetti,
+} from "../presentationEffects";
 
 interface ElementRendererProps {
   element: SlideElement;
@@ -24,6 +38,7 @@ interface ElementRendererProps {
   onUpdateElement?: (patch: Partial<SlideElement>) => void;
   onZoomImage?: (src: string, caption: string) => void;
   stepRevealVisible?: boolean;
+  soundEnabled?: boolean;
 }
 
 export function ElementRenderer({
@@ -36,9 +51,23 @@ export function ElementRenderer({
   onUpdateElement,
   onZoomImage,
   stepRevealVisible = true,
+  soundEnabled = true,
 }: ElementRendererProps) {
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const textEditRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Interactive Quiz Card State (Flip front/back)
+  const [quizFlipped, setQuizFlipped] = useState<boolean>(false);
+
+  // Interactive Classroom Poll State (+1 tally)
+  const [pollVotes, setPollVotes] = useState<number>(element.pollInitialVotes ?? 0);
+  const [hasVoted, setHasVoted] = useState<boolean>(false);
+
+  // Active Hotspot Pin inspection state
+  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
+
+  // Active Pinout Card state
+  const [selectedPinIdx, setSelectedPinIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (isEditing && textEditRef.current) {
@@ -106,7 +135,7 @@ export function ElementRenderer({
           }}
           style={{
             ...baseInnerStyle,
-            outline: "2px solid #F5B700",
+            outline: "2px solid #F5B800",
             resize: "none",
             background: "rgba(15, 23, 42, 0.95)",
           }}
@@ -123,6 +152,7 @@ export function ElementRenderer({
           fontWeight: style.fontWeight || 900,
           fontSize: style.fontSize ? `${style.fontSize}px` : "34px",
           wordBreak: "break-word",
+          letterSpacing: "-0.02em",
         }}
       >
         {content || "Double click to edit heading..."}
@@ -146,7 +176,7 @@ export function ElementRenderer({
           }}
           style={{
             ...baseInnerStyle,
-            outline: "2px solid #F5B700",
+            outline: "2px solid #F5B800",
             resize: "none",
             background: "rgba(15, 23, 42, 0.95)",
           }}
@@ -161,9 +191,10 @@ export function ElementRenderer({
           display: "flex",
           alignItems: "center",
           fontWeight: style.fontWeight || 500,
-          fontSize: style.fontSize ? `${style.fontSize}px` : "18px",
+          fontSize: style.fontSize ? `${style.fontSize}px` : "17px",
           color: style.color || "#94A3B8",
           wordBreak: "break-word",
+          lineHeight: 1.45,
         }}
       >
         {content || "Double click to edit subheading..."}
@@ -187,7 +218,7 @@ export function ElementRenderer({
           }}
           style={{
             ...baseInnerStyle,
-            outline: "2px solid #F5B700",
+            outline: "2px solid #F5B800",
             resize: "none",
             background: "rgba(15, 23, 42, 0.95)",
           }}
@@ -202,6 +233,7 @@ export function ElementRenderer({
           fontSize: style.fontSize ? `${style.fontSize}px` : "15px",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
+          lineHeight: 1.6,
         }}
       >
         {content || "Double click to enter body text or bullet points..."}
@@ -209,58 +241,198 @@ export function ElementRenderer({
     );
   }
 
-  // 4. IMAGE ELEMENT
+  // 4. IMAGE ELEMENT (WITH PULSING HOTSPOT PINS OVERLAY)
   if (type === "image") {
+    const pins = element.hotspotPins || [];
+    const activePin = pins.find((p) => p.id === activeHotspotId);
+
     return (
       <div
         style={{
           ...baseInnerStyle,
           display: "flex",
           flexDirection: "column",
-          cursor: !isEditorMode ? "zoom-in" : "default",
+          cursor: !isEditorMode && !pins.length ? "zoom-in" : "default",
+          position: "relative",
+          overflow: "hidden",
         }}
         onClick={() => {
-          if (!isEditorMode && onZoomImage && content) {
+          if (!isEditorMode && onZoomImage && content && !pins.length) {
             onZoomImage(content, element.caption || "Image Preview");
           }
         }}
       >
-        <img
-          src={content || "/illustrations/class1-external-blink-wiring.svg"}
-          alt={element.caption || "Slide Visual"}
-          draggable={false}
-          style={{
-            width: "100%",
-            height: element.caption ? "calc(100% - 28px)" : "100%",
-            objectFit: style.objectFit || "cover",
-            display: "block",
-            pointerEvents: isEditorMode ? "none" : "auto",
-            userSelect: "none",
-          }}
-          loading="lazy"
-        />
+        <div style={{ position: "relative", width: "100%", height: element.caption ? "calc(100% - 32px)" : "100%" }}>
+          <img
+            src={content || "/illustrations/class1-external-blink-wiring.svg"}
+            alt={element.caption || "Slide Visual"}
+            draggable={false}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: style.objectFit || "cover",
+              display: "block",
+              pointerEvents: isEditorMode ? "none" : "auto",
+              userSelect: "none",
+            }}
+            loading="lazy"
+          />
+
+          {/* Interactive Hotspot Pins Overlay on Image */}
+          {!isEditorMode && pins.length > 0 && (
+            <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+              {pins.map((pin) => {
+                const isActive = activeHotspotId === pin.id;
+                const pinColor = pin.color || "#F5B800";
+                return (
+                  <button
+                    key={pin.id}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      playPop(soundEnabled);
+                      setActiveHotspotId((prev) => (prev === pin.id ? null : pin.id));
+                    }}
+                    style={{
+                      position: "absolute",
+                      left: `${pin.xPercent}%`,
+                      top: `${pin.yPercent}%`,
+                      transform: "translate(-50%, -50%)",
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      background: isActive ? pinColor : "rgba(15, 23, 42, 0.9)",
+                      border: `2px solid ${pinColor}`,
+                      color: isActive ? "#0F172A" : "#FFFFFF",
+                      boxShadow: isActive
+                        ? `0 0 25px 8px ${pinColor}88`
+                        : `0 0 16px 2px ${pinColor}55`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "13px",
+                      fontWeight: 900,
+                      cursor: "pointer",
+                      pointerEvents: "auto",
+                      transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                      zIndex: isActive ? 20 : 10,
+                    }}
+                    title={`${pin.number}. ${pin.title}`}
+                  >
+                    {pin.number}
+                  </button>
+                );
+              })}
+
+              {/* Active Hotspot Detail Card Popup */}
+              {activePin && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    position: "absolute",
+                    bottom: "12px",
+                    left: "12px",
+                    right: "12px",
+                    background: "rgba(15, 23, 42, 0.95)",
+                    backdropFilter: "blur(16px)",
+                    border: `1.5px solid ${activePin.color || "#F5B800"}`,
+                    borderRadius: "14px",
+                    padding: "0.85rem 1.15rem",
+                    boxShadow: "0 15px 40px rgba(0,0,0,0.75)",
+                    pointerEvents: "auto",
+                    zIndex: 25,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
+                      <span
+                        style={{
+                          fontSize: "0.68rem",
+                          fontWeight: 900,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                          color: activePin.color || "#F5B800",
+                          background: "rgba(245, 184, 0, 0.15)",
+                          padding: "2px 8px",
+                          borderRadius: "999px",
+                        }}
+                      >
+                        {activePin.badge || `PIN 0${activePin.number}`}
+                      </span>
+                      <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#FFFFFF" }}>
+                        {activePin.title}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "0.82rem", color: "#CBD5E1", lineHeight: 1.4 }}>
+                      {activePin.description}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveHotspotId(null)}
+                    style={{
+                      background: "rgba(255,255,255,0.1)",
+                      border: "none",
+                      color: "#94A3B8",
+                      borderRadius: "6px",
+                      padding: "4px 8px",
+                      fontSize: "0.72rem",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {element.caption && (
           <div
             style={{
-              height: "28px",
-              padding: "0 10px",
+              height: "32px",
+              padding: "0 12px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               fontSize: "12px",
               fontWeight: 600,
               color: "#94A3B8",
-              backgroundColor: "rgba(15, 23, 42, 0.85)",
+              backgroundColor: "rgba(15, 23, 42, 0.90)",
               borderTop: "1px solid rgba(255,255,255,0.08)",
             }}
           >
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {element.caption}
             </span>
-            {!isEditorMode && (
-              <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#38BDF8" }}>
-                <ZoomIn size={12} /> Click to zoom
-              </span>
+            {!isEditorMode && onZoomImage && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onZoomImage(content, element.caption || "Image Preview");
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  color: "#38BDF8",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                }}
+              >
+                <ZoomIn size={12} /> Zoom
+              </button>
             )}
           </div>
         )}
@@ -307,19 +479,20 @@ export function ElementRenderer({
         onDoubleClick={onStartEditing}
         style={{
           ...baseInnerStyle,
-          backgroundColor: style.backgroundColor || "#0D1117",
-          borderColor: style.borderColor || "#2E374B",
-          borderWidth: "1px",
+          backgroundColor: style.backgroundColor || "#0B0F19",
+          borderColor: style.borderColor || "#2A364F",
+          borderWidth: "1.5px",
           borderStyle: "solid",
-          borderRadius: style.borderRadius || 12,
+          borderRadius: style.borderRadius || 16,
           display: "flex",
           flexDirection: "column",
+          boxShadow: "0 18px 40px -10px rgba(0, 0, 0, 0.75)",
         }}
       >
-        {/* Code Header Bar */}
+        {/* Modern macOS / Code Window Header */}
         <div
           style={{
-            padding: "8px 14px",
+            padding: "10px 14px",
             backgroundColor: "rgba(255, 255, 255, 0.04)",
             borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
             display: "flex",
@@ -328,50 +501,57 @@ export function ElementRenderer({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Code2 size={14} color="#00F5D4" />
+            <div style={{ display: "flex", gap: "5px" }}>
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#EF4444" }} />
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#F59E0B" }} />
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#10B981" }} />
+            </div>
             <span
               style={{
+                marginLeft: "8px",
                 fontSize: "11px",
                 fontWeight: 800,
-                color: "#00F5D4",
+                color: "#38BDF8",
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
+                fontFamily: "var(--font-mono, monospace)",
               }}
             >
-              {(element.language || "cpp").toUpperCase()} CODE LAB
+              {(element.language || "cpp").toUpperCase()} • ARDUINO CODE LAB
             </span>
           </div>
           <button
             type="button"
             onClick={handleCopy}
             style={{
-              background: "rgba(255, 255, 255, 0.08)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
+              background: copiedCode ? "rgba(16, 185, 129, 0.2)" : "rgba(255, 255, 255, 0.08)",
+              border: `1px solid ${copiedCode ? "#10B981" : "rgba(255, 255, 255, 0.15)"}`,
               borderRadius: "6px",
               padding: "4px 8px",
-              color: "#E2E8F0",
+              color: copiedCode ? "#10B981" : "#E2E8F0",
               fontSize: "11px",
               fontWeight: 700,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               gap: "4px",
+              transition: "all 0.2s ease",
             }}
           >
-            {copiedCode ? <Check size={12} color="#10B981" /> : <Copy size={12} />}
-            <span>{copiedCode ? "Copied!" : "Copy"}</span>
+            {copiedCode ? <Check size={12} /> : <Copy size={12} />}
+            <span>{copiedCode ? "Copied!" : "Copy Code"}</span>
           </button>
         </div>
 
-        {/* Code Lines */}
+        {/* Code Content */}
         <pre
           style={{
             margin: 0,
-            padding: "14px 18px",
+            padding: "16px 18px",
             overflow: "auto",
             fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
-            fontSize: style.fontSize ? `${style.fontSize}px` : "13px",
-            lineHeight: 1.5,
+            fontSize: style.fontSize ? `${style.fontSize}px` : "13.5px",
+            lineHeight: 1.55,
             color: style.color || "#F8FAFC",
             whiteSpace: "pre",
             flex: 1,
@@ -383,7 +563,7 @@ export function ElementRenderer({
     );
   }
 
-  // 6. SHAPE / ARROW / CALLOUT BADGE
+  // 6. SHAPE / ARROW / BADGE
   if (type === "shape") {
     const shape = element.shapeType || "rectangle";
 
@@ -408,7 +588,7 @@ export function ElementRenderer({
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 0 L 10 5 L 0 10 z" fill={style.color || "#F5B700"} />
+                <path d="M 0 0 L 10 5 L 0 10 z" fill={style.color || "#F5B800"} />
               </marker>
             </defs>
             <line
@@ -416,7 +596,7 @@ export function ElementRenderer({
               y1="20"
               x2="90"
               y2="20"
-              stroke={style.color || "#F5B700"}
+              stroke={style.color || "#F5B800"}
               strokeWidth={style.borderWidth || 4}
               markerEnd={`url(#arr-${element.id})`}
             />
@@ -455,7 +635,7 @@ export function ElementRenderer({
     );
   }
 
-  // 7. CALLOUT BENTO CARD
+  // 7. CALLOUT ELEMENT (WITH INTERACTIVE FLIP QUIZ & POLL CARDS)
   if (type === "callout") {
     if (isEditing && isEditorMode) {
       return (
@@ -469,7 +649,7 @@ export function ElementRenderer({
           style={{
             ...baseInnerStyle,
             padding: "16px",
-            outline: "2px solid #F5B700",
+            outline: "2px solid #F5B800",
             resize: "none",
             background: "rgba(15, 23, 42, 0.95)",
           }}
@@ -477,7 +657,7 @@ export function ElementRenderer({
       );
     }
 
-    // Split markdown-style title ### and body
+    // Parse markdown-style title ### and body
     let displayTitle = "";
     let displayBody = content;
     if (content.startsWith("### ")) {
@@ -490,6 +670,303 @@ export function ElementRenderer({
       displayBody = parts.slice(1).join("\n").trim();
     }
 
+    // ------------------------------------------------------------------------
+    // A. INTERACTIVE FLIP QUIZ CARD (e.g. Robot vs Machine Challenge)
+    // ------------------------------------------------------------------------
+    if (element.isQuizCard) {
+      const verdictColor = element.quizIsPositive ? "#10B981" : "#F43F5E";
+
+      const handleToggleQuizFlip = () => {
+        if (isEditorMode) return;
+        const nextFlipped = !quizFlipped;
+        setQuizFlipped(nextFlipped);
+
+        if (nextFlipped) {
+          playPop(soundEnabled);
+          if (element.quizIsPositive) {
+            playChime(soundEnabled);
+            launchConfetti();
+          }
+        } else {
+          playPop(soundEnabled);
+        }
+      };
+
+      return (
+        <div
+          onClick={handleToggleQuizFlip}
+          style={{
+            ...baseInnerStyle,
+            cursor: !isEditorMode ? "pointer" : "default",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            background: quizFlipped
+              ? element.quizIsPositive
+                ? "linear-gradient(145deg, rgba(16, 185, 129, 0.22) 0%, rgba(6, 78, 59, 0.45) 100%)"
+                : "linear-gradient(145deg, rgba(244, 63, 94, 0.22) 0%, rgba(136, 19, 55, 0.45) 100%)"
+              : style.backgroundColor || "rgba(22, 27, 38, 0.88)",
+            borderColor: quizFlipped ? verdictColor : style.borderColor || "rgba(255, 255, 255, 0.18)",
+            borderWidth: quizFlipped ? "2px" : "1.5px",
+            borderStyle: "solid",
+            borderRadius: style.borderRadius || 18,
+            boxShadow: quizFlipped
+              ? `0 20px 45px -10px ${verdictColor}55, 0 0 20px ${verdictColor}33`
+              : style.boxShadow || "0 18px 40px -10px rgba(0, 0, 0, 0.55)",
+            padding: "20px 22px",
+            transition: "all 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        >
+          {/* Top Badge & Status */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 900,
+                color: quizFlipped ? verdictColor : "#F5B800",
+                backgroundColor: quizFlipped ? "rgba(255,255,255,0.08)" : "rgba(245, 184, 0, 0.16)",
+                border: `1px solid ${quizFlipped ? verdictColor : "rgba(245, 184, 0, 0.35)"}`,
+                borderRadius: "999px",
+                padding: "3px 10px",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {element.badgeText || "CHALLENGE CARD"}
+            </span>
+
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 800,
+                color: quizFlipped ? "#FFFFFF" : "#38BDF8",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              {quizFlipped ? (
+                <>
+                  <RotateCcw size={12} /> Tap to Reset
+                </>
+              ) : (
+                <>
+                  <Sparkles size={12} /> Tap to Reveal Verdict ➔
+                </>
+              )}
+            </span>
+          </div>
+
+          {/* Card Body */}
+          <div style={{ margin: "10px 0", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div
+              style={{
+                fontSize: style.fontSize ? `${Math.min(22, style.fontSize + 2)}px` : "20px",
+                fontWeight: 900,
+                color: "#FFFFFF",
+                marginBottom: "6px",
+                lineHeight: 1.25,
+              }}
+            >
+              {displayTitle || "Interactive Challenge"}
+            </div>
+            <div
+              style={{
+                fontSize: "14px",
+                color: "#E2E8F0",
+                lineHeight: 1.5,
+              }}
+            >
+              {displayBody}
+            </div>
+          </div>
+
+          {/* Flipped Verdict Banner or Tap Prompt */}
+          {quizFlipped ? (
+            <div
+              style={{
+                paddingTop: "10px",
+                borderTop: `1px solid ${verdictColor}66`,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                color: verdictColor,
+                fontWeight: 900,
+                fontSize: "13.5px",
+                lineHeight: 1.35,
+              }}
+            >
+              {element.quizIsPositive ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+              <span>{element.quizVerdict || (element.quizIsPositive ? "TRUE ROBOT!" : "JUST A MACHINE")}</span>
+            </div>
+          ) : (
+            <div
+              style={{
+                paddingTop: "8px",
+                borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                fontSize: "12px",
+                color: "#94A3B8",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <HelpCircle size={14} color="#F5B800" />
+              <span>Ask the class: &ldquo;Robot or Machine?&rdquo; then tap card</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ------------------------------------------------------------------------
+    // B. INTERACTIVE CLASSROOM POLL CARD (+1 Hand Tally & Live Progress Bar)
+    // ------------------------------------------------------------------------
+    if (element.isPollCard) {
+      const handleVote = (e: React.MouseEvent) => {
+        if (isEditorMode) return;
+        e.stopPropagation();
+        setPollVotes((prev) => prev + 1);
+        setHasVoted(true);
+        playClick(soundEnabled);
+      };
+
+      const accentColor = style.borderColor || "#00F5D4";
+
+      return (
+        <div
+          style={{
+            ...baseInnerStyle,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            background: style.backgroundColor || "rgba(22, 27, 38, 0.88)",
+            borderColor: hasVoted ? "#00F5D4" : style.borderColor || "rgba(255, 255, 255, 0.18)",
+            borderWidth: "1.5px",
+            borderStyle: "solid",
+            borderRadius: style.borderRadius || 18,
+            boxShadow: hasVoted
+              ? "0 20px 45px -10px rgba(0, 245, 212, 0.35), 0 0 16px rgba(0, 245, 212, 0.25)"
+              : style.boxShadow || "0 18px 40px -10px rgba(0, 0, 0, 0.55)",
+            padding: "18px 20px",
+            transition: "all 0.3s ease",
+          }}
+        >
+          {/* Top Badge */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 900,
+                color: accentColor,
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                border: `1px solid ${accentColor}66`,
+                borderRadius: "999px",
+                padding: "3px 10px",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {element.badgeText || "STUDENT PATHWAY"}
+            </span>
+
+            <span
+              style={{
+                fontFamily: "var(--font-mono, monospace)",
+                fontSize: "13px",
+                fontWeight: 900,
+                color: "#FFFFFF",
+                background: "rgba(255, 255, 255, 0.1)",
+                padding: "2px 8px",
+                borderRadius: "6px",
+              }}
+            >
+              {pollVotes} {pollVotes === 1 ? "Hand" : "Hands"}
+            </span>
+          </div>
+
+          {/* Title & Body */}
+          <div style={{ margin: "10px 0", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div
+              style={{
+                fontSize: style.fontSize ? `${Math.min(20, style.fontSize + 2)}px` : "18px",
+                fontWeight: 900,
+                color: "#FFFFFF",
+                marginBottom: "4px",
+                lineHeight: 1.25,
+              }}
+            >
+              {displayTitle || "Classroom Poll"}
+            </div>
+            <div
+              style={{
+                fontSize: "13.5px",
+                color: "#CBD5E1",
+                lineHeight: 1.45,
+              }}
+            >
+              {displayBody}
+            </div>
+          </div>
+
+          {/* Bottom Action: +1 Vote Button & Animated Fill Bar */}
+          <div>
+            <div
+              style={{
+                width: "100%",
+                height: "6px",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "999px",
+                overflow: "hidden",
+                marginBottom: "10px",
+              }}
+            >
+              <div
+                style={{
+                  width: `${Math.min(100, pollVotes * 10)}%`,
+                  height: "100%",
+                  background: `linear-gradient(90deg, ${accentColor}, #38BDF8)`,
+                  transition: "width 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                  borderRadius: "999px",
+                }}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleVote}
+              disabled={isEditorMode}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                padding: "8px 12px",
+                borderRadius: "10px",
+                border: "none",
+                background: hasVoted
+                  ? "linear-gradient(90deg, #00F5D4, #38BDF8)"
+                  : "rgba(255, 255, 255, 0.12)",
+                color: hasVoted ? "#0F172A" : "#FFFFFF",
+                fontWeight: 900,
+                fontSize: "12.5px",
+                cursor: isEditorMode ? "default" : "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <Plus size={14} />
+              <span>+1 Raise Hand ({pollVotes})</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ------------------------------------------------------------------------
+    // C. STANDARD BENTO CALLOUT CARD
+    // ------------------------------------------------------------------------
     return (
       <div
         onDoubleClick={onStartEditing}
@@ -498,6 +975,11 @@ export function ElementRenderer({
           display: "flex",
           flexDirection: "column",
           gap: "8px",
+          borderRadius: style.borderRadius || 18,
+          borderWidth: style.borderWidth || "1.5px",
+          borderStyle: "solid",
+          boxShadow: style.boxShadow || "0 18px 40px -10px rgba(0, 0, 0, 0.55)",
+          padding: "20px 24px",
         }}
       >
         {element.badgeText && (
@@ -506,9 +988,9 @@ export function ElementRenderer({
               style={{
                 fontSize: "11px",
                 fontWeight: 900,
-                color: "#F5B700",
-                backgroundColor: "rgba(245, 183, 0, 0.15)",
-                border: "1px solid rgba(245, 183, 0, 0.35)",
+                color: "#F5B800",
+                backgroundColor: "rgba(245, 184, 0, 0.16)",
+                border: "1px solid rgba(245, 184, 0, 0.35)",
                 borderRadius: "999px",
                 padding: "3px 10px",
                 textTransform: "uppercase",
@@ -522,10 +1004,11 @@ export function ElementRenderer({
         {displayTitle && (
           <div
             style={{
-              fontSize: style.fontSize ? `${Math.min(22, style.fontSize + 2)}px` : "18px",
-              fontWeight: 800,
+              fontSize: style.fontSize ? `${Math.min(22, style.fontSize + 2)}px` : "20px",
+              fontWeight: 900,
               color: style.color || "#FFFFFF",
               lineHeight: 1.3,
+              letterSpacing: "-0.01em",
             }}
           >
             {displayTitle}
@@ -533,9 +1016,9 @@ export function ElementRenderer({
         )}
         <div
           style={{
-            fontSize: style.fontSize ? `${style.fontSize}px` : "14px",
+            fontSize: style.fontSize ? `${style.fontSize}px` : "14.5px",
             color: "#CBD5E1",
-            lineHeight: 1.5,
+            lineHeight: 1.55,
             whiteSpace: "pre-wrap",
             flex: 1,
           }}
@@ -558,7 +1041,7 @@ export function ElementRenderer({
     }
 
     return (
-      <div style={{ ...baseInnerStyle, backgroundColor: "#000000" }}>
+      <div style={{ ...baseInnerStyle, backgroundColor: "#000000", borderRadius: style.borderRadius || 16 }}>
         {embedSrc ? (
           <iframe
             src={embedSrc}
@@ -580,7 +1063,7 @@ export function ElementRenderer({
               color: "#94A3B8",
             }}
           >
-            <Play size={32} color="#F5B700" />
+            <Play size={32} color="#F5B800" />
             <span>Enter Video URL in Inspector to Embed</span>
           </div>
         )}
@@ -588,13 +1071,15 @@ export function ElementRenderer({
     );
   }
 
-  // 9. PINOUT CARD ELEMENT
+  // 9. PINOUT CARD ELEMENT (INTERACTIVE HARDWARE PINOUT TOUR)
   if (type === "pinout-card") {
     const pins = element.pinItems || [
-      { number: 1, label: "5V Power", pinName: "5V", note: "Powers breadboard positive rail" },
-      { number: 2, label: "Ground", pinName: "GND", note: "Common reference zero-volt rail" },
-      { number: 3, label: "Digital Signal", pinName: "D13", note: "Built-in LED control pin" },
+      { number: 1, label: "5V Power", pinName: "5V", note: "Powers breadboard positive rail with regulated 5 volts" },
+      { number: 2, label: "Ground", pinName: "GND", note: "Common zero-volt circuit return rail" },
+      { number: 3, label: "Digital Signal", pinName: "D13", note: "Connected to onboard LED (L); commands HIGH/LOW" },
     ];
+
+    const activePin = selectedPinIdx !== null ? pins[selectedPinIdx] : null;
 
     return (
       <div
@@ -603,61 +1088,98 @@ export function ElementRenderer({
           display: "flex",
           flexDirection: "column",
           gap: "8px",
+          borderRadius: style.borderRadius || 18,
+          padding: "16px 18px",
+          background: style.backgroundColor || "rgba(15, 23, 42, 0.9)",
+          borderColor: style.borderColor || "#2DD4BF",
+          borderWidth: "1.5px",
+          borderStyle: "solid",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Pin size={14} color="#00F5D4" />
-          <span style={{ fontSize: "12px", fontWeight: 800, color: "#00F5D4", textTransform: "uppercase" }}>
-            {element.caption || "HARDWARE PINOUT MAP"}
-          </span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <Pin size={14} color="#00F5D4" />
+            <span style={{ fontSize: "12px", fontWeight: 800, color: "#00F5D4", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              {element.caption || "HARDWARE PINOUT MAP"}
+            </span>
+          </div>
+          <span style={{ fontSize: "11px", color: "#94A3B8", fontWeight: 700 }}>Tap pin to inspect</span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px", overflowY: "auto" }}>
-          {pins.map((p, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "6px 10px",
-                background: "rgba(255, 255, 255, 0.04)",
-                borderRadius: "8px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                fontSize: "12px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span
-                  style={{
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    backgroundColor: "#F5B700",
-                    color: "#0F172A",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "11px",
-                    fontWeight: 900,
-                  }}
-                >
-                  {p.number}
-                </span>
-                <span style={{ fontWeight: 700, color: "#FFFFFF" }}>{p.label}</span>
-              </div>
-              <span
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px", overflowY: "auto", flex: 1 }}>
+          {pins.map((p, idx) => {
+            const isSelected = selectedPinIdx === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  if (isEditorMode) return;
+                  playPop(soundEnabled);
+                  setSelectedPinIdx((prev) => (prev === idx ? null : idx));
+                }}
                 style={{
-                  fontFamily: "var(--font-mono, monospace)",
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#38BDF8",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "8px 12px",
+                  background: isSelected ? "rgba(0, 245, 212, 0.16)" : "rgba(255, 255, 255, 0.04)",
+                  borderRadius: "10px",
+                  border: `1px solid ${isSelected ? "#00F5D4" : "rgba(255, 255, 255, 0.08)"}`,
+                  cursor: isEditorMode ? "default" : "pointer",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
                 }}
               >
-                {p.pinName}
-              </span>
-            </div>
-          ))}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "50%",
+                      backgroundColor: isSelected ? "#00F5D4" : "#F5B800",
+                      color: "#0F172A",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "11px",
+                      fontWeight: 900,
+                    }}
+                  >
+                    {p.number}
+                  </span>
+                  <span style={{ fontWeight: 700, color: "#FFFFFF", fontSize: "13px" }}>{p.label}</span>
+                </div>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono, monospace)",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    color: isSelected ? "#00F5D4" : "#38BDF8",
+                  }}
+                >
+                  {p.pinName}
+                </span>
+              </button>
+            );
+          })}
         </div>
+
+        {activePin && (
+          <div
+            style={{
+              padding: "8px 12px",
+              background: "rgba(0, 245, 212, 0.12)",
+              border: "1px solid #00F5D4",
+              borderRadius: "8px",
+              fontSize: "12px",
+              color: "#E2E8F0",
+              lineHeight: 1.4,
+            }}
+          >
+            <strong style={{ color: "#00F5D4" }}>{activePin.pinName} Function:</strong> {activePin.note}
+          </div>
+        )}
       </div>
     );
   }

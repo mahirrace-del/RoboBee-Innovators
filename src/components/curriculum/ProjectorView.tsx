@@ -16,7 +16,6 @@ import {
   normalizeDeckToFreeform,
 } from "@/lib/slideStudioStore";
 import { FreeformSlideStage } from "./freeform/FreeformSlideStage";
-import { EditableSlideCanvas } from "./EditableSlideCanvas";
 import { HardwareLabDrawer } from "./HardwareLabDrawer";
 import {
   Play,
@@ -35,7 +34,21 @@ import {
   LayoutGrid,
   Cpu,
   Edit3,
+  Volume2,
+  VolumeX,
+  Sparkles,
+  Sun,
+  Pin,
+  PinOff,
+  Check,
 } from "lucide-react";
+import {
+  playPop,
+  playChime,
+  playClick,
+  playFanfare,
+  launchConfetti,
+} from "./presentationEffects";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import {
@@ -70,10 +83,17 @@ export function ProjectorView({
   const [currentSlide, setCurrentSlide] = useState<number>(initialSlide);
   const [stepRevealCount, setStepRevealCount] = useState<number>(0);
 
-  // Dynamic Multi-Palette Theme Override ('auto' or one of the curated themes)
-  const [themeOverride, setThemeOverride] = useState<SlideColorTheme | "auto">(
-    "auto"
-  );
+  // Dynamic Theme Override ('auto' or one of the curated themes)
+  const [themeOverride, setThemeOverride] = useState<SlideColorTheme | "auto">("auto");
+  const [showThemeMenu, setShowThemeMenu] = useState<boolean>(false);
+
+  // Classroom Sound Effects (Web Audio synth toggle)
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+
+  // Auto-hiding Dock State
+  const [dockVisible, setDockVisible] = useState<boolean>(true);
+  const [dockPinned, setDockPinned] = useState<boolean>(false);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Slide Thumbnail Filmstrip / Grid Overview Modal
   const [showThumbnailStrip, setShowThumbnailStrip] = useState<boolean>(false);
@@ -83,6 +103,11 @@ export function ProjectorView({
 
   // Laser Pointer Mode ('L' key or Dock button)
   const [laserActive, setLaserActive] = useState<boolean>(false);
+
+  // Spotlight Mode ('S' key or Dock button)
+  const [spotlightActive, setSpotlightActive] = useState<boolean>(false);
+
+  // Pointer position for Laser & Spotlight
   const [laserPos, setLaserPos] = useState<{ x: number; y: number }>({
     x: -100,
     y: -100,
@@ -103,20 +128,17 @@ export function ProjectorView({
 
   // Font scaling controls (100%, 125%, 150%)
   const [fontScale, setFontScale] = useState<number>(100);
+
   // Collapsible Instructor Speaker Notes Drawer & Dual-Screen Presenter Console
   const [showSpeakerNotes, setShowSpeakerNotes] = useState<boolean>(false);
-  const [showPresenterConsole, setShowPresenterConsole] =
-    useState<boolean>(false);
+  const [showPresenterConsole, setShowPresenterConsole] = useState<boolean>(false);
 
   // Touch swipe tracking for tablet/mobile
   const touchStartX = useRef<number | null>(null);
 
   // Live Lab Inventory & Student Attendance for Presenter Console
-  const [inventoryItems, setInventoryItems] = useState<
-    RelationalInventoryItem[]
-  >([]);
-  const [activeSession, setActiveSession] =
-    useState<ScheduledClassSession | null>(null);
+  const [inventoryItems, setInventoryItems] = useState<RelationalInventoryItem[]>([]);
+  const [activeSession, setActiveSession] = useState<ScheduledClassSession | null>(null);
   const [clubMembers, setClubMembers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -138,11 +160,33 @@ export function ProjectorView({
 
   const effectiveTheme: SlideColorTheme =
     themeOverride === "auto" ? activeSlide.theme : themeOverride;
-  const activePalette = THEME_PALETTE_CONFIG[effectiveTheme];
+  const activePalette = THEME_PALETTE_CONFIG[effectiveTheme] || THEME_PALETTE_CONFIG["robobee-dark"];
+
+  // Reset idle timer for dock auto-hide
+  const resetIdleTimer = useCallback(() => {
+    setDockVisible(true);
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+    }
+    if (!dockPinned) {
+      idleTimerRef.current = setTimeout(() => {
+        setDockVisible(false);
+        setShowThemeMenu(false);
+      }, 3500);
+    }
+  }, [dockPinned]);
 
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
+
+    // Read stored sound preference
+    try {
+      const storedSound = localStorage.getItem("robobee_presenter_sound");
+      if (storedSound !== null) {
+        setSoundEnabled(storedSound === "true");
+      }
+    } catch {}
 
     if (initialSlide === 0) {
       try {
@@ -174,6 +218,7 @@ export function ProjectorView({
 
     return () => {
       document.body.style.overflow = "";
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       unsubInv();
       unsubSessions();
       unsubUsers();
@@ -190,13 +235,30 @@ export function ProjectorView({
     } catch {}
   }, [safeSlideIndex, mounted]);
 
+  const toggleSound = useCallback(() => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("robobee_presenter_sound", String(next));
+      } catch {}
+      if (next) playPop(true);
+      return next;
+    });
+  }, []);
+
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev < totalSlides - 1 ? prev + 1 : prev));
-  }, [totalSlides]);
+    if (safeSlideIndex < totalSlides - 1) {
+      setCurrentSlide((prev) => prev + 1);
+      playPop(soundEnabled);
+    }
+  }, [totalSlides, safeSlideIndex, soundEnabled]);
 
   const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : prev));
-  }, []);
+    if (safeSlideIndex > 0) {
+      setCurrentSlide((prev) => prev - 1);
+      playPop(soundEnabled);
+    }
+  }, [safeSlideIndex, soundEnabled]);
 
   const stepRevealElements = (activeSlide.elements || []).filter(
     (el) => el.animation?.type === "step-reveal"
@@ -205,18 +267,20 @@ export function ProjectorView({
   const handleAdvanceStepOrSlide = useCallback(() => {
     if (stepRevealCount < stepRevealElements.length) {
       setStepRevealCount((prev) => prev + 1);
+      playPop(soundEnabled);
     } else {
       nextSlide();
     }
-  }, [stepRevealCount, stepRevealElements.length, nextSlide]);
+  }, [stepRevealCount, stepRevealElements.length, nextSlide, soundEnabled]);
 
   const handleStepBackOrSlide = useCallback(() => {
     if (stepRevealCount > 0) {
       setStepRevealCount((prev) => prev - 1);
+      playPop(soundEnabled);
     } else {
       prevSlide();
     }
-  }, [stepRevealCount, prevSlide]);
+  }, [stepRevealCount, prevSlide, soundEnabled]);
 
   const toggleFullScreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -237,9 +301,16 @@ export function ProjectorView({
     );
   }, [activeSlide]);
 
-  // Keyboard navigation: ArrowRight/Space (Next/Step), ArrowLeft (Prev/Step), L (Laser), Z (Zoom), H (Hardware Lab), F (Fullscreen), N (Notes), Escape
+  const handleCelebrate = useCallback(() => {
+    launchConfetti();
+    playFanfare(soundEnabled);
+  }, [soundEnabled]);
+
+  // Keyboard navigation shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      resetIdleTimer();
+
       if (showHardwareLab) {
         if (e.key === "Escape") {
           setShowHardwareLab(false);
@@ -255,8 +326,14 @@ export function ProjectorView({
       } else if (e.key === "Escape") {
         if (zoomedMedia) {
           setZoomedMedia(null);
+        } else if (showThemeMenu) {
+          setShowThemeMenu(false);
         } else if (showThumbnailStrip) {
           setShowThumbnailStrip(false);
+        } else if (showSpeakerNotes) {
+          setShowSpeakerNotes(false);
+        } else if (showPresenterConsole) {
+          setShowPresenterConsole(false);
         } else {
           onClose();
         }
@@ -264,6 +341,16 @@ export function ProjectorView({
         toggleFullScreen();
       } else if (e.key.toLowerCase() === "l") {
         setLaserActive((prev) => !prev);
+        setSpotlightActive(false);
+        playPop(soundEnabled);
+      } else if (e.key.toLowerCase() === "s") {
+        setSpotlightActive((prev) => !prev);
+        setLaserActive(false);
+        playPop(soundEnabled);
+      } else if (e.key.toLowerCase() === "c") {
+        handleCelebrate();
+      } else if (e.key.toLowerCase() === "m") {
+        toggleSound();
       } else if (e.key.toLowerCase() === "z") {
         toggleZoomCurrentSlide();
       } else if (e.key.toLowerCase() === "n") {
@@ -282,9 +369,16 @@ export function ProjectorView({
     onClose,
     toggleFullScreen,
     toggleZoomCurrentSlide,
+    handleCelebrate,
+    toggleSound,
+    resetIdleTimer,
     zoomedMedia,
+    showThemeMenu,
     showThumbnailStrip,
     showHardwareLab,
+    showSpeakerNotes,
+    showPresenterConsole,
+    soundEnabled,
   ]);
 
   // Rhythm timer countdown
@@ -329,12 +423,12 @@ export function ProjectorView({
     <div
       className={styles.projectorOverlay}
       onMouseMove={(e) => {
-        if (laserActive) {
-          setLaserPos({ x: e.clientX, y: e.clientY });
-        }
+        setLaserPos({ x: e.clientX, y: e.clientY });
+        resetIdleTimer();
       }}
       onTouchStart={(e) => {
         touchStartX.current = e.touches[0]?.clientX ?? null;
+        resetIdleTimer();
       }}
       onTouchEnd={(e) => {
         if (touchStartX.current === null) return;
@@ -345,123 +439,75 @@ export function ProjectorView({
       }}
       style={{
         background: activePalette.canvasBg,
-        zIndex: 999999,
         cursor: laserActive ? "none" : "default",
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        width: "100vw",
-        overflow: "hidden",
-        transition: "background 0.45s ease",
       }}
     >
-      {/* Top Progress Bar */}
-      <div
-        style={{
-          width: "100%",
-          height: "4px",
-          background: "rgba(255, 255, 255, 0.14)",
-          flexShrink: 0,
-        }}
-      >
+      {/* Top Glowing Progress Bar */}
+      <div className={styles.topProgressBar}>
         <div
+          className={styles.topProgressBarFill}
           style={{
             width: `${progressPercentage}%`,
-            height: "100%",
             background: `linear-gradient(90deg, ${activePalette.accentPrimary}, ${activePalette.accentSecondary})`,
-            transition: "width 0.3s ease",
           }}
         />
       </div>
 
       {/* Top Glassmorphic Studio Bar */}
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0.65rem 1.5rem",
-          background: "rgba(15, 23, 42, 0.85)",
-          backdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
-          flexWrap: "wrap",
-          gap: "0.75rem",
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <span
-            style={{
-              padding: "0.28rem 0.75rem",
-              borderRadius: "999px",
-              background: "rgba(0, 245, 212, 0.18)",
-              border: "1px solid #00F5D4",
-              color: "#00F5D4",
-              fontSize: "0.75rem",
-              fontWeight: 900,
-              letterSpacing: "0.06em",
-            }}
-          >
-            {activeDeck.classCode} • LIVE DECK
+      <header className={styles.topBar}>
+        <div className={styles.brandGroup}>
+          <span className={styles.classCodeTag}>
+            {activeDeck.classCode} • LIVE PRESENTATION
           </span>
-          <span
-            style={{
-              fontWeight: 800,
-              color: "#FFFFFF",
-              fontSize: "0.95rem",
-            }}
-          >
+          <span className={styles.classTitleText}>
             {activeDeck.title}
           </span>
+          {stepRevealElements.length > 0 && (
+            <span
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                color: "#38BDF8",
+                background: "rgba(56, 189, 248, 0.15)",
+                border: "1px solid rgba(56, 189, 248, 0.3)",
+                borderRadius: "999px",
+                padding: "2px 8px",
+              }}
+            >
+              Step {Math.min(stepRevealCount, stepRevealElements.length)} / {stepRevealElements.length}
+            </span>
+          )}
         </div>
 
         {/* Classroom Rhythm Timer */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            background: "rgba(255, 255, 255, 0.07)",
-            padding: "0.3rem 0.75rem",
-            borderRadius: "999px",
-            border: "1px solid rgba(255, 255, 255, 0.14)",
-          }}
-        >
-          <Clock size={15} color="#00F5D4" />
-          <span
-            style={{
-              fontFamily: "monospace",
-              fontWeight: 900,
-              color: "#FFFFFF",
-              fontSize: "0.92rem",
-            }}
-          >
+        <div className={styles.timerWidget}>
+          <Clock size={14} color="#00F5D4" />
+          <span className={styles.timerClock}>
             {formatTimer(timerSeconds)}
           </span>
           <button
             type="button"
             onClick={() => setTimerRunning((r) => !r)}
-            className={styles.actionBtn}
+            className={styles.timerBtn}
             title={timerRunning ? "Pause timer (T)" : "Start timer (T)"}
           >
-            {timerRunning ? <Pause size={13} /> : <Play size={13} />}
+            {timerRunning ? <Pause size={12} /> : <Play size={12} />}
           </button>
           <button
             type="button"
             onClick={() => resetTimer()}
-            className={styles.actionBtn}
+            className={styles.timerBtn}
             title="Reset timer"
           >
-            <RotateCcw size={13} />
+            <RotateCcw size={12} />
           </button>
           <button
             type="button"
             onClick={handleToggleCompact}
-            className={styles.actionBtn}
+            className={styles.timerDurationPill}
             style={{
-              background: isCompactMode ? "#00F5D4" : "rgba(255,255,255,0.1)",
+              background: isCompactMode ? "#00F5D4" : "rgba(255,255,255,0.12)",
               color: isCompactMode ? "#0F172A" : "#FFFFFF",
-              fontWeight: 800,
             }}
           >
             {isCompactMode ? "60m" : "120m"}
@@ -469,7 +515,7 @@ export function ProjectorView({
         </div>
 
         {/* Font Scale & Top Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
+        <div className={styles.controlsGroup}>
           <div
             style={{
               display: "flex",
@@ -506,9 +552,8 @@ export function ProjectorView({
               className={styles.actionBtn}
               style={{
                 background: "rgba(56, 189, 248, 0.16)",
-                border: "1px solid #38BDF8",
+                borderColor: "#38BDF8",
                 color: "#38BDF8",
-                fontWeight: 800,
               }}
               title="Customize this slide in Slide Studio"
             >
@@ -523,9 +568,8 @@ export function ProjectorView({
             className={styles.actionBtn}
             style={{
               background: "rgba(16, 185, 129, 0.16)",
-              border: "1px solid #10B981",
+              borderColor: "#10B981",
               color: "#10B981",
-              fontWeight: 800,
             }}
             title="Open Interactive Hardware Lab & Circuit Simulator (H)"
           >
@@ -538,11 +582,8 @@ export function ProjectorView({
             onClick={() => setShowPresenterConsole((prev) => !prev)}
             className={styles.actionBtn}
             style={{
-              background: showPresenterConsole
-                ? "#00F5D4"
-                : "rgba(255,255,255,0.08)",
+              background: showPresenterConsole ? "#00F5D4" : "rgba(255,255,255,0.08)",
               color: showPresenterConsole ? "#0F172A" : "#FFFFFF",
-              fontWeight: 800,
             }}
           >
             <Layers size={14} />
@@ -571,21 +612,17 @@ export function ProjectorView({
         </div>
       </header>
 
-      {/* Main 16:9 Widescreen Slide Stage */}
-      <main
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "1.25rem 2rem 5.5rem 2rem",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
+      {/* Main 16:9 Presentation Stage Area (Reserves 5.5rem bottom space to NEVER overlap dock!) */}
+      <main className={styles.presentationStageArea}>
         <div
           style={{
             width: "100%",
+            height: "100%",
             maxWidth: "1360px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
             fontSize: `${fontScale}%`,
           }}
         >
@@ -595,33 +632,65 @@ export function ProjectorView({
             themeOverride={themeOverride}
             onZoomImage={(src, caption) => setZoomedMedia({ src, caption })}
             stepRevealCount={stepRevealCount}
+            soundEnabled={soundEnabled}
+            spotlightActive={spotlightActive}
+            spotlightPos={laserPos}
           />
 
           {/* Collapsible Speaker Notes Drawer */}
           {showSpeakerNotes && (
             <div
               style={{
-                marginTop: "1rem",
-                background: "rgba(15, 23, 42, 0.92)",
-                backdropFilter: "blur(16px)",
-                border: "1px solid #00F5D4",
+                position: "absolute",
+                bottom: "10px",
+                left: "2rem",
+                right: "2rem",
+                maxHeight: "180px",
+                overflowY: "auto",
+                background: "rgba(15, 23, 42, 0.94)",
+                backdropFilter: "blur(20px)",
+                border: "1.5px solid #00F5D4",
                 borderRadius: "16px",
-                padding: "1rem 1.35rem",
+                padding: "1rem 1.4rem",
                 color: "#F8FAFC",
+                boxShadow: "0 20px 50px rgba(0,0,0,0.85)",
+                zIndex: 1000001,
               }}
             >
               <div
                 style={{
-                  fontSize: "0.75rem",
-                  fontWeight: 900,
-                  color: "#00F5D4",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  marginBottom: "0.35rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "0.4rem",
                 }}
               >
-                🎙️ Instructor Teaching Prompt — Slide {activeSlide.numberLabel}:{" "}
-                {activeSlide.title}
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 900,
+                    color: "#00F5D4",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  🎙️ Instructor Teaching Prompt — Slide {activeSlide.numberLabel}: {activeSlide.title}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowSpeakerNotes(false)}
+                  style={{
+                    background: "rgba(255,255,255,0.1)",
+                    border: "none",
+                    color: "#94A3B8",
+                    borderRadius: "6px",
+                    padding: "2px 6px",
+                    cursor: "pointer",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  Close (N)
+                </button>
               </div>
               <div
                 style={{
@@ -630,25 +699,33 @@ export function ProjectorView({
                   color: "#E2E8F0",
                 }}
               >
-                {activeSlide.speakerNotes}
+                {activeSlide.speakerNotes || "Engage the room with questions before advancing to the next card."}
               </div>
             </div>
           )}
 
-          {/* Dual-Screen Presenter Console (Next Slide + Live BOM Stock + Attendance Checklist) */}
+          {/* Dual-Screen Presenter Console Drawer */}
           {showPresenterConsole && (
             <div
               style={{
-                marginTop: "1rem",
-                background: "rgba(15, 23, 42, 0.94)",
-                border: "1px solid rgba(0, 245, 212, 0.45)",
+                position: "absolute",
+                bottom: "10px",
+                left: "2rem",
+                right: "2rem",
+                maxHeight: "220px",
+                overflowY: "auto",
+                background: "rgba(15, 23, 42, 0.96)",
+                border: "1.5px solid rgba(0, 245, 212, 0.6)",
                 borderRadius: "16px",
                 padding: "1rem 1.25rem",
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
                 gap: "1rem",
+                boxShadow: "0 25px 60px rgba(0,0,0,0.9)",
+                zIndex: 1000001,
               }}
             >
+              {/* Up Next in Deck */}
               <div
                 style={{
                   background: "#0F172A",
@@ -666,23 +743,16 @@ export function ProjectorView({
                     marginBottom: "0.35rem",
                   }}
                 >
-                  ⏭ Up Next in Deck (URL Synced: ?slide={safeSlideIndex + 1})
+                  ⏭ Up Next in Deck
                 </div>
-                <div
-                  style={{
-                    fontSize: "0.92rem",
-                    fontWeight: 800,
-                    color: "#FFFFFF",
-                  }}
-                >
+                <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#FFFFFF" }}>
                   {safeSlideIndex + 1 < totalSlides
-                    ? `Slide ${slides[safeSlideIndex + 1].numberLabel}: ${
-                        slides[safeSlideIndex + 1].title
-                      }`
+                    ? `Slide ${slides[safeSlideIndex + 1].numberLabel}: ${slides[safeSlideIndex + 1].title}`
                     : "End of Deck — Final Action Roadmap"}
                 </div>
               </div>
 
+              {/* Lab Kit Stock Check */}
               <div
                 style={{
                   background: "#0F172A",
@@ -707,14 +777,12 @@ export function ProjectorView({
                     display: "flex",
                     flexDirection: "column",
                     gap: "0.28rem",
-                    maxHeight: "100px",
+                    maxHeight: "95px",
                     overflowY: "auto",
                   }}
                 >
                   {verifyLessonBOMStock(
-                    activeDeck.hardwareKit ||
-                      lesson.physicalBuildPack?.componentList ||
-                      [],
+                    activeDeck.hardwareKit || lesson.physicalBuildPack?.componentList || [],
                     inventoryItems
                   )
                     .slice(0, 5)
@@ -741,15 +809,14 @@ export function ProjectorView({
                                 : "#F43F5E",
                           }}
                         >
-                          {item.availableInLab > 0
-                            ? `${item.availableInLab} in lab`
-                            : "Verify Locker"}
+                          {item.availableInLab > 0 ? `${item.availableInLab} in lab` : "Verify Locker"}
                         </span>
                       </div>
                     ))}
                 </div>
               </div>
 
+              {/* Live Student Attendance Roll Call */}
               <div
                 style={{
                   background: "#0F172A",
@@ -771,15 +838,12 @@ export function ProjectorView({
                 >
                   <span>✅ Live Student Attendance</span>
                   <span>
-                    {activeSession
-                      ? `${(activeSession.attendees || []).length} Present`
-                      : "On-Demand Mode"}
+                    {activeSession ? `${(activeSession.attendees || []).length} Present` : "On-Demand Mode"}
                   </span>
                 </div>
                 {!activeSession ? (
                   <div style={{ fontSize: "0.76rem", color: "#94A3B8" }}>
-                    Activate a session in Attendance Manager to toggle live roll
-                    call here.
+                    Activate a session in Attendance Manager to toggle live roll call here.
                   </div>
                 ) : (
                   <div
@@ -787,15 +851,13 @@ export function ProjectorView({
                       display: "flex",
                       flexWrap: "wrap",
                       gap: "0.35rem",
-                      maxHeight: "100px",
+                      maxHeight: "95px",
                       overflowY: "auto",
                     }}
                   >
                     {clubMembers.slice(0, 12).map((m) => {
                       const uidOrEmail = m.id;
-                      const isPresent = (activeSession.attendees || []).includes(
-                        uidOrEmail
-                      );
+                      const isPresent = (activeSession.attendees || []).includes(uidOrEmail);
                       return (
                         <button
                           key={m.id}
@@ -823,9 +885,7 @@ export function ProjectorView({
                             fontWeight: 700,
                             cursor: "pointer",
                             border: "1px solid",
-                            borderColor: isPresent
-                              ? "#10B981"
-                              : "rgba(255,255,255,0.12)",
+                            borderColor: isPresent ? "#10B981" : "rgba(255,255,255,0.12)",
                             background: isPresent
                               ? "rgba(16, 185, 129, 0.18)"
                               : "rgba(255,255,255,0.04)",
@@ -853,8 +913,8 @@ export function ProjectorView({
             position: "fixed",
             inset: 0,
             background: "rgba(15, 23, 42, 0.88)",
-            backdropFilter: "blur(16px)",
-            zIndex: 1000001,
+            backdropFilter: "blur(20px)",
+            zIndex: 1000006,
             display: "flex",
             flexDirection: "column",
             justifyContent: "flex-end",
@@ -871,7 +931,7 @@ export function ProjectorView({
               maxWidth: "1360px",
               width: "100%",
               margin: "0 auto 4rem auto",
-              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.75)",
+              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.8)",
             }}
           >
             <div
@@ -884,15 +944,8 @@ export function ProjectorView({
             >
               <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                 <LayoutGrid size={18} color="#00F5D4" />
-                <span
-                  style={{
-                    fontWeight: 900,
-                    color: "#FFFFFF",
-                    fontSize: "1.05rem",
-                  }}
-                >
-                  {activeDeck.classCode} Visual Slide Filmstrip ({totalSlides}{" "}
-                  Interactive Slides)
+                <span style={{ fontWeight: 900, color: "#FFFFFF", fontSize: "1.05rem" }}>
+                  {activeDeck.classCode} Visual Slide Filmstrip ({totalSlides} Interactive Slides)
                 </span>
               </div>
               <button
@@ -902,13 +955,14 @@ export function ProjectorView({
                   background: "rgba(255,255,255,0.1)",
                   border: "none",
                   color: "#FFFFFF",
-                  padding: "0.35rem 0.75rem",
+                  padding: "0.35rem 0.85rem",
                   borderRadius: "999px",
                   cursor: "pointer",
                   fontWeight: 700,
+                  fontSize: "0.8rem",
                 }}
               >
-                Close Strip
+                Close Strip (Esc)
               </button>
             </div>
 
@@ -922,7 +976,7 @@ export function ProjectorView({
               }}
             >
               {slides.map((s, idx) => {
-                const sTheme = THEME_PALETTE_CONFIG[s.theme];
+                const sTheme = THEME_PALETTE_CONFIG[s.theme] || THEME_PALETTE_CONFIG["robobee-dark"];
                 const isCurrent = safeSlideIndex === idx;
                 return (
                   <button
@@ -931,18 +985,18 @@ export function ProjectorView({
                     onClick={() => {
                       setCurrentSlide(idx);
                       setShowThumbnailStrip(false);
+                      playPop(soundEnabled);
                     }}
                     style={{
                       background: sTheme.canvasBg,
                       color: sTheme.headingColor,
-                      border: `2px solid ${
-                        isCurrent ? "#00F5D4" : sTheme.cardBorder
-                      }`,
+                      border: `2px solid ${isCurrent ? "#00F5D4" : sTheme.cardBorder}`,
                       borderRadius: "14px",
                       padding: "0.9rem",
                       textAlign: "left",
                       cursor: "pointer",
                       boxShadow: isCurrent ? "0 0 20px #00F5D466" : "none",
+                      transition: "transform 0.2s ease",
                     }}
                   >
                     <div
@@ -958,13 +1012,7 @@ export function ProjectorView({
                       <span>SLIDE {s.numberLabel}</span>
                       <span>{s.layout}</span>
                     </div>
-                    <div
-                      style={{
-                        fontSize: "0.86rem",
-                        fontWeight: 800,
-                        lineHeight: 1.3,
-                      }}
-                    >
+                    <div style={{ fontSize: "0.86rem", fontWeight: 800, lineHeight: 1.3 }}>
                       {s.title}
                     </div>
                   </button>
@@ -975,275 +1023,255 @@ export function ProjectorView({
         </div>
       )}
 
-      {/* Floating Glassmorphic Presenter Control Dock (Bottom) */}
-      <footer
-        style={{
-          position: "fixed",
-          bottom: "14px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 1000002,
-          display: "flex",
-          alignItems: "center",
-          gap: "0.55rem",
-          padding: "0.55rem 1rem",
-          borderRadius: "999px",
-          background: "rgba(15, 23, 42, 0.88)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.22)",
-          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.65)",
-          maxWidth: "96vw",
-          flexWrap: "wrap",
-          justifyContent: "center",
+      {/* Hover Trigger Zone at very bottom of screen */}
+      <div
+        className={styles.dockHoverTrigger}
+        onMouseEnter={() => {
+          setDockVisible(true);
         }}
+      />
+
+      {/* Floating Presenter Control Dock (Bottom) */}
+      <footer
+        className={`${styles.floatingDock} ${!dockVisible && !dockPinned ? styles.floatingDockHidden : ""}`}
+        onMouseEnter={() => {
+          if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+          setDockVisible(true);
+        }}
+        onMouseLeave={resetIdleTimer}
       >
         {/* Prev Slide Button */}
         <button
           type="button"
           onClick={handleStepBackOrSlide}
           disabled={safeSlideIndex === 0 && stepRevealCount === 0}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.35rem",
-            padding: "0.45rem 0.85rem",
-            borderRadius: "999px",
-            border: "1px solid rgba(255,255,255,0.18)",
-            background:
-              safeSlideIndex === 0
-                ? "rgba(255,255,255,0.04)"
-                : "rgba(255,255,255,0.12)",
-            color: safeSlideIndex === 0 ? "#64748B" : "#FFFFFF",
-            fontWeight: 800,
-            fontSize: "0.8rem",
-            cursor: safeSlideIndex === 0 ? "not-allowed" : "pointer",
-          }}
+          className={styles.dockNavBtn}
+          title="Previous Step or Slide (ArrowLeft)"
         >
-          <ArrowLeft size={15} /> Prev
+          <ArrowLeft size={14} />
+          <span>Prev</span>
         </button>
 
         {/* Slide Counter Pill */}
         <button
           type="button"
-          onClick={() => setShowThumbnailStrip((prev) => !prev)}
-          title="Click to open Visual Slide Filmstrip"
+          onClick={() => {
+            setShowThumbnailStrip((prev) => !prev);
+            playPop(soundEnabled);
+          }}
+          className={styles.dockPillBtn}
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.45rem",
-            padding: "0.45rem 1rem",
-            borderRadius: "999px",
-            border: "1px solid #00F5D4",
+            borderColor: "#00F5D4",
             background: "rgba(0, 245, 212, 0.16)",
             color: "#00F5D4",
-            fontWeight: 900,
-            fontSize: "0.84rem",
             fontFamily: "monospace",
-            cursor: "pointer",
+            fontWeight: 900,
           }}
+          title="Open Visual Slide Filmstrip"
         >
-          <LayoutGrid size={14} />
+          <LayoutGrid size={13} />
           <span>
-            Slide {activeSlide.numberLabel} /{" "}
-            {String(totalSlides).padStart(2, "0")}
+            {String(safeSlideIndex + 1).padStart(2, "0")} / {String(totalSlides).padStart(2, "0")}
           </span>
         </button>
 
-        {/* Next Slide Button */}
+        {/* Next Slide / Step Button */}
         <button
           type="button"
           onClick={handleAdvanceStepOrSlide}
-          disabled={safeSlideIndex === totalSlides - 1}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.35rem",
-            padding: "0.45rem 0.9rem",
-            borderRadius: "999px",
-            border: "none",
-            background:
-              safeSlideIndex === totalSlides - 1
-                ? "rgba(255,255,255,0.06)"
-                : "linear-gradient(90deg, #00F5D4, #38BDF8)",
-            color: safeSlideIndex === totalSlides - 1 ? "#64748B" : "#0F172A",
-            fontWeight: 900,
-            fontSize: "0.8rem",
-            cursor:
-              safeSlideIndex === totalSlides - 1 ? "not-allowed" : "pointer",
-          }}
+          disabled={safeSlideIndex === totalSlides - 1 && stepRevealCount >= stepRevealElements.length}
+          className={styles.dockNextBtn}
+          title="Advance Step or Slide (Space / ArrowRight)"
         >
-          Next <ArrowRight size={15} />
+          <span>Next</span>
+          <ArrowRight size={14} />
         </button>
 
-        {/* Divider */}
-        <div
-          style={{
-            width: "1px",
-            height: "22px",
-            background: "rgba(255,255,255,0.18)",
-          }}
-        />
+        <div className={styles.dockDivider} />
 
-        {/* Theme Switcher Override Pill Selector */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.3rem",
-            background: "rgba(255,255,255,0.07)",
-            padding: "0.25rem 0.5rem",
-            borderRadius: "999px",
-            border: "1px solid rgba(255,255,255,0.15)",
-          }}
-        >
-          <Palette size={14} color="#38BDF8" />
-          {(
-            [
-              { id: "auto", label: "Auto Dynamic" },
-              { id: "daylight-studio", label: "Daylight Studio" },
-              { id: "robobee-dark", label: "RoboBEE Dark" },
-              { id: "electric-indigo", label: "Electric Indigo" },
-              { id: "arduino-teal", label: "Arduino Teal" },
-              { id: "cyber-blueprint", label: "Cyber Blueprint" },
-            ] as const
-          ).map((t) => {
-            const active = themeOverride === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setThemeOverride(t.id)}
+        {/* Compact Theme Popover Trigger */}
+        <div style={{ position: "relative" }}>
+          <button
+            type="button"
+            onClick={() => {
+              setShowThemeMenu((prev) => !prev);
+              playPop(soundEnabled);
+            }}
+            className={`${styles.dockPillBtn} ${showThemeMenu ? styles.dockPillBtnActive : ""}`}
+            title="Choose Slide Color Palette"
+          >
+            <Palette size={13} color="#38BDF8" />
+            <span style={{ maxWidth: "110px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {themeOverride === "auto" ? "Theme: Auto" : activePalette.name}
+            </span>
+          </button>
+
+          {/* Floating Theme Popover */}
+          {showThemeMenu && (
+            <div className={styles.themePopover}>
+              <div
                 style={{
-                  padding: "0.25rem 0.6rem",
-                  borderRadius: "999px",
-                  border: "none",
-                  background: active ? "#38BDF8" : "transparent",
-                  color: active ? "#0F172A" : "#CBD5E1",
-                  fontSize: "0.72rem",
-                  fontWeight: active ? 900 : 600,
-                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: 900,
+                  color: "#94A3B8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  padding: "4px 8px",
+                  borderBottom: "1px solid rgba(255,255,255,0.08)",
+                  marginBottom: "4px",
                 }}
               >
-                {t.label}
-              </button>
-            );
-          })}
+                🎨 Slide Theme Palette
+              </div>
+              {[
+                { id: "auto", name: "Auto Dynamic Theme", color: "#00F5D4" },
+                { id: "daylight-studio", name: "Apple Keynote Pure Light", color: "#2563EB" },
+                { id: "robobee-dark", name: "RoboBee Solar Dark", color: "#F5B800" },
+                { id: "electric-indigo", name: "Cyber Twilight High Energy", color: "#818CF8" },
+                { id: "arduino-teal", name: "Hardware Lab Emerald", color: "#2DD4BF" },
+                { id: "cyber-blueprint", name: "Arcade Blueprint Neon", color: "#FB923C" },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setThemeOverride(t.id as SlideColorTheme | "auto");
+                    setShowThemeMenu(false);
+                    playPop(soundEnabled);
+                  }}
+                  className={`${styles.themeOptionBtn} ${themeOverride === t.id ? styles.themeOptionBtnActive : ""}`}
+                >
+                  <span
+                    style={{
+                      width: "12px",
+                      height: "12px",
+                      borderRadius: "50%",
+                      background: t.color,
+                      flexShrink: 0,
+                      boxShadow: `0 0 8px ${t.color}`,
+                    }}
+                  />
+                  <span style={{ flex: 1 }}>{t.name}</span>
+                  {themeOverride === t.id && <Check size={14} color="#00F5D4" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Interactive Classroom Tools: Hardware Lab (H), Laser Pointer (L), Image Zoom (Z), Speaker Notes (N) */}
+        {/* Classroom Sound Effects Toggle */}
         <button
           type="button"
-          onClick={() => setShowHardwareLab(true)}
-          title="Open Virtual Breadboard & Circuit Simulator (Key: H)"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.35rem",
-            padding: "0.42rem 0.8rem",
-            borderRadius: "999px",
-            border: "1px solid #10B981",
-            background: "rgba(16, 185, 129, 0.2)",
-            color: "#6EE7B7",
-            fontSize: "0.76rem",
-            fontWeight: 800,
-            cursor: "pointer",
-          }}
+          onClick={toggleSound}
+          className={`${styles.dockPillBtn} ${soundEnabled ? styles.dockPillBtnActive : ""}`}
+          title={soundEnabled ? "Mute classroom sound effects (Key: M)" : "Enable classroom sound effects (Key: M)"}
         >
-          <Cpu size={14} color="#10B981" />
-          <span>Lab Sim (H)</span>
+          {soundEnabled ? <Volume2 size={13} color="#00F5D4" /> : <VolumeX size={13} color="#94A3B8" />}
+          <span>{soundEnabled ? "Sound ON" : "Muted"}</span>
         </button>
 
+        {/* Celebration Confetti Cannon */}
         <button
           type="button"
-          onClick={() => setLaserActive((prev) => !prev)}
-          title="Toggle Glowing Laser Pointer (Key: L)"
+          onClick={handleCelebrate}
+          className={styles.dockPillBtn}
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.35rem",
-            padding: "0.42rem 0.8rem",
-            borderRadius: "999px",
-            border: `1px solid ${
-              laserActive ? "#F43F5E" : "rgba(255,255,255,0.18)"
-            }`,
-            background: laserActive
-              ? "rgba(244, 63, 94, 0.25)"
-              : "rgba(255,255,255,0.08)",
-            color: laserActive ? "#FDA4AF" : "#FFFFFF",
-            fontSize: "0.76rem",
-            fontWeight: 800,
-            cursor: "pointer",
+            background: "linear-gradient(90deg, rgba(245, 184, 0, 0.2), rgba(244, 63, 94, 0.2))",
+            border: "1px solid rgba(245, 184, 0, 0.45)",
+            color: "#FBBF24",
           }}
+          title="Celebrate student achievement with Confetti & Fanfare! (Key: C)"
         >
-          <Crosshair size={14} color={laserActive ? "#F43F5E" : "#00F5D4"} />
+          <Sparkles size={13} color="#FBBF24" />
+          <span>Celebrate (C)</span>
+        </button>
+
+        <div className={styles.dockDivider} />
+
+        {/* Glowing Laser Pointer (L) */}
+        <button
+          type="button"
+          onClick={() => {
+            setLaserActive((prev) => !prev);
+            setSpotlightActive(false);
+            playPop(soundEnabled);
+          }}
+          className={`${styles.dockPillBtn} ${laserActive ? styles.dockPillBtnActive : ""}`}
+          style={
+            laserActive
+              ? { background: "rgba(244, 63, 94, 0.25)", borderColor: "#F43F5E", color: "#FDA4AF" }
+              : undefined
+          }
+          title="Toggle Glowing Laser Pointer (Key: L)"
+        >
+          <Crosshair size={13} color={laserActive ? "#F43F5E" : "#00F5D4"} />
           <span>Laser (L)</span>
         </button>
 
+        {/* Focused Spotlight Tool (S) */}
         <button
           type="button"
-          onClick={toggleZoomCurrentSlide}
-          title="Zoom Current Slide Image Fullscreen (Key: Z)"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.35rem",
-            padding: "0.42rem 0.8rem",
-            borderRadius: "999px",
-            border: "1px solid rgba(255,255,255,0.18)",
-            background: zoomedMedia
-              ? "rgba(0, 245, 212, 0.22)"
-              : "rgba(255,255,255,0.08)",
-            color: "#FFFFFF",
-            fontSize: "0.76rem",
-            fontWeight: 800,
-            cursor: "pointer",
+          onClick={() => {
+            setSpotlightActive((prev) => !prev);
+            setLaserActive(false);
+            playPop(soundEnabled);
           }}
+          className={`${styles.dockPillBtn} ${spotlightActive ? styles.dockPillBtnActive : ""}`}
+          title="Toggle Focused Spotlight on Stage (Key: S)"
         >
-          <ZoomIn size={14} color="#00F5D4" />
-          <span>Zoom (Z)</span>
+          <Sun size={13} color={spotlightActive ? "#00F5D4" : "#E2E8F0"} />
+          <span>Spotlight (S)</span>
         </button>
 
+        {/* Hardware Lab Simulator (H) */}
+        <button
+          type="button"
+          onClick={() => {
+            setShowHardwareLab(true);
+            playPop(soundEnabled);
+          }}
+          className={styles.dockPillBtn}
+          style={{
+            background: "rgba(16, 185, 129, 0.16)",
+            border: "1px solid #10B981",
+            color: "#6EE7B7",
+          }}
+          title="Open Virtual Breadboard & Circuit Simulator (Key: H)"
+        >
+          <Cpu size={13} color="#10B981" />
+          <span>Lab Sim (H)</span>
+        </button>
+
+        {/* Speaker Notes Toggle (N) */}
         <button
           type="button"
           onClick={() => setShowSpeakerNotes((prev) => !prev)}
-          title="Toggle Speaker Notes (Key: N)"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.35rem",
-            padding: "0.42rem 0.8rem",
-            borderRadius: "999px",
-            border: "1px solid rgba(255,255,255,0.18)",
-            background: showSpeakerNotes
-              ? "rgba(0, 245, 212, 0.22)"
-              : "rgba(255,255,255,0.08)",
-            color: "#FFFFFF",
-            fontSize: "0.76rem",
-            fontWeight: 800,
-            cursor: "pointer",
-          }}
+          className={`${styles.dockPillBtn} ${showSpeakerNotes ? styles.dockPillBtnActive : ""}`}
+          title="Toggle Speaker Notes Prompt Drawer (Key: N)"
         >
-          <BookOpen size={14} color="#38BDF8" />
+          <BookOpen size={13} color="#38BDF8" />
           <span>Notes (N)</span>
+        </button>
+
+        {/* Dock Pin / Auto-Hide Mode Toggle */}
+        <button
+          type="button"
+          onClick={() => setDockPinned((prev) => !prev)}
+          className={`${styles.dockPillBtn} ${dockPinned ? styles.dockPillBtnActive : ""}`}
+          title={dockPinned ? "Dock is Pinned Permanently (Click for Auto-Hide)" : "Click to Pin Dock Permanently"}
+        >
+          {dockPinned ? <Pin size={12} color="#00F5D4" /> : <PinOff size={12} color="#94A3B8" />}
+          <span>{dockPinned ? "Pinned" : "Auto-Hide"}</span>
         </button>
       </footer>
 
-      {/* Glowing Laser Pointer Dot Overlay */}
+      {/* Glowing Laser Pointer Particle */}
       {laserActive && (
         <div
+          className={styles.laserDot}
           style={{
-            position: "fixed",
             left: laserPos.x,
             top: laserPos.y,
-            transform: "translate(-50%, -50%)",
-            width: "22px",
-            height: "22px",
-            borderRadius: "999px",
-            background: "radial-gradient(circle, #FFFFFF 15%, #F43F5E 65%)",
-            boxShadow:
-              "0 0 18px 6px rgba(244, 63, 94, 0.85), 0 0 40px 12px rgba(0, 245, 212, 0.45)",
-            pointerEvents: "none",
-            zIndex: 1000005,
           }}
         />
       )}
@@ -1257,7 +1285,7 @@ export function ProjectorView({
             inset: 0,
             background: "rgba(7, 11, 20, 0.94)",
             backdropFilter: "blur(20px)",
-            zIndex: 1000004,
+            zIndex: 1000008,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",

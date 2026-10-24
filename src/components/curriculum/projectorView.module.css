@@ -1,109 +1,153 @@
 .projectorOverlay {
   position: fixed;
   inset: 0;
-  background: #060911;
-  z-index: 99999;
+  z-index: 999999;
   display: flex;
   flex-direction: column;
   color: #f1f5f9;
-  font-family: var(--font-sans, system-ui, sans-serif);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
   overflow: hidden;
   user-select: none;
+  width: 100vw;
+  height: 100vh;
+  transition: background 0.45s ease;
 }
 
+/* Top Progress Bar */
+.topProgressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.topProgressBarFill {
+  height: 100%;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Top Header Bar */
 .topBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.85rem 1.75rem;
-  background: rgba(11, 15, 25, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
+  padding: 0.65rem 1.4rem;
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  gap: 0.75rem;
+  z-index: 1000;
 }
 
 .brandGroup {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .classCodeTag {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  padding: 0.3rem 0.75rem;
-  border-radius: 6px;
-  font-weight: 800;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
+  background: rgba(0, 245, 212, 0.16);
+  color: #00F5D4;
+  border: 1px solid rgba(0, 245, 212, 0.35);
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .classTitleText {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 380px;
 }
 
+/* Rhythm Timer Widget */
 .timerWidget {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.35rem 0.85rem;
-  border-radius: 30px;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
 }
 
 .timerClock {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #f59e0b;
-  min-width: 65px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #00F5D4;
+  min-width: 48px;
   text-align: center;
 }
 
-.timerPhaseBadge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: rgba(6, 182, 212, 0.15);
-  color: #06b6d4;
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(6, 182, 212, 0.3);
+.timerBtn {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  padding: 3px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
+.timerBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timerDurationPill {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+/* Controls Header Group */
 .controlsGroup {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .actionBtn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
   border-radius: 8px;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .actionBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
+  transform: translateY(-1px);
 }
 
 .closeBtn {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
 }
 
 .closeBtn:hover {
@@ -111,538 +155,214 @@
   color: #ffffff;
 }
 
-/* Slide Canvas */
-.slideCanvas {
+/* Main Presentation Area: Reserves 5.5rem bottom margin so stage never touches dock! */
+.presentationStageArea {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 3rem;
-  position: relative;
-  overflow-y: auto;
-}
-
-.slideCard {
+  min-height: 0;
   width: 100%;
-  max-width: 1240px;
-  min-height: 580px;
-  background: rgba(17, 24, 39, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 2.5rem 3rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  backdrop-filter: blur(16px);
   position: relative;
-}
-
-.slideHeader {
-  margin-bottom: 1.5rem;
-}
-
-.slideNumberBadge {
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #06b6d4;
-  letter-spacing: 1.5px;
-  margin-bottom: 0.35rem;
-}
-
-.slideTitle {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #f1f5f9;
-  line-height: 1.2;
-}
-
-.slideSubtitle {
-  font-size: 1.1rem;
-  color: #94a3b8;
-  margin-top: 0.4rem;
-}
-
-.slideBody {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
+  padding: 0.75rem 1.5rem 5.5rem 1.5rem;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* Bottom Nav */
-.bottomBar {
+/* Subtle trigger zone at bottom of screen to restore dock if hidden */
+.dockHoverTrigger {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 35px;
+  z-index: 1000000;
+  pointer-events: auto;
+}
+
+/* Floating Presenter Control Dock (Bottom Center) */
+.floatingDock {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  z-index: 1000002;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background: rgba(11, 15, 25, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.dotsContainer {
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dotActive {
-  width: 28px;
-  border-radius: 10px;
-  background: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b;
-}
-
-.navArrowBtn {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  color: #f59e0b;
-  border-radius: 10px;
-  padding: 0.65rem 1.25rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.2s ease;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 24px rgba(0, 245, 212, 0.12);
+  max-width: 96vw;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
 }
 
-.navArrowBtn:hover:not(:disabled) {
-  background: #f59e0b;
-  color: #0b0f19;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+.floatingDockHidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(28px);
+  pointer-events: none;
 }
 
-.navArrowBtn:disabled {
+/* Dock Buttons */
+.dockNavBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dockNavBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.dockNavBtn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-/* Callouts */
-.goldenRuleBox {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.03));
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  border-left: 6px solid #f59e0b;
-  padding: 1.25rem 1.5rem;
-  border-radius: 12px;
-  margin-top: 1.5rem;
+.dockNextBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.95rem;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(90deg, #00F5D4, #38BDF8);
+  color: #0F172A;
+  font-weight: 900;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 245, 212, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.goldenRuleTitle {
-  font-size: 0.85rem;
+.dockNextBtn:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(0, 245, 212, 0.55);
+  transform: translateY(-1px);
+}
+
+.dockNextBtn:disabled {
+  opacity: 0.35;
+  background: rgba(255, 255, 255, 0.12);
+  color: #64748B;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.dockPillBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 0.76rem;
   font-weight: 800;
-  text-transform: uppercase;
-  color: #f59e0b;
-  letter-spacing: 1px;
-  margin-bottom: 0.25rem;
-}
-
-.goldenRuleText {
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: #fef3c7;
-  line-height: 1.5;
-}
-
-.flowStepGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-top: 1rem;
-}
-
-.flowStepCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.codeWalkthroughBox {
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 12px;
-  padding: 1.25rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.95rem;
-  color: #38bdf8;
-  max-height: 340px;
-  overflow-y: auto;
-  line-height: 1.6;
-}
-
-/* 4 Pillars of Robotics */
-.pillarGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-}
-
-.pillarCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.pillarCard:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(245, 184, 0, 0.4);
-  transform: translateY(-2px);
+.dockPillBtn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
 }
 
-.pillarIconRow {
+.dockPillBtnActive {
+  background: rgba(0, 245, 212, 0.22);
+  border-color: #00F5D4;
+  color: #00F5D4;
+}
+
+.dockDivider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.16);
+  margin: 0 2px;
+}
+
+/* Floating Theme Popover */
+.themePopover {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 20px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  min-width: 260px;
+  z-index: 1000003;
+}
+
+.themeOptionBtn {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.5rem;
-}
-
-.pillarTitle {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #f1f5f9;
-}
-
-.pillarDesc {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  line-height: 1.5;
-}
-
-/* Concept Tabs & Carousel */
-.conceptTabsBar {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.75rem;
-  margin-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.conceptTabPill {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
-  padding: 0.45rem 0.9rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  gap: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  white-space: nowrap;
+  text-align: left;
   transition: all 0.2s ease;
 }
 
-.conceptTabPill:hover {
-  color: #f1f5f9;
+.themeOptionBtn:hover {
   background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
-.conceptTabPillActive {
-  background: rgba(245, 184, 0, 0.15);
-  border-color: #F5B800;
-  color: #F5B800;
-}
-
-.conceptDetailContainer {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 1.75rem;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.conceptHeaderRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.conceptBadge {
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #F5B800;
-  background: rgba(245, 184, 0, 0.1);
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
-  border: 1px solid rgba(245, 184, 0, 0.3);
-}
-
-.conceptText {
-  color: #cbd5e1;
-  font-size: 1.05rem;
-  line-height: 1.75;
-  margin-bottom: 1.25rem;
-}
-
-.conceptSubBox {
-  background: rgba(11, 15, 25, 0.6);
-  border: 1px solid rgba(245, 184, 0, 0.2);
-  border-left: 4px solid #F5B800;
-  padding: 1rem 1.25rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
-
-.conceptSubTitle {
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #F5B800;
-  text-transform: uppercase;
-  margin-bottom: 0.35rem;
-}
-
-/* Flight Plan / Roadmap */
-.roadmapGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.roadmapStep {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.roadmapNum {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #F5B800;
-  color: #161B26;
+.themeOptionBtnActive {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38BDF8;
+  color: #38BDF8;
   font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  margin-bottom: 0.6rem;
 }
 
-/* Responsive Grids */
-.twoColGrid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 1.5rem;
-  margin-top: 1rem;
+/* Glowing Laser Dot */
+.laserDot {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 15%, #f43f5e 65%);
+  box-shadow: 0 0 20px 8px rgba(244, 63, 94, 0.9), 0 0 45px 15px rgba(0, 245, 212, 0.45);
+  pointer-events: none;
+  z-index: 1000005;
+  transform: translate(-50%, -50%);
 }
 
-.threeColGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-}
-
-.mobileSlideIndicator {
-  display: none;
-}
-
-/* =========================================================================
- * RESPONSIVE & MOBILE-FIRST MEDIA QUERIES
- * ========================================================================= */
-
-@media (max-width: 1024px) {
-  .pillarGrid, .roadmapGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .twoColGrid {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Top Navigation Bar on Mobile */
-  .topBar {
-    padding: 0.5rem 0.75rem;
-    gap: 0.5rem;
-  }
-
+/* Responsive adjustments */
+@media (max-width: 900px) {
   .classTitleText {
-    display: none !important;
+    display: none;
   }
-
-  .classCodeTag {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.55rem;
-    letter-spacing: 0.5px;
-  }
-
-  .timerWidget {
-    padding: 0.25rem 0.5rem;
+  .floatingDock {
     gap: 0.35rem;
-    border-radius: 20px;
-  }
-
-  .timerClock {
-    font-size: 0.95rem;
-    min-width: 48px;
-  }
-
-  .timerPhaseBadge {
-    display: none;
-  }
-
-  .compactToggleBtn {
-    display: none !important;
-  }
-
-  .fullscreenBtn {
-    display: none !important;
-  }
-
-  .exitBtnText {
-    display: none;
-  }
-
-  .closeBtn {
-    padding: 0.45rem;
-    border-radius: 8px;
-  }
-
-  /* Slide Canvas & Card on Mobile */
-  .slideCanvas {
-    padding: 0.75rem 0.5rem 5.5rem 0.5rem;
-    align-items: flex-start;
-  }
-
-  .slideCard {
-    padding: 1.15rem 0.85rem;
-    min-height: auto;
-    border-radius: 14px;
-    box-shadow: none;
-  }
-
-  .slideHeader {
-    margin-bottom: 0.75rem;
-  }
-
-  .slideNumberBadge {
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    margin-bottom: 0.2rem;
-  }
-
-  .slideTitle {
-    font-size: 1.35rem !important;
-    line-height: 1.25;
-  }
-
-  .slideSubtitle {
-    font-size: 0.88rem !important;
-    line-height: 1.4;
-    margin-top: 0.25rem;
-  }
-
-  /* Grid Layouts Stack to 1 Column */
-  .pillarGrid, .roadmapGrid, .twoColGrid, .threeColGrid, .flowStepGrid {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem;
-  }
-
-  .pillarCard {
-    padding: 0.85rem;
-  }
-
-  .pillarTitle {
-    font-size: 0.95rem;
-  }
-
-  .pillarDesc {
-    font-size: 0.82rem;
-  }
-
-  /* Concept Tabs & Carousel */
-  .conceptTabsBar {
-    gap: 0.4rem;
-    padding-bottom: 0.5rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .conceptTabPill {
-    font-size: 0.75rem;
-    padding: 0.35rem 0.65rem;
-  }
-
-  .conceptDetailContainer {
-    padding: 1rem 0.85rem;
-    max-height: 52vh;
-  }
-
-  .conceptText {
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: 0.75rem;
-  }
-
-  .conceptSubBox {
-    padding: 0.75rem 0.85rem;
-    margin-top: 0.75rem;
-  }
-
-  .conceptSubTitle {
-    font-size: 0.8rem;
-  }
-
-  .codeWalkthroughBox {
-    font-size: 0.78rem;
-    padding: 0.75rem;
-    max-height: 240px;
-  }
-
-  /* Fixed Bottom Bar on Mobile */
-  .bottomBar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    padding: 0.65rem 1rem;
-    background: rgba(11, 15, 25, 0.98);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-  }
-
-  .dotsContainer {
-    display: none;
-  }
-
-  .mobileSlideIndicator {
-    display: block !important;
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: #F5B800;
-  }
-
-  .navArrowBtn {
-    padding: 0.5rem 0.85rem;
-    font-size: 0.85rem;
+    padding: 0.35rem 0.6rem;
   }
 }
