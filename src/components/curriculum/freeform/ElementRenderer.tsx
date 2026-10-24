@@ -99,6 +99,8 @@ export function ElementRenderer({
           value={content}
           onChange={(e) => onUpdateElement?.({ content: e.target.value })}
           onBlur={onFinishEditing}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           onKeyDown={(e) => {
             if (e.key === "Escape") onFinishEditing?.();
           }}
@@ -137,6 +139,8 @@ export function ElementRenderer({
           value={content}
           onChange={(e) => onUpdateElement?.({ content: e.target.value })}
           onBlur={onFinishEditing}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           onKeyDown={(e) => {
             if (e.key === "Escape") onFinishEditing?.();
           }}
@@ -176,6 +180,8 @@ export function ElementRenderer({
           value={content}
           onChange={(e) => onUpdateElement?.({ content: e.target.value })}
           onBlur={onFinishEditing}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           onKeyDown={(e) => {
             if (e.key === "Escape") onFinishEditing?.();
           }}
@@ -222,11 +228,14 @@ export function ElementRenderer({
         <img
           src={content || "/illustrations/class1-external-blink-wiring.svg"}
           alt={element.caption || "Slide Visual"}
+          draggable={false}
           style={{
             width: "100%",
             height: element.caption ? "calc(100% - 28px)" : "100%",
             objectFit: style.objectFit || "cover",
             display: "block",
+            pointerEvents: isEditorMode ? "none" : "auto",
+            userSelect: "none",
           }}
           loading="lazy"
         />
@@ -277,6 +286,8 @@ export function ElementRenderer({
           value={content}
           onChange={(e) => onUpdateElement?.({ content: e.target.value })}
           onBlur={onFinishEditing}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           style={{
             ...baseInnerStyle,
             fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
@@ -453,6 +464,8 @@ export function ElementRenderer({
           value={content}
           onChange={(e) => onUpdateElement?.({ content: e.target.value })}
           onBlur={onFinishEditing}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           style={{
             ...baseInnerStyle,
             padding: "16px",

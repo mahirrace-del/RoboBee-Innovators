@@ -20,7 +20,7 @@ interface FreeformSlideStageProps {
   onUpdateElement?: (elementId: string, patch: Partial<SlideElement>) => void;
   onUpdateSlide?: (patch: Partial<EditableSlide>) => void;
   onZoomImage?: (src: string, caption: string) => void;
-  stepRevealCount?: number; // In presenter mode, how many step-reveal elements are currently visible
+  stepRevealCount?: number;
 }
 
 export const STAGE_WIDTH = 1280;
@@ -89,7 +89,6 @@ export function FreeformSlideStage({
     if (!isEditor) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if editing text inside an input or textarea
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -131,7 +130,6 @@ export function FreeformSlideStage({
         onSelectElement?.(null);
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
         e.preventDefault();
-        // Duplicate
         const cloned: SlideElement = {
           ...selectedElement,
           id: `el-${Date.now()}`,
@@ -157,12 +155,13 @@ export function FreeformSlideStage({
     if (!isEditor) return;
     e.stopPropagation();
 
+    // Select the element immediately
+    onSelectElement?.(element.id);
+
     if (element.locked) {
-      onSelectElement?.(element.id);
       return;
     }
 
-    onSelectElement?.(element.id);
     const coords = getStageCoords(e.clientX, e.clientY);
 
     setDragState({
@@ -177,88 +176,97 @@ export function FreeformSlideStage({
     });
   };
 
-  // Pointer Move (Drag or Resize with Magnetic Snapping)
-  const handlePointerMove = (e: React.PointerEvent) => {
+  // Window-level Pointer Move & Pointer Up while dragging/resizing
+  useEffect(() => {
     if (!dragState || !isEditor) return;
-    const coords = getStageCoords(e.clientX, e.clientY);
-    const dx = coords.x - dragState.startX;
-    const dy = coords.y - dragState.startY;
 
-    const el = elements.find((item) => item.id === dragState.elementId);
-    if (!el) return;
+    const handleWindowPointerMove = (e: PointerEvent) => {
+      const coords = getStageCoords(e.clientX, e.clientY);
+      const dx = coords.x - dragState.startX;
+      const dy = coords.y - dragState.startY;
 
-    if (!dragState.handle) {
-      // Moving element
-      let nextX = dragState.origElemX + dx;
-      let nextY = dragState.origElemY + dy;
+      const el = elements.find((item) => item.id === dragState.elementId);
+      if (!el) return;
 
-      const activeSnapLines: SnapLine[] = [];
+      if (!dragState.handle) {
+        // Moving element
+        let nextX = dragState.origElemX + dx;
+        let nextY = dragState.origElemY + dy;
 
-      // Magnetic snap to stage center
-      const centerX = nextX + el.width / 2;
-      const centerY = nextY + el.height / 2;
+        const activeSnapLines: SnapLine[] = [];
 
-      if (Math.abs(centerX - STAGE_WIDTH / 2) < SNAP_THRESHOLD) {
-        nextX = STAGE_WIDTH / 2 - el.width / 2;
-        activeSnapLines.push({ orientation: "vertical", position: STAGE_WIDTH / 2 });
-      } else if (Math.abs(nextX - 60) < SNAP_THRESHOLD) {
-        nextX = 60;
-        activeSnapLines.push({ orientation: "vertical", position: 60 });
-      }
+        const centerX = nextX + el.width / 2;
+        const centerY = nextY + el.height / 2;
 
-      if (Math.abs(centerY - STAGE_HEIGHT / 2) < SNAP_THRESHOLD) {
-        nextY = STAGE_HEIGHT / 2 - el.height / 2;
-        activeSnapLines.push({ orientation: "horizontal", position: STAGE_HEIGHT / 2 });
-      } else if (Math.abs(nextY - 40) < SNAP_THRESHOLD) {
-        nextY = 40;
-        activeSnapLines.push({ orientation: "horizontal", position: 40 });
-      }
-
-      setSnapLines(activeSnapLines);
-      onUpdateElement?.(el.id, {
-        x: Math.round(nextX),
-        y: Math.round(nextY),
-      });
-    } else {
-      // Resizing element via handle
-      const h = dragState.handle;
-      let { origElemX, origElemY, origWidth, origHeight } = dragState;
-      let newX = origElemX;
-      let newY = origElemY;
-      let newW = origWidth;
-      let newH = origHeight;
-
-      if (h.includes("e")) newW = Math.max(30, origWidth + dx);
-      if (h.includes("s")) newH = Math.max(20, origHeight + dy);
-      if (h.includes("w")) {
-        const potentialW = origWidth - dx;
-        if (potentialW >= 30) {
-          newW = potentialW;
-          newX = origElemX + dx;
+        if (Math.abs(centerX - STAGE_WIDTH / 2) < SNAP_THRESHOLD) {
+          nextX = STAGE_WIDTH / 2 - el.width / 2;
+          activeSnapLines.push({ orientation: "vertical", position: STAGE_WIDTH / 2 });
+        } else if (Math.abs(nextX - 60) < SNAP_THRESHOLD) {
+          nextX = 60;
+          activeSnapLines.push({ orientation: "vertical", position: 60 });
         }
-      }
-      if (h.includes("n")) {
-        const potentialH = origHeight - dy;
-        if (potentialH >= 20) {
-          newH = potentialH;
-          newY = origElemY + dy;
-        }
-      }
 
+        if (Math.abs(centerY - STAGE_HEIGHT / 2) < SNAP_THRESHOLD) {
+          nextY = STAGE_HEIGHT / 2 - el.height / 2;
+          activeSnapLines.push({ orientation: "horizontal", position: STAGE_HEIGHT / 2 });
+        } else if (Math.abs(nextY - 40) < SNAP_THRESHOLD) {
+          nextY = 40;
+          activeSnapLines.push({ orientation: "horizontal", position: 40 });
+        }
+
+        setSnapLines(activeSnapLines);
+        onUpdateElement?.(el.id, {
+          x: Math.round(nextX),
+          y: Math.round(nextY),
+        });
+      } else {
+        // Resizing element via handle
+        const h = dragState.handle;
+        let { origElemX, origElemY, origWidth, origHeight } = dragState;
+        let newX = origElemX;
+        let newY = origElemY;
+        let newW = origWidth;
+        let newH = origHeight;
+
+        if (h.includes("e")) newW = Math.max(30, origWidth + dx);
+        if (h.includes("s")) newH = Math.max(20, origHeight + dy);
+        if (h.includes("w")) {
+          const potentialW = origWidth - dx;
+          if (potentialW >= 30) {
+            newW = potentialW;
+            newX = origElemX + dx;
+          }
+        }
+        if (h.includes("n")) {
+          const potentialH = origHeight - dy;
+          if (potentialH >= 20) {
+            newH = potentialH;
+            newY = origElemY + dy;
+          }
+        }
+
+        setSnapLines([]);
+        onUpdateElement?.(el.id, {
+          x: Math.round(newX),
+          y: Math.round(newY),
+          width: Math.round(newW),
+          height: Math.round(newH),
+        });
+      }
+    };
+
+    const handleWindowPointerUp = () => {
+      setDragState(null);
       setSnapLines([]);
-      onUpdateElement?.(el.id, {
-        x: Math.round(newX),
-        y: Math.round(newY),
-        width: Math.round(newW),
-        height: Math.round(newH),
-      });
-    }
-  };
+    };
 
-  const handlePointerUp = () => {
-    setDragState(null);
-    setSnapLines([]);
-  };
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerup", handleWindowPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerUp);
+    };
+  }, [dragState, isEditor, elements, getStageCoords, onUpdateElement]);
 
   // Drag and drop image files directly onto the stage
   const handleStageDrop = (e: React.DragEvent) => {
@@ -330,6 +338,7 @@ export function FreeformSlideStage({
           <div
             key={h}
             onPointerDown={(e) => handlePointerDown(e, el, h)}
+            onClick={(e) => e.stopPropagation()}
             style={{
               position: "absolute",
               top,
@@ -342,6 +351,7 @@ export function FreeformSlideStage({
               transform: "translate(-50%, -50%)",
               cursor,
               zIndex: 1000,
+              pointerEvents: "auto",
             }}
           />
         ))}
@@ -362,8 +372,9 @@ export function FreeformSlideStage({
         overflow: "hidden",
         backgroundColor: "#0B0E14",
       }}
-      onClick={() => {
-        if (isEditor) {
+      onClick={(e) => {
+        // Deselect only if clicking the outer workspace background directly
+        if (isEditor && e.target === containerRef.current) {
           onSelectElement?.(null);
           setEditingElementId(null);
         }
@@ -372,10 +383,18 @@ export function FreeformSlideStage({
       {/* 16:9 Scaled Virtual Canvas Container */}
       <div
         ref={stageRef}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
         onDragOver={(e) => isEditor && e.preventDefault()}
         onDrop={handleStageDrop}
+        onClick={(e) => {
+          // Deselect only if clicking the stage canvas background directly
+          if (
+            isEditor &&
+            (e.target === stageRef.current || e.target === e.currentTarget)
+          ) {
+            onSelectElement?.(null);
+            setEditingElementId(null);
+          }
+        }}
         style={{
           width: `${STAGE_WIDTH}px`,
           height: `${STAGE_HEIGHT}px`,
@@ -428,6 +447,11 @@ export function FreeformSlideStage({
               <div
                 key={el.id}
                 onPointerDown={(e) => handlePointerDown(e, el)}
+                onClick={(e) => {
+                  if (!isEditor) return;
+                  e.stopPropagation();
+                  onSelectElement?.(el.id);
+                }}
                 style={{
                   position: "absolute",
                   left: `${el.x}px`,
