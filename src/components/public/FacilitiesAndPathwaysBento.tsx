@@ -27,7 +27,7 @@ export function FacilitiesAndPathwaysBento() {
           }}
         >
           <Sparkles size={14} />
-          <span>North Chashara Maker Lab &amp; STEM Academy</span>
+          <span>Advanced Maker Lab &amp; STEM Academy</span>
         </div>
 
         <h2
@@ -51,7 +51,7 @@ export function FacilitiesAndPathwaysBento() {
             lineHeight: 1.6,
           }}
         >
-          Led by Team Leader <strong>Mostakim Rahman Mahir</strong> in Narayanganj. Every Friday, students build, solder, 3D print, and compete under our core motto: <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em>
+          A state-of-the-art engineering workspace where members design, build, solder, 3D print, and program autonomous robotics systems under our core motto: <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em>
         </p>
       </div>
 
@@ -218,7 +218,7 @@ export function FacilitiesAndPathwaysBento() {
           </div>
         </div>
 
-        {/* Bento Card 4: Transparent Membership Structure & Enrollment CTA (Wide Card) */}
+        {/* Bento Card 4: Membership & Enrollment CTA (Wide Card) */}
         <div
           style={{
             gridColumn: "1 / -1",
@@ -240,21 +240,21 @@ export function FacilitiesAndPathwaysBento() {
             </div>
 
             <h3 style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontWeight: 800, color: "#FFFFFF", marginBottom: "0.75rem" }}>
-              Transparent Club Membership Structure
+              Join the Robotics Innovation Community
             </h3>
 
             <p style={{ color: "#E2E8F0", fontSize: "1rem", lineHeight: 1.6, marginBottom: "1.2rem" }}>
-              All inclusive: full access to North Chashara Maker Lab tools every Friday, dedicated instructor guidance, competition team sponsorship, and 3D printing equipment.
+              Full access to Maker Lab tools, expert mentorship, 3D printing equipment, and competitive robotics team preparation.
             </p>
 
             <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#10B981", fontWeight: 700 }}>
                 <CheckCircle2 size={18} />
-                <span>1,000 BDT One-Time Enrollment</span>
+                <span>Rapid Prototyping &amp; Lab Access</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#10B981", fontWeight: 700 }}>
                 <CheckCircle2 size={18} />
-                <span>1,000 BDT Monthly Lab Membership</span>
+                <span>Hands-On Mentorship &amp; Competitions</span>
               </div>
             </div>
           </div>
@@ -283,7 +283,7 @@ export function FacilitiesAndPathwaysBento() {
             </Link>
 
             <div style={{ fontSize: "0.8rem", color: "#94A3B8", textAlign: "center" }}>
-              📍 North Chashara, Narayanganj • Every Friday Lab
+              ✦ Open to passionate makers, students, and young engineers
             </div>
           </div>
         </div>

@@ -394,7 +394,7 @@ export default function AdminPublicSitePage() {
         <div className="glass-panel" style={{ padding: '2rem' }}>
           <h2 style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)' }}>Manage Core Team</h2>
           <form onSubmit={handleAddLeader} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
-            <input type="text" placeholder="Name (e.g. Mahir Rahman)" value={leaderName} onChange={(e) => setLeaderName(e.target.value)} required className={styles.input} />
+            <input type="text" placeholder="Name (e.g. Lead Instructor)" value={leaderName} onChange={(e) => setLeaderName(e.target.value)} required className={styles.input} />
             <input type="text" placeholder="Role (e.g. Team Leader)" value={leaderRole} onChange={(e) => setLeaderRole(e.target.value)} required className={styles.input} />
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLeaderImage)} className={styles.input} />
             {leaderImage?.trim() ? <img src={leaderImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'cover', borderRadius: '50%', width: '100px', alignSelf: 'flex-start' }} /> : null}

@@ -2217,7 +2217,7 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
         },
         {
           id: `${lesson.id}-s08-tip`,
-          badge: "MAHIR'S BENCH TIP",
+          badge: "INSTRUCTOR BENCH TIP",
           title: "Hardware Inspection Before Power-Up",
           body: "Always verify USB COM Port in Arduino IDE Tools menu and ensure no jumper wire touches another bare pin before uploading.",
           accentColor: "#F5B800",
