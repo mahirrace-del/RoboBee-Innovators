@@ -16,7 +16,7 @@ export default function Navbar() {
   const isDashboard = pathname.startsWith('/dashboard');
 
   return (
-    <nav className={styles.navbar}>
+    <nav className={isDashboard ? styles.navbar : `${styles.navbar} ${styles.publicNavbar}`}>
       <div className={styles.navContainer}>
         <div className={styles.brandGroup}>
           <Link href={isDashboard ? "/dashboard" : "/"} className={styles.brandLink}>
@@ -34,9 +34,11 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <Link href="/#features" className={styles.link}>Programs</Link>
               <Link href="/#projects" className={styles.link}>Projects</Link>
               <Link href="/#competitions" className={styles.link}>Competitions</Link>
               <Link href="/#achievements" className={styles.link}>Achievements</Link>
+              <Link href="/#members" className={styles.link}>Community</Link>
               <Link href="/recruitment" className={styles.link}>Apply</Link>
               {!authLoading && user ? (
                 <Link href="/dashboard" className={styles.portalActiveBtn}>
@@ -44,7 +46,10 @@ export default function Navbar() {
                   <span>Dashboard</span>
                 </Link>
               ) : (
-                <Link href="/portal" className={styles.loginBtn}>Portal Login</Link>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <Link href="/portal" className={styles.loginBtn}>Portal Login</Link>
+                  <Link href="/recruitment" className={styles.joinBtn}>Join the Lab &rarr;</Link>
+                </div>
               )}
             </>
           )}
@@ -65,9 +70,11 @@ export default function Navbar() {
       {/* Mobile Menu for Public Pages */}
       {!isDashboard && isOpen && (
         <div className={styles.mobileMenu}>
+          <Link href="/#features" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Programs</Link>
           <Link href="/#projects" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Projects</Link>
           <Link href="/#competitions" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Competitions</Link>
           <Link href="/#achievements" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Achievements</Link>
+          <Link href="/#members" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Community</Link>
           <Link href="/recruitment" className={styles.mobileLink} onClick={() => setIsOpen(false)}>Apply</Link>
           {!authLoading && user ? (
             <Link href="/dashboard" className={styles.mobilePortalActiveBtn} onClick={() => setIsOpen(false)}>
@@ -75,11 +82,13 @@ export default function Navbar() {
               <span>Go to Dashboard</span>
             </Link>
           ) : (
-            <Link href="/portal" className={styles.mobileLoginBtn} onClick={() => setIsOpen(false)}>Portal Login</Link>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginTop: "1rem" }}>
+              <Link href="/portal" className={styles.mobileLoginBtn} onClick={() => setIsOpen(false)}>Portal Login</Link>
+              <Link href="/recruitment" className={styles.joinBtn} style={{ textAlign: "center" }} onClick={() => setIsOpen(false)}>Join the Lab &rarr;</Link>
+            </div>
           )}
         </div>
       )}
     </nav>
   );
 }
-

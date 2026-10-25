@@ -12,9 +12,22 @@
   align-items: center;
 }
 
+/* Public Pages Modern Glass Navbar Override */
+.publicNavbar {
+  background: rgba(9, 10, 15, 0.85) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.publicNavbar .link:hover::after {
+  background: #38BDF8 !important;
+}
+
 .navContainer {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 0 2rem;
   display: flex;
@@ -34,19 +47,21 @@
 
 .navLinks {
   display: flex;
-  gap: 2rem;
+  gap: 1.8rem;
   align-items: center;
 }
 
 .link {
-  color: var(--text-secondary);
+  color: #94A3B8;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 0.95rem;
   position: relative;
+  transition: color 0.2s ease;
+  text-decoration: none;
 }
 
 .link:hover {
-  color: var(--text-primary);
+  color: #FFFFFF;
 }
 
 .link::after {
@@ -56,8 +71,8 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--accent-primary);
-  transition: width var(--transition-fast);
+  background: var(--accent-primary, #38BDF8);
+  transition: width var(--transition-fast, 0.2s ease);
 }
 
 .brandGroup {
@@ -71,7 +86,7 @@
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast, 0.2s ease);
 }
 
 .brandLink:hover {
@@ -83,31 +98,56 @@
 }
 
 .loginBtn {
-  padding: 0.6rem 1.2rem;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 0.55rem 1.15rem;
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  border-radius: var(--radius-sm, 10px);
+  color: #E2E8F0;
   font-weight: 600;
-  font-size: 0.9rem;
-  transition: all var(--transition-fast);
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .loginBtn:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+.joinBtn {
+  padding: 0.55rem 1.25rem;
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-sm, 10px);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.joinBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+  background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
 }
 
 .portalActiveBtn {
   padding: 0.55rem 1.2rem;
-  background: rgba(244, 179, 4, 0.12);
-  border: 1px solid rgba(244, 179, 4, 0.4);
-  border-radius: var(--radius-sm);
-  color: var(--accent-primary);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-sm, 10px);
+  color: #38BDF8;
   font-weight: 700;
   font-size: 0.9rem;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.2s ease);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -116,32 +156,32 @@
 }
 
 .portalActiveBtn:hover {
-  background: rgba(244, 179, 4, 0.22);
-  border-color: var(--accent-primary);
+  background: rgba(56, 189, 248, 0.22);
+  border-color: #38BDF8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(244, 179, 4, 0.25);
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
 }
 
 .onlineDot {
   width: 8px;
   height: 8px;
-  background-color: #00ff88;
+  background-color: #10B981;
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 0 8px #00ff88;
+  box-shadow: 0 0 8px #10B981;
   animation: pulseDot 2s infinite;
 }
 
 @keyframes pulseDot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 .mobileToggle {
   display: none;
   cursor: pointer;
-  color: var(--text-primary);
+  color: var(--text-primary, #FFFFFF);
   background: none;
   border: none;
   padding: 0.4rem;
@@ -157,9 +197,9 @@
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .navContainer {
-    padding: 0 1rem;
+    padding: 0 1.25rem;
   }
 
   .brandGroup {
@@ -182,39 +222,47 @@
     top: 80px;
     left: 0;
     right: 0;
-    background: var(--bg-primary);
+    background: #090A0F;
     flex-direction: column;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    padding: 1.25rem 1.5rem 1.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+    gap: 0.5rem;
   }
   
   .mobileLink {
     padding: 0.85rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+    color: #E2E8F0;
     font-weight: 500;
+    text-decoration: none;
+  }
+
+  .mobileLink:hover {
+    color: #38BDF8;
   }
   
   .mobileLoginBtn {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     padding: 0.8rem;
-    background: var(--accent-primary);
-    color: #000;
-    font-weight: bold;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-weight: 600;
     text-align: center;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-sm, 10px);
+    text-decoration: none;
   }
 
   .mobilePortalActiveBtn {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     padding: 0.85rem;
-    background: rgba(244, 179, 4, 0.15);
-    border: 1px solid rgba(244, 179, 4, 0.4);
-    color: var(--accent-primary);
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38BDF8;
     font-weight: bold;
     text-align: center;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-sm, 10px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -223,7 +271,7 @@
   }
 
   .mobilePortalActiveBtn:active {
-    background: rgba(244, 179, 4, 0.25);
+    background: rgba(56, 189, 248, 0.25);
   }
 }
 
@@ -236,4 +284,3 @@
     gap: 0.5rem;
   }
 }
-

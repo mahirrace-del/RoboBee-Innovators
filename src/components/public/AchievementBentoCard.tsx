@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Trophy, Award, Medal, Sparkles, MapPin, Calendar } from "lucide-react";
+import { Trophy, Calendar } from "lucide-react";
 
 interface AchievementBentoCardProps {
   achievement: {
@@ -33,10 +33,10 @@ export function AchievementBentoCard({ achievement }: AchievementBentoCardProps)
       style={{
         position: "relative",
         borderRadius: "22px",
-        background: "linear-gradient(150deg, rgba(38, 4, 24, 0.9) 0%, rgba(14, 18, 28, 0.95) 100%)",
-        border: isHovered ? "1px solid #F5B700" : "1px solid rgba(245, 183, 0, 0.35)",
+        background: "linear-gradient(150deg, rgba(19, 22, 31, 0.92) 0%, rgba(13, 16, 25, 0.98) 100%)",
+        border: isHovered ? "1px solid rgba(56, 189, 248, 0.5)" : "1px solid rgba(255, 255, 255, 0.08)",
         boxShadow: isHovered
-          ? "0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(245, 183, 0, 0.28)"
+          ? "0 22px 50px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.14)"
           : "0 10px 30px -10px rgba(0, 0, 0, 0.6)",
         transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
         transform: isHovered ? "translateY(-4px)" : "translateY(0)",
@@ -58,27 +58,28 @@ export function AchievementBentoCard({ achievement }: AchievementBentoCardProps)
           flexWrap: "wrap",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
           <div
             style={{
-              width: "36px",
-              height: "36px",
+              width: "38px",
+              height: "38px",
               borderRadius: "10px",
-              background: "linear-gradient(135deg, #F5B700 0%, #D97706 100%)",
+              background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 0 15px rgba(245, 183, 0, 0.45)",
+              boxShadow: "0 0 15px rgba(59, 130, 246, 0.4)",
+              color: "#FFFFFF",
             }}
           >
-            <Trophy size={18} color="#0B0F17" />
+            <Trophy size={18} />
           </div>
 
           <div>
-            <div style={{ fontSize: "0.72rem", color: "#F5B700", fontWeight: 800, textTransform: "uppercase" }}>
+            <div style={{ fontSize: "0.72rem", color: "#38BDF8", fontWeight: 800, textTransform: "uppercase" }}>
               {isInternational ? "International Arena" : isNational ? "National Champion" : "Award of Excellence"}
             </div>
-            <div style={{ fontSize: "0.85rem", color: "#94A3B8", fontWeight: 600 }}>
+            <div style={{ fontSize: "0.82rem", color: "#94A3B8", fontWeight: 600 }}>
               RoboBee Robotics Delegation
             </div>
           </div>
@@ -89,14 +90,14 @@ export function AchievementBentoCard({ achievement }: AchievementBentoCardProps)
           style={{
             padding: "0.35rem 0.85rem",
             borderRadius: "20px",
-            background: "rgba(245, 183, 0, 0.15)",
-            border: "1px solid rgba(245, 183, 0, 0.4)",
-            color: "#F5B700",
+            background: "rgba(56, 189, 248, 0.1)",
+            border: "1px solid rgba(56, 189, 248, 0.3)",
+            color: "#38BDF8",
             fontSize: "0.82rem",
             fontWeight: 800,
             display: "inline-flex",
             alignItems: "center",
-            gap: "0.3rem",
+            gap: "0.35rem",
           }}
         >
           <Calendar size={13} />
@@ -134,7 +135,7 @@ export function AchievementBentoCard({ achievement }: AchievementBentoCardProps)
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         <h3
           style={{
-            fontSize: "1.35rem",
+            fontSize: "1.3rem",
             fontWeight: 800,
             color: "#FFFFFF",
             lineHeight: 1.3,
@@ -145,7 +146,7 @@ export function AchievementBentoCard({ achievement }: AchievementBentoCardProps)
 
         <p
           style={{
-            fontSize: "0.93rem",
+            fontSize: "0.92rem",
             color: "#CBD5E1",
             lineHeight: 1.6,
           }}

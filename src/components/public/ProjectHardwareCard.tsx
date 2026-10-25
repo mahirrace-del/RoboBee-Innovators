@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Cpu, ExternalLink, Sparkles, CheckCircle2, Clock } from "lucide-react";
+import { Cpu, CheckCircle2 } from "lucide-react";
 
 interface ProjectHardwareCardProps {
   project: {
@@ -27,8 +27,8 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotX = ((y - centerY) / centerY) * -9;
-    const rotY = ((x - centerX) / centerX) * 9;
+    const rotX = ((y - centerY) / centerY) * -8;
+    const rotY = ((x - centerX) / centerX) * 8;
     setRotateX(rotX);
     setRotateY(rotY);
   };
@@ -69,16 +69,16 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
       <div
         style={{
           transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(${isHovered ? 1.02 : 1}, ${isHovered ? 1.02 : 1}, 1)`,
-          transition: isHovered ? "transform 0.1s ease-out" : "transform 0.4s ease-out, box-shadow 0.4s ease-out",
-          background: "linear-gradient(160deg, rgba(28, 4, 18, 0.85) 0%, rgba(13, 17, 26, 0.95) 100%)",
-          border: isHovered ? "1px solid rgba(245, 183, 0, 0.65)" : "1px solid rgba(255, 255, 255, 0.08)",
+          transition: isHovered ? "transform 0.1s ease-out" : "transform 0.4s ease-out, box-shadow 0.4s ease-out, border-color 0.3s ease",
+          background: "linear-gradient(160deg, rgba(19, 22, 31, 0.9) 0%, rgba(13, 16, 25, 0.98) 100%)",
+          border: isHovered ? "1px solid rgba(56, 189, 248, 0.45)" : "1px solid rgba(255, 255, 255, 0.08)",
           borderRadius: "20px",
           padding: "1.4rem",
           display: "flex",
           flexDirection: "column",
           gap: "1rem",
           boxShadow: isHovered
-            ? "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(245, 183, 0, 0.22)"
+            ? "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.14)"
             : "0 15px 35px -10px rgba(0, 0, 0, 0.6)",
           backdropFilter: "blur(16px)",
           height: "100%",
@@ -92,18 +92,18 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
             position: "absolute",
             top: 0,
             right: 0,
-            width: "120px",
-            height: "120px",
-            background: "radial-gradient(circle at top right, rgba(245, 183, 0, 0.15), transparent 70%)",
+            width: "140px",
+            height: "140px",
+            background: "radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 70%)",
             pointerEvents: "none",
           }}
         />
 
-        {/* Project Image Frame */}
+        {/* Project Image Frame (16:10 aspect ratio container) */}
         <div
           style={{
             width: "100%",
-            height: "230px",
+            height: "220px",
             borderRadius: "14px",
             overflow: "hidden",
             position: "relative",
@@ -136,7 +136,7 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
                 color: "rgba(255, 255, 255, 0.35)",
               }}
             >
-              <Cpu size={36} color="#F5B700" />
+              <Cpu size={36} color="#38BDF8" />
               <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Hardware Prototype</span>
             </div>
           )}
@@ -154,14 +154,27 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
               letterSpacing: "0.5px",
               display: "inline-flex",
               alignItems: "center",
-              gap: "0.35rem",
+              gap: "0.4rem",
               backdropFilter: "blur(12px)",
-              background: isCompleted ? "rgba(16, 185, 129, 0.85)" : "rgba(15, 23, 42, 0.85)",
-              color: isCompleted ? "#FFFFFF" : "#F5B700",
-              border: isCompleted ? "1px solid #10B981" : "1px solid rgba(245, 183, 0, 0.4)",
+              background: isCompleted ? "rgba(16, 185, 129, 0.18)" : "rgba(15, 23, 42, 0.85)",
+              color: isCompleted ? "#10B981" : "#38BDF8",
+              border: isCompleted ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid rgba(56, 189, 248, 0.35)",
             }}
           >
-            {isCompleted ? <CheckCircle2 size={12} /> : <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />}
+            {isCompleted ? (
+              <CheckCircle2 size={12} />
+            ) : (
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#10B981",
+                  boxShadow: "0 0 8px #10B981",
+                  display: "inline-block",
+                }}
+              />
+            )}
             <span>{isCompleted ? "Competition Ready" : "Active in Lab"}</span>
           </div>
         </div>
@@ -178,9 +191,9 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
                   fontWeight: 700,
                   padding: "0.2rem 0.55rem",
                   borderRadius: "6px",
-                  background: "rgba(245, 183, 0, 0.1)",
-                  color: "#F5B700",
-                  border: "1px solid rgba(245, 183, 0, 0.2)",
+                  background: "rgba(56, 189, 248, 0.08)",
+                  color: "#38BDF8",
+                  border: "1px solid rgba(56, 189, 248, 0.2)",
                 }}
               >
                 #{tag}
@@ -190,7 +203,7 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
 
           <h3
             style={{
-              fontSize: "1.3rem",
+              fontSize: "1.25rem",
               fontWeight: 800,
               color: "#FFFFFF",
               letterSpacing: "0.3px",
@@ -202,7 +215,7 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
 
           <p
             style={{
-              fontSize: "0.92rem",
+              fontSize: "0.9rem",
               color: "#94A3B8",
               lineHeight: 1.6,
               flex: 1,
