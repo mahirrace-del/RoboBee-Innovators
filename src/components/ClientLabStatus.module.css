@@ -23,6 +23,14 @@
   background: rgba(255, 85, 85, 0.08);
 }
 
+.lightBadge {
+  border-color: #e5d7c7;
+  background: #f5efe7;
+  box-shadow: none;
+}
+
+.lightBadge .statusText { color: #51473e; }
+
 .indicatorDot {
   width: 9px;
   height: 9px;

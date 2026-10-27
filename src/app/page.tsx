@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import styles from "./page.module.css";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
@@ -22,6 +23,12 @@ import { ProjectHardwareCard } from "@/components/public/ProjectHardwareCard";
 import { CompetitionCard, CompetitionCardItem, Segment } from "@/components/public/CompetitionCard";
 import { AchievementBentoCard } from "@/components/public/AchievementBentoCard";
 import { MemberOrbitShowcase, MarqueeItem } from "@/components/public/MemberOrbitShowcase";
+import { RobotArtwork } from "@/components/public/RobotArtwork";
+
+const InteractiveRobotScene = dynamic(
+  () => import("@/components/public/InteractiveRobotScene"),
+  { ssr: false }
+);
 
 interface ProjectData {
   id: string;
@@ -37,6 +44,8 @@ interface LeaderData {
   name: string;
   role: string;
   image?: string;
+  bio?: string;
+  group?: "leader" | "core" | string;
 }
 
 interface AchievementData {
@@ -163,6 +172,14 @@ export default function Home() {
     return true;
   });
 
+  const isTeamLeader = (member: LeaderData) => {
+    if (member.group === "leader") return true;
+    if (member.group === "core") return false;
+    return /\b(team leader|team lead|club president|founder|chairperson|chairman)\b/i.test(member.role || "");
+  };
+  const teamLeaders = leaders.filter(isTeamLeader);
+  const coreMembers = leaders.filter((member) => !isTeamLeader(member));
+
   const handleOpenRegistration = (comp: CompetitionCardItem) => {
     setSelectedComp(comp);
     const firstSegId = comp.segments && comp.segments.length > 0 ? comp.segments[0].id : "default";
@@ -244,10 +261,8 @@ export default function Home() {
 
   return (
     <div className={styles.main}>
-      {/* Background Ambience & Architectural Grid */}
+      {/* Soft engineering-inspired background */}
       <div className={styles.circuitOverlay} />
-      <div className={`${styles.shape1} ${styles.shape}`} />
-      <div className={`${styles.shape2} ${styles.shape}`} />
 
       {/* =========================================================================
           HERO SECTION (BALANCED 12-COLUMN MODERN ASYMMETRIC SPLIT)
@@ -258,18 +273,15 @@ export default function Home() {
           <div className={styles.heroContent}>
             <div className={styles.badge}>
               <Sparkles size={14} />
-              <span>NARAYANGANJ&apos;S PREMIER ROBOTICS &amp; MAKER LAB &bull; EVERY FRIDAY</span>
+              <span>NARAYANGANJ ROBOTICS &amp; MAKER LAB · EVERY FRIDAY</span>
             </div>
 
             <h1 className={styles.title}>
-              Learn Electronics, Build Real Robots,{" "}
-              <span className={styles.titleHighlight}>Compete Globally.</span>
+              Learn electronics. Build real robots. <span className={styles.titleHighlight}>Compete globally.</span>
             </h1>
 
             <p className={styles.subtitle}>
-              A hands-on robotics training hub and maker lab at North Chashara, Narayanganj. We mentor students
-              step-by-step from basic breadboard circuits and Arduino programming to 3D-printed mechanisms and
-              national robotics olympiads.
+              From a first breadboard circuit to an autonomous competition robot, RoboBEE gives young makers the tools, mentorship, and lab time to bring ideas to life.
             </p>
 
             <div className={styles.ctaContainer}>
@@ -279,7 +291,7 @@ export default function Home() {
               </Link>
 
               <Link href="#features" className={styles.secondaryBtn}>
-                <Cpu size={18} color="#38BDF8" />
+                <Cpu size={18} />
                 <span>Explore Curriculum &amp; Lab</span>
               </Link>
             </div>
@@ -305,8 +317,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Column: Multi-Layered Interactive Curriculum & Project Bento */}
-          <div>
+          {/* Lazy WebGL scene with an always-available static illustration behind it */}
+          <div className={styles.heroVisualColumn}>
+            <div className={styles.robotStage} role="group" aria-label="RoboBEE rover model">
+              <RobotArtwork />
+              <InteractiveRobotScene />
+              <span className={styles.robotOrbitLabel}>ROBOBEE · LAB PROTOTYPE 01</span>
+              <span className={styles.robotControlHint}>Move to explore</span>
+            </div>
             <HeroLearningStackBento />
           </div>
         </div>
@@ -327,7 +345,7 @@ export default function Home() {
             <span>Hardware Prototypes</span>
           </div>
           <h2 className={styles.sectionTitle}>
-            Featured Projects &amp; <span style={{ color: "#38BDF8" }}>Lab Builds</span>
+            Featured Projects &amp; <span>Lab Builds</span>
           </h2>
           <p className={styles.sectionSubtitle}>
             Autonomous mobile robots, intelligent microcontrollers, and custom-fabricated hardware built inside our maker laboratory.
@@ -363,7 +381,7 @@ export default function Home() {
         </div>
 
         {filteredProjects.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#94A3B8", padding: "2rem" }}>
+          <p className={styles.emptyState}>
             No builds in this category yet. Explore our other projects or visit the lab on Friday.
           </p>
         ) : (
@@ -386,7 +404,7 @@ export default function Home() {
               <span>Tournaments &amp; Arenas</span>
             </div>
             <h2 className={styles.sectionTitle}>
-              Robotics <span style={{ color: "#38BDF8" }}>Competitions &amp; Challenges</span>
+              Robotics <span>Competitions &amp; Challenges</span>
             </h2>
             <p className={styles.sectionSubtitle}>
               Test your engineering skills, race your autonomous robots, and compete for trophies in our scheduled regional and national matches.
@@ -415,7 +433,7 @@ export default function Home() {
             <span>Honors &amp; Podiums</span>
           </div>
           <h2 className={styles.sectionTitle}>
-            Competitive <span style={{ color: "#38BDF8" }}>Milestones &amp; Achievements</span>
+            Competitive <span>Milestones &amp; Achievements</span>
           </h2>
           <p className={styles.sectionSubtitle}>
             Representing on the national and international stage—from FIRSO 2026 UIU to international arenas in Malaysia.
@@ -423,7 +441,7 @@ export default function Home() {
         </div>
 
         {achievements.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#94A3B8" }}>Our journey has just begun.</p>
+          <p className={styles.emptyState}>Our journey has just begun.</p>
         ) : (
           <div className={styles.achievementsGrid}>
             {achievements.map((ach) => (
@@ -436,43 +454,53 @@ export default function Home() {
       {/* =========================================================================
           CORE TEAM / LEADERSHIP SECTION (ADMIN CMS SYNCED)
           ========================================================================= */}
-      {leaders.length > 0 && (
-        <section id="leadership" className={styles.leadershipSection}>
-          <div className={styles.sectionHeader}>
-            <div className={styles.sectionPill}>
-              <Shield size={14} />
-              <span>Leadership &amp; Mentorship</span>
-            </div>
-            <h2 className={styles.sectionTitle}>
-              Meet the <span style={{ color: "#38BDF8" }}>Core Team</span>
-            </h2>
-            <p className={styles.sectionSubtitle}>
-              The hardware architects and mentors guiding RoboBee Innovators toward new horizons.
-            </p>
-          </div>
+      <section id="leadership" className={styles.leadershipSection}>
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionPill}><Shield size={14} /><span>Leadership &amp; Mentorship</span></div>
+          <h2 className={styles.sectionTitle}>Meet our <span>Core Team</span></h2>
+          <p className={styles.sectionSubtitle}>Meet the people who lead, coordinate, and build the RoboBEE community.</p>
+        </div>
 
-          <div className={styles.leaderGrid}>
-            {leaders.map((leader) => (
-              <div key={leader.id} className={styles.leaderCard}>
+        {teamLeaders.length > 0 && (
+          <div className={styles.featuredLeaders}>
+            {teamLeaders.map((leader) => (
+              <article key={leader.id} className={styles.featuredLeaderCard}>
                 {leader.image?.trim() ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={leader.image.trim()}
-                    alt={leader.name}
-                    className={styles.leaderAvatar}
-                  />
-                ) : (
-                  <div className={styles.leaderAvatarPlaceholder}>
-                    {leader.name ? leader.name.charAt(0) : "R"}
-                  </div>
-                )}
-                <h3 className={styles.leaderName}>{leader.name}</h3>
-                <p className={styles.leaderRole}>{leader.role}</p>
-              </div>
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={leader.image.trim()} alt={leader.name} className={styles.featuredLeaderAvatar} loading="lazy" />
+                ) : <div className={styles.featuredLeaderPlaceholder}>{leader.name?.charAt(0) || "R"}</div>}
+                <div className={styles.featuredLeaderInfo}>
+                  <span className={styles.leaderKicker}><Shield size={14} /> Team leadership</span>
+                  <h3 className={styles.featuredLeaderName}>{leader.name}</h3>
+                  <p className={styles.leaderRole}>{leader.role}</p>
+                  {leader.bio?.trim() && <p className={styles.leaderBio}>{leader.bio}</p>}
+                </div>
+              </article>
             ))}
           </div>
-        </section>
-      )}
+        )}
+
+        {coreMembers.length > 0 ? (
+          <>
+            <h3 className={styles.coreTeamHeading}>Core members</h3>
+            <div className={styles.leaderGrid}>
+              {coreMembers.map((member) => (
+                <article key={member.id} className={styles.leaderCard}>
+                  {member.image?.trim() ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={member.image.trim()} alt={member.name} className={styles.leaderAvatar} loading="lazy" />
+                  ) : <div className={styles.leaderAvatarPlaceholder}>{member.name?.charAt(0) || "R"}</div>}
+                  <h4 className={styles.leaderName}>{member.name}</h4>
+                  <p className={styles.leaderRole}>{member.role}</p>
+                  {member.bio?.trim() && <p className={styles.leaderBio}>{member.bio}</p>}
+                </article>
+              ))}
+            </div>
+          </>
+        ) : leaders.length === 0 ? (
+          <p className={styles.emptyState}>Our team roster is being updated. Check back soon.</p>
+        ) : null}
+      </section>
 
       {/* =========================================================================
           MOVING ROUND MEMBER HEADS SHOWCASE (ADMIN CMS SYNCED)

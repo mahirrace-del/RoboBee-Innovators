@@ -50,9 +50,10 @@ export default function RecruitmentPage() {
       
       // 3. Send them to the dashboard which will instantly lock them into the pending screen
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error submitting application:", err);
-      if (err.code === "auth/email-already-in-use") {
+      const errorCode = typeof err === "object" && err !== null && "code" in err ? err.code : undefined;
+      if (errorCode === "auth/email-already-in-use") {
         setError("This email is already registered. If your application was declined, please sign in to delete your old application first.");
       } else {
         setError("Failed to submit application. Please try again later.");
@@ -64,10 +65,22 @@ export default function RecruitmentPage() {
 
   return (
     <div className={styles.container}>
+      <aside className={styles.joinIntro}>
+        <span className={styles.introEyebrow}>ROBOBEE INNOVATORS · MEMBERSHIP</span>
+        <h1 className={styles.introTitle}>Make your ideas <span>move.</span></h1>
+        <p className={styles.introCopy}>Join a hands-on community of young engineers learning electronics, building robots, and taking on real challenges together.</p>
+        <ul className={styles.introList}>
+          <li>Weekly lab sessions in North Chashara</li>
+          <li>Guidance from the first circuit to competition</li>
+          <li>Access to prototyping tools and 3D printers</li>
+        </ul>
+        <div className={styles.introNote}><strong>Dream. Invent. Experiment. Inspire.</strong><span>We’re excited to learn what you want to build.</span></div>
+      </aside>
       <div className={`glass-panel ${styles.formCard}`}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Join the Team</h1>
-          <p className={styles.subtitle}>Apply and create your Robobee account</p>
+          <span className={styles.formEyebrow}>MEMBER APPLICATION</span>
+          <h2 className={styles.title}>Tell us about yourself</h2>
+          <p className={styles.subtitle}>Complete the form to apply and create your RoboBEE account.</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>

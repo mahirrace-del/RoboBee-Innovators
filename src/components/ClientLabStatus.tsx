@@ -5,7 +5,7 @@ import { db } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import styles from "./ClientLabStatus.module.css";
 
-export default function ClientLabStatus() {
+export default function ClientLabStatus({ variant = "default" }: { variant?: "default" | "light" }) {
   const [labStatus, setLabStatus] = useState<"Open" | "Closed" | "Loading">("Loading");
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function ClientLabStatus() {
 
   return (
     <div
-      className={`${styles.statusBadge} ${isOpen ? styles.openBadge : styles.closedBadge}`}
+      className={`${styles.statusBadge} ${isOpen ? styles.openBadge : styles.closedBadge} ${variant === "light" ? styles.lightBadge : ""}`}
       role="status"
       aria-label={`Robotics Lab status is currently ${labStatus}`}
     >

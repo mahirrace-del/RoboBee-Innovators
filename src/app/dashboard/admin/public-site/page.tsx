@@ -6,33 +6,41 @@ import { useEffect, useState } from "react";
 import styles from "./public-site.module.css";
 import { useAuth } from "@/context/AuthContext";
 
+interface AdminProject { id: string; title: string; description: string; image?: string }
+interface AdminAchievement { id: string; title: string; year: string; description: string; image?: string }
+interface AdminMarquee { id: string; image?: string }
+interface AdminLeader { id: string; name: string; role: string; image?: string; bio?: string; group?: string }
+
 export default function AdminPublicSitePage() {
   const { role, canManage } = useAuth();
   const canAccess = role === "admin" || canManage("manage_achievements");
   const [activeTab, setActiveTab] = useState<"projects" | "achievements" | "marquee" | "leaders" | "cleanup">("projects");
 
   // State for Projects
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<AdminProject[]>([]);
   const [projectTitle, setProjectTitle] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [projectImage, setProjectImage] = useState("");
 
   // State for Achievements
-  const [achievements, setAchievements] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<AdminAchievement[]>([]);
   const [achYear, setAchYear] = useState("");
   const [achTitle, setAchTitle] = useState("");
   const [achDesc, setAchDesc] = useState("");
   const [achImage, setAchImage] = useState("");
 
   // State for Marquee
-  const [marquees, setMarquees] = useState<any[]>([]);
+  const [marquees, setMarquees] = useState<AdminMarquee[]>([]);
   const [marqueeImage, setMarqueeImage] = useState("");
 
   // State for Leaders
-  const [leaders, setLeaders] = useState<any[]>([]);
+  const [leaders, setLeaders] = useState<AdminLeader[]>([]);
   const [leaderName, setLeaderName] = useState("");
   const [leaderRole, setLeaderRole] = useState("");
   const [leaderImage, setLeaderImage] = useState("");
+  const [leaderBio, setLeaderBio] = useState("");
+  const [leaderGroup, setLeaderGroup] = useState<"leader" | "core">("core");
+  const [editingLeaderId, setEditingLeaderId] = useState<string | null>(null);
 
   // State for Live Launch Test Data Cleanup
   const [selectedCleanups, setSelectedCleanups] = useState<string[]>([
@@ -130,9 +138,9 @@ export default function AdminPublicSitePage() {
 
       setCleanupMessage(`Success! Successfully purged ${totalDeleted} test record(s) from Firebase. Your website is ready for live content!`);
       alert(`Cleanup completed! ${totalDeleted} test items removed.`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Cleanup error:", err);
-      alert("Failed to delete some test records: " + (err.message || "Unknown error"));
+      alert("Failed to delete some test records: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
       setIsCleaning(false);
     }
@@ -140,19 +148,19 @@ export default function AdminPublicSitePage() {
 
   useEffect(() => {
     const unsubProjects = onSnapshot(collection(db, "projects"), (snap) => {
-      setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() } as AdminProject)));
     });
     
     const unsubAchievements = onSnapshot(query(collection(db, "achievements"), orderBy("year", "desc")), (snap) => {
-      setAchievements(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setAchievements(snap.docs.map(d => ({ id: d.id, ...d.data() } as AdminAchievement)));
     });
 
     const unsubMarquee = onSnapshot(collection(db, "marquee"), (snap) => {
-      setMarquees(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setMarquees(snap.docs.map(d => ({ id: d.id, ...d.data() } as AdminMarquee)));
     });
 
     const unsubLeaders = onSnapshot(collection(db, "leaders"), (snap) => {
-      setLeaders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLeaders(snap.docs.map(d => ({ id: d.id, ...d.data() } as AdminLeader)));
     });
 
     return () => {
@@ -256,26 +264,50 @@ export default function AdminPublicSitePage() {
     }
   };
 
-  const handleAddLeader = async (e: React.FormEvent) => {
+  const resetLeaderForm = () => {
+    setLeaderName("");
+    setLeaderRole("");
+    setLeaderImage("");
+    setLeaderBio("");
+    setLeaderGroup("core");
+    setEditingLeaderId(null);
+  };
+
+  const handleEditLeader = (leader: AdminLeader) => {
+    setEditingLeaderId(leader.id);
+    setLeaderName(leader.name || "");
+    setLeaderRole(leader.role || "");
+    setLeaderImage(leader.image || "");
+    setLeaderBio(leader.bio || "");
+    setLeaderGroup(leader.group === "leader" || (!leader.group && /\b(team leader|team lead|club president|founder|chairperson|chairman)\b/i.test(leader.role || "")) ? "leader" : "core");
+  };
+
+  const handleSaveLeader = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, "leaders"), {
+      const details = {
         name: leaderName,
         role: leaderRole,
         image: leaderImage,
-        createdAt: new Date()
-      });
-      setLeaderName("");
-      setLeaderRole("");
-      setLeaderImage("");
+        bio: leaderBio.trim(),
+        group: leaderGroup,
+        updatedAt: new Date(),
+      };
+      if (editingLeaderId) {
+        await updateDoc(doc(db, "leaders", editingLeaderId), details);
+      } else {
+        await addDoc(collection(db, "leaders"), { ...details, createdAt: new Date() });
+      }
+      resetLeaderForm();
     } catch (error) {
       console.error(error);
-      alert("Error adding leader");
+      alert("Could not save this team profile. Please try again.");
     }
   };
 
   const handleDelete = async (collectionName: string, id: string) => {
     if(confirm("Are you sure?")) {
+      if (collectionName === "leaders" && editingLeaderId === id) resetLeaderForm();
       await deleteDoc(doc(db, collectionName, id));
     }
   };
@@ -392,25 +424,51 @@ export default function AdminPublicSitePage() {
 
       {activeTab === 'leaders' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)' }}>Manage Core Team</h2>
-          <form onSubmit={handleAddLeader} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
-            <input type="text" placeholder="Name (e.g. Lead Instructor)" value={leaderName} onChange={(e) => setLeaderName(e.target.value)} required className={styles.input} />
-            <input type="text" placeholder="Role (e.g. Team Leader)" value={leaderRole} onChange={(e) => setLeaderRole(e.target.value)} required className={styles.input} />
-            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLeaderImage)} className={styles.input} />
-            {leaderImage?.trim() ? <img src={leaderImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'cover', borderRadius: '50%', width: '100px', alignSelf: 'flex-start' }} /> : null}
-            <button type="submit" className={styles.btnAction}>Add Team Member</button>
+          <h2 style={{ marginBottom: '0.5rem', color: 'var(--accent-primary)' }}>Manage the Core Team</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Add and update leadership profiles and core member introductions shown on the public site.</p>
+          <form onSubmit={handleSaveLeader} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+            <label htmlFor="team-group">Profile group</label>
+            <select id="team-group" value={leaderGroup} onChange={(e) => setLeaderGroup(e.target.value as "leader" | "core")} className={styles.input}>
+              <option value="leader">Team leader</option>
+              <option value="core">Core team member</option>
+            </select>
+            <label htmlFor="team-name">Name</label>
+            <input id="team-name" type="text" placeholder="Full name" value={leaderName} onChange={(e) => setLeaderName(e.target.value)} required className={styles.input} />
+            <label htmlFor="team-role">Role</label>
+            <input id="team-role" type="text" placeholder="e.g. Team Leader, Marketing Head, Coordinator" value={leaderRole} onChange={(e) => setLeaderRole(e.target.value)} required className={styles.input} />
+            <label htmlFor="team-bio">Introduction</label>
+            <textarea id="team-bio" placeholder="A short introduction or bio" value={leaderBio} onChange={(e) => setLeaderBio(e.target.value)} maxLength={420} className={styles.input} style={{ minHeight: '100px', resize: 'vertical' }} />
+            <label htmlFor="team-photo">Profile photo</label>
+            <input id="team-photo" type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLeaderImage)} className={styles.input} />
+            {leaderImage?.trim() ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <img src={leaderImage.trim()} alt="Team profile preview" style={{ height: '100px', width: '100px', objectFit: 'cover', borderRadius: '50%' }} />
+                <button type="button" className={styles.tab} onClick={() => setLeaderImage("")}>Remove photo</button>
+              </div>
+            ) : null}
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button type="submit" className={styles.btnAction}>{editingLeaderId ? "Save team profile" : "Add team profile"}</button>
+              {editingLeaderId && <button type="button" className={styles.tab} onClick={resetLeaderForm}>Cancel editing</button>}
+            </div>
           </form>
 
-          <h2 style={{ marginBottom: '1.5rem' }}>Current Team Leaders</h2>
+          <h2 style={{ marginBottom: '1.5rem' }}>Current Team Profiles</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-            {leaders.map(l => (
-              <div key={l.id} style={{ position: 'relative', background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
-                {l.image?.trim() ? <img src={l.image.trim()} alt={l.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #F4B304', marginBottom: '1rem' }} /> : null}
+            {leaders.map(l => {
+              const group = l.group === "leader" || (!l.group && /\b(team leader|team lead|club president|founder|chairperson|chairman)\b/i.test(l.role || "")) ? "Team leader" : "Core team member";
+              return (
+              <div key={l.id} style={{ position: 'relative', background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+                {l.image?.trim() ? <img src={l.image.trim()} alt={l.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #F4B304', marginBottom: '1rem' }} /> : <div className={styles.avatarPlaceholder}>{l.name?.charAt(0) || "R"}</div>}
+                <div className={styles.roleBadge}>{group}</div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '0.2rem' }}>{l.name}</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{l.role}</p>
-                <button onClick={() => handleDelete('leaders', l.id)} style={{ position: 'absolute', top: 10, right: 10, background: '#ff5555', color: 'white', borderRadius: '4px', padding: '0.2rem 0.5rem', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Delete</button>
+                {l.bio && <p style={{ marginTop: '0.65rem', color: 'var(--text-secondary)', fontSize: '0.82rem', lineHeight: 1.5 }}>{l.bio}</p>}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                  <button type="button" className={styles.tab} onClick={() => handleEditLeader(l)}>Edit</button>
+                  <button type="button" onClick={() => handleDelete('leaders', l.id)} className={styles.deleteBtn}>Delete</button>
+                </div>
               </div>
-            ))}
+            );})}
           </div>
         </div>
       )}

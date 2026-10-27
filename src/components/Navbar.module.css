@@ -14,16 +14,34 @@
 
 /* Public Pages Modern Glass Navbar Override */
 .publicNavbar {
-  background: rgba(9, 10, 15, 0.85) !important;
+  background: rgba(255, 253, 250, 0.94) !important;
   backdrop-filter: blur(18px) !important;
   -webkit-backdrop-filter: blur(18px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5) !important;
+  border-bottom: 1px solid #e8dfd5 !important;
+  box-shadow: 0 4px 24px rgba(43, 30, 26, 0.06) !important;
 }
 
 .publicNavbar .link:hover::after {
-  background: #38BDF8 !important;
+  background: #76263a !important;
 }
+
+.publicNavbar .link { color: #675d52; }
+.publicNavbar .brandLink > div > span:first-child { color: #292521 !important; }
+.publicNavbar .brandLink > div > span:last-child { color: #71675c !important; }
+.publicNavbar .brandLink span { color: #292521 !important; }
+.publicNavbar .brandLink span span { color: #d09925 !important; }
+.publicNavbar .link:hover { color: #76263a; }
+.publicNavbar .loginBtn { border-color: #e5dbd0; background: #fffdfa; color: #51473e; }
+.publicNavbar .loginBtn:hover { border-color: #cdbca5; background: #f8f3ed; color: #76263a; }
+.publicNavbar .joinBtn { border-color: #76263a; background: #76263a; color: #fff; box-shadow: 0 4px 12px rgba(118,38,58,.16); }
+.publicNavbar .joinBtn:hover { background: #5b1a2c; }
+.publicNavbar .portalActiveBtn { border-color: #cdbb93; background: #fcf6e9; color: #795c1d; }
+.publicNavbar .mobileToggle { color: #4c4035; }
+.publicNavbar .mobileMenu { background: #fffdfa; border-bottom-color: #e8dfd5; box-shadow: 0 15px 30px rgba(43,30,26,.12); }
+.publicNavbar .mobileLink { border-bottom-color: #f0e9e1; color: #51473e; }
+.publicNavbar .mobileLink:hover { color: #76263a; }
+.publicNavbar .mobileLoginBtn { border-color: #e5dbd0; background: #faf7f3; color: #51473e; }
+.publicNavbar .mobilePortalActiveBtn { border-color: #cdbb93; background: #fcf6e9; color: #795c1d; }
 
 .navContainer {
   width: 100%;

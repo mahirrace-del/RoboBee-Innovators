@@ -14,15 +14,16 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const isDashboard = pathname.startsWith('/dashboard');
+  const isStyledPublicPage = pathname === '/' || pathname === '/recruitment';
 
   return (
-    <nav className={isDashboard ? styles.navbar : `${styles.navbar} ${styles.publicNavbar}`}>
+    <nav className={isDashboard ? styles.navbar : isStyledPublicPage ? `${styles.navbar} ${styles.publicNavbar}` : styles.navbar}>
       <div className={styles.navContainer}>
         <div className={styles.brandGroup}>
           <Link href={isDashboard ? "/dashboard" : "/"} className={styles.brandLink}>
             <Logo width={28} height={28} />
           </Link>
-          <ClientLabStatus />
+          <ClientLabStatus variant={isStyledPublicPage ? "light" : "default"} />
         </div>
         
         {/* Desktop Links */}

@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# agent workspace & local tooling
+.agent/
+.agents/
+.gemini/
+.gsd/
+adapters/
+model_capabilities.yaml
+PROJECT_RULES.md
+GSD-STYLE.md
+VERSION
+ANTIGRAVITY_ROBOBEE_CURRICULUM_MASTER_PROMPT.md
+*.bak
+

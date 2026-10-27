@@ -1,0 +1,22 @@
+.community { position: relative; overflow: hidden; padding: 82px 0 72px; border-top: 1px solid #e9e0d6; background: #f5f0e9; scroll-margin-top: 90px; }
+.communityHeading { max-width: 800px; margin: 0 auto 35px; padding: 0 24px; text-align: center; }
+.communityEyebrow { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 12px; color: #7c293b; font-size: .7rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.communityHeading h2 { margin: 0 0 10px; color: #292521; font-size: clamp(1.9rem, 4vw, 2.8rem); letter-spacing: -.04em; line-height: 1.1; }
+.communityHeading h2 span { color: #7c293b; }
+.communityHeading p { max-width: 630px; margin: 0 auto; color: #6e655b; font-size: .96rem; line-height: 1.65; }
+.marqueeWindow { overflow: hidden; width: 100%; padding: 12px 0 24px; mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); }
+.marqueeTrack { display: flex; width: max-content; gap: 21px; padding: 0 12px; animation: memberDrift 52s linear infinite; }
+.marqueeTrack.paused { animation-play-state: paused; }
+.memberButton { position: relative; display: flex; width: 112px; flex: 0 0 auto; flex-direction: column; align-items: center; gap: 9px; padding: 0; border: 0; background: transparent; color: #292521; font: inherit; cursor: pointer; }
+.memberPhoto { display: grid; width: 84px; height: 84px; overflow: hidden; place-items: center; padding: 3px; border: 2px solid #d6c3a7; border-radius: 50%; background: #fffdfa; color: #7c293b; font-size: .75rem; font-weight: 800; transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+.memberPhoto img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.memberActive .memberPhoto, .memberButton:focus-visible .memberPhoto { transform: scale(1.08); border-color: #a77b25; box-shadow: 0 5px 15px rgba(71,42,26,.16); }
+.memberButton:focus-visible { outline: none; }
+.memberButton:focus-visible .memberPhoto { outline: 3px solid #76263a; outline-offset: 3px; }
+.memberCaption { display: grid; max-width: 112px; gap: 3px; text-align: center; opacity: 0; transform: translateY(4px); transition: opacity .18s ease, transform .18s ease; }
+.memberActive .memberCaption, .memberButton:focus-visible .memberCaption { opacity: 1; transform: translateY(0); }
+.memberCaption strong { overflow: hidden; color: #302a24; font-size: .73rem; text-overflow: ellipsis; white-space: nowrap; }
+.memberCaption small { color: #796d5f; font-size: .65rem; }
+.marqueeHint { margin: 0; color: #968a7c; font-size: .72rem; text-align: center; }
+@keyframes memberDrift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .marqueeWindow { overflow-x: auto; } .marqueeTrack { animation: none; } .memberPhoto, .memberCaption { transition: none; } }
