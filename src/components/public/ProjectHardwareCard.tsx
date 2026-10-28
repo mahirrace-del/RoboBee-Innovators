@@ -1,5 +1,5 @@
-import React from "react";
-import { ArrowUpRight, Cpu, Wrench } from "lucide-react";
+import { useId, useState } from "react";
+import { ArrowDown, ArrowUp, ArrowUpRight, Cpu, Wrench } from "lucide-react";
 import styles from "./public-cards.module.css";
 
 interface ProjectHardwareCardProps {
@@ -14,6 +14,9 @@ interface ProjectHardwareCardProps {
 }
 
 export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const descriptionId = useId();
+  const hasLongDescription = project.description.length > 180;
   const tags = project.tags?.length ? project.tags : [
     project.title.toLowerCase().includes("arm") ? "Robotic arm" :
       project.title.toLowerCase().includes("maze") ? "Autonomous" :
@@ -35,7 +38,24 @@ export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
       <div className={styles.projectBody}>
         <div className={styles.tagList}>{tags.slice(0, 3).map((tag) => <span className={styles.tag} key={tag}>{tag}</span>)}</div>
         <h3>{project.title}</h3>
-        <p>{project.description}</p>
+        <p
+          className={`${styles.projectDescription} ${descriptionExpanded ? styles.projectDescriptionExpanded : ""}`}
+          id={descriptionId}
+        >
+          {project.description}
+        </p>
+        {hasLongDescription && (
+          <button
+            type="button"
+            className={styles.readDetailsButton}
+            aria-expanded={descriptionExpanded}
+            aria-controls={descriptionId}
+            onClick={() => setDescriptionExpanded((expanded) => !expanded)}
+          >
+            {descriptionExpanded ? "Show less" : "Read full project details"}
+            {descriptionExpanded ? <ArrowUp size={14} aria-hidden="true" /> : <ArrowDown size={14} aria-hidden="true" />}
+          </button>
+        )}
         <div className={styles.projectFoot}><span><Wrench size={15} /> Prototype project</span><ArrowUpRight size={18} aria-hidden="true" /></div>
       </div>
     </article>

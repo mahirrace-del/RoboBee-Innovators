@@ -113,7 +113,7 @@ export default function PortalLogin() {
         <div>
           <h1 className={styles.title}>Portal Access</h1>
           <p className={styles.subtitle}>
-            Sign in to access your Robo Innovators dashboard
+            Sign in to open your RoboBEE workspace
           </p>
         </div>
 

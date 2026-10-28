@@ -322,8 +322,8 @@ export default function Home() {
             <div className={styles.robotStage} role="group" aria-label="RoboBEE rover model">
               <RobotArtwork />
               <InteractiveRobotScene />
-              <span className={styles.robotOrbitLabel}>ROBOBEE · LAB PROTOTYPE 01</span>
-              <span className={styles.robotControlHint}>Move to explore</span>
+              <span className={styles.robotOrbitLabel}>MEET YOUR ROBOBEE ROVER</span>
+              <span className={styles.robotControlHint}>It follows your cursor</span>
             </div>
             <HeroLearningStackBento />
           </div>

@@ -38,6 +38,7 @@
 .robotStage { position: relative; min-height: 380px; overflow: hidden; border: 1px solid #e9dfd3; border-radius: 22px; background: radial-gradient(ellipse at 50% 76%, #f4ead9, #f8f4ed 59%, #f0e9df); box-shadow: 0 22px 55px rgba(59,39,29,.09); }
 .robotStage::before { position: absolute; inset: 0; background: radial-gradient(circle at 50% 72%, rgba(204,152,50,.12), transparent 42%); content: ""; }
 .robotStage :global(.robotFallback) { position: absolute; inset: 5% 2% 2%; width: 96%; height: 93%; }
+.robotStage :global(.robotFallback[hidden]) { display: none !important; }
 .robotStage :global(.robotSceneCanvas) { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; }
 .robotStage :global(.robotSceneCanvas):focus-visible { outline: 3px solid #a57824; outline-offset: -5px; }
 .robotStage :global(canvas) { display: block; width: 100%; height: 100%; }

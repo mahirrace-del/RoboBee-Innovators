@@ -43,6 +43,20 @@
 .publicNavbar .mobileLoginBtn { border-color: #e5dbd0; background: #faf7f3; color: #51473e; }
 .publicNavbar .mobilePortalActiveBtn { border-color: #cdbb93; background: #fcf6e9; color: #795c1d; }
 
+.dashboardNavbar {
+  background: #fffdfa;
+  border-bottom: 1px solid #e5ded5;
+  box-shadow: 0 3px 14px rgba(61, 45, 31, 0.045);
+  backdrop-filter: none;
+}
+
+.dashboardNavbar .link { color: #6f665e; }
+.dashboardNavbar .link:hover { color: #84243a; }
+.dashboardNavbar .loginBtn { background: #84243a; border-color: #84243a; color: #fff; }
+.dashboardNavbar .loginBtn:hover { background: #6f1f34; }
+.dashboardNavbar .brandLink span { color: #292521 !important; }
+.dashboardNavbar .brandLink span span { color: #d09925 !important; }
+
 .navContainer {
   width: 100%;
   max-width: 1240px;

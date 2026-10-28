@@ -15,8 +15,8 @@
 
 .viewToggleGroup {
   display: inline-flex;
-  background: #111827;
-  border: 1px solid #374151;
+  background: #ffffff;
+  border: 1px solid #dfd7cc;
   border-radius: 10px;
   padding: 0.25rem;
   gap: 0.25rem;
@@ -27,7 +27,7 @@
   border-radius: 7px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #9CA3AF;
+  color: #6f665e;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -36,15 +36,15 @@
 
 .viewToggleBtnActive {
   background: #6B0F24;
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.4);
 }
 
 .formCard {
   padding: 1.5rem;
   margin-bottom: 2rem;
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #ffffff;
+  border: 1px solid #f4f1eb;
   border-radius: 14px;
 }
 
@@ -63,7 +63,7 @@
 .label {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #9CA3AF;
+  color: #6f665e;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -71,29 +71,29 @@
 .input {
   padding: 0.65rem 0.85rem;
   border-radius: 8px;
-  background: #0B0F17;
-  border: 1px solid #374151;
-  color: #F9FAFB;
+  background: #f7f5f1;
+  border: 1px solid #dfd7cc;
+  color: #27211d;
   font-size: 0.88rem;
 }
 
 .input:focus {
   outline: none;
-  border-color: #F5B800;
+  border-color: #9c6f18;
 }
 
 .submitBtn {
   padding: 0.72rem 1.35rem;
   border-radius: 8px;
-  background: #F5B800;
-  color: #0B0F17;
+  background: #9c6f18;
+  color: #f7f5f1;
   font-weight: 800;
   font-size: 0.88rem;
   transition: all 0.15s ease;
 }
 
 .submitBtn:hover {
-  background: #F59E0B;
+  background: #99651a;
 }
 
 /* Filter Bar */
@@ -105,8 +105,8 @@
   gap: 0.85rem;
   margin-bottom: 1.5rem;
   padding: 0.85rem 1.15rem;
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #ffffff;
+  border: 1px solid #f4f1eb;
   border-radius: 12px;
 }
 
@@ -120,8 +120,8 @@
 }
 
 .kanbanColumn {
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #ffffff;
+  border: 1px solid #f4f1eb;
   border-radius: 14px;
   padding: 1rem;
   display: flex;
@@ -153,8 +153,8 @@
   font-weight: 800;
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
-  background: #1F2937;
-  color: #F9FAFB;
+  background: #f4f1eb;
+  color: #27211d;
 }
 
 .kanbanCards {
@@ -165,9 +165,9 @@
 }
 
 .taskCard {
-  background: #1F2937;
+  background: #f4f1eb;
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-left: 4px solid #F5B800;
+  border-left: 4px solid #9c6f18;
   border-radius: 11px;
   padding: 1rem;
   display: flex;
@@ -190,7 +190,7 @@
 .taskTitle {
   font-size: 0.96rem;
   font-weight: 800;
-  color: #F9FAFB;
+  color: #27211d;
   line-height: 1.35;
 }
 
@@ -205,7 +205,7 @@
 
 .taskDesc {
   font-size: 0.82rem;
-  color: #9CA3AF;
+  color: #6f665e;
   line-height: 1.45;
 }
 
@@ -224,7 +224,7 @@
   font-size: 0.7rem;
   font-weight: 700;
   background: rgba(245, 184, 0, 0.12);
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.3);
 }
 
@@ -236,7 +236,7 @@
 
 .metaInfo {
   font-size: 0.76rem;
-  color: #9CA3AF;
+  color: #6f665e;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
@@ -258,14 +258,14 @@
   font-size: 0.72rem;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.06);
-  color: #F9FAFB;
+  color: #27211d;
   border: 1px solid rgba(255, 255, 255, 0.12);
   transition: all 0.15s ease;
 }
 
 .stageBtn:hover {
-  border-color: #F5B800;
-  color: #F5B800;
+  border-color: #9c6f18;
+  color: #9c6f18;
 }
 
 .completeBtn {
@@ -280,13 +280,13 @@
 
 .completeBtn:hover {
   background: #10B981;
-  color: #0B0F17;
+  color: #f7f5f1;
 }
 
 /* Gantt Milestone Timeline View */
 .ganttContainer {
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #ffffff;
+  border: 1px solid #f4f1eb;
   border-radius: 14px;
   padding: 1.35rem;
   display: flex;
@@ -301,11 +301,11 @@
 }
 
 .ganttGroupHeader {
-  background: #1F2937;
+  background: #f4f1eb;
   padding: 0.75rem 1rem;
   font-size: 0.88rem;
   font-weight: 800;
-  color: #F5B800;
+  color: #9c6f18;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -323,11 +323,11 @@
 .ganttBarTrack {
   width: 100%;
   height: 22px;
-  background: #0B0F17;
+  background: #f7f5f1;
   border-radius: 999px;
   overflow: hidden;
   position: relative;
-  border: 1px solid #374151;
+  border: 1px solid #dfd7cc;
 }
 
 .ganttBarFill {
@@ -339,7 +339,7 @@
   padding-right: 0.5rem;
   font-size: 0.65rem;
   font-weight: 800;
-  color: #0B0F17;
+  color: #f7f5f1;
   transition: width 0.25s ease;
 }
 

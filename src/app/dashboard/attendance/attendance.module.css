@@ -88,7 +88,7 @@
 }
 
 .spotlightActive {
-  border-color: #F5B800;
+  border-color: #9c6f18;
   background: linear-gradient(135deg, rgba(107, 15, 36, 0.55), rgba(22, 27, 38, 0.95));
 }
 
@@ -99,7 +99,7 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background: #F5B800;
+  background: #9c6f18;
 }
 
 .badgeLive {
@@ -136,7 +136,7 @@
   align-items: center;
   gap: 0.4rem;
   background: rgba(245, 184, 0, 0.15);
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.35);
   padding: 0.25rem 0.65rem;
   border-radius: 20px;
@@ -147,7 +147,7 @@
 
 .lessonTag {
   background: rgba(245, 184, 0, 0.15);
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.3);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
@@ -161,7 +161,7 @@
 .checkInBtn {
   width: 100%;
   padding: 0.85rem 1.25rem;
-  background: #F5B800;
+  background: #9c6f18;
   color: #161B26;
   font-weight: 800;
   font-size: 1rem;
@@ -211,7 +211,7 @@
 
 .actionBtnPrimary {
   background: #6B0F24;
-  border-color: #F5B800;
+  border-color: #9c6f18;
   color: #ffffff;
 }
 

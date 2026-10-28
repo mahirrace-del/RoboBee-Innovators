@@ -14,10 +14,13 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const isDashboard = pathname.startsWith('/dashboard');
+  const isPortalLogin = pathname === "/portal";
   const isStyledPublicPage = pathname === '/' || pathname === '/recruitment';
 
+  if (isPortalLogin) return null;
+
   return (
-    <nav className={isDashboard ? styles.navbar : isStyledPublicPage ? `${styles.navbar} ${styles.publicNavbar}` : styles.navbar}>
+    <nav className={isDashboard ? `${styles.navbar} ${styles.dashboardNavbar}` : isStyledPublicPage ? `${styles.navbar} ${styles.publicNavbar}` : styles.navbar}>
       <div className={styles.navContainer}>
         <div className={styles.brandGroup}>
           <Link href={isDashboard ? "/dashboard" : "/"} className={styles.brandLink}>

@@ -66,7 +66,7 @@
 .tabBtnActive {
   background: #6B0F24 !important;
   color: #ffffff !important;
-  border-color: #F5B800 !important;
+  border-color: #9c6f18 !important;
   box-shadow: 0 4px 12px rgba(107, 15, 36, 0.4);
 }
 
@@ -92,7 +92,7 @@
 }
 
 .spotlightActive {
-  border-color: #F5B800;
+  border-color: #9c6f18;
   background: linear-gradient(135deg, rgba(107, 15, 36, 0.55), rgba(22, 27, 38, 0.95));
 }
 
@@ -103,7 +103,7 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background: #F5B800;
+  background: #9c6f18;
 }
 
 .badgeLive {
@@ -141,7 +141,7 @@
   align-items: center;
   gap: 0.4rem;
   background: rgba(245, 184, 0, 0.15);
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.35);
   padding: 0.25rem 0.65rem;
   border-radius: 20px;
@@ -183,13 +183,13 @@
 }
 
 .sessionActive {
-  border-color: #F5B800 !important;
+  border-color: #9c6f18 !important;
   background: rgba(107, 15, 36, 0.35) !important;
 }
 
 .lessonTag {
   background: rgba(245, 184, 0, 0.15);
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.3);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
@@ -224,7 +224,7 @@
 
 /* Buttons */
 .takeBtn {
-  background: #F5B800;
+  background: #9c6f18;
   color: #161B26;
   border: none;
   padding: 0.55rem 1rem;
@@ -260,7 +260,7 @@
 
 .projectorBtn:hover {
   background: #6B0F24;
-  border-color: #F5B800;
+  border-color: #9c6f18;
 }
 
 .statusToggleBtn {
@@ -365,7 +365,7 @@
 
 .matrixTable th {
   background: rgba(11, 15, 25, 0.8);
-  color: #F5B800;
+  color: #9c6f18;
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -414,7 +414,7 @@
 
 .inputField:focus {
   outline: none;
-  border-color: #F5B800;
+  border-color: #9c6f18;
 }
 
 /* Mobile Media Query */

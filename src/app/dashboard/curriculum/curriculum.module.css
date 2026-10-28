@@ -111,7 +111,7 @@
 }
 
 .roadmapCard {
-  background: #111827;
+  background: #ffffff;
   border: 1px solid #1e293b;
   border-radius: 16px;
   padding: 1.5rem;
@@ -392,7 +392,7 @@
 
 /* Exit check */
 .exitCheckItem {
-  background: #111827;
+  background: #ffffff;
   border: 1px solid #1e293b;
   border-radius: 12px;
   padding: 1.25rem;
@@ -471,7 +471,7 @@
 
 .tierTabActive {
   background: #6B0F24;
-  border-color: #F5B800;
+  border-color: #9c6f18;
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(107, 15, 36, 0.5);
 }
@@ -496,7 +496,7 @@
   padding: 0.25rem 0.65rem;
   border-radius: 20px;
   background: rgba(245, 184, 0, 0.15);
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.3);
   text-transform: uppercase;
 }
@@ -515,7 +515,7 @@
 }
 
 .buildPackCard {
-  background: #111827;
+  background: #ffffff;
   border: 1px solid #1e293b;
   border-radius: 12px;
   padding: 1.25rem;
@@ -524,7 +524,7 @@
 .buildPackTitle {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #F5B800;
+  color: #9c6f18;
   margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
@@ -770,7 +770,7 @@
 .modeBtnActive {
   background: #6B0F24 !important;
   color: #ffffff !important;
-  border: 1px solid #F5B800;
+  border: 1px solid #9c6f18;
   box-shadow: 0 2px 8px rgba(107, 15, 36, 0.5);
 }
 
@@ -827,14 +827,14 @@
 }
 
 .pacingBtnActive {
-  background: #F5B800 !important;
+  background: #9c6f18 !important;
   color: #161B26 !important;
   font-weight: 800;
 }
 
 .instructorBanner {
   background: linear-gradient(135deg, rgba(107, 15, 36, 0.3), rgba(245, 184, 0, 0.1));
-  border: 1px solid #F5B800;
+  border: 1px solid #9c6f18;
   border-radius: 10px;
   padding: 0.85rem 1.25rem;
   margin-bottom: 1.25rem;
@@ -859,8 +859,8 @@
 }
 
 .sourceCard:hover {
-  border-color: #F5B800;
-  background: #111827;
+  border-color: #9c6f18;
+  background: #ffffff;
   transform: translateX(3px);
 }
 

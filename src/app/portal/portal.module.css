@@ -1,11 +1,16 @@
 .container {
+  --bg-primary: #f7f5f1;
+  --bg-secondary: #ffffff;
+  --text-primary: #27211d;
+  --text-secondary: #6f665e;
+  --accent-primary: #84243a;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background-image: radial-gradient(circle at top right, rgba(0, 210, 255, 0.1), transparent 40%),
-                    radial-gradient(circle at bottom left, rgba(58, 123, 213, 0.1), transparent 40%);
+  background: radial-gradient(circle at 15% 12%, rgba(213, 171, 91, 0.16), transparent 32%), #f7f5f1;
+  color: #27211d;
 }
 
 .loginCard {
@@ -16,6 +21,13 @@
   flex-direction: column;
   gap: 1.5rem;
   animation: fadeIn 0.5s ease-out;
+}
+
+.container :global(.glass-panel) {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #e5ded5;
+  box-shadow: 0 22px 60px rgba(61, 45, 31, 0.12);
+  backdrop-filter: blur(10px);
 }
 
 .title {
@@ -49,8 +61,8 @@
 .input {
   padding: 0.8rem 1rem;
   border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid #ded6cc;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 1rem;
@@ -60,7 +72,7 @@
 .input:focus {
   outline: none;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(132, 36, 58, 0.12);
 }
 
 .submitBtn {
@@ -75,9 +87,9 @@
 }
 
 .submitBtn:hover {
-  background: #33dcff;
+  background: #6f1f34;
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(107, 15, 36, 0.2);
 }
 
 .submitBtn:disabled {
@@ -119,8 +131,8 @@
   width: 100%;
   padding: 0.85rem;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #f4f1eb;
+  border: 1px solid #ded6cc;
   color: var(--text-secondary);
   cursor: pointer;
   font-weight: 600;
@@ -130,9 +142,9 @@
 }
 
 .secondaryBtn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #ffffff;
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: #c8bcae;
 }
 
 @media (max-width: 768px) {

@@ -123,9 +123,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         await user.delete();
       }
       router.push("/portal");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting account:", error);
-      if (error.code === "auth/requires-recent-login") {
+      const errorCode = typeof error === "object" && error !== null && "code" in error ? error.code : undefined;
+      if (errorCode === "auth/requires-recent-login") {
         alert("For security, please sign out and sign in again before deleting your application.");
       } else {
         alert("Failed to delete application. Please contact admin.");
@@ -190,23 +191,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     pathname === href ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
 
   const getBreadcrumbLabel = () => {
-    if (pathname === "/dashboard") return role === "admin" ? "Command Dashboard & Hub" : "Member Central Hub";
-    if (pathname === "/dashboard/curriculum") return "Learning Deck & Classroom Engine";
-    if (pathname === "/dashboard/curriculum/reference") return "Field Guide & Pinout Reference";
-    if (pathname === "/dashboard/tasks") return "Task & Milestone Pipeline";
-    if (pathname === "/dashboard/attendance") return "Class Schedule & Attendance";
-    if (pathname === "/dashboard/competitions") return "Competition Arena & Workbench";
-    if (pathname === "/dashboard/checkout") return "Lab Requisition & Checkout Tracker";
-    if (pathname === "/dashboard/inventory") return "Hardware & Lab Component Ledger";
-    if (pathname === "/dashboard/bom") return "Project Budgets & Bill of Materials";
-    if (pathname === "/dashboard/finance") return "Member Dues & Expense Requisitions";
-    if (pathname === "/dashboard/profile") return "Member Profile & Credentials";
-    if (pathname.startsWith("/dashboard/admin/curriculum")) return "Admin • Curriculum & Classroom Studio";
-    if (pathname.startsWith("/dashboard/admin/competitions")) return "Admin • Competition Command Center";
-    if (pathname.startsWith("/dashboard/admin/finance")) return "Admin • Treasury & Expense Ledger";
-    if (pathname.startsWith("/dashboard/admin/attendance")) return "Admin • Session & Attendance Roster";
-    if (pathname.startsWith("/dashboard/admin/requests")) return "Admin • Lab Parts Requisition Queue";
-    if (pathname.startsWith("/dashboard/members")) return "Admin • Team Member Directory & RBAC";
+    if (pathname === "/dashboard") return role === "admin" ? "Overview" : "My workspace";
+    if (pathname === "/dashboard/curriculum") return "Learning";
+    if (pathname === "/dashboard/curriculum/reference") return "Field guide";
+    if (pathname === "/dashboard/tasks") return "Tasks";
+    if (pathname === "/dashboard/attendance") return "Schedule & attendance";
+    if (pathname === "/dashboard/competitions") return "Competitions";
+    if (pathname === "/dashboard/checkout") return "Equipment checkout";
+    if (pathname === "/dashboard/inventory") return "Inventory";
+    if (pathname === "/dashboard/bom") return "Project budgets";
+    if (pathname === "/dashboard/finance") return "Dues & expenses";
+    if (pathname === "/dashboard/profile") return "My profile";
+    if (pathname.startsWith("/dashboard/admin/curriculum")) return "Classroom";
+    if (pathname.startsWith("/dashboard/admin/competitions")) return "Manage competitions";
+    if (pathname.startsWith("/dashboard/admin/finance")) return "Finance";
+    if (pathname.startsWith("/dashboard/admin/attendance")) return "Manage attendance";
+    if (pathname.startsWith("/dashboard/admin/requests")) return "Parts requests";
+    if (pathname.startsWith("/dashboard/members")) return "Members & access";
     return "RoboBEE Portal";
   };
 
@@ -240,7 +241,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* SECTION 1: MEMBER PORTAL & LEARNING DECK */}
-        {!sidebarCollapsed && <div className={styles.sectionHeading}>MEMBER PORTAL</div>}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>WORKSPACE</div>}
         <Link href="/dashboard" className={isAct("/dashboard")} onClick={closeSidebar} title="Central Hub">
           <Home size={18} className={styles.navIcon} />
           {!sidebarCollapsed && <span className={styles.navLabel}>Central Hub</span>}
@@ -277,7 +278,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Link>
 
         {/* SECTION 2: SPRINT & ARENA */}
-        {!sidebarCollapsed && <div className={styles.sectionHeading}>SPRINTS &amp; ARENA</div>}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>PROJECTS &amp; CLASSES</div>}
         <Link
           href="/dashboard/tasks"
           className={isAct("/dashboard/tasks")}
@@ -312,7 +313,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Link>
 
         {/* SECTION 3: HARDWARE & LAB LOGISTICS */}
-        {!sidebarCollapsed && <div className={styles.sectionHeading}>HARDWARE &amp; LAB</div>}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>LAB</div>}
         <Link
           href="/dashboard/checkout"
           className={isAct("/dashboard/checkout")}
@@ -367,7 +368,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Link>
 
         {/* SECTION 4: TREASURY & PROFILE */}
-        {!sidebarCollapsed && <div className={styles.sectionHeading}>TREASURY &amp; ACCOUNT</div>}
+        {!sidebarCollapsed && <div className={styles.sectionHeading}>ACCOUNT</div>}
         <Link
           href="/dashboard/finance"
           className={isAct("/dashboard/finance")}
@@ -392,7 +393,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <>
             {!sidebarCollapsed && (
               <div className={`${styles.sectionHeading} ${styles.sectionHeadingAdmin}`}>
-                ADMIN COMMAND
+                ADMINISTRATION
               </div>
             )}
             <Link
@@ -471,7 +472,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <>
               {!sidebarCollapsed && (
                 <div className={`${styles.sectionHeading} ${styles.sectionHeadingAdmin}`}>
-                  STAFF CONTROLS
+                  MANAGEMENT
                 </div>
               )}
               {canManage("manage_curriculum") && (

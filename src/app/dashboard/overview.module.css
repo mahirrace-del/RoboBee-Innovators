@@ -28,8 +28,8 @@
 
 .modeSwitcher {
   display: inline-flex;
-  background: #111827;
-  border: 1px solid #374151;
+  background: #ffffff;
+  border: 1px solid #dfd7cc;
   border-radius: 10px;
   padding: 0.25rem;
   gap: 0.25rem;
@@ -40,7 +40,7 @@
   border-radius: 7px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #9CA3AF;
+  color: #6f665e;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -49,7 +49,7 @@
 
 .modeBtnActive {
   background: #6B0F24;
-  color: #F5B800;
+  color: #9c6f18;
   border: 1px solid rgba(245, 184, 0, 0.4);
 }
 
@@ -62,8 +62,8 @@
 }
 
 .kpiTile {
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #ffffff;
+  border: 1px solid #f4f1eb;
   border-radius: 14px;
   padding: 1.35rem;
   display: flex;
@@ -89,20 +89,20 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.9px;
-  color: #9CA3AF;
+  color: #6f665e;
 }
 
 .kpiValue {
   font-size: 2.15rem;
   font-weight: 900;
-  color: #F9FAFB;
+  color: #27211d;
   line-height: 1.1;
 }
 
 .kpiMeta {
   margin-top: 0.65rem;
   font-size: 0.8rem;
-  color: #9CA3AF;
+  color: #6f665e;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -118,8 +118,8 @@
 }
 
 .panelCard {
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #ffffff;
+  border: 1px solid #f4f1eb;
   border-radius: 14px;
   padding: 1.4rem;
   display: flex;
@@ -138,7 +138,7 @@
 .panelTitle {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #F9FAFB;
+  color: #27211d;
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -152,7 +152,7 @@
 }
 
 .streamItem {
-  background: #1F2937;
+  background: #f4f1eb;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 0.85rem 1rem;
@@ -182,12 +182,12 @@
 .streamBodyTitle {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #F9FAFB;
+  color: #27211d;
 }
 
 .streamBodySub {
   font-size: 0.78rem;
-  color: #9CA3AF;
+  color: #6f665e;
   margin-top: 0.15rem;
 }
 
@@ -239,28 +239,28 @@
   border-radius: 9px;
   font-size: 0.84rem;
   font-weight: 700;
-  background: #1F2937;
-  color: #F9FAFB;
-  border: 1px solid #374151;
+  background: #f4f1eb;
+  color: #27211d;
+  border: 1px solid #dfd7cc;
   text-decoration: none;
   transition: all 0.18s ease;
 }
 
 .dockBtn:hover {
-  border-color: #F5B800;
-  color: #F5B800;
+  border-color: #9c6f18;
+  color: #9c6f18;
   transform: translateY(-1px);
 }
 
 .dockBtnPrimary {
-  background: #F5B800;
-  color: #0B0F17;
-  border-color: #F5B800;
+  background: #9c6f18;
+  color: #f7f5f1;
+  border-color: #9c6f18;
 }
 
 .dockBtnPrimary:hover {
-  background: #F59E0B;
-  color: #0B0F17;
+  background: #99651a;
+  color: #f7f5f1;
 }
 
 /* Preserved ScoreCard & Quick Launchpad */
@@ -341,8 +341,8 @@
 }
 
 .quickCard {
-  background: #111827;
-  border: 1px solid #1F2937;
+  background: #ffffff;
+  border: 1px solid #f4f1eb;
   padding: 1.15rem;
   border-radius: 12px;
   text-decoration: none;
@@ -353,7 +353,7 @@
 }
 
 .quickCard:hover {
-  background: #1F2937;
+  background: #f4f1eb;
   border-color: rgba(245, 184, 0, 0.35);
   transform: translateY(-2px);
 }
