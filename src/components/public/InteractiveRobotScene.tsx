@@ -10,34 +10,29 @@ export default function InteractiveRobotScene() {
     const video = videoRef.current;
     if (!video) return;
 
-    // Ensure fallback is hidden once video is ready
-    const hideFallback = () => {
-      const fallback = video.parentElement?.parentElement?.querySelector(".robotFallback");
-      if (fallback) fallback.setAttribute("hidden", "");
-    };
-
-    video.addEventListener("canplay", hideFallback);
-    video.addEventListener("playing", hideFallback);
-
-    // Guaranteed seamless loop across Safari/iOS/Chrome
+    // Ensure loop repeats smoothly without pause across all browsers
     const handleEnded = () => {
       video.currentTime = 0;
       video.play().catch(() => {});
     };
     video.addEventListener("ended", handleEnded);
 
+    // If user prefers reduced motion, pause the video and show poster
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      video.pause();
+    }
+
     return () => {
-      video.removeEventListener("canplay", hideFallback);
-      video.removeEventListener("playing", hideFallback);
       video.removeEventListener("ended", handleEnded);
     };
   }, []);
 
   return (
-    <div className={styles.container} aria-label="RoboBee Humanoid Robot Workshop">
+    <div className={styles.container} aria-label="RoboBee Humanoid Robotics Workshop">
       <video
         ref={videoRef}
         src="/hero-robot-lab.mp4"
+        poster="/hero-robot-poster.jpg"
         autoPlay
         loop
         muted

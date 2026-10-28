@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: #f8f4ed;
   overflow: visible;
 }
 
@@ -14,11 +14,20 @@
   aspect-ratio: 16 / 9;
   object-fit: contain;
   display: block;
-  background: transparent;
-  mix-blend-mode: multiply;
-  /* Softly feather the perimeter so the diorama seamlessly dissolves into the page background with zero visible card line */
-  -webkit-mask-image: radial-gradient(ellipse 94% 90% at 50% 50%, black 75%, transparent 100%);
-  mask-image: radial-gradient(ellipse 94% 90% at 50% 50%, black 75%, transparent 100%);
+  background: #f8f4ed;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
   pointer-events: none;
-  filter: contrast(1.02);
+  /* Soft edge feathering so the video melts seamlessly into the #F8F4ED background */
+  -webkit-mask-image: radial-gradient(ellipse 98% 96% at 50% 50%, black 90%, transparent 100%);
+  mask-image: radial-gradient(ellipse 98% 96% at 50% 50%, black 90%, transparent 100%);
+}
+
+@media (max-width: 640px) {
+  .video {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
 }

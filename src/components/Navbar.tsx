@@ -43,17 +43,10 @@ export default function Navbar() {
               <Link href="/#achievements" className={styles.link}>Achievements</Link>
               <Link href="/#members" className={styles.link}>Community</Link>
               <Link href="/recruitment" className={styles.link}>Apply</Link>
-              {!authLoading && user ? (
-                <Link href="/dashboard" className={styles.portalActiveBtn}>
-                  <span className={styles.onlineDot} />
-                  <span>Dashboard</span>
-                </Link>
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                  <Link href="/portal" className={styles.loginBtn}>Portal Login</Link>
-                  <Link href="/recruitment" className={styles.joinBtn}>Join the Lab &rarr;</Link>
-                </div>
-              )}
+              <Link href={!authLoading && user ? "/dashboard" : "/portal"} className={styles.portalActiveBtn}>
+                <span className={styles.onlineDot} />
+                <span>Dashboard</span>
+              </Link>
             </>
           )}
         </div>

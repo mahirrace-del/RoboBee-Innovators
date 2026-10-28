@@ -14,11 +14,11 @@
 
 /* Public Pages Modern Glass Navbar Override */
 .publicNavbar {
-  background: rgba(255, 253, 250, 0.94) !important;
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  border-bottom: 1px solid #e8dfd5 !important;
-  box-shadow: 0 4px 24px rgba(43, 30, 26, 0.06) !important;
+  background: rgba(248, 244, 237, 0.94) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(232, 223, 213, 0.8) !important;
+  box-shadow: none !important;
 }
 
 .publicNavbar .link:hover::after {
@@ -35,7 +35,22 @@
 .publicNavbar .loginBtn:hover { border-color: #cdbca5; background: #f8f3ed; color: #76263a; }
 .publicNavbar .joinBtn { border-color: #76263a; background: #76263a; color: #fff; box-shadow: 0 4px 12px rgba(118,38,58,.16); }
 .publicNavbar .joinBtn:hover { background: #5b1a2c; }
-.publicNavbar .portalActiveBtn { border-color: #cdbb93; background: #fcf6e9; color: #795c1d; }
+.publicNavbar .portalActiveBtn {
+  border: 1px solid #dcd1c4 !important;
+  background: #fbf8f3 !important;
+  color: #3d352e !important;
+  padding: 8px 16px !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+.publicNavbar .portalActiveBtn:hover {
+  background: #f4eee5 !important;
+  border-color: #cdbca5 !important;
+}
 .publicNavbar .mobileToggle { color: #4c4035; }
 .publicNavbar .mobileMenu { background: #fffdfa; border-bottom-color: #e8dfd5; box-shadow: 0 15px 30px rgba(43,30,26,.12); }
 .publicNavbar .mobileLink { border-bottom-color: #f0e9e1; color: #51473e; }

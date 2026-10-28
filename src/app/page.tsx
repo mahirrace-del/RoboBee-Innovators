@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   X,
   Phone,
+  Calendar,
+  Zap,
+  Users,
 } from "lucide-react";
 import { FacilitiesAndPathwaysBento } from "@/components/public/FacilitiesAndPathwaysBento";
 import { ProjectHardwareCard } from "@/components/public/ProjectHardwareCard";
@@ -259,9 +262,6 @@ export default function Home() {
 
   return (
     <div className={styles.main}>
-      {/* Soft engineering-inspired background */}
-      <div className={styles.circuitOverlay} />
-
       {/* =========================================================================
           HERO SECTION (BALANCED 12-COLUMN MODERN ASYMMETRIC SPLIT)
           ========================================================================= */}
@@ -269,13 +269,10 @@ export default function Home() {
         <div className={styles.heroSplitGrid}>
           {/* Left Column: Typography, Mission & High-Impact CTAs */}
           <div className={styles.heroContent}>
-            <div className={styles.badge}>
-              <Sparkles size={14} />
-              <span>NARAYANGANJ ROBOTICS &amp; MAKER LAB · EVERY FRIDAY</span>
-            </div>
-
             <h1 className={styles.title}>
-              Learn electronics. Build real robots. <span className={styles.titleHighlight}>Compete globally.</span>
+              Learn electronics.<br />
+              Build real robots.<br />
+              <span className={styles.titleHighlight}>Compete<br className={styles.desktopBr} /> globally.</span>
             </h1>
 
             <p className={styles.subtitle}>
@@ -297,19 +294,31 @@ export default function Home() {
             {/* 4 Minimalist Stat Pillars */}
             <div className={styles.heroMetricsStrip}>
               <div className={styles.metricItem}>
-                <span className={styles.metricValue}>Every Friday</span>
+                <div className={styles.metricHeader}>
+                  <Calendar size={17} />
+                  <span className={styles.metricValue}>Every Friday</span>
+                </div>
                 <span className={styles.metricLabel}>Hands-On Lab Classes</span>
               </div>
               <div className={styles.metricItem}>
-                <span className={styles.metricValue}>100+ Modules</span>
+                <div className={styles.metricHeader}>
+                  <Cpu size={17} />
+                  <span className={styles.metricValue}>100+ Modules</span>
+                </div>
                 <span className={styles.metricLabel}>Electronics &amp; Sensors</span>
               </div>
               <div className={styles.metricItem}>
-                <span className={styles.metricValue}>Rapid Prototyping</span>
+                <div className={styles.metricHeader}>
+                  <Zap size={17} />
+                  <span className={styles.metricValue}>Rapid Prototyping</span>
+                </div>
                 <span className={styles.metricLabel}>3D Printers &amp; Hardware</span>
               </div>
               <div className={styles.metricItem}>
-                <span className={styles.metricValue}>Zero to Advanced</span>
+                <div className={styles.metricHeader}>
+                  <Users size={17} />
+                  <span className={styles.metricValue}>Zero to Advanced</span>
+                </div>
                 <span className={styles.metricLabel}>Guided Mentorship</span>
               </div>
             </div>
