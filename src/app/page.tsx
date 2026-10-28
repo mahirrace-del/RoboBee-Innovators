@@ -317,12 +317,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Lazy WebGL scene with an always-available static illustration behind it */}
+          {/* Interactive 3D Video & Parallax Stage */}
           <div className={styles.heroVisualColumn}>
-            <div className={styles.robotStage} role="group" aria-label="RoboBEE rover model">
+            <div className={styles.robotStage} role="group" aria-label="RoboBEE Humanoid Robot Prototype">
               <RobotArtwork />
               <InteractiveRobotScene />
-              <span className={styles.robotOrbitLabel}>MEET YOUR ROBOBEE ROVER</span>
+              <span className={styles.robotOrbitLabel}>ROBOBEE · HUMANOID PROTOTYPE 01</span>
               <span className={styles.robotControlHint}>It follows your cursor</span>
             </div>
             <HeroLearningStackBento />
