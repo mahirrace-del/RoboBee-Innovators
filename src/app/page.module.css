@@ -13,8 +13,8 @@
   color: var(--ink);
 }
 
-.hero { position: relative; padding: 110px 4% 50px; background: var(--paper); }
-.heroSplitGrid { display: grid; grid-template-columns: minmax(0, 38%) minmax(0, 64%); align-items: center; gap: clamp(16px, 2.5vw, 36px); width: 100%; max-width: 1440px; margin: 0 auto; }
+.hero { position: relative; padding: 105px 3% 45px; background: var(--paper); }
+.heroSplitGrid { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 68%); align-items: center; gap: clamp(12px, 2vw, 28px); width: 100%; max-width: 1560px; margin: 0 auto; }
 .heroContent { position: relative; z-index: 2; }
 .title { max-width: 620px; margin: 0 0 22px; color: var(--ink); font-size: clamp(2.85rem, 4.4vw, 4.5rem); font-weight: 850; letter-spacing: -0.04em; line-height: 1.05; }
 .titleHighlight { color: var(--wine); }
