@@ -150,6 +150,237 @@
   transition: all 0.15s ease;
 }
 
+/* Multi-Member Assignment Widget */
+.multiAssignContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #fdfcfb;
+  border: 1px solid #dfd7cc;
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+
+.assignToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #ede8e1;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.assignPillBtn {
+  padding: 0.28rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border: 1px solid #dfd7cc;
+  background: #ffffff;
+  color: #27211d;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.15s ease;
+}
+
+.assignPillBtn:hover {
+  border-color: #9c6f18;
+  color: #9c6f18;
+  background: rgba(156, 111, 24, 0.06);
+}
+
+.assignPillBtnActive {
+  background: #84243a !important;
+  color: #ffffff !important;
+  border-color: #84243a !important;
+}
+
+.groupSelect {
+  padding: 0.28rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border: 1px solid #dfd7cc;
+  background: #ffffff;
+  color: #27211d;
+  cursor: pointer;
+  max-width: 200px;
+}
+
+.selectedChipsArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-height: 32px;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.noSelectionNotice {
+  font-size: 0.78rem;
+  color: #8c827a;
+  font-style: italic;
+}
+
+.memberChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  background: rgba(132, 36, 58, 0.08);
+  border: 1px solid rgba(132, 36, 58, 0.25);
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #84243a;
+}
+
+.memberChipAvatar {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #84243a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.memberChipRemove {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #84243a;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+.memberChipRemove:hover {
+  opacity: 1;
+}
+
+.memberChipGeneral {
+  background: rgba(156, 111, 24, 0.12);
+  border-color: rgba(156, 111, 24, 0.35);
+  color: #9c6f18;
+}
+
+.memberSearchBox {
+  position: relative;
+}
+
+.memberSearchInput {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.82rem;
+  border: 1px solid #dfd7cc;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #27211d;
+}
+
+.memberSearchInput:focus {
+  outline: none;
+  border-color: #84243a;
+}
+
+.memberListScroll {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #dfd7cc;
+  border-radius: 6px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.memberOptionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid #f4f1eb;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  user-select: none;
+  gap: 0.5rem;
+}
+
+.memberOptionRow:last-child {
+  border-bottom: none;
+}
+
+.memberOptionRow:hover {
+  background: #faf7f2;
+}
+
+.memberOptionRowActive {
+  background: rgba(132, 36, 58, 0.05);
+}
+
+.memberInfoCol {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.memberOptionAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e5ded5;
+  color: #27211d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.memberOptionName {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #27211d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memberOptionSub {
+  font-size: 0.72rem;
+  color: #6f665e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memberOptionRoleTag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: #f4f1eb;
+  color: #6f665e;
+  flex-shrink: 0;
+}
+
 .submitBtn:hover {
   background: #99651a;
 }

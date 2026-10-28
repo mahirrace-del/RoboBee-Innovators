@@ -23,8 +23,10 @@ export interface RelationalTask {
   id: string;
   title: string;
   description: string;
-  assignedTo: string; // Member email or "GENERAL"
+  assignedTo: string; // Member email, comma-separated emails, or "GENERAL"
   assignedToName?: string;
+  assignedToEmails?: string[];
+  assignedMembers?: Array<{ id?: string; name: string; email: string; username?: string }>;
   assignedBy?: string;
   // Legacy status ("pending" | "completed" | "Done") + normalized stage
   status: string;
@@ -218,12 +220,25 @@ export function normalizeTask(idOrRaw: any, maybeData?: any): RelationalTask {
     }
   }
 
+  const rawAssignedTo = String(raw.assignedTo || "GENERAL");
+  const assignedToEmails: string[] = Array.isArray(raw.assignedToEmails)
+    ? raw.assignedToEmails
+    : rawAssignedTo.includes(",")
+    ? rawAssignedTo.split(",").map((s: string) => s.trim()).filter(Boolean)
+    : [rawAssignedTo];
+
+  const assignedMembers = Array.isArray(raw.assignedMembers)
+    ? raw.assignedMembers
+    : [];
+
   return {
     id: raw.id || "",
     title: raw.title || "Untitled Task",
     description: raw.description || "",
     assignedTo: raw.assignedTo || "GENERAL",
     assignedToName: raw.assignedToName || undefined,
+    assignedToEmails,
+    assignedMembers,
     assignedBy: raw.assignedBy || "",
     status: stage === "completed" ? "completed" : raw.status || "pending",
     stage,

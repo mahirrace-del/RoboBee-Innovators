@@ -182,9 +182,23 @@ export default function DashboardOverview() {
   // Derived Member Data
   const myTasks = useMemo(
     () =>
-      allTasks.filter(
-        (t) => t.assignedTo === user?.email || t.assignedTo === "GENERAL"
-      ),
+      allTasks.filter((t) => {
+        if (!user?.email) return false;
+        const uEmail = user.email.toLowerCase();
+        if (t.assignedTo === "GENERAL") return true;
+        if (t.assignedTo?.toLowerCase() === uEmail) return true;
+        if (
+          t.assignedToEmails?.some(
+            (e) => e.toLowerCase() === uEmail || e === "GENERAL"
+          )
+        ) {
+          return true;
+        }
+        if (typeof t.assignedTo === "string" && t.assignedTo.toLowerCase().includes(uEmail)) {
+          return true;
+        }
+        return false;
+      }),
     [allTasks, user]
   );
   const myActiveTasks = useMemo(

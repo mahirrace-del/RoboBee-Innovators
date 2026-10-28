@@ -5,7 +5,6 @@ import { db } from "@/lib/firebase";
 import {
   collection,
   query,
-  where,
   onSnapshot,
   doc,
   addDoc,
@@ -25,8 +24,15 @@ import {
   Plus,
   Calendar,
   User as UserIcon,
+  Users,
   CheckCircle2,
   ArrowRight,
+  Dices,
+  X,
+  Check,
+  Search,
+  Sparkles,
+  Shield,
 } from "lucide-react";
 import {
   normalizeTask,
@@ -49,10 +55,11 @@ const KANBAN_COLUMNS: Array<{
 ];
 
 export default function TasksPage() {
-  const { user, role, userData } = useAuth();
+  const { user, role } = useAuth();
   const [tasks, setTasks] = useState<RelationalTask[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [competitions, setCompetitions] = useState<any[]>([]);
+  const [subteams, setSubteams] = useState<any[]>([]);
   const [inventory, setInventory] = useState<RelationalInventoryItem[]>([]);
 
   // View Mode: Kanban vs Gantt Milestone Timeline
@@ -63,7 +70,13 @@ export default function TasksPage() {
   // Create Task Form State
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
+  
+  // Multi-Member Assignment State
+  const [selectedMemberEmails, setSelectedMemberEmails] = useState<string[]>([]);
+  const [isGeneralTask, setIsGeneralTask] = useState(false);
+  const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [randomNotice, setRandomNotice] = useState<string | null>(null);
+
   const [priority, setPriority] = useState<TaskPriority>("Medium");
   const [dueDate, setDueDate] = useState("");
   const [competitionId, setCompetitionId] = useState("");
@@ -75,42 +88,59 @@ export default function TasksPage() {
   useEffect(() => {
     if (!user) return;
 
-    let q;
-    if (role === "admin") {
-      q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
-    } else {
-      q = query(
-        collection(db, "tasks"),
-        where("assignedTo", "in", [user.email, "GENERAL"])
-      );
-    }
+    // Listen to tasks collection ordered by createdAt descending
+    const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const taskData = snapshot.docs.map((d) =>
+        const allFetchedTasks = snapshot.docs.map((d) =>
           normalizeTask({ id: d.id, ...d.data() })
         );
-        if (role !== "admin") {
-          taskData.sort(
-            (a, b) =>
-              (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)
-          );
-        }
+
+        // For non-admin, filter to tasks assigned to them, to their squad, or GENERAL
+        const userEmail = user?.email?.toLowerCase() || "";
+        const taskData = allFetchedTasks.filter((t) => {
+          if (role === "admin") return true;
+          if (t.assignedTo === "GENERAL") return true;
+          if (t.assignedTo?.toLowerCase() === userEmail) return true;
+          if (
+            t.assignedToEmails?.some(
+              (e) => e.toLowerCase() === userEmail || e === "GENERAL"
+            )
+          ) {
+            return true;
+          }
+          if (typeof t.assignedTo === "string" && t.assignedTo.toLowerCase().includes(userEmail)) {
+            return true;
+          }
+          return false;
+        });
+
         setTasks(taskData);
       },
-      () => {}
+      (error) => {
+        console.error("Error fetching tasks:", error);
+      }
     );
 
     return () => unsubscribe();
   }, [user, role]);
 
-  // Fetch relational entities: Members, Competitions, Inventory
+  // Fetch relational entities: Competitions, Subteams, Inventory, Members
   useEffect(() => {
     const unsubComps = onSnapshot(
       collection(db, "competitions"),
       (snap) => {
         setCompetitions(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      },
+      () => {}
+    );
+
+    const unsubSubteams = onSnapshot(
+      collection(db, "competition_subteams"),
+      (snap) => {
+        setSubteams(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
       },
       () => {}
     );
@@ -134,7 +164,7 @@ export default function TasksPage() {
             id: d.id,
             ...d.data(),
           })) as any[];
-          setMembers(usersData.filter((u) => u.role !== "pending"));
+          setMembers(usersData.filter((u) => u.role !== "pending" && u.email));
         },
         () => {}
       );
@@ -142,20 +172,190 @@ export default function TasksPage() {
 
     return () => {
       unsubComps();
+      unsubSubteams();
       unsubInv();
       unsubUsers();
     };
   }, [role]);
 
+  // Derived Squad / Team Presets for 1-Click Assignment
+  const squadPresets = useMemo(() => {
+    const list: Array<{ label: string; groupName: string; emails: string[] }> = [];
+
+    // 1. Group by competition subteams
+    const subteamMap = new Map<string, { label: string; groupName: string; emails: string[] }>();
+    subteams.forEach((st) => {
+      const comp = competitions.find((c) => c.id === st.competitionId);
+      const compTitle = comp ? comp.name : st.competitionName || "Competition";
+      const key = `${compTitle}: ${st.subteamName || st.role || "Squad"}`;
+
+      if (!subteamMap.has(key)) {
+        subteamMap.set(key, {
+          label: key,
+          groupName: `${compTitle} Squad`,
+          emails: [],
+        });
+      }
+      if (st.memberEmail && !subteamMap.get(key)!.emails.includes(st.memberEmail)) {
+        subteamMap.get(key)!.emails.push(st.memberEmail);
+      }
+    });
+    subteamMap.forEach((val) => {
+      if (val.emails.length > 0) list.push(val);
+    });
+
+    // 2. Role squads: Admins & Mentors
+    const adminEmails = members
+      .filter((m) => m.role === "admin")
+      .map((m) => m.email);
+    if (adminEmails.length > 0) {
+      list.push({
+        label: `🛡️ Lead Mentors & Admins (${adminEmails.length})`,
+        groupName: "Leadership",
+        emails: adminEmails,
+      });
+    }
+
+    // 3. Regular Members
+    const regularEmails = members
+      .filter((m) => m.role === "member")
+      .map((m) => m.email);
+    if (regularEmails.length > 0) {
+      list.push({
+        label: `🎓 All Registered Members (${regularEmails.length})`,
+        groupName: "General Squad",
+        emails: regularEmails,
+      });
+    }
+
+    return list;
+  }, [subteams, competitions, members]);
+
+  // Filtered members list based on search query
+  const filteredMemberList = useMemo(() => {
+    if (!memberSearchQuery.trim()) return members;
+    const q = memberSearchQuery.toLowerCase();
+    return members.filter(
+      (m) =>
+        (m.name || "").toLowerCase().includes(q) ||
+        (m.username || "").toLowerCase().includes(q) ||
+        (m.email || "").toLowerCase().includes(q) ||
+        (m.role || "").toLowerCase().includes(q)
+    );
+  }, [members, memberSearchQuery]);
+
+  // Selection Handler: Toggle individual member
+  const handleToggleMember = (email: string) => {
+    setIsGeneralTask(false);
+    setSelectedMemberEmails((prev) =>
+      prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email]
+    );
+  };
+
+  // Selection Handler: Select General (All Members)
+  const handleSelectGeneral = () => {
+    setIsGeneralTask(true);
+    setSelectedMemberEmails(["GENERAL"]);
+    setRandomNotice("Selected: 📢 Open Task (All Members)");
+    setTimeout(() => setRandomNotice(null), 3000);
+  };
+
+  // Selection Handler: Select a Team / Squad preset
+  const handleSelectSquadPreset = (presetKey: string) => {
+    if (!presetKey) return;
+    const found = squadPresets.find((p) => p.label === presetKey);
+    if (found) {
+      setIsGeneralTask(false);
+      setSelectedMemberEmails(found.emails);
+      setRandomNotice(`Selected squad: ${found.label}`);
+      setTimeout(() => setRandomNotice(null), 3500);
+    }
+  };
+
+  // Selection Handler: Randomly pick N members
+  const handlePickRandom = (count: number) => {
+    const pool = members.filter((m) => m.email && m.role !== "pending");
+    if (pool.length === 0) return;
+
+    // Shuffle array using Fisher-Yates
+    const shuffled = [...pool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    const picked = shuffled.slice(0, Math.min(count, shuffled.length));
+    const pickedEmails = picked.map((m) => m.email);
+
+    setIsGeneralTask(false);
+    setSelectedMemberEmails(pickedEmails);
+
+    const names = picked
+      .map((p) => p.name || p.username || p.email.split("@")[0])
+      .join(", ");
+    setRandomNotice(`🎲 Randomly selected ${picked.length} member(s): ${names}`);
+    setTimeout(() => setRandomNotice(null), 4500);
+  };
+
+  // Selection Handler: Clear all
+  const handleClearMembers = () => {
+    setIsGeneralTask(false);
+    setSelectedMemberEmails([]);
+    setRandomNotice(null);
+  };
+
+  // Selected members objects for chip display
+  const selectedMembersList = useMemo(() => {
+    if (isGeneralTask || selectedMemberEmails.includes("GENERAL")) {
+      return [];
+    }
+    return members.filter((m) => selectedMemberEmails.includes(m.email));
+  }, [members, selectedMemberEmails, isGeneralTask]);
+
+  // Form Submission: Create Task
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !assignedTo) return;
+    if (!title.trim() || !description.trim()) return;
+
+    if (!isGeneralTask && selectedMemberEmails.length === 0) {
+      alert("Please assign at least one member or select 'General (All Members)'.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const selectedComp = competitions.find((c) => c.id === competitionId);
       const selectedPart = inventory.find((i) => i.id === reservePartId);
       const reservedParts = [];
+
+      // Determine assignment values
+      const isGeneral = isGeneralTask || selectedMemberEmails.includes("GENERAL");
+
+      const assignedToEmails = isGeneral ? ["GENERAL"] : [...selectedMemberEmails];
+
+      const assignedTo = isGeneral
+        ? "GENERAL"
+        : selectedMembersList.length === 1
+        ? selectedMembersList[0].email
+        : selectedMembersList.map((m) => m.email).join(", ");
+
+      const assignedToName = isGeneral
+        ? "All Members (Open Task)"
+        : selectedMembersList.length === 1
+        ? selectedMembersList[0].name || selectedMembersList[0].username || selectedMembersList[0].email
+        : `${selectedMembersList.length} Members (${selectedMembersList
+            .map((m) => m.name || m.username || m.email.split("@")[0])
+            .join(", ")})`;
+
+      const assignedMembers = isGeneral
+        ? []
+        : selectedMembersList.map((m) => ({
+            id: m.id || "",
+            name: m.name || m.username || m.email,
+            email: m.email,
+            username: m.username || "",
+          }));
 
       // If hardware part is attached and auto-reserve is enabled, reserve stock in Checkouts
       if (selectedPart && reserveQty > 0) {
@@ -164,24 +364,25 @@ export default function TasksPage() {
           await updateDoc(doc(db, "inventory", selectedPart.id), {
             quantity: increment(-reserveQty),
           });
-          const assigneeMember = members.find((m) => m.email === assignedTo);
+
+          const primaryAssignee = selectedMembersList[0];
           const chkRef = await addDoc(collection(db, "checkouts"), {
             partId: selectedPart.id,
             partName: selectedPart.name,
             category: selectedPart.category || "General",
             quantity: reserveQty,
-            checkedOutBy: assignedTo === "GENERAL" ? user?.email : assignedTo,
-            userId: assigneeMember?.id || user?.uid,
-            userName:
-              assigneeMember?.name ||
-              (assignedTo === "GENERAL" ? "Open Team Task" : assignedTo),
+            checkedOutBy: isGeneral ? user?.email : assignedTo,
+            userId: primaryAssignee?.id || user?.uid,
+            userName: isGeneral
+              ? "Open Team Task"
+              : primaryAssignee?.name || assignedToName,
             checkedOutAt: serverTimestamp(),
             expectedReturnDate: dueDate || undefined,
             status: "Checked Out",
             competitionId: selectedComp?.id || null,
             competitionName: selectedComp?.name || null,
             taskTitle: title.trim(),
-            notes: `Auto-reserved for Task: ${title.trim()}`,
+            notes: `Auto-reserved for Task: ${title.trim()} (${assignedToName})`,
           });
           checkoutDocId = chkRef.id;
         }
@@ -198,6 +399,9 @@ export default function TasksPage() {
         title: title.trim(),
         description: description.trim(),
         assignedTo,
+        assignedToName,
+        assignedToEmails,
+        assignedMembers,
         assignedBy: user?.email,
         status: "pending",
         stage: "backlog",
@@ -209,14 +413,17 @@ export default function TasksPage() {
         createdAt: serverTimestamp(),
       });
 
+      // Reset form
       setTitle("");
       setDescription("");
-      setAssignedTo("");
+      setSelectedMemberEmails([]);
+      setIsGeneralTask(false);
       setPriority("Medium");
       setDueDate("");
       setCompetitionId("");
       setReservePartId("");
       setReserveQty(1);
+      setIsCreateOpen(false);
     } catch (error) {
       console.error("Error creating task:", error);
       alert("Failed to create task");
@@ -283,7 +490,7 @@ export default function TasksPage() {
           </h1>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.92rem" }}>
             {role === "admin"
-              ? "Assign competition-linked sprints, reserve lab hardware, and track milestones."
+              ? "Assign competition-linked sprints, reserve lab hardware, and assign squads or individual members."
               : "Execute your assigned competition sprints and move tasks across the pipeline."}
           </p>
         </div>
@@ -297,33 +504,33 @@ export default function TasksPage() {
               aria-controls="create-task-form"
             >
               <Plus size={16} />
-              {isCreateOpen ? "Close task form" : "Create task"}
+              {isCreateOpen ? "Close Task Form" : "Create Task"}
             </button>
           )}
-        <div className={styles.viewToggleGroup}>
-          <button
-            onClick={() => setViewMode("kanban")}
-            className={`${styles.viewToggleBtn} ${
-              viewMode === "kanban" ? styles.viewToggleBtnActive : ""
-            }`}
-          >
-            <Columns size={15} />
-            Kanban Board
-          </button>
-          <button
-            onClick={() => setViewMode("gantt")}
-            className={`${styles.viewToggleBtn} ${
-              viewMode === "gantt" ? styles.viewToggleBtnActive : ""
-            }`}
-          >
-            <GanttChart size={15} />
-            Gantt Milestone Timeline
-          </button>
-        </div>
+          <div className={styles.viewToggleGroup}>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={`${styles.viewToggleBtn} ${
+                viewMode === "kanban" ? styles.viewToggleBtnActive : ""
+              }`}
+            >
+              <Columns size={15} />
+              Kanban Board
+            </button>
+            <button
+              onClick={() => setViewMode("gantt")}
+              className={`${styles.viewToggleBtn} ${
+                viewMode === "gantt" ? styles.viewToggleBtnActive : ""
+              }`}
+            >
+              <GanttChart size={15} />
+              Gantt Milestone Timeline
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Admin Task Creation with Competition & Lab Stock Auto-Reservation */}
+      {/* Admin Task Creation with Multi-Member & Squad Assignment */}
       {role === "admin" && isCreateOpen && (
         <form id="create-task-form" onSubmit={handleCreateTask} className={styles.formCard}>
           <h3
@@ -337,11 +544,11 @@ export default function TasksPage() {
             }}
           >
             <Plus size={18} />
-            Create a task
+            Create a New Task or Sprint
           </h3>
 
           <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
+            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
               <label className={styles.label}>Task Title *</label>
               <input
                 type="text"
@@ -353,24 +560,220 @@ export default function TasksPage() {
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Assign To (Member) *</label>
-              <select
-                className={styles.input}
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Select a member...
-                </option>
-                <option value="GENERAL">📢 General / Open Task (All Members)</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.email}>
-                    {m.name} (@{m.username}) - {m.email}
-                  </option>
-                ))}
-              </select>
+            {/* MULTI-MEMBER ASSIGNMENT WIDGET */}
+            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.25rem" }}>
+                <label className={styles.label}>
+                  Assign To (Members or Squad) *
+                </label>
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#84243a" }}>
+                  {isGeneralTask
+                    ? "📢 Open to All Members"
+                    : selectedMemberEmails.length > 0
+                    ? `${selectedMemberEmails.length} Member(s) Selected`
+                    : "0 Selected"}
+                </span>
+              </div>
+
+              <div className={styles.multiAssignContainer}>
+                {/* TOOLBAR: QUICK PRESETS & RANDOM PICKERS */}
+                <div className={styles.assignToolbar}>
+                  <div className={styles.toolbarActions}>
+                    <button
+                      type="button"
+                      className={`${styles.assignPillBtn} ${isGeneralTask ? styles.assignPillBtnActive : ""}`}
+                      onClick={handleSelectGeneral}
+                      title="Open task to everyone on the team"
+                    >
+                      📢 All Members (General)
+                    </button>
+
+                    {/* TEAM / SQUAD PRESET DROPDOWN */}
+                    {squadPresets.length > 0 && (
+                      <select
+                        className={styles.groupSelect}
+                        onChange={(e) => {
+                          handleSelectSquadPreset(e.target.value);
+                          e.target.value = "";
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          👥 Pick Team / Squad...
+                        </option>
+                        {squadPresets.map((sp, idx) => (
+                          <option key={idx} value={sp.label}>
+                            {sp.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {/* RANDOM PICKERS */}
+                    <button
+                      type="button"
+                      className={styles.assignPillBtn}
+                      onClick={() => handlePickRandom(2)}
+                      title="Pick 2 random members from roster"
+                    >
+                      <Dices size={13} />
+                      Random 2
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.assignPillBtn}
+                      onClick={() => handlePickRandom(3)}
+                      title="Pick 3 random members from roster"
+                    >
+                      <Dices size={13} />
+                      Random 3
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.assignPillBtn}
+                      onClick={() => handlePickRandom(5)}
+                      title="Pick 5 random members from roster"
+                    >
+                      <Dices size={13} />
+                      Random 5
+                    </button>
+                  </div>
+
+                  {(selectedMemberEmails.length > 0 || isGeneralTask) && (
+                    <button
+                      type="button"
+                      className={styles.assignPillBtn}
+                      onClick={handleClearMembers}
+                      style={{ color: "#dc2626", borderColor: "rgba(220,38,38,0.25)" }}
+                    >
+                      <X size={12} />
+                      Clear Selection
+                    </button>
+                  )}
+                </div>
+
+                {/* RANDOM SELECTION FEEDBACK NOTICE */}
+                {randomNotice && (
+                  <div
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#9c6f18",
+                      background: "rgba(245, 184, 0, 0.12)",
+                      padding: "0.35rem 0.65rem",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Sparkles size={13} />
+                    {randomNotice}
+                  </div>
+                )}
+
+                {/* SELECTED CHIPS AREA */}
+                <div className={styles.selectedChipsArea}>
+                  {isGeneralTask ? (
+                    <span className={`${styles.memberChip} ${styles.memberChipGeneral}`}>
+                      📢 All Members (Open / Unclaimed Task)
+                      <button
+                        type="button"
+                        className={styles.memberChipRemove}
+                        onClick={handleClearMembers}
+                      >
+                        <X size={13} />
+                      </button>
+                    </span>
+                  ) : selectedMembersList.length > 0 ? (
+                    selectedMembersList.map((m) => {
+                      const initial = (m.name || m.username || m.email || "M").charAt(0).toUpperCase();
+                      return (
+                        <span key={m.id || m.email} className={styles.memberChip}>
+                          <span className={styles.memberChipAvatar}>{initial}</span>
+                          <span>{m.name || m.username || m.email.split("@")[0]}</span>
+                          <button
+                            type="button"
+                            className={styles.memberChipRemove}
+                            onClick={() => handleToggleMember(m.email)}
+                            title="Remove member"
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      );
+                    })
+                  ) : (
+                    <span className={styles.noSelectionNotice}>
+                      No members selected. Pick individuals from the list below, or use the squad / random shortcuts above.
+                    </span>
+                  )}
+                </div>
+
+                {/* SEARCH INPUT */}
+                <div className={styles.memberSearchBox}>
+                  <input
+                    type="text"
+                    className={styles.memberSearchInput}
+                    placeholder="🔍 Filter members by name, role, or email..."
+                    value={memberSearchQuery}
+                    onChange={(e) => setMemberSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                {/* SCROLLABLE CHECKBOX MEMBER LIST */}
+                <div className={styles.memberListScroll}>
+                  {filteredMemberList.length === 0 ? (
+                    <div style={{ padding: "1rem", textAlign: "center", fontSize: "0.8rem", color: "#6f665e" }}>
+                      No matching members found.
+                    </div>
+                  ) : (
+                    filteredMemberList.map((m) => {
+                      const isSelected = selectedMemberEmails.includes(m.email) && !isGeneralTask;
+                      const initial = (m.name || m.username || m.email || "M").charAt(0).toUpperCase();
+
+                      return (
+                        <div
+                          key={m.id || m.email}
+                          className={`${styles.memberOptionRow} ${isSelected ? styles.memberOptionRowActive : ""}`}
+                          onClick={() => handleToggleMember(m.email)}
+                        >
+                          <div className={styles.memberInfoCol}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {}} // handled by row click
+                              style={{ cursor: "pointer", width: "15px", height: "15px" }}
+                            />
+                            <div className={styles.memberOptionAvatar}>{initial}</div>
+                            <div style={{ minWidth: 0 }}>
+                              <div className={styles.memberOptionName}>
+                                {m.name || m.username || "Team Member"}
+                              </div>
+                              <div className={styles.memberOptionSub}>
+                                {m.email} {m.username ? `(@${m.username})` : ""}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                            {m.role === "admin" && (
+                              <span className={styles.memberOptionRoleTag} style={{ background: "rgba(132, 36, 58, 0.1)", color: "#84243a" }}>
+                                Admin
+                              </span>
+                            )}
+                            {m.roleTitle && (
+                              <span className={styles.memberOptionRoleTag}>
+                                {m.roleTitle}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
@@ -389,104 +792,104 @@ export default function TasksPage() {
               <details className={styles.advancedDetails}>
                 <summary>Project link, priority, and lab stock options</summary>
                 <div className={styles.advancedGrid}>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Connected Competition / Milestone</label>
-              <select
-                className={styles.input}
-                value={competitionId}
-                onChange={(e) => setCompetitionId(e.target.value)}
-              >
-                <option value="">-- General Club / Unlinked --</option>
-                {competitions.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    🏆 {c.name} ({c.status})
-                  </option>
-                ))}
-              </select>
-            </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Connected Competition / Milestone</label>
+                    <select
+                      className={styles.input}
+                      value={competitionId}
+                      onChange={(e) => setCompetitionId(e.target.value)}
+                    >
+                      <option value="">-- General Club / Unlinked --</option>
+                      {competitions.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          🏆 {c.name} ({c.status})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Priority &amp; Target Due Date</label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
-                <select
-                  className={styles.input}
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Critical">Critical</option>
-                </select>
-                <input
-                  type="date"
-                  className={styles.input}
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
-            </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Priority &amp; Target Due Date</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                      <select
+                        className={styles.input}
+                        value={priority}
+                        onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                      >
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                      </select>
+                      <input
+                        type="date"
+                        className={styles.input}
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
 
-            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
-              <label className={styles.label}>
-                Attach Required Lab Accessory / Component (Optional Auto-Reserve)
-              </label>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "2fr 90px auto",
-                  gap: "0.75rem",
-                  alignItems: "center",
-                }}
-              >
-                <select
-                  className={styles.input}
-                  value={reservePartId}
-                  onChange={(e) => setReservePartId(e.target.value)}
-                >
-                  <option value="">-- No hardware reservation needed --</option>
-                  {inventory.map((item) => (
-                    <option key={item.id} value={item.id} disabled={item.quantity <= 0}>
-                      {item.name} ({item.quantity} in stock • {item.category})
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min={1}
-                  className={styles.input}
-                  value={reserveQty}
-                  onChange={(e) => setReserveQty(Math.max(1, parseInt(e.target.value) || 1))}
-                  disabled={!reservePartId}
-                  title="Quantity to reserve"
-                />
-                <label
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.4rem",
-                    fontSize: "0.8rem",
-                    color: "#6f665e",
-                    cursor: "pointer",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={autoReserveStock}
-                    onChange={(e) => setAutoReserveStock(e.target.checked)}
-                    disabled={!reservePartId}
-                  />
-                  Auto-reserve stock in Lab Checkout
-                </label>
-              </div>
-            </div>
+                  <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                    <label className={styles.label}>
+                      Attach Required Lab Accessory / Component (Optional Auto-Reserve)
+                    </label>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "2fr 90px auto",
+                        gap: "0.75rem",
+                        alignItems: "center",
+                      }}
+                    >
+                      <select
+                        className={styles.input}
+                        value={reservePartId}
+                        onChange={(e) => setReservePartId(e.target.value)}
+                      >
+                        <option value="">-- No hardware reservation needed --</option>
+                        {inventory.map((item) => (
+                          <option key={item.id} value={item.id} disabled={item.quantity <= 0}>
+                            {item.name} ({item.quantity} in stock • {item.category})
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        min={1}
+                        className={styles.input}
+                        value={reserveQty}
+                        onChange={(e) => setReserveQty(Math.max(1, parseInt(e.target.value) || 1))}
+                        disabled={!reservePartId}
+                        title="Quantity to reserve"
+                      />
+                      <label
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.4rem",
+                          fontSize: "0.8rem",
+                          color: "#6f665e",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={autoReserveStock}
+                          onChange={(e) => setAutoReserveStock(e.target.checked)}
+                          disabled={!reservePartId}
+                        />
+                        Auto-reserve stock in Lab Checkout
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </details>
             </div>
 
-            <div>
+            <div style={{ gridColumn: "1 / -1" }}>
               <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
-                {isSubmitting ? "Creating task..." : "Create task"}
+                {isSubmitting ? "Creating Task..." : "Create Task / Assign Squad"}
               </button>
             </div>
           </div>
@@ -553,10 +956,15 @@ export default function TasksPage() {
                   ) : (
                     colTasks.map((task) => {
                       const pStyle = getPriorityStyle(task.priority);
+                      const userEmail = user?.email?.toLowerCase() || "";
                       const canAct =
                         role === "admin" ||
-                        user?.email === task.assignedTo ||
-                        task.assignedTo === "GENERAL";
+                        task.assignedTo === "GENERAL" ||
+                        task.assignedTo?.toLowerCase() === userEmail ||
+                        task.assignedToEmails?.some((e) => e.toLowerCase() === userEmail) ||
+                        task.assignedMembers?.some((m) => m.email?.toLowerCase() === userEmail) ||
+                        (typeof task.assignedTo === "string" &&
+                          task.assignedTo.toLowerCase().includes(userEmail));
 
                       return (
                         <div
@@ -598,18 +1006,48 @@ export default function TasksPage() {
                             </div>
                           )}
 
+                          {/* ASSIGNEES DISPLAY */}
                           <div className={styles.metaInfo}>
-                            <div>
-                              <UserIcon
-                                size={12}
-                                style={{ display: "inline", marginRight: 4 }}
-                              />
-                              <strong style={{ color: "#27211d" }}>
-                                {task.assignedTo === "GENERAL"
-                                  ? "All Members"
-                                  : task.assignedTo}
-                              </strong>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
+                              {task.assignedTo === "GENERAL" ? (
+                                <>
+                                  <Users size={12} style={{ color: "#9c6f18" }} />
+                                  <strong style={{ color: "#27211d" }}>📢 All Members (Open Task)</strong>
+                                </>
+                              ) : task.assignedMembers && task.assignedMembers.length > 1 ? (
+                                <>
+                                  <Users size={12} style={{ color: "#84243a" }} />
+                                  <strong style={{ color: "#84243a" }}>
+                                    Squad ({task.assignedMembers.length}):
+                                  </strong>
+                                  <div style={{ display: "inline-flex", gap: "0.25rem", flexWrap: "wrap" }}>
+                                    {task.assignedMembers.map((m: any, idx: number) => (
+                                      <span
+                                        key={idx}
+                                        style={{
+                                          fontSize: "0.72rem",
+                                          padding: "0.1rem 0.4rem",
+                                          borderRadius: "4px",
+                                          background: "rgba(132, 36, 58, 0.08)",
+                                          color: "#84243a",
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        {m.name || m.username || m.email.split("@")[0]}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <UserIcon size={12} style={{ color: "#6f665e" }} />
+                                  <strong style={{ color: "#27211d" }}>
+                                    {task.assignedToName || task.assignedTo}
+                                  </strong>
+                                </>
+                              )}
                             </div>
+
                             {task.dueDate && (
                               <div>
                                 <Calendar
@@ -619,6 +1057,7 @@ export default function TasksPage() {
                                 Due: {task.dueDate}
                               </div>
                             )}
+
                             {task.stage === "completed" && task.completedBy && (
                               <div style={{ color: "#10B981" }}>
                                 ✓ Completed by {task.completedBy}
@@ -710,7 +1149,12 @@ export default function TasksPage() {
                           {task.title}
                         </div>
                         <div style={{ fontSize: "0.76rem", color: "#6f665e" }}>
-                          Assignee: {task.assignedTo}
+                          Assignees:{" "}
+                          {task.assignedTo === "GENERAL"
+                            ? "All Members (Open)"
+                            : task.assignedMembers && task.assignedMembers.length > 0
+                            ? task.assignedMembers.map((m: any) => m.name || m.email.split("@")[0]).join(", ")
+                            : task.assignedToName || task.assignedTo}
                           {task.reservedParts && task.reservedParts.length > 0
                             ? ` • Gear: ${task.reservedParts
                                 .map((p) => `${p.quantity}x ${p.partName}`)
