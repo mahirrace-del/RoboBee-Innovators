@@ -122,12 +122,13 @@ export default function ProfilePage() {
             <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Current Role</label>
             <div style={{ 
               display: 'inline-block',
-              padding: '0.4rem 0.8rem', 
-              background: role === 'admin' ? 'rgba(0, 210, 255, 0.2)' : role === 'pending' ? 'rgba(244, 179, 4, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-              color: role === 'admin' ? '#00d2ff' : role === 'pending' ? '#F4B304' : 'var(--text-primary)',
+              padding: '0.4rem 0.85rem', 
+              background: role === 'admin' ? 'rgba(2, 132, 199, 0.12)' : role === 'pending' ? 'rgba(245, 184, 0, 0.15)' : 'rgba(132, 36, 58, 0.1)',
+              color: role === 'admin' ? '#0369a1' : role === 'pending' ? '#9c6f18' : '#84243a',
+              border: `1px solid ${role === 'admin' ? 'rgba(2, 132, 199, 0.3)' : role === 'pending' ? 'rgba(245, 184, 0, 0.35)' : 'rgba(132, 36, 58, 0.25)'}`,
               borderRadius: '20px',
               fontSize: '0.8rem',
-              fontWeight: 'bold',
+              fontWeight: '700',
               textTransform: 'uppercase'
             }}>
               {role}

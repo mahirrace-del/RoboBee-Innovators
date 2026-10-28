@@ -420,7 +420,7 @@ export default function CheckoutDashboard() {
                           )}
                           {part.price ? (
                             <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>
-                              ৳{part.price}
+                              <span style={{ marginRight: '0.2rem' }}>৳</span>{part.price.toLocaleString()}
                             </span>
                           ) : null}
                         </div>
@@ -567,8 +567,8 @@ export default function CheckoutDashboard() {
                         <div className={styles.metaRow}>
                           <span className={styles.categoryTag}>{req.category || "Hardware"}</span>
                           {req.estimatedTotalCost > 0 && (
-                            <span style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "#9c6f18" }}>
-                              Est. ৳{req.estimatedTotalCost}
+                            <span style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "#9c6f18", fontWeight: 700 }}>
+                              Est. <span style={{ marginRight: '0.2rem' }}>৳</span>{req.estimatedTotalCost.toLocaleString()}
                             </span>
                           )}
                           <span style={{ fontSize: "0.72rem", color: "#6f665e", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>

@@ -77,22 +77,22 @@ export default function AdminPartRequestsPage() {
                   fontSize: '0.7rem', 
                   fontWeight: '600',
                   textTransform: 'uppercase',
-                  backgroundColor: req.status === 'pending' ? 'rgba(255, 170, 0, 0.1)' : 
-                                   req.status === 'approved' ? 'rgba(46, 204, 113, 0.1)' : 'rgba(255, 85, 85, 0.1)',
-                  color: req.status === 'pending' ? '#ffaa00' : 
-                         req.status === 'approved' ? '#2ecc71' : '#ff5555',
-                  border: `1px solid ${req.status === 'pending' ? 'rgba(255, 170, 0, 0.2)' : 
-                                      req.status === 'approved' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 85, 85, 0.2)'}`
+                  backgroundColor: req.status === 'pending' ? 'rgba(245, 184, 0, 0.15)' : 
+                                   req.status === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(220, 38, 38, 0.15)',
+                  color: req.status === 'pending' ? '#9c6f18' : 
+                         req.status === 'approved' ? '#065f46' : '#991b1b',
+                  border: `1px solid ${req.status === 'pending' ? 'rgba(245, 184, 0, 0.35)' : 
+                                      req.status === 'approved' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(220, 38, 38, 0.35)'}`
                 }}>
                   {req.status}
                 </div>
               </div>
 
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                Requested by: <span style={{ color: 'var(--accent-primary)' }}>{req.requestedBy}</span>
+                Requested by: <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{req.requestedBy}</span>
               </div>
 
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: 'var(--radius-sm)', flex: 1, marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', flex: 1, marginBottom: '1rem', lineHeight: '1.45' }}>
                 {req.reason}
               </div>
 
@@ -101,13 +101,13 @@ export default function AdminPartRequestsPage() {
                   <>
                     <button 
                       onClick={() => handleUpdateStatus(req.id, 'approved')}
-                      style={{ flex: 1, padding: '0.5rem', background: '#2ecc71', color: '#000', borderRadius: 'var(--radius-sm)', fontWeight: '600', fontSize: '0.85rem' }}
+                      style={{ flex: 1, padding: '0.55rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }}
                     >
                       Approve
                     </button>
                     <button 
                       onClick={() => handleUpdateStatus(req.id, 'rejected')}
-                      style={{ flex: 1, padding: '0.5rem', background: 'transparent', border: '1px solid #ff5555', color: '#ff5555', borderRadius: 'var(--radius-sm)', fontWeight: '600', fontSize: '0.85rem' }}
+                      style={{ flex: 1, padding: '0.55rem', background: 'transparent', border: '1px solid #dc2626', color: '#dc2626', borderRadius: 'var(--radius-sm)', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }}
                     >
                       Reject
                     </button>

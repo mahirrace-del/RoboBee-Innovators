@@ -80,7 +80,7 @@
 
 .spotlightCard {
   background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 1.5rem;
   display: flex;
@@ -88,12 +88,12 @@
   justify-content: space-between;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .spotlightActive {
   border-color: #9c6f18;
-  background: linear-gradient(135deg, rgba(107, 15, 36, 0.55), var(--bg-secondary));
+  background: var(--bg-secondary);
 }
 
 .spotlightActive::before {
@@ -224,9 +224,9 @@
 
 /* Buttons */
 .takeBtn {
-  background: #9c6f18;
-  color: var(--text-primary);
-  border: none;
+  background: #84243a;
+  color: #ffffff;
+  border: 1px solid #84243a;
   padding: 0.55rem 1rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -239,14 +239,14 @@
 }
 
 .takeBtn:hover {
-  background: #ffd043;
+  background: #6f1f34;
   transform: translateY(-1px);
 }
 
 .projectorBtn {
-  background: rgba(107, 15, 36, 0.4);
-  color: #fff;
-  border: 1px solid #6B0F24;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
   padding: 0.55rem 0.9rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -259,13 +259,14 @@
 }
 
 .projectorBtn:hover {
-  background: #6B0F24;
+  background: var(--bg-elevated);
   border-color: #9c6f18;
+  color: #9c6f18;
 }
 
 .statusToggleBtn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   padding: 0.55rem 0.85rem;
   border-radius: 6px;
@@ -360,7 +361,7 @@
 .matrixTable th, .matrixTable td {
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .matrixTable th {
@@ -375,14 +376,14 @@
 .matrixHeaderSticky {
   position: sticky;
   left: 0;
-  background: var(--text-primary);
+  background: var(--bg-secondary);
   z-index: 2;
 }
 
 /* Form Styles */
 .formCard {
   background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -405,7 +406,7 @@
   width: 100%;
   padding: 0.7rem 0.9rem;
   background: var(--bg-primary);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--border-subtle);
   border-radius: 6px;
   color: var(--text-primary);
   font-family: inherit;

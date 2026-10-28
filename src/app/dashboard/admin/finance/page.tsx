@@ -16,6 +16,7 @@ export default function AdminFinancePage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [competitions, setCompetitions] = useState<any[]>([]);
+  const [userLookup, setUserLookup] = useState<Record<string, { name?: string; email?: string }>>({});
 
   // Direct Admin Ledger Entry state
   const [entryTitle, setEntryTitle] = useState("");
@@ -46,10 +47,24 @@ export default function AdminFinancePage() {
       setCompetitions(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    const unsubUsers = onSnapshot(collection(db, "users"), (snapshot) => {
+      const map: Record<string, { name?: string; email?: string }> = {};
+      snapshot.docs.forEach((d) => {
+        const udata = d.data();
+        const displayName = udata.name || udata.displayName || udata.fullName;
+        map[d.id] = { name: displayName, email: udata.email };
+        if (udata.email) {
+          map[udata.email.toLowerCase()] = { name: displayName, email: udata.email };
+        }
+      });
+      setUserLookup(map);
+    });
+
     return () => {
       unsubPay();
       unsubExp();
       unsubComp();
+      unsubUsers();
     };
   }, [canAccess]);
 
@@ -262,7 +277,7 @@ export default function AdminFinancePage() {
                   <thead>
                     <tr>
                       <th>Date</th>
-                      <th>Member ID</th>
+                      <th>Member</th>
                       <th>Type</th>
                       <th>Amount</th>
                       <th>Method &amp; Txn</th>
@@ -271,85 +286,109 @@ export default function AdminFinancePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {payments.map(payment => (
-                      <tr key={payment.id}>
-                        <td>{new Date(payment.date).toLocaleDateString()}</td>
-                        <td>
-                          <div style={{ fontWeight: '500', fontSize: '0.85rem' }}>{payment.userId}</div>
-                        </td>
-                        <td style={{ textTransform: 'capitalize' }}>
-                          {payment.type} {payment.month ? `(${payment.month})` : ''}
-                        </td>
-                        <td style={{ fontWeight: '600', fontFamily: 'var(--font-mono)' }}>৳{payment.amount}</td>
-                        <td>
-                          {payment.method}
-                          <br/>
-                          <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                            {payment.txnId || 'N/A'}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`${styles.statusBadge} ${
-                            payment.status === 'verified' ? styles.statusApproved : 
-                            payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
-                          }`}>
-                            {payment.status === 'pending_verification' ? 'pending' : payment.status}
-                          </span>
-                        </td>
-                        <td>
-                          {payment.status === 'pending_verification' && (
-                            <div className={styles.actions}>
-                              <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>Verify</button>
-                              <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>Reject</button>
+                    {payments.map(payment => {
+                      const info = userLookup[payment.userId] || (payment.userEmail ? userLookup[payment.userEmail.toLowerCase()] : null);
+                      const memberName = info?.name || payment.userName;
+                      const memberEmail = info?.email || payment.userEmail || (payment.userId?.includes("@") ? payment.userId : null);
+
+                      return (
+                        <tr key={payment.id}>
+                          <td>{new Date(payment.date).toLocaleDateString()}</td>
+                          <td>
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--text-primary)" }}>
+                                {memberName || memberEmail || payment.userId}
+                              </div>
+                              {memberName && memberEmail && (
+                                <div style={{ fontSize: "0.74rem", color: "var(--text-secondary)" }}>
+                                  {memberEmail}
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td style={{ textTransform: 'capitalize' }}>
+                            {payment.type} {payment.month ? `(${payment.month})` : ''}
+                          </td>
+                          <td style={{ fontWeight: '700', fontFamily: 'var(--font-mono)' }}>
+                            <span style={{ marginRight: "0.2rem" }}>৳</span>{payment.amount}
+                          </td>
+                          <td>
+                            {payment.method}
+                            <br/>
+                            <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                              {payment.txnId || 'N/A'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`${styles.statusBadge} ${
+                              payment.status === 'verified' ? styles.statusApproved : 
+                              payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
+                            }`}>
+                              {payment.status === 'pending_verification' ? 'pending' : payment.status}
+                            </span>
+                          </td>
+                          <td>
+                            {payment.status === 'pending_verification' && (
+                              <div className={styles.actions}>
+                                <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>Verify</button>
+                                <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>Reject</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile View: Transaction Stream Cards */}
               <div className={styles.mobileCardList}>
-                {payments.map(payment => (
-                  <div key={payment.id} className={styles.paymentCard}>
-                    <div className={styles.paymentCardHeader}>
-                      <div>
-                        <div className={styles.paymentAmount}>৳{payment.amount}</div>
-                        <div className={styles.paymentType}>
-                          {payment.type} {payment.month ? `(${payment.month})` : ''}
-                        </div>
-                      </div>
-                      <span className={`${styles.statusBadge} ${
-                        payment.status === 'verified' ? styles.statusApproved : 
-                        payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
-                      }`}>
-                        {payment.status === 'pending_verification' ? 'pending' : payment.status}
-                      </span>
-                    </div>
+                {payments.map(payment => {
+                  const info = userLookup[payment.userId] || (payment.userEmail ? userLookup[payment.userEmail.toLowerCase()] : null);
+                  const memberName = info?.name || payment.userName || info?.email || payment.userId;
 
-                    <div className={styles.paymentMeta}>
-                      <div>Date: <strong>{new Date(payment.date).toLocaleDateString()}</strong></div>
-                      <div>User: <strong>{payment.userId}</strong></div>
-                      <div>Method: <strong>{payment.method}</strong></div>
-                      {payment.txnId && (
-                        <div>Txn ID: <code style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>{payment.txnId}</code></div>
+                  return (
+                    <div key={payment.id} className={styles.paymentCard}>
+                      <div className={styles.paymentCardHeader}>
+                        <div>
+                          <div className={styles.paymentAmount}>
+                            <span style={{ marginRight: "0.2rem" }}>৳</span>{payment.amount}
+                          </div>
+                          <div className={styles.paymentType}>
+                            {payment.type} {payment.month ? `(${payment.month})` : ''}
+                          </div>
+                        </div>
+                        <span className={`${styles.statusBadge} ${
+                          payment.status === 'verified' ? styles.statusApproved : 
+                          payment.status === 'rejected' ? styles.statusRejected : styles.statusPending
+                        }`}>
+                          {payment.status === 'pending_verification' ? 'pending' : payment.status}
+                        </span>
+                      </div>
+
+                      <div className={styles.paymentMeta}>
+                        <div>Date: <strong>{new Date(payment.date).toLocaleDateString()}</strong></div>
+                        <div>Member: <strong>{memberName}</strong></div>
+                        <div>Method: <strong>{payment.method}</strong></div>
+                        {payment.txnId && (
+                          <div>Txn ID: <code style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>{payment.txnId}</code></div>
+                        )}
+                      </div>
+
+                      {payment.status === 'pending_verification' && (
+                        <div className={styles.mobileActionRow}>
+                          <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>
+                            ✓ Verify
+                          </button>
+                          <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>
+                            ✕ Reject
+                          </button>
+                        </div>
                       )}
                     </div>
-
-                    {payment.status === 'pending_verification' && (
-                      <div className={styles.mobileActionRow}>
-                        <button onClick={() => handleVerify(payment.id)} className={styles.approveBtn}>
-                          ✓ Verify
-                        </button>
-                        <button onClick={() => handleReject(payment.id)} className={styles.rejectBtn}>
-                          ✕ Reject
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}
@@ -370,7 +409,7 @@ export default function AdminFinancePage() {
                   placeholder="e.g. TechFest Sponsorship Grant or PCB Fabrication Batch"
                   value={entryTitle}
                   onChange={(e) => setEntryTitle(e.target.value)}
-                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
+                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid var(--border-subtle, #dfd7cc)", color: "#27211d" }}
                 />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
@@ -379,7 +418,7 @@ export default function AdminFinancePage() {
                   <select
                     value={entryType}
                     onChange={(e) => setEntryType(e.target.value as "expense" | "income")}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid var(--border-subtle, #dfd7cc)", color: "#27211d" }}
                   >
                     <option value="expense">Expense Outflow (-)</option>
                     <option value="income">Sponsorship / Grant Inflow (+)</option>
@@ -393,7 +432,7 @@ export default function AdminFinancePage() {
                     required
                     value={entryAmount}
                     onChange={(e) => setEntryAmount(e.target.value)}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d", fontFamily: "var(--font-mono)" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid var(--border-subtle, #dfd7cc)", color: "#27211d", fontFamily: "var(--font-mono)" }}
                   />
                 </div>
               </div>
@@ -403,7 +442,7 @@ export default function AdminFinancePage() {
                   <select
                     value={entryCategory}
                     onChange={(e) => setEntryCategory(e.target.value as BudgetLineCategory)}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid var(--border-subtle, #dfd7cc)", color: "#27211d" }}
                   >
                     {BUDGET_LINE_CATEGORIES.map(c => (
                       <option key={c} value={c}>{c}</option>
@@ -415,7 +454,7 @@ export default function AdminFinancePage() {
                   <select
                     value={entryCompId}
                     onChange={(e) => setEntryCompId(e.target.value)}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid var(--border-subtle, #dfd7cc)", color: "#27211d" }}
                   >
                     <option value="">General Lab Pool</option>
                     {competitions.map(c => (
@@ -431,7 +470,7 @@ export default function AdminFinancePage() {
                   placeholder="Optional receipt or sponsor reference..."
                   value={entryNotes}
                   onChange={(e) => setEntryNotes(e.target.value)}
-                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
+                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid var(--border-subtle, #dfd7cc)", color: "#27211d" }}
                 />
               </div>
               <button type="submit" disabled={submittingEntry} className={styles.approveBtn} style={{ padding: "0.7rem 1rem", fontWeight: 700 }}>
@@ -451,10 +490,11 @@ export default function AdminFinancePage() {
                   <div
                     key={exp.id}
                     style={{
-                      padding: "0.9rem 1rem",
+                      padding: "0.95rem 1.15rem",
                       borderRadius: "10px",
-                      background: "rgba(15, 23, 42, 0.75)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--bg-primary, #ffffff)",
+                      border: "1px solid var(--border-subtle, #dfd7cc)",
+                      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.03)",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "flex-start",
@@ -473,7 +513,7 @@ export default function AdminFinancePage() {
                           </span>
                         )}
                         {exp.inventoryItemName && (
-                          <span style={{ color: "#60A5FA", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                          <span style={{ color: "#0284c7", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
                             <Cpu size={11} /> {exp.inventoryItemName}
                           </span>
                         )}
@@ -488,9 +528,9 @@ export default function AdminFinancePage() {
                         fontFamily: "var(--font-mono)",
                         fontWeight: 800,
                         fontSize: "1.02rem",
-                        color: exp.type === "income" ? "#10B981" : "#9c6f18",
+                        color: exp.type === "income" ? "#16a34a" : "#9c6f18",
                       }}>
-                        {exp.type === "income" ? "+" : "-"}৳{Number(exp.amount || 0).toLocaleString()}
+                        {exp.type === "income" ? "+" : "-"} ৳ {Number(exp.amount || 0).toLocaleString()}
                       </div>
                       <div style={{ marginTop: "0.35rem", display: "flex", gap: "0.4rem", justifyContent: "flex-end", alignItems: "center" }}>
                         <span className={`${styles.statusBadge} ${

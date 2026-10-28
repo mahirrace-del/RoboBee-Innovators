@@ -454,7 +454,7 @@ export default function DashboardOverview() {
                     color: netTreasuryBalance >= 0 ? "#10B981" : "#EF4444",
                   }}
                 >
-                  ৳{netTreasuryBalance.toLocaleString()}
+                  <span style={{ marginRight: '0.2rem' }}>৳</span>{netTreasuryBalance.toLocaleString()}
                 </div>
               </div>
               <div className={styles.kpiMeta}>
@@ -480,7 +480,7 @@ export default function DashboardOverview() {
                   <Calendar size={18} color="#A855F7" />
                 </div>
                 <div className={styles.kpiValue}>
-                  {progression.completedSessions.length} / 36
+                  {progression.completedSessions.length} / 38
                 </div>
               </div>
               <div className={styles.kpiMeta}>
@@ -495,10 +495,10 @@ export default function DashboardOverview() {
                     : `Next: ${progression.suggestedNextLesson.code}`}
                 </span>
                 <Link
-                  href="/dashboard/admin/curriculum"
+                  href={progression.activeSession ? "/dashboard/admin/attendance" : "/dashboard/admin/curriculum"}
                   style={{ color: "#9c6f18", fontWeight: 700 }}
                 >
-                  Studio &rarr;
+                  {progression.activeSession ? "Take Attendance →" : "Academy →"}
                 </Link>
               </div>
             </div>

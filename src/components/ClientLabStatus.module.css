@@ -15,21 +15,43 @@
 
 .openBadge {
   border: 1px solid rgba(0, 210, 255, 0.4);
-  background: rgba(0, 210, 255, 0.08);
+  background: rgba(0, 210, 255, 0.1);
 }
 
 .closedBadge {
-  border: 1px solid rgba(255, 85, 85, 0.35);
-  background: rgba(255, 85, 85, 0.08);
+  border: 1px solid rgba(255, 85, 85, 0.4);
+  background: rgba(255, 85, 85, 0.1);
 }
 
 .lightBadge {
-  border-color: #e5d7c7;
-  background: #f5efe7;
-  box-shadow: none;
+  border-color: #dfd7cc;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.lightBadge .statusText { color: #51473e; }
+.lightBadge.closedBadge {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(254, 242, 242, 0.95);
+}
+
+.lightBadge.openBadge {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(236, 253, 245, 0.95);
+}
+
+.lightBadge .statusText {
+  color: #27211d;
+}
+
+.lightBadge.closedBadge .statusText {
+  color: #991b1b;
+  font-weight: 750;
+}
+
+.lightBadge.openBadge .statusText {
+  color: #065f46;
+  font-weight: 750;
+}
 
 .indicatorDot {
   width: 9px;

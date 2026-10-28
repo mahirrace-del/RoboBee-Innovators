@@ -159,15 +159,19 @@ export default function BOMDashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>{activeProject.name} - Bill of Materials</h2>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>Total Est: {totalProjectCost} ৳</div>
-                  <div style={{ fontSize: '0.9rem', color: '#ff5555' }}>New Funds Needed: {neededCost} ৳</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--brand-burgundy, #84243a)', fontFamily: 'var(--font-mono)' }}>
+                    Total Est: <span style={{ marginRight: '0.2rem' }}>৳</span>{totalProjectCost.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '0.88rem', color: '#dc2626', fontWeight: '700', fontFamily: 'var(--font-mono)' }}>
+                    New Funds Needed: <span style={{ marginRight: '0.2rem' }}>৳</span>{neededCost.toLocaleString()}
+                  </div>
                 </div>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <tr style={{ borderBottom: '1px solid var(--border-subtle, #dfd7cc)' }}>
                       <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Part Name</th>
                       <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Source</th>
                       <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Unit Cost</th>
@@ -178,19 +182,25 @@ export default function BOMDashboard() {
                   </thead>
                   <tbody>
                     {activeProject.bom?.length > 0 ? activeProject.bom.map((b: any, idx: number) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle, #dfd7cc)' }}>
                         <td style={{ padding: '1rem', fontWeight: 'bold' }}>{b.name}</td>
                         <td style={{ padding: '1rem' }}>{b.source}</td>
-                        <td style={{ padding: '1rem' }}>{b.price} ৳</td>
+                        <td style={{ padding: '1rem', fontFamily: 'var(--font-mono)' }}>
+                          <span style={{ marginRight: '0.2rem' }}>৳</span>{b.price?.toLocaleString()}
+                        </td>
                         <td style={{ padding: '1rem' }}>{b.quantity}</td>
-                        <td style={{ padding: '1rem', color: 'var(--accent-primary)' }}>{b.totalCost} ৳</td>
+                        <td style={{ padding: '1rem', color: 'var(--brand-burgundy, #84243a)', fontWeight: '700', fontFamily: 'var(--font-mono)' }}>
+                          <span style={{ marginRight: '0.2rem' }}>৳</span>{b.totalCost?.toLocaleString()}
+                        </td>
                         <td style={{ padding: '1rem' }}>
                           <span style={{ 
                             padding: '0.25rem 0.75rem', 
                             borderRadius: '20px', 
-                            fontSize: '0.8rem',
-                            background: b.status === 'In Stock' ? 'rgba(0,255,0,0.1)' : 'rgba(255,85,85,0.1)',
-                            color: b.status === 'In Stock' ? '#55ff55' : '#ff5555'
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            background: b.status === 'In Stock' ? 'rgba(16, 185, 129, 0.14)' : 'rgba(239, 68, 68, 0.14)',
+                            color: b.status === 'In Stock' ? '#065f46' : '#dc2626',
+                            border: `1px solid ${b.status === 'In Stock' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
                           }}>
                             {b.status}
                           </span>

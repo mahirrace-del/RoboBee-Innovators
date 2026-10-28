@@ -24,6 +24,7 @@ import {
   Table,
   ShoppingCart,
   Cpu,
+  X,
 } from "lucide-react";
 import {
   normalizeInventoryItem,
@@ -40,6 +41,12 @@ export default function InventoryDashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"grid" | "ledger">("ledger");
   const [showMobileAdd, setShowMobileAdd] = useState(false);
+
+  // Quick Part Request Modal State (for all members)
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [reqPartName, setReqPartName] = useState("");
+  const [reqReason, setReqReason] = useState("");
+  const [isSubmittingReq, setIsSubmittingReq] = useState(false);
 
   // Add Part Form (Admin / Store Manager)
   const [newPartName, setNewPartName] = useState("");
@@ -179,11 +186,47 @@ export default function InventoryDashboard() {
     }
   };
 
+  const handleQuickRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reqPartName.trim()) return;
+
+    setIsSubmittingReq(true);
+    try {
+      await addDoc(collection(db, "partRequests"), {
+        partName: reqPartName.trim(),
+        reason: reqReason.trim() || "Requested via Component Ledger",
+        requestedBy: user?.email || "Member",
+        uid: user?.uid || null,
+        status: "pending",
+        requestedAt: serverTimestamp(),
+      });
+      setReqPartName("");
+      setReqReason("");
+      setShowRequestModal(false);
+      alert("Part request submitted successfully to Lab Logistics queue!");
+    } catch (error) {
+      console.error("Error submitting part request:", error);
+      alert("Failed to submit request.");
+    } finally {
+      setIsSubmittingReq(false);
+    }
+  };
+
+  const normalizeCat = (cat?: string) => {
+    if (!cat || !cat.trim()) return "General";
+    const trimmed = cat.trim();
+    const match = STANDARD_INVENTORY_CATEGORIES.find(
+      (c) => c.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (match) return match;
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  };
+
   // Standard + custom categories
   const categories = useMemo(() => {
     const cats = new Set<string>(STANDARD_INVENTORY_CATEGORIES);
     inventory.forEach((item) => {
-      if (item.category) cats.add(item.category);
+      if (item.category) cats.add(normalizeCat(item.category));
     });
     return ["All", "Low Stock Alerts", ...Array.from(cats)];
   }, [inventory]);
@@ -205,7 +248,7 @@ export default function InventoryDashboard() {
         }
         return (
           matchesSearch &&
-          (item.category || "Uncategorized") === selectedCategory
+          normalizeCat(item.category) === selectedCategory
         );
       })
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -234,6 +277,20 @@ export default function InventoryDashboard() {
               {showMobileAdd ? "Close form" : "Add component"}
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setShowRequestModal(true)}
+            className={styles.backBtn}
+            style={{
+              background: "#ffffff",
+              color: "#84243a",
+              border: "1px solid #dfd7cc",
+              cursor: "pointer",
+              fontWeight: 700,
+            }}
+          >
+            <Plus size={16} /> Request Part
+          </button>
           <div
             style={{
               display: "inline-flex",
@@ -252,7 +309,7 @@ export default function InventoryDashboard() {
                 fontSize: "0.78rem",
                 fontWeight: 700,
                 background: viewMode === "ledger" ? "#6B0F24" : "transparent",
-                color: viewMode === "ledger" ? "#9c6f18" : "#6f665e",
+                color: viewMode === "ledger" ? "#ffffff" : "#6f665e",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.35rem",
@@ -269,7 +326,7 @@ export default function InventoryDashboard() {
                 fontSize: "0.78rem",
                 fontWeight: 700,
                 background: viewMode === "grid" ? "#6B0F24" : "transparent",
-                color: viewMode === "grid" ? "#9c6f18" : "#6f665e",
+                color: viewMode === "grid" ? "#ffffff" : "#6f665e",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.35rem",
@@ -502,7 +559,7 @@ export default function InventoryDashboard() {
                               fontWeight: 700,
                             }}
                           >
-                            {item.category}
+                            {normalizeCat(item.category)}
                           </span>
                         </td>
                         <td style={{ padding: "0.9rem 1rem" }}>
@@ -521,7 +578,14 @@ export default function InventoryDashboard() {
                           </span>
                         </td>
                         <td style={{ padding: "0.9rem 1rem", fontFamily: "var(--font-mono)" }}>
-                          {item.price ? `৳${item.price}` : "—"}
+                          {item.price ? (
+                            <span>
+                              <span style={{ marginRight: "0.2rem" }}>৳</span>
+                              {item.price.toLocaleString()}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
                         </td>
                         <td style={{ padding: "0.9rem 1rem" }}>
                           {isLow ? (
@@ -621,7 +685,7 @@ export default function InventoryDashboard() {
                   >
                     <div>
                       <div className={styles.partCategory}>
-                        {item.category || "Uncategorized"}
+                        {normalizeCat(item.category)}
                       </div>
                       <h3 className={styles.partName}>{item.name}</h3>
                       {item.specs && (
@@ -644,7 +708,14 @@ export default function InventoryDashboard() {
                         <span className={styles.quantitySub}>in stock</span>
                       </div>
                       <div className={styles.partPrice}>
-                        {item.price ? `${item.price} ৳ / unit` : "Price not set"}
+                        {item.price ? (
+                          <span>
+                            <span style={{ marginRight: "0.2rem" }}>৳</span>
+                            {item.price.toLocaleString()} / unit
+                          </span>
+                        ) : (
+                          "Price not set"
+                        )}
                       </div>
                       {isLow && (
                         <button
@@ -804,6 +875,120 @@ export default function InventoryDashboard() {
           </div>
         )}
       </div>
+
+      {/* Quick Part Request Modal */}
+      {showRequestModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "1rem",
+          }}
+          onClick={() => setShowRequestModal(false)}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              background: "var(--bg-primary, #ffffff)",
+              border: "1px solid var(--border-subtle, #dfd7cc)",
+              borderRadius: "14px",
+              padding: "1.75rem",
+              maxWidth: "480px",
+              width: "100%",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+              }}
+            >
+              <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
+                Request Lab Hardware
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowRequestModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "1.25rem" }}>
+              Submit a component or sensor needed for your robot build. It will be added to the Lab Requisitions queue.
+            </p>
+            <form onSubmit={handleQuickRequest} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.3rem" }}>
+                  Component Name / Model *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. ESP32-CAM / MPU6050 Gyro / SG90 Servo"
+                  value={reqPartName}
+                  onChange={(e) => setReqPartName(e.target.value)}
+                  className={styles.formInput}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.3rem" }}>
+                  Project or Purpose *
+                </label>
+                <textarea
+                  required
+                  placeholder="e.g. Needed for FIRSO Mega Sumo sensor array"
+                  value={reqReason}
+                  onChange={(e) => setReqReason(e.target.value)}
+                  className={styles.formInput}
+                  style={{ minHeight: "80px", resize: "vertical" }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowRequestModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border-subtle, #dfd7cc)",
+                    background: "var(--bg-secondary, #ffffff)",
+                    color: "var(--text-secondary)",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReq}
+                  className={styles.submitBtn}
+                  style={{ flex: 1 }}
+                >
+                  {isSubmittingReq ? "Submitting..." : "Submit Request"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -154,7 +154,7 @@ export default function FinancePage() {
             Manage your monthly lab dues or submit hardware/competition expense claims to the Treasury.
           </p>
         </div>
-        <div style={{ display: "flex", background: "#ffffff", padding: "0.3rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div style={{ display: "flex", background: "#ffffff", padding: "0.3rem", borderRadius: "10px", border: "1px solid var(--border-subtle, #dfd7cc)" }}>
           <button
             type="button"
             onClick={() => setActiveTab("dues")}
@@ -199,9 +199,11 @@ export default function FinancePage() {
       {activeTab === "dues" ? (
         <>
           <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
-            <div className="glass-panel" style={{ padding: '1.5rem', flex: '1', borderLeft: `4px solid ${totalDue > 0 ? '#ff5555' : '#2ecc71'}` }}>
+            <div className="glass-panel" style={{ padding: '1.5rem', flex: '1', borderLeft: `4px solid ${totalDue > 0 ? '#dc2626' : '#16a34a'}` }}>
               <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Total Outstanding Due</h3>
-              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: totalDue > 0 ? '#ff5555' : '#2ecc71', fontFamily: 'var(--font-mono)' }}>{totalDue} BDT</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: totalDue > 0 ? '#dc2626' : '#065f46', fontFamily: 'var(--font-mono)' }}>
+                <span style={{ marginRight: '0.2rem' }}>৳</span>{totalDue.toLocaleString()} BDT
+              </div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
                 {totalDue === 0 ? "You are all caught up!" : "Please submit your pending payments."}
               </p>
@@ -213,16 +215,16 @@ export default function FinancePage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div className={`glass-panel ${styles.card}`}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-                  <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `4px solid ${hasEnrollment ? '#2ecc71' : hasPendingEnrollment ? '#F4B304' : '#ff5555'}` }}>
+                  <div style={{ padding: '1rem', background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-subtle, #dfd7cc)', borderRadius: '8px', borderLeft: `4px solid ${hasEnrollment ? '#16a34a' : hasPendingEnrollment ? '#9c6f18' : '#dc2626'}` }}>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Enrollment Fee (One-Time)</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: hasEnrollment ? '#2ecc71' : hasPendingEnrollment ? '#F4B304' : '#ff5555' }}>
-                      {hasEnrollment ? 'Paid' : hasPendingEnrollment ? 'Verification Pending' : 'Due (1000 BDT)'}
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: hasEnrollment ? '#065f46' : hasPendingEnrollment ? '#9c6f18' : '#dc2626' }}>
+                      {hasEnrollment ? 'Paid' : hasPendingEnrollment ? 'Verification Pending' : 'Due (1,000 BDT)'}
                     </div>
                   </div>
-                  <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `4px solid ${hasCurrentMonth ? '#2ecc71' : hasPendingCurrentMonth ? '#F4B304' : '#ff5555'}` }}>
+                  <div style={{ padding: '1rem', background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-subtle, #dfd7cc)', borderRadius: '8px', borderLeft: `4px solid ${hasCurrentMonth ? '#16a34a' : hasPendingCurrentMonth ? '#9c6f18' : '#dc2626'}` }}>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Monthly Fee ({currentMonthStr})</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: hasCurrentMonth ? '#2ecc71' : hasPendingCurrentMonth ? '#F4B304' : '#ff5555' }}>
-                      {hasCurrentMonth ? 'Paid' : hasPendingCurrentMonth ? 'Verification Pending' : 'Due (1000 BDT)'}
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: hasCurrentMonth ? '#065f46' : hasPendingCurrentMonth ? '#9c6f18' : '#dc2626' }}>
+                      {hasCurrentMonth ? 'Paid' : hasPendingCurrentMonth ? 'Verification Pending' : 'Due (1,000 BDT)'}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Due by 5th of every month</div>
                   </div>
@@ -451,10 +453,11 @@ export default function FinancePage() {
                   <div
                     key={exp.id}
                     style={{
-                      padding: "0.9rem 1rem",
+                      padding: "0.95rem 1.15rem",
                       borderRadius: "10px",
-                      background: "rgba(15, 23, 42, 0.7)",
-                      border: "1px solid rgba(255,255,255,0.07)",
+                      background: "var(--bg-primary, #ffffff)",
+                      border: "1px solid var(--border-subtle, #dfd7cc)",
+                      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.03)",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "flex-start",
@@ -471,7 +474,7 @@ export default function FinancePage() {
                           </span>
                         )}
                         {exp.inventoryItemName && (
-                          <span style={{ color: "#60A5FA", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                          <span style={{ color: "#0284c7", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
                             <Cpu size={11} /> {exp.inventoryItemName}
                           </span>
                         )}
@@ -484,7 +487,7 @@ export default function FinancePage() {
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
                       <div style={{ fontFamily: "var(--font-mono)", fontWeight: 800, color: "#9c6f18", fontSize: "1rem" }}>
-                        ৳{Number(exp.amount || 0).toLocaleString()}
+                        <span style={{ marginRight: '0.2rem' }}>৳</span>{Number(exp.amount || 0).toLocaleString()}
                       </div>
                       <span
                         className={`${styles.statusBadge} ${

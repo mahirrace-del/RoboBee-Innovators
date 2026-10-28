@@ -108,21 +108,24 @@
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .statusPending {
-  background: rgba(255, 170, 0, 0.1);
-  color: #ffaa00;
+  background: rgba(245, 184, 0, 0.16);
+  color: #9c6f18;
+  border: 1px solid rgba(245, 184, 0, 0.35);
 }
 
 .statusApproved {
-  background: rgba(46, 204, 113, 0.1);
-  color: #2ecc71;
+  background: rgba(16, 185, 129, 0.14);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .statusRejected {
-  background: rgba(255, 85, 85, 0.1);
-  color: #ff5555;
+  background: rgba(239, 68, 68, 0.14);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.35);
 }

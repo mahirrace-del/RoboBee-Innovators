@@ -90,18 +90,19 @@ export default function LabDashboard() {
             alignItems: 'center', 
             gap: '1rem',
             cursor: role === 'admin' ? 'pointer' : 'default',
-            border: `1px solid ${labStatus === 'Open' ? 'rgba(0, 210, 255, 0.3)' : 'rgba(255, 85, 85, 0.3)'}`
+            border: `1px solid ${labStatus === 'Open' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(220, 38, 38, 0.4)'}`,
+            background: labStatus === 'Open' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(220, 38, 38, 0.08)',
           }}
           onClick={toggleLabStatus}
         >
           <div style={{ 
-            width: '15px', height: '15px', borderRadius: '50%', 
-            backgroundColor: labStatus === 'Open' ? '#00d2ff' : '#ff5555', 
-            boxShadow: `0 0 15px ${labStatus === 'Open' ? '#00d2ff' : '#ff5555'}` 
+            width: '14px', height: '14px', borderRadius: '50%', 
+            backgroundColor: labStatus === 'Open' ? '#10b981' : '#dc2626', 
+            boxShadow: `0 0 10px ${labStatus === 'Open' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(220, 38, 38, 0.5)'}` 
           }}></div>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Lab is Currently</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{labStatus}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Lab is Currently</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: labStatus === 'Open' ? '#065f46' : '#dc2626' }}>{labStatus}</div>
           </div>
           {role === 'admin' && (
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '1rem' }}>
@@ -111,7 +112,7 @@ export default function LabDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
         
         {/* Full Inventory Link */}
         <div>

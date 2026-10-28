@@ -79,7 +79,7 @@
 }
 
 .segmentRadioCard:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-elevated);
   border-color: rgba(244, 179, 4, 0.3);
 }
 
@@ -121,7 +121,7 @@
 
 .actionArea {
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-subtle);
   padding-top: 1.25rem;
 }
 
@@ -172,24 +172,24 @@
 }
 
 .badgeSuccess {
-  background: rgba(46, 204, 113, 0.2);
-  color: #2ecc71;
+  background: rgba(22, 163, 74, 0.15);
+  color: #16a34a;
 }
 
 .badgeWarning {
-  background: rgba(244, 179, 4, 0.2);
-  color: #F4B304;
+  background: rgba(245, 184, 0, 0.15);
+  color: #9c6f18;
 }
 
 .badgeDanger {
-  background: rgba(255, 85, 85, 0.2);
-  color: #ff5555;
+  background: rgba(220, 38, 38, 0.15);
+  color: #dc2626;
 }
 
 .payBtn {
   width: 100%;
-  background: #2ecc71;
-  color: #000;
+  background: #16a34a;
+  color: #fff;
   border: none;
   padding: 0.7rem;
   border-radius: var(--radius-sm);
@@ -200,7 +200,7 @@
 }
 
 .payBtn:hover {
-  background: #27ae60;
+  background: #15803d;
 }
 
 .paymentForm {
@@ -246,9 +246,9 @@
 
 .cancelBtn {
   flex: 1;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-elevated);
   color: var(--text-primary);
-  border: none;
+  border: 1px solid var(--border-subtle);
   padding: 0.6rem 1rem;
   border-radius: 4px;
   font-weight: bold;
@@ -256,7 +256,7 @@
 }
 
 .cancelBtn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-primary);
 }
 
 @media (max-width: 600px) {

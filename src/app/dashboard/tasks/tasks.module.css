@@ -60,8 +60,9 @@
 
 .viewToggleBtnActive {
   background: #6B0F24;
-  color: #9c6f18;
-  border: 1px solid rgba(245, 184, 0, 0.4);
+  color: #ffffff;
+  border: 1px solid #6B0F24;
+  box-shadow: 0 2px 6px rgba(107, 15, 36, 0.25);
 }
 
 .formCard {

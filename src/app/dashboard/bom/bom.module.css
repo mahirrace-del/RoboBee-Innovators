@@ -59,8 +59,9 @@
 }
 
 .projectCard {
-  background: rgba(0,0,0,0.2);
-  padding: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  padding: 1.25rem;
   border-radius: var(--radius-md);
   margin-bottom: 1rem;
 }
@@ -84,7 +85,7 @@
 
 .bomList {
   margin-top: 1rem;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--border-subtle);
   padding-top: 1rem;
 }
 
@@ -114,4 +115,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+@media (max-width: 860px) {
+  .panels {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }

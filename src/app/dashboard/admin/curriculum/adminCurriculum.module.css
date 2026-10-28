@@ -188,9 +188,9 @@
 
 .viewTabBtnActive {
   background: var(--bg-secondary);
-  color: #f5b800;
+  color: #9c6f18;
   border-color: var(--border-subtle) var(--border-subtle) transparent var(--border-subtle);
-  border-bottom: 2px solid #f5b800;
+  border-bottom: 2px solid #9c6f18;
 }
 
 /* Pathway Filter Strip */
@@ -346,12 +346,12 @@
 
 .subTable td {
   padding: 0.9rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
 }
 
 .subTable tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-elevated);
 }
 
 .classCodeTag {
@@ -359,7 +359,7 @@
   border-radius: 6px;
   background: rgba(245, 184, 0, 0.15);
   border: 1px solid rgba(245, 184, 0, 0.3);
-  color: #f5b800;
+  color: #9c6f18;
   font-size: 0.72rem;
   font-weight: 800;
 }
@@ -406,7 +406,7 @@
 }
 
 .dropdownItem:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 

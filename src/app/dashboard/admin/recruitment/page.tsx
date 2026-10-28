@@ -80,12 +80,12 @@ export default function AdminRecruitmentPage() {
                   fontSize: '0.8rem', 
                   fontWeight: '600',
                   textTransform: 'uppercase',
-                  backgroundColor: app.status === 'pending' ? 'rgba(255, 170, 0, 0.1)' : 
-                                   app.status === 'approved' ? 'rgba(46, 204, 113, 0.1)' : 'rgba(255, 85, 85, 0.1)',
-                  color: app.status === 'pending' ? '#ffaa00' : 
-                         app.status === 'approved' ? '#2ecc71' : '#ff5555',
-                  border: `1px solid ${app.status === 'pending' ? 'rgba(255, 170, 0, 0.2)' : 
-                                      app.status === 'approved' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 85, 85, 0.2)'}`
+                  backgroundColor: app.status === 'pending' ? 'rgba(245, 184, 0, 0.15)' : 
+                                   app.status === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(220, 38, 38, 0.15)',
+                  color: app.status === 'pending' ? '#9c6f18' : 
+                         app.status === 'approved' ? '#065f46' : '#991b1b',
+                  border: `1px solid ${app.status === 'pending' ? 'rgba(245, 184, 0, 0.35)' : 
+                                      app.status === 'approved' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(220, 38, 38, 0.35)'}`
                 }}>
                   {app.status}
                 </div>
@@ -98,23 +98,23 @@ export default function AdminRecruitmentPage() {
 
               <div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '0.2rem' }}>REASON FOR JOINING</div>
-                <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
+                <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem', background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-sm)', lineHeight: '1.45' }}>
                   {app.reason}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+              <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
                 {app.status === 'pending' && (
                   <>
                     <button 
                       onClick={() => handleUpdateStatus(app.id, 'approved')}
-                      style={{ padding: '0.6rem 1.2rem', background: '#2ecc71', color: '#000', borderRadius: 'var(--radius-sm)', fontWeight: '600' }}
+                      style={{ padding: '0.6rem 1.2rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)', fontWeight: '700', cursor: 'pointer' }}
                     >
                       Approve
                     </button>
                     <button 
                       onClick={() => handleUpdateStatus(app.id, 'rejected')}
-                      style={{ padding: '0.6rem 1.2rem', background: 'transparent', border: '1px solid #ff5555', color: '#ff5555', borderRadius: 'var(--radius-sm)', fontWeight: '600' }}
+                      style={{ padding: '0.6rem 1.2rem', background: 'transparent', border: '1px solid #dc2626', color: '#dc2626', borderRadius: 'var(--radius-sm)', fontWeight: '700', cursor: 'pointer' }}
                     >
                       Reject
                     </button>
