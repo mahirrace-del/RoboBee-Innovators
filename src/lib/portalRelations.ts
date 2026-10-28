@@ -45,9 +45,13 @@ export interface RelationalTask {
 export type InventoryCategory =
   | "Microcontrollers"
   | "Sensors"
-  | "Actuators"
-  | "Power/Batteries"
+  | "Motors & Actuators"
+  | "Power & Batteries"
+  | "Displays & Audio"
+  | "Wireless & IoT"
   | "Mechanical Hardware"
+  | "Prototyping & Passives"
+  | "Tools & Equipment"
   | "General"
   | string;
 
@@ -376,9 +380,14 @@ export function verifyLessonBOMStock(
 export const STANDARD_INVENTORY_CATEGORIES: InventoryCategory[] = [
   "Microcontrollers",
   "Sensors",
-  "Actuators",
-  "Power/Batteries",
+  "Motors & Actuators",
+  "Power & Batteries",
+  "Displays & Audio",
+  "Wireless & IoT",
   "Mechanical Hardware",
+  "Prototyping & Passives",
+  "Tools & Equipment",
+  "General",
 ];
 
 export const INVENTORY_CATEGORIES = STANDARD_INVENTORY_CATEGORIES;
