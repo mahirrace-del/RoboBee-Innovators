@@ -52,6 +52,7 @@ export default function AdminCompetitionsPage() {
   const [expandedExperienceId, setExpandedExperienceId] = useState<string | null>(null);
   
   const [isCreating, setIsCreating] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newComp, setNewComp] = useState({
     name: "",
     date: "",
@@ -197,6 +198,7 @@ export default function AdminCompetitionsPage() {
           { id: "seg_3", name: "Robo Junior", fee: 350, maxParticipants: 25, description: "Junior innovators, beginner line-follower & challenge arena" }
         ]
       });
+      setIsCreateOpen(false);
     } catch (error) {
       console.error("Error creating competition:", error);
       alert("Failed to create competition.");
@@ -312,10 +314,20 @@ export default function AdminCompetitionsPage() {
             </p>
           </div>
         </div>
+        <button
+          type="button"
+          className={styles.createButton}
+          onClick={() => setIsCreateOpen((open) => !open)}
+          aria-expanded={isCreateOpen}
+          aria-controls="competition-creation-form"
+        >
+          <Plus size={17} />
+          {isCreateOpen ? "Close form" : "Create competition"}
+        </button>
       </div>
 
       {/* LAUNCH NEW DETAILED COMPETITION */}
-      <div className={styles.panel} style={{ marginBottom: '2.5rem' }}>
+      {isCreateOpen && <div id="competition-creation-form" className={styles.panel} style={{ marginBottom: '2.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
           <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Plus size={20} color="var(--accent-primary)" />
@@ -512,7 +524,7 @@ export default function AdminCompetitionsPage() {
             </button>
           </div>
         </form>
-      </div>
+      </div>}
 
       {/* ACTIVE COMPETITIONS LIST & APPLICANTS MANAGEMENT */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

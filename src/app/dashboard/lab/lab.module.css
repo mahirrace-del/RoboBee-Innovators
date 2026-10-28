@@ -8,8 +8,8 @@
   width: 100%;
   padding: 0.8rem 1rem;
   border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.95rem;
@@ -26,14 +26,14 @@
   padding: 1rem;
   border-radius: var(--radius-sm);
   background: var(--accent-primary);
-  color: var(--bg-primary);
+  color: #fff;
   font-weight: 600;
   font-size: 1rem;
   transition: all var(--transition-fast);
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: #33dcff;
+  background: #651a2c;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
 }

@@ -223,11 +223,22 @@ export default function InventoryDashboard() {
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.65rem", alignItems: "center", flexWrap: "wrap" }}>
+          {canEditStore && (
+            <button
+              onClick={() => setShowMobileAdd((current) => !current)}
+              className={styles.addComponentButton}
+              aria-expanded={showMobileAdd}
+              aria-controls="add-component-form"
+            >
+              <Plus size={16} />
+              {showMobileAdd ? "Close form" : "Add component"}
+            </button>
+          )}
           <div
             style={{
               display: "inline-flex",
-              background: "#111827",
-              border: "1px solid #374151",
+              background: "#ffffff",
+              border: "1px solid #dfd7cc",
               borderRadius: "8px",
               padding: "0.2rem",
               gap: "0.2rem",
@@ -241,7 +252,7 @@ export default function InventoryDashboard() {
                 fontSize: "0.78rem",
                 fontWeight: 700,
                 background: viewMode === "ledger" ? "#6B0F24" : "transparent",
-                color: viewMode === "ledger" ? "#F5B800" : "#9CA3AF",
+                color: viewMode === "ledger" ? "#9c6f18" : "#6f665e",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.35rem",
@@ -258,7 +269,7 @@ export default function InventoryDashboard() {
                 fontSize: "0.78rem",
                 fontWeight: 700,
                 background: viewMode === "grid" ? "#6B0F24" : "transparent",
-                color: viewMode === "grid" ? "#F5B800" : "#9CA3AF",
+                color: viewMode === "grid" ? "#9c6f18" : "#6f665e",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.35rem",
@@ -291,12 +302,12 @@ export default function InventoryDashboard() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <AlertTriangle size={20} color="#F59E0B" />
+            <AlertTriangle size={20} color="#9c6f18" />
             <div>
-              <strong style={{ color: "#F59E0B", fontSize: "0.92rem" }}>
+              <strong style={{ color: "#9c6f18", fontSize: "0.92rem" }}>
                 Stock Depletion Warning: {lowStockItems.length} component(s) at or below minimum threshold
               </strong>
-              <div style={{ fontSize: "0.8rem", color: "#9CA3AF" }}>
+              <div style={{ fontSize: "0.8rem", color: "#6f665e" }}>
                 {lowStockItems.map((i) => `${i.name} (${i.quantity} left)`).slice(0, 5).join(" • ")}
               </div>
             </div>
@@ -305,8 +316,8 @@ export default function InventoryDashboard() {
             onClick={() => setSelectedCategory("Low Stock Alerts")}
             style={{
               padding: "0.45rem 0.85rem",
-              background: "#F59E0B",
-              color: "#0B0F17",
+              background: "#9c6f18",
+              color: "#f7f5f1",
               borderRadius: "8px",
               fontWeight: 800,
               fontSize: "0.78rem",
@@ -317,18 +328,8 @@ export default function InventoryDashboard() {
         </div>
       )}
 
-      {/* Mobile Add Toggle */}
-      {canEditStore && (
-        <button
-          className={styles.mobileAddToggle}
-          onClick={() => setShowMobileAdd(!showMobileAdd)}
-        >
-          {showMobileAdd ? "✕ Close Add Form" : "➕ Add New Component"}
-        </button>
-      )}
-
       {canEditStore && showMobileAdd && (
-        <div className={`glass-panel ${styles.formCard}`} style={{ marginBottom: "2rem" }}>
+        <div className={`glass-panel ${styles.formCard} ${styles.mobileAddForm}`} style={{ marginBottom: "2rem" }}>
           <h2 className={styles.formTitle}>Add New Component</h2>
           <form onSubmit={handleAddPart}>
             <div className={styles.formGroup}>
@@ -350,7 +351,7 @@ export default function InventoryDashboard() {
                 className={styles.formInput}
               >
                 {STANDARD_INVENTORY_CATEGORIES.map((c) => (
-                  <option key={c} value={c} style={{ background: "#111827" }}>
+                  <option key={c} value={c} style={{ background: "#ffffff" }}>
                     {c}
                   </option>
                 ))}
@@ -397,7 +398,7 @@ export default function InventoryDashboard() {
         </div>
       )}
 
-      <div className={canEditStore ? styles.layoutGridWithAdmin : styles.layoutGrid}>
+      <div className={canEditStore && showMobileAdd ? styles.layoutGridWithAdmin : styles.layoutGrid}>
         <div>
           {/* Search & Category Pills */}
           <div className={`glass-panel ${styles.filterCard}`}>
@@ -434,7 +435,7 @@ export default function InventoryDashboard() {
             /* TABULATED COMPONENT LEDGER VIEW */
             <div
               className="glass-panel"
-              style={{ overflowX: "auto", borderRadius: "12px", border: "1px solid #1F2937" }}
+              style={{ overflowX: "auto", borderRadius: "12px", border: "1px solid #f4f1eb" }}
             >
               <table
                 style={{
@@ -447,9 +448,9 @@ export default function InventoryDashboard() {
                 <thead>
                   <tr
                     style={{
-                      background: "#1F2937",
-                      borderBottom: "1px solid #374151",
-                      color: "#9CA3AF",
+                      background: "#f4f1eb",
+                      borderBottom: "1px solid #dfd7cc",
+                      color: "#6f665e",
                       fontSize: "0.75rem",
                       textTransform: "uppercase",
                     }}
@@ -474,14 +475,14 @@ export default function InventoryDashboard() {
                         }}
                       >
                         <td style={{ padding: "0.9rem 1rem" }}>
-                          <div style={{ fontWeight: 700, color: "#F9FAFB", fontSize: "0.94rem" }}>
+                          <div style={{ fontWeight: 700, color: "#27211d", fontSize: "0.94rem" }}>
                             {item.name}
                           </div>
                           {item.specs && (
                             <div
                               style={{
                                 fontSize: "0.75rem",
-                                color: "#9CA3AF",
+                                color: "#6f665e",
                                 fontFamily: "var(--font-mono)",
                                 marginTop: "0.15rem",
                               }}
@@ -496,7 +497,7 @@ export default function InventoryDashboard() {
                               padding: "0.2rem 0.55rem",
                               borderRadius: "6px",
                               background: "rgba(245, 184, 0, 0.12)",
-                              color: "#F5B800",
+                              color: "#9c6f18",
                               fontSize: "0.72rem",
                               fontWeight: 700,
                             }}
@@ -515,7 +516,7 @@ export default function InventoryDashboard() {
                           >
                             {item.quantity}
                           </span>
-                          <span style={{ fontSize: "0.74rem", color: "#9CA3AF", marginLeft: 4 }}>
+                          <span style={{ fontSize: "0.74rem", color: "#6f665e", marginLeft: 4 }}>
                             (min {item.minThreshold})
                           </span>
                         </td>
@@ -543,7 +544,7 @@ export default function InventoryDashboard() {
                                   padding: "0.28rem 0.6rem",
                                   borderRadius: "6px",
                                   background: "rgba(245, 184, 0, 0.18)",
-                                  color: "#F5B800",
+                                  color: "#9c6f18",
                                   border: "1px solid rgba(245, 184, 0, 0.4)",
                                   fontSize: "0.72rem",
                                   fontWeight: 700,
@@ -627,7 +628,7 @@ export default function InventoryDashboard() {
                         <div
                           style={{
                             fontSize: "0.75rem",
-                            color: "#9CA3AF",
+                            color: "#6f665e",
                             fontFamily: "var(--font-mono)",
                             marginBottom: "0.5rem",
                           }}
@@ -637,7 +638,7 @@ export default function InventoryDashboard() {
                       )}
                       <div
                         className={styles.partQuantity}
-                        style={{ color: isLow ? "#EF4444" : "#F9FAFB" }}
+                        style={{ color: isLow ? "#EF4444" : "#27211d" }}
                       >
                         {item.quantity}{" "}
                         <span className={styles.quantitySub}>in stock</span>
@@ -654,7 +655,7 @@ export default function InventoryDashboard() {
                             padding: "0.45rem",
                             borderRadius: "6px",
                             background: "rgba(245, 158, 11, 0.18)",
-                            color: "#F5B800",
+                            color: "#9c6f18",
                             border: "1px solid rgba(245, 184, 0, 0.4)",
                             fontSize: "0.76rem",
                             fontWeight: 700,
@@ -703,10 +704,10 @@ export default function InventoryDashboard() {
           )}
         </div>
 
-        {/* Right Column: Desktop Add Part Form */}
-        {canEditStore && (
+        {/* The detailed add form is revealed only when it is needed. */}
+        {canEditStore && showMobileAdd && (
           <div className={styles.adminFormContainer}>
-            <div className={`glass-panel ${styles.formCard}`}>
+            <div id="add-component-form" className={`glass-panel ${styles.formCard}`}>
               <h2 className={styles.formTitle}>Add Component to Ledger</h2>
               <form onSubmit={handleAddPart}>
                 <div className={styles.formGroup}>
@@ -728,7 +729,7 @@ export default function InventoryDashboard() {
                     className={styles.formInput}
                   >
                     {STANDARD_INVENTORY_CATEGORIES.map((c) => (
-                      <option key={c} value={c} style={{ background: "#111827" }}>
+                      <option key={c} value={c} style={{ background: "#ffffff" }}>
                         {c}
                       </option>
                     ))}

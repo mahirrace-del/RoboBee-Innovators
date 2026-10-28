@@ -9,9 +9,9 @@
 }
 
 .tableContainer {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
   overflow: hidden;
 }
 
@@ -27,12 +27,12 @@
   color: var(--text-secondary);
   font-weight: 600;
   font-size: 0.9rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .table td {
   padding: 1.2rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
 }
 
@@ -62,8 +62,8 @@
 
 .select {
   padding: 0.5rem;
-  background: rgba(0,0,0,0.5);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   border-radius: 4px;
   cursor: pointer;

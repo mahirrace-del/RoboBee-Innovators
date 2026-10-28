@@ -154,7 +154,7 @@ export default function FinancePage() {
             Manage your monthly lab dues or submit hardware/competition expense claims to the Treasury.
           </p>
         </div>
-        <div style={{ display: "flex", background: "#111827", padding: "0.3rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div style={{ display: "flex", background: "#ffffff", padding: "0.3rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
           <button
             type="button"
             onClick={() => setActiveTab("dues")}
@@ -166,7 +166,7 @@ export default function FinancePage() {
               borderRadius: "7px",
               border: "none",
               background: activeTab === "dues" ? "rgba(245, 184, 0, 0.16)" : "transparent",
-              color: activeTab === "dues" ? "#F5B800" : "#94A3B8",
+              color: activeTab === "dues" ? "#9c6f18" : "#6f665e",
               fontWeight: 700,
               fontSize: "0.84rem",
               cursor: "pointer",
@@ -185,7 +185,7 @@ export default function FinancePage() {
               borderRadius: "7px",
               border: "none",
               background: activeTab === "requisitions" ? "rgba(245, 184, 0, 0.16)" : "transparent",
-              color: activeTab === "requisitions" ? "#F5B800" : "#94A3B8",
+              color: activeTab === "requisitions" ? "#9c6f18" : "#6f665e",
               fontWeight: 700,
               fontSize: "0.84rem",
               cursor: "pointer",
@@ -462,11 +462,11 @@ export default function FinancePage() {
                     }}
                   >
                     <div>
-                      <div style={{ fontWeight: 700, color: "#F9FAFB", fontSize: "0.95rem" }}>{exp.title}</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem", marginTop: "0.35rem", fontSize: "0.75rem", color: "#94A3B8" }}>
+                      <div style={{ fontWeight: 700, color: "#27211d", fontSize: "0.95rem" }}>{exp.title}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem", marginTop: "0.35rem", fontSize: "0.75rem", color: "#6f665e" }}>
                         <span>{exp.category}</span>
                         {exp.competitionName && (
-                          <span style={{ color: "#F5B800", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                          <span style={{ color: "#9c6f18", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
                             <Trophy size={11} /> {exp.competitionName}
                           </span>
                         )}
@@ -483,7 +483,7 @@ export default function FinancePage() {
                       )}
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontFamily: "var(--font-mono)", fontWeight: 800, color: "#F5B800", fontSize: "1rem" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontWeight: 800, color: "#9c6f18", fontSize: "1rem" }}>
                         ৳{Number(exp.amount || 0).toLocaleString()}
                       </div>
                       <span

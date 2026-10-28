@@ -523,7 +523,7 @@ export default function AdminCurriculumPage() {
             ROBOBEE INNOVATORS • INSTRUCTOR &amp; ADMIN STUDIO
           </div>
           <h1 className={styles.titleHeading}>
-            <Radio size={26} color="#F5B800" />
+            <Radio size={26} color="#9c6f18" />
             Curriculum &amp; Classroom Studio
           </h1>
           <p className={styles.titleDesc}>
@@ -540,7 +540,7 @@ export default function AdminCurriculumPage() {
             onClick={() => setShowAttendanceModal(true)}
             className={styles.actionBtn}
           >
-            <Calendar size={15} color="#F5B800" />
+            <Calendar size={15} color="#9c6f18" />
             Attendance
           </button>
 
@@ -560,7 +560,7 @@ export default function AdminCurriculumPage() {
             onClick={() => setShowFieldGuideModal(true)}
             className={styles.actionBtn}
           >
-            <BookOpen size={15} color="#F5B800" />
+            <BookOpen size={15} color="#9c6f18" />
             Field Guide
           </button>
 
@@ -571,7 +571,7 @@ export default function AdminCurriculumPage() {
               onClick={() => setShowDataMenu((prev) => !prev)}
               className={styles.actionBtn}
             >
-              <Settings size={15} color="#94A3B8" />
+              <Settings size={15} color="#6f665e" />
               Data &amp; Backup
             </button>
 
@@ -582,14 +582,14 @@ export default function AdminCurriculumPage() {
                   onClick={() => handleExportDecks()}
                   className={styles.dropdownItem}
                 >
-                  <Download size={14} color="#F5B800" /> Export All JSON
+                  <Download size={14} color="#9c6f18" /> Export All JSON
                 </button>
                 <button
                   type="button"
                   onClick={() => jsonImportRef.current?.click()}
                   className={styles.dropdownItem}
                 >
-                  <Upload size={14} color="#F5B800" /> Import JSON Backup
+                  <Upload size={14} color="#9c6f18" /> Import JSON Backup
                 </button>
                 <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
                 <button
@@ -610,7 +610,7 @@ export default function AdminCurriculumPage() {
             onClick={() => setShowCreateModal(true)}
             className={styles.primaryActionBtn}
           >
-            <Plus size={16} color="#F5B800" /> Create New Class
+            <Plus size={16} color="#9c6f18" /> Create New Class
           </button>
         </div>
       </div>
@@ -629,7 +629,7 @@ export default function AdminCurriculumPage() {
         {/* 2. 120-Minute Session Pacing */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>Standard Session Pacing</div>
-          <div className={styles.kpiValue} style={{ color: "#F5B800" }}>
+          <div className={styles.kpiValue} style={{ color: "#9c6f18" }}>
             120 Min / Class
           </div>
           <div className={styles.kpiSub}>
@@ -653,7 +653,7 @@ export default function AdminCurriculumPage() {
           <div className={styles.kpiLabel}>Student Access Status</div>
           <div
             className={styles.kpiValue}
-            style={{ color: lockedCount === 0 ? "#10B981" : "#F5B800" }}
+            style={{ color: lockedCount === 0 ? "#10B981" : "#9c6f18" }}
           >
             {unlockedCount} Unlocked • {lockedCount} Locked
           </div>
@@ -743,7 +743,7 @@ export default function AdminCurriculumPage() {
                   className={styles.pathwayBadgePill}
                   style={{
                     background: courseFilter === "ALL" ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
-                    color: courseFilter === "ALL" ? "#F5B800" : "#94A3B8",
+                    color: courseFilter === "ALL" ? "#9c6f18" : "#6f665e",
                   }}
                 >
                   {decks.length}
@@ -767,7 +767,7 @@ export default function AdminCurriculumPage() {
                       className={styles.pathwayBadgePill}
                       style={{
                         background: isSelected ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
-                        color: isSelected ? "#F5B800" : "#94A3B8",
+                        color: isSelected ? "#9c6f18" : "#6f665e",
                       }}
                     >
                       {count}
@@ -785,7 +785,7 @@ export default function AdminCurriculumPage() {
             return (
               <div
                 className={styles.pathwayBanner}
-                style={{ borderLeftColor: activeSpace.accentColor || "#F5B800" }}
+                style={{ borderLeftColor: activeSpace.accentColor || "#9c6f18" }}
               >
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
@@ -799,13 +799,13 @@ export default function AdminCurriculumPage() {
                         padding: "0.15rem 0.5rem",
                         borderRadius: "6px",
                         background: "rgba(245, 184, 0, 0.14)",
-                        color: activeSpace.accentColor || "#F5B800",
+                        color: activeSpace.accentColor || "#9c6f18",
                       }}
                     >
                       {activeSpace.badge}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "#94A3B8" }}>
+                  <div style={{ fontSize: "0.82rem", color: "#6f665e" }}>
                     {activeSpace.description}
                   </div>
                 </div>
@@ -885,7 +885,7 @@ export default function AdminCurriculumPage() {
                         borderRadius: "6px",
                         background: "rgba(245, 184, 0, 0.14)",
                         border: "1px solid rgba(245, 184, 0, 0.35)",
-                        color: "#F5B800",
+                        color: "#9c6f18",
                         fontSize: "0.72rem",
                         fontWeight: 800,
                         letterSpacing: "0.04em",
@@ -900,7 +900,7 @@ export default function AdminCurriculumPage() {
                         borderRadius: "6px",
                         background: "#161B26",
                         border: "1px solid #2E374B",
-                        color: "#94A3B8",
+                        color: "#6f665e",
                         fontSize: "0.7rem",
                         fontWeight: 700,
                       }}
@@ -915,7 +915,7 @@ export default function AdminCurriculumPage() {
                     alt={deck.title}
                     caption={`Reference Illustration • ${deck.slides.length} Slides`}
                     fallbackVariant={deck.id.startsWith("beg") ? "arduino" : "mcu"}
-                    accentColor="#F5B800"
+                    accentColor="#9c6f18"
                     height="168px"
                   />
 
@@ -936,7 +936,7 @@ export default function AdminCurriculumPage() {
                       style={{
                         margin: 0,
                         fontSize: "0.82rem",
-                        color: "#94A3B8",
+                        color: "#6f665e",
                         lineHeight: 1.5,
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
@@ -957,11 +957,11 @@ export default function AdminCurriculumPage() {
                       paddingTop: "0.5rem",
                       borderTop: "1px solid #2E374B",
                       fontSize: "0.74rem",
-                      color: "#94A3B8",
+                      color: "#6f665e",
                     }}
                   >
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                      <Clock size={13} color="#F5B800" /> 120m Standard (60m Compact)
+                      <Clock size={13} color="#9c6f18" /> 120m Standard (60m Compact)
                     </span>
                     <span
                       style={{
@@ -969,7 +969,7 @@ export default function AdminCurriculumPage() {
                           status === "locked"
                             ? "#EF4444"
                             : status === "live_in_class"
-                            ? "#F5B800"
+                            ? "#9c6f18"
                             : "#10B981",
                         fontWeight: 700,
                       }}
@@ -1002,7 +1002,7 @@ export default function AdminCurriculumPage() {
                     style={{
                       padding: "0.6rem 0.75rem",
                       borderRadius: "8px",
-                      border: "1px solid #F5B800",
+                      border: "1px solid #9c6f18",
                       background: "#6B0F24",
                       color: "#FFFFFF",
                       fontWeight: 800,
@@ -1014,7 +1014,7 @@ export default function AdminCurriculumPage() {
                       gap: "0.35rem",
                     }}
                   >
-                    <Tv size={14} color="#F5B800" /> Present Class
+                    <Tv size={14} color="#9c6f18" /> Present Class
                   </button>
 
                   <button
@@ -1035,7 +1035,7 @@ export default function AdminCurriculumPage() {
                       gap: "0.35rem",
                     }}
                   >
-                    <Edit3 size={14} color="#94A3B8" /> Edit / Manage
+                    <Edit3 size={14} color="#6f665e" /> Edit / Manage
                   </button>
 
                   {/* ••• Overflow Menu Button */}
@@ -1053,7 +1053,7 @@ export default function AdminCurriculumPage() {
                         borderRadius: "8px",
                         border: "1px solid #2E374B",
                         background: "#161B26",
-                        color: "#94A3B8",
+                        color: "#6f665e",
                         cursor: "pointer",
                         display: "inline-flex",
                         alignItems: "center",
@@ -1128,7 +1128,7 @@ export default function AdminCurriculumPage() {
                             gap: "0.45rem",
                           }}
                         >
-                          <BookOpen size={13} color="#F5B800" /> View Lesson Plan
+                          <BookOpen size={13} color="#9c6f18" /> View Lesson Plan
                         </button>
 
                         <div style={{ height: "1px", background: "#2E374B", margin: "0.2rem 0" }} />
@@ -1165,7 +1165,7 @@ export default function AdminCurriculumPage() {
                             borderRadius: "6px",
                             background: "transparent",
                             border: "none",
-                            color: status === "live_in_class" ? "#F5B800" : "#E2E8F0",
+                            color: status === "live_in_class" ? "#9c6f18" : "#E2E8F0",
                             fontSize: "0.75rem",
                             fontWeight: 700,
                             cursor: "pointer",
@@ -1293,7 +1293,7 @@ export default function AdminCurriculumPage() {
               <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
                 Student Exit Check Reflections &amp; Rubric Alignment
               </h2>
-              <div style={{ fontSize: "0.8rem", color: "#94A3B8", marginTop: "0.2rem" }}>
+              <div style={{ fontSize: "0.8rem", color: "#6f665e", marginTop: "0.2rem" }}>
                 Formative assessment responses submitted by students inside their interactive workbench.
               </div>
             </div>
@@ -1319,21 +1319,21 @@ export default function AdminCurriculumPage() {
               >
                 <Plus size={14} /> Submit Student Reflection
               </button>
-              <div style={{ fontSize: "0.82rem", color: "#F5B800", fontWeight: 700 }}>
+              <div style={{ fontSize: "0.82rem", color: "#9c6f18", fontWeight: 700 }}>
                 {submissions.length} Total Student Reflections
               </div>
             </div>
           </div>
 
           {loadingSubs ? (
-            <p style={{ color: "#94A3B8", padding: "1.5rem 0" }}>Loading reflections from lab database...</p>
+            <p style={{ color: "#6f665e", padding: "1.5rem 0" }}>Loading reflections from lab database...</p>
           ) : submissions.length === 0 ? (
             <div className={styles.emptyState}>
-              <AlertCircle size={36} color="#94A3B8" style={{ marginBottom: "0.75rem" }} />
+              <AlertCircle size={36} color="#6f665e" style={{ marginBottom: "0.75rem" }} />
               <p style={{ color: "#FFFFFF", fontWeight: 700, margin: "0 0 0.35rem 0" }}>
                 No exit check submissions recorded yet.
               </p>
-              <p style={{ color: "#94A3B8", margin: 0, fontSize: "0.82rem" }}>
+              <p style={{ color: "#6f665e", margin: 0, fontSize: "0.82rem" }}>
                 Students complete the 4-question Exit Check inside their lesson workbench or Hardware Lab drawer.
               </p>
             </div>
@@ -1373,7 +1373,7 @@ export default function AdminCurriculumPage() {
                                 textOverflow: "ellipsis",
                               }}
                             >
-                              <strong style={{ color: "#F5B800" }}>Q{k}:</strong> {String(v)}
+                              <strong style={{ color: "#9c6f18" }}>Q{k}:</strong> {String(v)}
                             </div>
                           ))}
                           {Object.keys(sub.answers).length > 2 && (
@@ -1386,7 +1386,7 @@ export default function AdminCurriculumPage() {
                         <span style={{ color: "#64748B" }}>Completed</span>
                       )}
                     </td>
-                    <td style={{ color: "#94A3B8", fontSize: "0.8rem" }}>
+                    <td style={{ color: "#6f665e", fontSize: "0.8rem" }}>
                       {sub.submittedAt
                         ? new Date(sub.submittedAt).toLocaleString()
                         : "Recent"}
@@ -1462,7 +1462,7 @@ export default function AdminCurriculumPage() {
                     padding: "0.2rem 0.55rem",
                     borderRadius: "6px",
                     background: "rgba(245, 184, 0, 0.15)",
-                    color: "#F5B800",
+                    color: "#9c6f18",
                     fontSize: "0.72rem",
                     fontWeight: 800,
                   }}
@@ -1479,7 +1479,7 @@ export default function AdminCurriculumPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#94A3B8",
+                  color: "#6f665e",
                   cursor: "pointer",
                 }}
               >
@@ -1499,7 +1499,7 @@ export default function AdminCurriculumPage() {
                       padding: "0.85rem 1rem",
                     }}
                   >
-                    <div style={{ fontSize: "0.74rem", fontWeight: 800, color: "#F5B800" }}>
+                    <div style={{ fontSize: "0.74rem", fontWeight: 800, color: "#9c6f18" }}>
                       QUESTION {key}
                     </div>
                     <div style={{ fontSize: "0.85rem", color: "#FFFFFF", marginTop: "0.25rem", lineHeight: 1.45 }}>
@@ -1508,7 +1508,7 @@ export default function AdminCurriculumPage() {
                   </div>
                 ))
               ) : (
-                <p style={{ color: "#94A3B8" }}>No answer details recorded.</p>
+                <p style={{ color: "#6f665e" }}>No answer details recorded.</p>
               )}
             </div>
 
@@ -1585,12 +1585,12 @@ export default function AdminCurriculumPage() {
             >
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <Sparkles size={18} color="#F5B800" />
+                  <Sparkles size={18} color="#9c6f18" />
                   <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800 }}>
                     Submit Student Exit Check
                   </h3>
                 </div>
-                <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.2rem" }}>
+                <div style={{ fontSize: "0.76rem", color: "#6f665e", marginTop: "0.2rem" }}>
                   Formative rubric assessment &amp; 100 RoboXP achievement recording.
                 </div>
               </div>
@@ -1600,7 +1600,7 @@ export default function AdminCurriculumPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#94A3B8",
+                  color: "#6f665e",
                   cursor: "pointer",
                 }}
               >
@@ -1720,7 +1720,7 @@ export default function AdminCurriculumPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#9c6f18", marginBottom: "0.25rem" }}>
                   Question 1: Hardware Component &amp; Circuit Function
                 </label>
                 <input
@@ -1741,7 +1741,7 @@ export default function AdminCurriculumPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#9c6f18", marginBottom: "0.25rem" }}>
                   Question 2: Bench Debugging / Troubleshooting Step Solved
                 </label>
                 <input
@@ -1762,7 +1762,7 @@ export default function AdminCurriculumPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#9c6f18", marginBottom: "0.25rem" }}>
                   Question 3: Connection to the Next Progressive Class
                 </label>
                 <input
@@ -1783,7 +1783,7 @@ export default function AdminCurriculumPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#F5B800", marginBottom: "0.25rem" }}>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 800, color: "#9c6f18", marginBottom: "0.25rem" }}>
                   Question 4: Student Confidence &amp; Self-Rating
                 </label>
                 <input
@@ -1821,7 +1821,7 @@ export default function AdminCurriculumPage() {
                     borderRadius: "8px",
                     background: "#161B26",
                     border: "1px solid #2E374B",
-                    color: "#94A3B8",
+                    color: "#6f665e",
                     fontSize: "0.84rem",
                     fontWeight: 700,
                     cursor: "pointer",
@@ -1835,7 +1835,7 @@ export default function AdminCurriculumPage() {
                   style={{
                     padding: "0.55rem 1.3rem",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #F5B800 0%, #D97706 100%)",
+                    background: "linear-gradient(135deg, #9c6f18 0%, #D97706 100%)",
                     border: "none",
                     color: "#090D16",
                     fontSize: "0.86rem",
@@ -1893,7 +1893,7 @@ export default function AdminCurriculumPage() {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <FolderPlus size={18} color="#F5B800" />
+                <FolderPlus size={18} color="#9c6f18" />
                 <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800 }}>
                   Create New 120-Minute Class Deck
                 </h3>
@@ -1904,7 +1904,7 @@ export default function AdminCurriculumPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#94A3B8",
+                  color: "#6f665e",
                   cursor: "pointer",
                 }}
               >
@@ -1929,7 +1929,7 @@ export default function AdminCurriculumPage() {
                       display: "block",
                       fontSize: "0.74rem",
                       fontWeight: 700,
-                      color: "#94A3B8",
+                      color: "#6f665e",
                       marginBottom: "0.25rem",
                     }}
                   >
@@ -1958,7 +1958,7 @@ export default function AdminCurriculumPage() {
                       display: "block",
                       fontSize: "0.74rem",
                       fontWeight: 700,
-                      color: "#94A3B8",
+                      color: "#6f665e",
                       marginBottom: "0.25rem",
                     }}
                   >
@@ -1992,7 +1992,7 @@ export default function AdminCurriculumPage() {
                     display: "block",
                     fontSize: "0.74rem",
                     fontWeight: 700,
-                    color: "#94A3B8",
+                    color: "#6f665e",
                     marginBottom: "0.25rem",
                   }}
                 >
@@ -2022,7 +2022,7 @@ export default function AdminCurriculumPage() {
                     display: "block",
                     fontSize: "0.74rem",
                     fontWeight: 700,
-                    color: "#94A3B8",
+                    color: "#6f665e",
                     marginBottom: "0.25rem",
                   }}
                 >
@@ -2050,7 +2050,7 @@ export default function AdminCurriculumPage() {
                     display: "block",
                     fontSize: "0.74rem",
                     fontWeight: 700,
-                    color: "#94A3B8",
+                    color: "#6f665e",
                     marginBottom: "0.25rem",
                   }}
                 >
@@ -2066,7 +2066,7 @@ export default function AdminCurriculumPage() {
                     borderRadius: "8px",
                     background: "#161B26",
                     border: "1px solid #2E374B",
-                    color: "#F5B800",
+                    color: "#9c6f18",
                   }}
                 />
               </div>
@@ -2087,7 +2087,7 @@ export default function AdminCurriculumPage() {
                     borderRadius: "8px",
                     border: "1px solid #2E374B",
                     background: "transparent",
-                    color: "#94A3B8",
+                    color: "#6f665e",
                     fontWeight: 700,
                     cursor: "pointer",
                   }}
@@ -2099,7 +2099,7 @@ export default function AdminCurriculumPage() {
                   style={{
                     padding: "0.55rem 1.15rem",
                     borderRadius: "8px",
-                    border: "1px solid #F5B800",
+                    border: "1px solid #9c6f18",
                     background: "#6B0F24",
                     color: "#FFFFFF",
                     fontWeight: 800,

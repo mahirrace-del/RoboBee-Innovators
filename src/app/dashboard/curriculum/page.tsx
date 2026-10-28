@@ -229,7 +229,7 @@ export default function MemberCurriculumPage() {
                 borderRadius: "6px",
                 background: "rgba(107, 15, 36, 0.45)",
                 border: "1px solid #6B0F24",
-                color: "#F5B800",
+                color: "#9c6f18",
                 fontSize: "0.72rem",
                 fontWeight: 800,
                 letterSpacing: "0.05em",
@@ -249,7 +249,7 @@ export default function MemberCurriculumPage() {
                 borderRadius: "6px",
                 background: "#161B26",
                 border: "1px solid #2E374B",
-                color: user ? "#10B981" : "#F59E0B",
+                color: user ? "#10B981" : "#9c6f18",
                 fontSize: "0.72rem",
                 fontWeight: 700,
               }}
@@ -278,7 +278,7 @@ export default function MemberCurriculumPage() {
                 textDecoration: "none",
               }}
             >
-              <BookOpen size={15} color="#F5B800" />
+              <BookOpen size={15} color="#9c6f18" />
               <span>Arduino &amp; Robotics Field Guide</span>
             </Link>
 
@@ -293,8 +293,8 @@ export default function MemberCurriculumPage() {
                 border: "1px solid #2E374B",
               }}
             >
-              <Award size={16} color="#F5B800" />
-              <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "#F5B800" }}>
+              <Award size={16} color="#9c6f18" />
+              <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "#9c6f18" }}>
                 {userXp} RoboXP
               </span>
             </div>
@@ -304,7 +304,7 @@ export default function MemberCurriculumPage() {
         <h1 style={{ margin: "0 0 0.4rem 0", fontSize: "1.65rem", fontWeight: 800, color: "#FFFFFF" }}>
           Robotics &amp; Engineering Curriculum Hub
         </h1>
-        <p style={{ margin: "0 0 1.15rem 0", color: "#94A3B8", fontSize: "0.9rem", lineHeight: 1.55, maxWidth: "820px" }}>
+        <p style={{ margin: "0 0 1.15rem 0", color: "#6f665e", fontSize: "0.9rem", lineHeight: 1.55, maxWidth: "820px" }}>
           <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em> — Explore 36 proposed 120-minute (2-hour) hands-on lessons across 4 progressive courses. Click <strong style={{ color: "#FFFFFF" }}>Start Lesson</strong> on any unlocked class to open its 12-slide presentation, wiring guide, C++ code lab, interactive circuit simulator, and 4-question Exit Check.
         </p>
 
@@ -318,15 +318,15 @@ export default function MemberCurriculumPage() {
         >
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF" }}>36 Total Lessons</div>
-            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>4 Proposed Courses (4 + 10 + 10 + 12)</div>
+            <div style={{ fontSize: "0.74rem", color: "#6f665e" }}>4 Proposed Courses (4 + 10 + 10 + 12)</div>
           </div>
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
-            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#F5B800" }}>120 Min / Class</div>
-            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>2-Hour Workshop Standard (72h Total)</div>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#9c6f18" }}>120 Min / Class</div>
+            <div style={{ fontSize: "0.74rem", color: "#6f665e" }}>2-Hour Workshop Standard (72h Total)</div>
           </div>
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#10B981" }}>{completedCount} Completed</div>
-            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>Exit Checks Submitted</div>
+            <div style={{ fontSize: "0.74rem", color: "#6f665e" }}>Exit Checks Submitted</div>
           </div>
         </div>
       </div>
@@ -337,7 +337,7 @@ export default function MemberCurriculumPage() {
           style={{
             background: "#1E2533",
             border: "1px solid",
-            borderColor: progression.activeSession ? "#F5B800" : "#2E374B",
+            borderColor: progression.activeSession ? "#9c6f18" : "#2E374B",
             borderRadius: "12px",
             padding: "1rem 1.25rem",
             marginBottom: "1.5rem",
@@ -381,7 +381,7 @@ export default function MemberCurriculumPage() {
                     alignItems: "center",
                     gap: "0.35rem",
                     background: "rgba(245, 184, 0, 0.14)",
-                    color: "#F5B800",
+                    color: "#9c6f18",
                     border: "1px solid rgba(245, 184, 0, 0.3)",
                     padding: "0.2rem 0.6rem",
                     borderRadius: "6px",
@@ -392,7 +392,7 @@ export default function MemberCurriculumPage() {
                   <Calendar size={12} /> Next Scheduled Class
                 </span>
               )}
-              <span style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
+              <span style={{ fontSize: "0.8rem", color: "#6f665e" }}>
                 {(progression.activeSession || progression.nextSession)?.date} &bull;{" "}
                 {(progression.activeSession || progression.nextSession)?.time || "15:30"}
               </span>
@@ -407,7 +407,7 @@ export default function MemberCurriculumPage() {
             href="/dashboard/attendance"
             style={{
               background: "#6B0F24",
-              border: "1px solid #F5B800",
+              border: "1px solid #9c6f18",
               color: "#FFFFFF",
               padding: "0.55rem 1rem",
               borderRadius: "8px",
@@ -450,9 +450,9 @@ export default function MemberCurriculumPage() {
                 style={{
                   padding: "0.48rem 0.85rem",
                   borderRadius: "8px",
-                  border: `1px solid ${isSelected ? "#F5B800" : "#2E374B"}`,
+                  border: `1px solid ${isSelected ? "#9c6f18" : "#2E374B"}`,
                   background: isSelected ? "#6B0F24" : "#161B26",
-                  color: isSelected ? "#FFFFFF" : "#94A3B8",
+                  color: isSelected ? "#FFFFFF" : "#6f665e",
                   fontSize: "0.78rem",
                   fontWeight: 800,
                   cursor: "pointer",
@@ -467,7 +467,7 @@ export default function MemberCurriculumPage() {
                     padding: "0.1rem 0.4rem",
                     borderRadius: "999px",
                     background: isSelected ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
-                    color: isSelected ? "#F5B800" : "#94A3B8",
+                    color: isSelected ? "#9c6f18" : "#6f665e",
                     fontSize: "0.7rem",
                   }}
                 >
@@ -483,9 +483,9 @@ export default function MemberCurriculumPage() {
             style={{
               padding: "0.48rem 0.85rem",
               borderRadius: "8px",
-              border: `1px solid ${courseFilter === "ALL" ? "#F5B800" : "#2E374B"}`,
+              border: `1px solid ${courseFilter === "ALL" ? "#9c6f18" : "#2E374B"}`,
               background: courseFilter === "ALL" ? "#6B0F24" : "#161B26",
-              color: courseFilter === "ALL" ? "#FFFFFF" : "#94A3B8",
+              color: courseFilter === "ALL" ? "#FFFFFF" : "#6f665e",
               fontSize: "0.78rem",
               fontWeight: 800,
               cursor: "pointer",
@@ -498,7 +498,7 @@ export default function MemberCurriculumPage() {
         <div style={{ position: "relative", minWidth: "240px", flex: "0 1 300px" }}>
           <Search
             size={14}
-            color="#94A3B8"
+            color="#6f665e"
             style={{
               position: "absolute",
               left: "11px",
@@ -533,7 +533,7 @@ export default function MemberCurriculumPage() {
             style={{
               background: "#1E2533",
               border: "1px solid #2E374B",
-              borderLeft: "4px solid #F5B800",
+              borderLeft: "4px solid #9c6f18",
               borderRadius: "10px",
               padding: "0.9rem 1.15rem",
               marginBottom: "1.25rem",
@@ -556,18 +556,18 @@ export default function MemberCurriculumPage() {
                     padding: "0.15rem 0.5rem",
                     borderRadius: "6px",
                     background: "rgba(245, 184, 0, 0.14)",
-                    color: "#F5B800",
+                    color: "#9c6f18",
                   }}
                 >
                   {activeSpace.badge}
                 </span>
               </div>
-              <div style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
+              <div style={{ fontSize: "0.8rem", color: "#6f665e" }}>
                 {activeSpace.description}
               </div>
             </div>
             <div style={{ fontSize: "0.76rem", color: "#E2E8F0", fontWeight: 700 }}>
-              Recommended Hardware: <span style={{ color: "#94A3B8", fontWeight: 500 }}>{activeSpace.recommendedHardware}</span>
+              Recommended Hardware: <span style={{ color: "#6f665e", fontWeight: 500 }}>{activeSpace.recommendedHardware}</span>
             </div>
           </div>
         );
@@ -620,7 +620,7 @@ export default function MemberCurriculumPage() {
                       borderRadius: "6px",
                       background: "rgba(245, 184, 0, 0.14)",
                       border: "1px solid rgba(245, 184, 0, 0.35)",
-                      color: "#F5B800",
+                      color: "#9c6f18",
                       fontSize: "0.72rem",
                       fontWeight: 800,
                       letterSpacing: "0.04em",
@@ -653,7 +653,7 @@ export default function MemberCurriculumPage() {
                         borderRadius: "6px",
                         background: "#161B26",
                         border: "1px solid #2E374B",
-                        color: "#94A3B8",
+                        color: "#6f665e",
                         fontSize: "0.7rem",
                         fontWeight: 700,
                       }}
@@ -669,7 +669,7 @@ export default function MemberCurriculumPage() {
                   alt={deck.title}
                   caption={`Reference Illustration • ${deck.slides.length} Slides`}
                   fallbackVariant={deck.id === "beg-02" ? "mcu" : "arduino"}
-                  accentColor="#F5B800"
+                  accentColor="#9c6f18"
                   height="168px"
                 />
 
@@ -690,7 +690,7 @@ export default function MemberCurriculumPage() {
                     style={{
                       margin: 0,
                       fontSize: "0.82rem",
-                      color: "#94A3B8",
+                      color: "#6f665e",
                       lineHeight: 1.5,
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
@@ -709,15 +709,15 @@ export default function MemberCurriculumPage() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     fontSize: "0.74rem",
-                    color: "#94A3B8",
+                    color: "#6f665e",
                     paddingTop: "0.5rem",
                     borderTop: "1px solid #2E374B",
                   }}
                 >
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                    <Clock size={13} color="#F5B800" /> 120 Mins (2-Hour Session)
+                    <Clock size={13} color="#9c6f18" /> 120 Mins (2-Hour Session)
                   </span>
-                  <span style={{ color: "#F5B800", fontWeight: 700 }}>
+                  <span style={{ color: "#9c6f18", fontWeight: 700 }}>
                     +{deck.xpReward || 250} XP
                   </span>
                 </div>
@@ -754,7 +754,7 @@ export default function MemberCurriculumPage() {
                     width: "100%",
                     padding: "0.65rem 1rem",
                     borderRadius: "8px",
-                    border: "1px solid #F5B800",
+                    border: "1px solid #9c6f18",
                     background: "#6B0F24",
                     color: "#FFFFFF",
                     fontWeight: 800,
@@ -766,7 +766,7 @@ export default function MemberCurriculumPage() {
                     gap: "0.45rem",
                   }}
                 >
-                  <Play size={14} color="#F5B800" /> Start Lesson
+                  <Play size={14} color="#9c6f18" /> Start Lesson
                 </button>
               )}
             </div>
@@ -825,14 +825,14 @@ export default function MemberCurriculumPage() {
                       padding: "0.2rem 0.6rem",
                       borderRadius: "6px",
                       background: "rgba(245, 184, 0, 0.15)",
-                      color: "#F5B800",
+                      color: "#9c6f18",
                       fontSize: "0.72rem",
                       fontWeight: 800,
                     }}
                   >
                     {activeLessonDeck.classCode}
                   </span>
-                  <span style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: 700 }}>
+                  <span style={{ fontSize: "0.75rem", color: "#6f665e", fontWeight: 700 }}>
                     120-Minute Student Lesson &amp; Hardware Guide
                   </span>
                 </div>
@@ -851,7 +851,7 @@ export default function MemberCurriculumPage() {
                   style={{
                     padding: "0.52rem 0.95rem",
                     borderRadius: "8px",
-                    border: "1px solid #F5B800",
+                    border: "1px solid #9c6f18",
                     background: "#6B0F24",
                     color: "#FFFFFF",
                     fontSize: "0.8rem",
@@ -862,7 +862,7 @@ export default function MemberCurriculumPage() {
                     gap: "0.4rem",
                   }}
                 >
-                  <Tv size={14} color="#F5B800" /> Open 12-Slide Presentation
+                  <Tv size={14} color="#9c6f18" /> Open 12-Slide Presentation
                 </button>
 
                 <button
@@ -882,7 +882,7 @@ export default function MemberCurriculumPage() {
                     gap: "0.4rem",
                   }}
                 >
-                  <Cpu size={14} color="#F5B800" /> Interactive Circuit Simulator &amp; Exit Check
+                  <Cpu size={14} color="#9c6f18" /> Interactive Circuit Simulator &amp; Exit Check
                 </button>
 
                 <button
@@ -893,7 +893,7 @@ export default function MemberCurriculumPage() {
                     borderRadius: "8px",
                     border: "1px solid #2E374B",
                     background: "transparent",
-                    color: "#94A3B8",
+                    color: "#6f665e",
                     cursor: "pointer",
                   }}
                 >
@@ -906,26 +906,26 @@ export default function MemberCurriculumPage() {
             <div style={{ padding: "1.4rem", overflowY: "auto", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
               {/* Promise & 5-Segment 120-Minute Session Rhythm */}
               <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1.1rem" }}>
-                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.35rem" }}>
+                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#9c6f18", textTransform: "uppercase", marginBottom: "0.35rem" }}>
                   Today&apos;s Big Promise
                 </div>
                 <p style={{ margin: "0 0 0.9rem 0", fontSize: "0.92rem", color: "#E2E8F0", lineHeight: 1.55 }}>
                   {activeLessonRecord.promise}
                 </p>
 
-                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#6f665e", textTransform: "uppercase", marginBottom: "0.5rem" }}>
                   120-Minute (2-Hour) Workshop Timeline
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: "0.6rem" }}>
                   {activeLessonRecord.classRhythm.map((seg, i) => (
                     <div key={i} style={{ background: "#1E2533", border: "1px solid #2E374B", borderRadius: "8px", padding: "0.65rem" }}>
-                      <div style={{ fontSize: "0.7rem", fontWeight: 800, color: "#F5B800" }}>
+                      <div style={{ fontSize: "0.7rem", fontWeight: 800, color: "#9c6f18" }}>
                         Segment {i + 1} • {seg.minutes}m
                       </div>
                       <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#FFFFFF", marginTop: "0.15rem" }}>
                         {seg.segment}
                       </div>
-                      <div style={{ fontSize: "0.74rem", color: "#94A3B8", marginTop: "0.25rem", lineHeight: 1.4 }}>
+                      <div style={{ fontSize: "0.74rem", color: "#6f665e", marginTop: "0.25rem", lineHeight: 1.4 }}>
                         {seg.studentAction}
                       </div>
                     </div>
@@ -937,7 +937,7 @@ export default function MemberCurriculumPage() {
               {activeLessonRecord.physicalBuildPack && (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1rem" }}>
                   <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1rem" }}>
-                    <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#9c6f18", textTransform: "uppercase", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                       <Wrench size={14} /> Reference Wiring Illustration
                     </div>
                     <PresentationMediaFrame
@@ -945,13 +945,13 @@ export default function MemberCurriculumPage() {
                       alt={activeLessonRecord.title}
                       caption={`Reference Illustration • ${activeLessonRecord.physicalBuildPack.schematic}`}
                       fallbackVariant="arduino"
-                      accentColor="#F5B800"
+                      accentColor="#9c6f18"
                       height="210px"
                     />
                   </div>
 
                   <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1rem" }}>
-                    <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.6rem" }}>
+                    <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#9c6f18", textTransform: "uppercase", marginBottom: "0.6rem" }}>
                       Point-to-Point Wire Table (Wire with Power OFF)
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
@@ -961,7 +961,7 @@ export default function MemberCurriculumPage() {
                             {w.from} &rarr; {w.to}
                           </div>
                           {w.wireOrPolarityNote && (
-                            <div style={{ fontSize: "0.73rem", color: "#94A3B8", marginTop: "0.15rem" }}>
+                            <div style={{ fontSize: "0.73rem", color: "#6f665e", marginTop: "0.15rem" }}>
                               {w.wireOrPolarityNote}
                             </div>
                           )}
@@ -975,7 +975,7 @@ export default function MemberCurriculumPage() {
               {/* Code Lab Preview */}
               {activeLessonRecord.codeLab && (
                 <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "12px", padding: "1rem" }}>
-                  <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#9c6f18", textTransform: "uppercase", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                     <Code2 size={14} /> Complete Workshop Code ({activeLessonRecord.codeLab.language.toUpperCase()})
                   </div>
                   <pre

@@ -25,6 +25,7 @@ export default function AdminFinancePage() {
   const [entryCompId, setEntryCompId] = useState("");
   const [entryNotes, setEntryNotes] = useState("");
   const [submittingEntry, setSubmittingEntry] = useState(false);
+  const [isEntryOpen, setIsEntryOpen] = useState(false);
 
   useEffect(() => {
     if (!canAccess) return;
@@ -113,6 +114,7 @@ export default function AdminFinancePage() {
       setEntryAmount("");
       setEntryCompId("");
       setEntryNotes("");
+      setIsEntryOpen(false);
     } catch (err) {
       console.error("Error logging ledger entry:", err);
       alert("Failed to log ledger entry.");
@@ -160,7 +162,8 @@ export default function AdminFinancePage() {
             Verify member bKash dues, approve hardware/competition expense claims, and track allocated budget lines.
           </p>
         </div>
-        <div style={{ display: "flex", background: "#111827", padding: "0.3rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.65rem" }}>
+        <div style={{ display: "flex", background: "#ffffff", padding: "0.3rem", borderRadius: "10px", border: "1px solid var(--border-subtle)" }}>
           <button
             type="button"
             onClick={() => setActiveTab("dues")}
@@ -172,7 +175,7 @@ export default function AdminFinancePage() {
               borderRadius: "7px",
               border: "none",
               background: activeTab === "dues" ? "rgba(245, 184, 0, 0.16)" : "transparent",
-              color: activeTab === "dues" ? "#F5B800" : "#94A3B8",
+              color: activeTab === "dues" ? "#9c6f18" : "#6f665e",
               fontWeight: 700,
               fontSize: "0.84rem",
               cursor: "pointer",
@@ -191,7 +194,7 @@ export default function AdminFinancePage() {
               borderRadius: "7px",
               border: "none",
               background: activeTab === "ledger" ? "rgba(245, 184, 0, 0.16)" : "transparent",
-              color: activeTab === "ledger" ? "#F5B800" : "#94A3B8",
+              color: activeTab === "ledger" ? "#9c6f18" : "#6f665e",
               fontWeight: 700,
               fontSize: "0.84rem",
               cursor: "pointer",
@@ -199,6 +202,18 @@ export default function AdminFinancePage() {
           >
             <Receipt size={15} /> Expense Queue &amp; Ledger ({treasuryMetrics.pendingExpenseClaims} pending)
           </button>
+        </div>
+        {activeTab === "ledger" && (
+          <button
+            type="button"
+            className={styles.btnAction}
+            onClick={() => setIsEntryOpen((open) => !open)}
+            aria-expanded={isEntryOpen}
+            aria-controls="treasury-entry-form"
+          >
+            <PlusCircle size={16} /> {isEntryOpen ? "Close entry" : "Record entry"}
+          </button>
+        )}
         </div>
       </div>
 
@@ -209,16 +224,16 @@ export default function AdminFinancePage() {
           <div style={{ fontSize: '2.1rem', fontWeight: 'bold', color: '#10B981', fontFamily: 'var(--font-mono)' }}>
             ৳{treasuryMetrics.netBalance.toLocaleString()}
           </div>
-          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.25rem" }}>
+          <div style={{ fontSize: "0.76rem", color: "#6f665e", marginTop: "0.25rem" }}>
             Inflow: ৳{treasuryMetrics.totalIncome.toLocaleString()} • Outflow: ৳{treasuryMetrics.approvedExpenses.toLocaleString()}
           </div>
         </div>
-        <div className="glass-panel" style={{ padding: '1.35rem', borderLeft: '4px solid #F5B800' }}>
+        <div className="glass-panel" style={{ padding: '1.35rem', borderLeft: '4px solid #9c6f18' }}>
           <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Pending Member Dues</h3>
-          <div style={{ fontSize: '2.1rem', fontWeight: 'bold', color: '#F5B800', fontFamily: 'var(--font-mono)' }}>
+          <div style={{ fontSize: '2.1rem', fontWeight: 'bold', color: '#9c6f18', fontFamily: 'var(--font-mono)' }}>
             {treasuryMetrics.pendingPaymentCount}
           </div>
-          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.25rem" }}>
+          <div style={{ fontSize: "0.76rem", color: "#6f665e", marginTop: "0.25rem" }}>
             {payments.filter(p => p.status === 'verified').length} total verified payments
           </div>
         </div>
@@ -227,7 +242,7 @@ export default function AdminFinancePage() {
           <div style={{ fontSize: '2.1rem', fontWeight: 'bold', color: '#EF4444', fontFamily: 'var(--font-mono)' }}>
             {treasuryMetrics.pendingExpenseClaims}
           </div>
-          <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.25rem" }}>
+          <div style={{ fontSize: "0.76rem", color: "#6f665e", marginTop: "0.25rem" }}>
             Linked to Lab Inventory &amp; Competitions
           </div>
         </div>
@@ -340,55 +355,55 @@ export default function AdminFinancePage() {
           )}
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isEntryOpen ? "repeat(auto-fit, minmax(320px, 1fr))" : "minmax(0, 1fr)", gap: "1.5rem" }}>
           {/* Direct Admin Ledger Entry Form */}
-          <div className={`glass-panel ${styles.panel}`}>
+          {isEntryOpen && <div id="treasury-entry-form" className={`glass-panel ${styles.panel}`}>
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
-              <PlusCircle size={18} color="#F5B800" /> Log Treasury Entry (Sponsorship / Direct Expense)
+              <PlusCircle size={18} color="#9c6f18" /> Log Treasury Entry (Sponsorship / Direct Expense)
             </h2>
             <form onSubmit={handleLogDirectLedgerEntry} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Title / Description</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Title / Description</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. TechFest Sponsorship Grant or PCB Fabrication Batch"
                   value={entryTitle}
                   onChange={(e) => setEntryTitle(e.target.value)}
-                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
                 />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Flow Type</label>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Flow Type</label>
                   <select
                     value={entryType}
                     onChange={(e) => setEntryType(e.target.value as "expense" | "income")}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
                   >
                     <option value="expense">Expense Outflow (-)</option>
                     <option value="income">Sponsorship / Grant Inflow (+)</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Amount (BDT)</label>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Amount (BDT)</label>
                   <input
                     type="number"
                     min={1}
                     required
                     value={entryAmount}
                     onChange={(e) => setEntryAmount(e.target.value)}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB", fontFamily: "var(--font-mono)" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d", fontFamily: "var(--font-mono)" }}
                   />
                 </div>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Budget Pool</label>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Budget Pool</label>
                   <select
                     value={entryCategory}
                     onChange={(e) => setEntryCategory(e.target.value as BudgetLineCategory)}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
                   >
                     {BUDGET_LINE_CATEGORIES.map(c => (
                       <option key={c} value={c}>{c}</option>
@@ -396,11 +411,11 @@ export default function AdminFinancePage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Competition Link</label>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Competition Link</label>
                   <select
                     value={entryCompId}
                     onChange={(e) => setEntryCompId(e.target.value)}
-                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                    style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
                   >
                     <option value="">General Lab Pool</option>
                     {competitions.map(c => (
@@ -410,20 +425,20 @@ export default function AdminFinancePage() {
                 </div>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Memo / Invoice Reference</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Memo / Invoice Reference</label>
                 <input
                   type="text"
                   placeholder="Optional receipt or sponsor reference..."
                   value={entryNotes}
                   onChange={(e) => setEntryNotes(e.target.value)}
-                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#0B0F17", border: "1px solid rgba(255,255,255,0.12)", color: "#F9FAFB" }}
+                  style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", background: "#f7f5f1", border: "1px solid rgba(255,255,255,0.12)", color: "#27211d" }}
                 />
               </div>
               <button type="submit" disabled={submittingEntry} className={styles.approveBtn} style={{ padding: "0.7rem 1rem", fontWeight: 700 }}>
                 {submittingEntry ? "Recording..." : "Record Approved Ledger Entry"}
               </button>
             </form>
-          </div>
+          </div>}
 
           {/* Expense Approval Queue & Ledger Stream */}
           <div className={`glass-panel ${styles.panel}`}>
@@ -448,12 +463,12 @@ export default function AdminFinancePage() {
                     }}
                   >
                     <div>
-                      <div style={{ fontWeight: 700, color: "#F9FAFB", fontSize: "0.95rem" }}>{exp.title}</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", fontSize: "0.75rem", color: "#94A3B8" }}>
+                      <div style={{ fontWeight: 700, color: "#27211d", fontSize: "0.95rem" }}>{exp.title}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", fontSize: "0.75rem", color: "#6f665e" }}>
                         <span>{exp.category}</span>
                         <span>• By {exp.submittedByName || exp.submittedByUid}</span>
                         {exp.competitionName && (
-                          <span style={{ color: "#F5B800", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                          <span style={{ color: "#9c6f18", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
                             <Trophy size={11} /> {exp.competitionName}
                           </span>
                         )}
@@ -473,7 +488,7 @@ export default function AdminFinancePage() {
                         fontFamily: "var(--font-mono)",
                         fontWeight: 800,
                         fontSize: "1.02rem",
-                        color: exp.type === "income" ? "#10B981" : "#F5B800",
+                        color: exp.type === "income" ? "#10B981" : "#9c6f18",
                       }}>
                         {exp.type === "income" ? "+" : "-"}৳{Number(exp.amount || 0).toLocaleString()}
                       </div>

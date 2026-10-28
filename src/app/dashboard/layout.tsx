@@ -26,6 +26,7 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   AlertTriangle,
   Radio,
   Wrench,
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isDeleting, setIsDeleting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isAdminNavOpen, setIsAdminNavOpen] = useState(() => pathname.startsWith("/dashboard/admin") || pathname.startsWith("/dashboard/members"));
 
   // Live relational alerts for top contextual bar & nav badges
   const [overdueCheckoutsCount, setOverdueCheckoutsCount] = useState(0);
@@ -143,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
             <Logo width={60} height={60} />
           </div>
-          <h2 style={{ color: "#F5B800", marginBottom: "1rem" }}>Application Under Review</h2>
+          <h2 style={{ color: "#9c6f18", marginBottom: "1rem" }}>Application Under Review</h2>
           <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: "1.6" }}>
             Your membership application has been received and is currently in a <strong>Pending</strong> state.
             An admin must approve your application before you can access the member portal.
@@ -177,7 +179,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button
               onClick={handleSignOut}
               className={styles.submitBtn}
-              style={{ flex: 1, background: "rgba(255, 255, 255, 0.1)", color: "#F9FAFB" }}
+              style={{ flex: 1, background: "rgba(255, 255, 255, 0.1)", color: "#27211d" }}
             >
               Sign Out
             </button>
@@ -266,10 +268,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onClick={closeSidebar}
           title="Field Guide & Pinouts"
         >
-          <Compass size={18} className={styles.navIcon} color="#F5B800" />
+          <Compass size={18} className={styles.navIcon} color="#9c6f18" />
           {!sidebarCollapsed && (
             <>
-              <span className={styles.navLabel} style={{ color: "#F5B800" }}>
+              <span className={styles.navLabel} style={{ color: "#9c6f18" }}>
                 Field Guide
               </span>
               <span className={styles.navPill}>22 Docs</span>
@@ -390,18 +392,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* SECTION 5: ADMIN / INSTRUCTOR COMMAND CONTROLS */}
         {role === "admin" ? (
-          <>
-            {!sidebarCollapsed && (
-              <div className={`${styles.sectionHeading} ${styles.sectionHeadingAdmin}`}>
-                ADMINISTRATION
-              </div>
-            )}
+          <details className={styles.managementNav} open={isAdminNavOpen} onToggle={(event) => setIsAdminNavOpen(event.currentTarget.open)}>
+            <summary className={`${styles.sectionHeading} ${styles.sectionHeadingAdmin} ${styles.managementSummary}`}>
+              <span><Shield size={15} /> {!sidebarCollapsed && "Administration"}</span>
+              {!sidebarCollapsed && <ChevronDown size={15} className={styles.managementChevron} />}
+            </summary>
             <Link
               href="/dashboard/admin/curriculum"
               className={isAct("/dashboard/admin/curriculum")}
               onClick={closeSidebar}
               title="Curriculum & Classroom Studio"
-              style={{ color: "#F59E0B", fontWeight: 700 }}
+              style={{ color: "#9c6f18", fontWeight: 700 }}
             >
               <Radio size={18} className={styles.navIcon} />
               {!sidebarCollapsed && <span className={styles.navLabel}>Classroom Studio</span>}
@@ -460,7 +461,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Globe size={18} className={styles.navIcon} />
               {!sidebarCollapsed && <span className={styles.navLabel}>Public Site CMS</span>}
             </Link>
-          </>
+          </details>
         ) : (
           (canManage("manage_curriculum") ||
             canManage("manage_store") ||
@@ -480,7 +481,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   href="/dashboard/admin/curriculum"
                   className={isAct("/dashboard/admin/curriculum")}
                   onClick={closeSidebar}
-                  style={{ color: "#F59E0B", fontWeight: 700 }}
+                  style={{ color: "#9c6f18", fontWeight: 700 }}
                 >
                   <Radio size={18} className={styles.navIcon} />
                   {!sidebarCollapsed && <span className={styles.navLabel}>Classroom Studio</span>}

@@ -404,7 +404,7 @@ export default function CheckoutDashboard() {
                       <div className={styles.itemInfo}>
                         <div className={styles.itemName}>{part.name}</div>
                         {part.specs && (
-                          <div style={{ fontSize: "0.75rem", color: "#94A3B8", marginBottom: "0.25rem" }}>
+                          <div style={{ fontSize: "0.75rem", color: "#6f665e", marginBottom: "0.25rem" }}>
                             {part.specs}
                           </div>
                         )}
@@ -414,7 +414,7 @@ export default function CheckoutDashboard() {
                             {isAvailable ? `${part.quantity} in lab` : "Out of Stock"}
                           </span>
                           {isLow && (
-                            <span style={{ fontSize: "0.7rem", color: "#F5B800", fontWeight: 700 }}>
+                            <span style={{ fontSize: "0.7rem", color: "#9c6f18", fontWeight: 700 }}>
                               LOW STOCK
                             </span>
                           )}
@@ -508,7 +508,7 @@ export default function CheckoutDashboard() {
                             {item.expectedReturnDate && (
                               <span style={{
                                 fontSize: "0.73rem",
-                                color: item.isOverdue ? "#F87171" : "#F5B800",
+                                color: item.isOverdue ? "#F87171" : "#9c6f18",
                                 fontFamily: "var(--font-mono)",
                                 display: "inline-flex",
                                 alignItems: "center",
@@ -521,7 +521,7 @@ export default function CheckoutDashboard() {
                           <div className={styles.itemDesc}>
                             Custodian: <span className={styles.borrowerTag}>{item.userName || item.checkedOutBy}</span>
                             {item.competitionName && (
-                              <div style={{ fontSize: "0.75rem", color: "#F5B800", marginTop: "2px", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                              <div style={{ fontSize: "0.75rem", color: "#9c6f18", marginTop: "2px", display: "flex", alignItems: "center", gap: "0.25rem" }}>
                                 <Trophy size={11} /> {item.competitionName}
                               </div>
                             )}
@@ -567,11 +567,11 @@ export default function CheckoutDashboard() {
                         <div className={styles.metaRow}>
                           <span className={styles.categoryTag}>{req.category || "Hardware"}</span>
                           {req.estimatedTotalCost > 0 && (
-                            <span style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "#F5B800" }}>
+                            <span style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "#9c6f18" }}>
                               Est. ৳{req.estimatedTotalCost}
                             </span>
                           )}
-                          <span style={{ fontSize: "0.72rem", color: "#94A3B8", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                          <span style={{ fontSize: "0.72rem", color: "#6f665e", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
                             <Clock size={11} /> {req.status || "pending"}
                           </span>
                         </div>

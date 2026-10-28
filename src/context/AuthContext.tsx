@@ -35,12 +35,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let unsubscribeFirestore: () => void;
+    let profileLoadTimeout: number | undefined;
+    let hasReceivedAuthState = false;
+
+    const authLoadTimeout = window.setTimeout(() => {
+      if (!hasReceivedAuthState) {
+        console.warn("Timed out while restoring the Firebase session. Showing sign-in instead.");
+        setUser(null);
+        setRole(null);
+        setUserData(null);
+        setLoading(false);
+      }
+    }, 8000);
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+      hasReceivedAuthState = true;
+      window.clearTimeout(authLoadTimeout);
       setUser(currentUser);
       if (currentUser) {
+        profileLoadTimeout = window.setTimeout(() => {
+          console.warn("Timed out while loading the member profile. Continuing with limited access.");
+          setRole("pending");
+          setUserData(null);
+          setLoading(false);
+        }, 8000);
+
         // Fetch user role dynamically from Firestore
         unsubscribeFirestore = onSnapshot(doc(db, "users", currentUser.uid), (userDoc) => {
+          if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
           if (userDoc.exists()) {
             const data = userDoc.data();
             setRole(data.role as "admin" | "member" | "pending" | "declined");
@@ -53,11 +75,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
           setLoading(false);
         }, (error) => {
+          if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
           console.error("Error fetching user role:", error);
           setRole("pending");
           setLoading(false);
         });
       } else {
+        if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
         setRole(null);
         setUserData(null);
         setLoading(false);
@@ -66,6 +90,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => {
+      window.clearTimeout(authLoadTimeout);
+      if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
       unsubscribeAuth();
       if (unsubscribeFirestore) unsubscribeFirestore();
     };

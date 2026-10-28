@@ -15,6 +15,7 @@ export default function AdminPublicSitePage() {
   const { role, canManage } = useAuth();
   const canAccess = role === "admin" || canManage("manage_achievements");
   const [activeTab, setActiveTab] = useState<"projects" | "achievements" | "marquee" | "leaders" | "cleanup">("projects");
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   // State for Projects
   const [projects, setProjects] = useState<AdminProject[]>([]);
@@ -224,6 +225,7 @@ export default function AdminPublicSitePage() {
       setProjectTitle("");
       setProjectDesc("");
       setProjectImage("");
+      setIsEditorOpen(false);
     } catch (error) {
       console.error(error);
       alert("Error adding project");
@@ -244,6 +246,7 @@ export default function AdminPublicSitePage() {
       setAchTitle("");
       setAchDesc("");
       setAchImage("");
+      setIsEditorOpen(false);
     } catch (error) {
       console.error(error);
       alert("Error adding achievement");
@@ -258,6 +261,7 @@ export default function AdminPublicSitePage() {
         createdAt: new Date()
       });
       setMarqueeImage("");
+      setIsEditorOpen(false);
     } catch (error) {
       console.error(error);
       alert("Error adding marquee image");
@@ -274,6 +278,7 @@ export default function AdminPublicSitePage() {
   };
 
   const handleEditLeader = (leader: AdminLeader) => {
+    setIsEditorOpen(true);
     setEditingLeaderId(leader.id);
     setLeaderName(leader.name || "");
     setLeaderRole(leader.role || "");
@@ -299,6 +304,7 @@ export default function AdminPublicSitePage() {
         await addDoc(collection(db, "leaders"), { ...details, createdAt: new Date() });
       }
       resetLeaderForm();
+      setIsEditorOpen(false);
     } catch (error) {
       console.error(error);
       alert("Could not save this team profile. Please try again.");
@@ -327,10 +333,10 @@ export default function AdminPublicSitePage() {
       <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Customize the public homepage features.</p>
 
       <div className={styles.tabsContainer}>
-        <button className={activeTab === 'projects' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('projects')}>Projects</button>
-        <button className={activeTab === 'achievements' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('achievements')}>Achievements</button>
-        <button className={activeTab === 'marquee' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('marquee')}>Member Marquee</button>
-        <button className={activeTab === 'leaders' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('leaders')}>Core Team</button>
+        <button className={activeTab === 'projects' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('projects'); setIsEditorOpen(false); }}>Projects</button>
+        <button className={activeTab === 'achievements' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('achievements'); setIsEditorOpen(false); }}>Achievements</button>
+        <button className={activeTab === 'marquee' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('marquee'); setIsEditorOpen(false); }}>Member Marquee</button>
+        <button className={activeTab === 'leaders' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('leaders'); setIsEditorOpen(false); }}>Core Team</button>
         {role === 'admin' && (
           <button 
             className={activeTab === 'cleanup' ? styles.activeTab : styles.tab} 
@@ -348,18 +354,18 @@ export default function AdminPublicSitePage() {
 
       {activeTab === 'projects' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)' }}>Add New Project</h2>
-          <form onSubmit={handleAddProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+          <div className={styles.sectionHeader}><h2>Projects</h2><button type="button" className={styles.btnAction} onClick={() => setIsEditorOpen((open) => !open)} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add project"}</button></div>
+          {isEditorOpen && <form onSubmit={handleAddProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
             <input type="text" placeholder="Project Title" value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} required className={styles.input} />
             <textarea placeholder="Description" value={projectDesc} onChange={(e) => setProjectDesc(e.target.value)} required className={styles.input} style={{ minHeight: '80px' }} />
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setProjectImage)} required className={styles.input} />
             {projectImage?.trim() ? <img src={projectImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'contain', alignSelf: 'flex-start' }} /> : null}
             <button type="submit" className={styles.btnAction}>Add Project</button>
-          </form>
+          </form>}
 
           <h2 style={{ marginBottom: '1.5rem' }}>Current Projects</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
-            {projects.map(p => (
+            {projects.length === 0 ? <p className={styles.emptyState}>No featured projects yet. Add the first project when it is ready for the public homepage.</p> : projects.map(p => (
               <div key={p.id} className={styles.itemCard}>
                 {p.image?.trim() ? <img src={p.image.trim()} alt={p.title} className={styles.itemImg} /> : null}
                 <div className={styles.itemContent}>
@@ -375,19 +381,19 @@ export default function AdminPublicSitePage() {
 
       {activeTab === 'achievements' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)' }}>Add Achievement</h2>
-          <form onSubmit={handleAddAchievement} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+          <div className={styles.sectionHeader}><h2>Achievements</h2><button type="button" className={styles.btnAction} onClick={() => setIsEditorOpen((open) => !open)} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add achievement"}</button></div>
+          {isEditorOpen && <form onSubmit={handleAddAchievement} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
             <input type="text" placeholder="Year (e.g. 2024)" value={achYear} onChange={(e) => setAchYear(e.target.value)} required className={styles.input} />
             <input type="text" placeholder="Title (e.g. EWU RoboFest - Runner Up)" value={achTitle} onChange={(e) => setAchTitle(e.target.value)} required className={styles.input} />
             <textarea placeholder="Description" value={achDesc} onChange={(e) => setAchDesc(e.target.value)} required className={styles.input} style={{ minHeight: '80px' }} />
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setAchImage)} className={styles.input} />
             {achImage?.trim() ? <img src={achImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'contain', alignSelf: 'flex-start' }} /> : null}
             <button type="submit" className={styles.btnAction}>Add Achievement</button>
-          </form>
+          </form>}
 
           <h2 style={{ marginBottom: '1.5rem' }}>Current Achievements</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
-            {achievements.map(a => (
+            {achievements.length === 0 ? <p className={styles.emptyState}>No achievements published yet. Add a milestone to feature it on the public homepage.</p> : achievements.map(a => (
               <div key={a.id} className={styles.itemCard}>
                 {a.image?.trim() ? <img src={a.image.trim()} alt={a.title} className={styles.itemImg} /> : null}
                 <div className={styles.itemContent}>
@@ -403,16 +409,16 @@ export default function AdminPublicSitePage() {
 
       {activeTab === 'marquee' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)' }}>Add Member Marquee Image</h2>
-          <form onSubmit={handleAddMarquee} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+          <div className={styles.sectionHeader}><h2>Member marquee</h2><button type="button" className={styles.btnAction} onClick={() => setIsEditorOpen((open) => !open)} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add image"}</button></div>
+          {isEditorOpen && <form onSubmit={handleAddMarquee} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMarqueeImage)} required className={styles.input} />
             {marqueeImage?.trim() ? <img src={marqueeImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'cover', borderRadius: '50%', alignSelf: 'flex-start' }} /> : null}
             <button type="submit" className={styles.btnAction}>Add Image</button>
-          </form>
+          </form>}
 
           <h2 style={{ marginBottom: '1.5rem' }}>Current Marquee Images</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-            {marquees.map(m => (
+            {marquees.length === 0 ? <p className={styles.emptyState}>No member photos yet. Add photos to start the community marquee.</p> : marquees.map(m => (
               <div key={m.id} style={{ position: 'relative', display: 'inline-block' }}>
                 {m.image?.trim() ? <img src={m.image.trim()} alt="Member" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }} /> : null}
                 <button onClick={() => handleDelete('marquee', m.id)} style={{ position: 'absolute', top: -5, right: -5, background: '#ff5555', color: 'white', borderRadius: '50%', width: '24px', height: '24px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✕</button>
@@ -424,9 +430,9 @@ export default function AdminPublicSitePage() {
 
       {activeTab === 'leaders' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '0.5rem', color: 'var(--accent-primary)' }}>Manage the Core Team</h2>
+          <div className={styles.sectionHeader}><h2>Core team</h2><button type="button" className={styles.btnAction} onClick={() => { resetLeaderForm(); setIsEditorOpen((open) => !open); }} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add profile"}</button></div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Add and update leadership profiles and core member introductions shown on the public site.</p>
-          <form onSubmit={handleSaveLeader} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+          {isEditorOpen && <form onSubmit={handleSaveLeader} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
             <label htmlFor="team-group">Profile group</label>
             <select id="team-group" value={leaderGroup} onChange={(e) => setLeaderGroup(e.target.value as "leader" | "core")} className={styles.input}>
               <option value="leader">Team leader</option>
@@ -450,14 +456,14 @@ export default function AdminPublicSitePage() {
               <button type="submit" className={styles.btnAction}>{editingLeaderId ? "Save team profile" : "Add team profile"}</button>
               {editingLeaderId && <button type="button" className={styles.tab} onClick={resetLeaderForm}>Cancel editing</button>}
             </div>
-          </form>
+          </form>}
 
           <h2 style={{ marginBottom: '1.5rem' }}>Current Team Profiles</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-            {leaders.map(l => {
+            {leaders.length === 0 ? <p className={styles.emptyState}>No team profiles yet. Add leaders and core members to introduce the team publicly.</p> : leaders.map(l => {
               const group = l.group === "leader" || (!l.group && /\b(team leader|team lead|club president|founder|chairperson|chairman)\b/i.test(l.role || "")) ? "Team leader" : "Core team member";
               return (
-              <div key={l.id} style={{ position: 'relative', background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div key={l.id} style={{ position: 'relative', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
                 {l.image?.trim() ? <img src={l.image.trim()} alt={l.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #F4B304', marginBottom: '1rem' }} /> : <div className={styles.avatarPlaceholder}>{l.name?.charAt(0) || "R"}</div>}
                 <div className={styles.roleBadge}>{group}</div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '0.2rem' }}>{l.name}</h3>

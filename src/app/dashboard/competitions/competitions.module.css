@@ -6,7 +6,7 @@
 
 .header {
   margin-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 1rem;
 }
 
@@ -21,11 +21,11 @@
   border-top: 4px solid var(--accent-primary);
   display: flex;
   flex-direction: column;
-  background: var(--bg-glass);
+  background: var(--bg-secondary);
   border-radius: var(--radius-md);
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .compHeader {
@@ -45,8 +45,8 @@
 .segmentsSelectionSection {
   margin: 1rem 0;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
 }
 
@@ -71,8 +71,8 @@
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.75rem 0.85rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -128,7 +128,7 @@
 .applyBtn {
   width: 100%;
   background: var(--accent-primary);
-  color: #000;
+  color: #fff;
   border: none;
   padding: 0.8rem 1rem;
   border-radius: var(--radius-sm);
@@ -205,17 +205,17 @@
 
 .paymentForm {
   margin-top: 1rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-primary);
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
 }
 
 .input {
   width: 100%;
   padding: 0.6rem 0.8rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: 4px;
   color: var(--text-primary);
   font-family: inherit;
@@ -230,7 +230,7 @@
 .submitBtn {
   flex: 1;
   background: var(--accent-primary);
-  color: #000;
+  color: #fff;
   border: none;
   padding: 0.6rem 1rem;
   border-radius: 4px;

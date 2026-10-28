@@ -207,7 +207,7 @@ export default function CompetitionsPage() {
     <div className={styles.container}>
       <div className={styles.header} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Trophy size={28} color="#F5B800" />
+          <Trophy size={28} color="#9c6f18" />
           <div>
             <h1 style={{ fontSize: '1.85rem', color: 'var(--text-primary)', margin: 0 }}>Competition Arena &amp; Team Workbench</h1>
             <p style={{ color: 'var(--text-secondary)', marginTop: '0.2rem', fontSize: '0.92rem' }}>
@@ -217,7 +217,7 @@ export default function CompetitionsPage() {
         </div>
 
         {/* Arena Tab Switcher */}
-        <div style={{ display: "flex", background: "#111827", padding: "0.3rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", flexWrap: "wrap", gap: "0.25rem" }}>
+        <div style={{ display: "flex", background: "#ffffff", padding: "0.3rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", flexWrap: "wrap", gap: "0.25rem" }}>
           <button
             type="button"
             onClick={() => setActiveTab("tournaments")}
@@ -229,7 +229,7 @@ export default function CompetitionsPage() {
               borderRadius: "7px",
               border: "none",
               background: activeTab === "tournaments" ? "rgba(245, 184, 0, 0.16)" : "transparent",
-              color: activeTab === "tournaments" ? "#F5B800" : "#94A3B8",
+              color: activeTab === "tournaments" ? "#9c6f18" : "#6f665e",
               fontWeight: 700,
               fontSize: "0.82rem",
               cursor: "pointer",
@@ -248,7 +248,7 @@ export default function CompetitionsPage() {
               borderRadius: "7px",
               border: "none",
               background: activeTab === "subteams" ? "rgba(245, 184, 0, 0.16)" : "transparent",
-              color: activeTab === "subteams" ? "#F5B800" : "#94A3B8",
+              color: activeTab === "subteams" ? "#9c6f18" : "#6f665e",
               fontWeight: 700,
               fontSize: "0.82rem",
               cursor: "pointer",
@@ -267,7 +267,7 @@ export default function CompetitionsPage() {
               borderRadius: "7px",
               border: "none",
               background: activeTab === "vault" ? "rgba(245, 184, 0, 0.16)" : "transparent",
-              color: activeTab === "vault" ? "#F5B800" : "#94A3B8",
+              color: activeTab === "vault" ? "#9c6f18" : "#6f665e",
               fontWeight: 700,
               fontSize: "0.82rem",
               cursor: "pointer",
@@ -467,15 +467,15 @@ export default function CompetitionsPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
           {/* Register Sub-Team Role & Build Log */}
           <div className={styles.compCard}>
-            <h2 style={{ fontSize: "1.2rem", color: "#F9FAFB", marginBottom: "0.35rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
-              <Users size={18} color="#F5B800" /> Assign Sub-Team Engineering Role
+            <h2 style={{ fontSize: "1.2rem", color: "#27211d", marginBottom: "0.35rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
+              <Users size={18} color="#9c6f18" /> Assign Sub-Team Engineering Role
             </h2>
-            <p style={{ fontSize: "0.82rem", color: "#94A3B8", marginBottom: "1rem" }}>
+            <p style={{ fontSize: "0.82rem", color: "#6f665e", marginBottom: "1rem" }}>
               Designate your squad role (Team Lead, Firmware Engineer, Hardware Fabricator, or CAD Lead) and log build progress.
             </p>
             <form onSubmit={handleJoinSubteam} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Target Competition</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Target Competition</label>
                 <select
                   required
                   value={selectedSubteamCompId}
@@ -489,7 +489,7 @@ export default function CompetitionsPage() {
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Sub-Team / Squad Name</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Sub-Team / Squad Name</label>
                 <input
                   type="text"
                   required
@@ -500,7 +500,7 @@ export default function CompetitionsPage() {
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Engineering Role</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Engineering Role</label>
                 <select
                   value={selectedSubteamRole}
                   onChange={(e) => setSelectedSubteamRole(e.target.value as SubTeamRoleType)}
@@ -512,7 +512,7 @@ export default function CompetitionsPage() {
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Current Build Log / Milestone Status</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Current Build Log / Milestone Status</label>
                 <input
                   type="text"
                   placeholder="e.g. Calibrated 8-channel IR array & tuned PID Kp=1.8"
@@ -529,9 +529,9 @@ export default function CompetitionsPage() {
 
           {/* Active Sub-Team Roster Stream */}
           <div className={styles.compCard}>
-            <h2 style={{ fontSize: "1.2rem", color: "#F9FAFB", marginBottom: "0.85rem" }}>Active Competition Sub-Teams</h2>
+            <h2 style={{ fontSize: "1.2rem", color: "#27211d", marginBottom: "0.85rem" }}>Active Competition Sub-Teams</h2>
             {subteamRoster.length === 0 ? (
-              <p style={{ color: "#94A3B8", fontSize: "0.86rem" }}>No sub-team roles logged yet. Register your squad on the left.</p>
+              <p style={{ color: "#6f665e", fontSize: "0.86rem" }}>No sub-team roles logged yet. Register your squad on the left.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {subteamRoster.map((member) => (
@@ -545,20 +545,20 @@ export default function CompetitionsPage() {
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                      <strong style={{ color: "#F9FAFB", fontSize: "0.94rem" }}>{member.subteamName}</strong>
+                      <strong style={{ color: "#27211d", fontSize: "0.94rem" }}>{member.subteamName}</strong>
                       <span style={{
                         fontSize: "0.7rem",
                         padding: "0.15rem 0.55rem",
                         borderRadius: "999px",
                         background: "rgba(245, 184, 0, 0.14)",
-                        color: "#F5B800",
+                        color: "#9c6f18",
                         border: "1px solid rgba(245, 184, 0, 0.35)",
                         fontWeight: 700,
                       }}>
                         {member.role}
                       </span>
                     </div>
-                    <div style={{ fontSize: "0.78rem", color: "#94A3B8", marginTop: "0.3rem" }}>
+                    <div style={{ fontSize: "0.78rem", color: "#6f665e", marginTop: "0.3rem" }}>
                       Engineer: <strong style={{ color: "#E2E8F0" }}>{member.userName}</strong> • {member.competitionName}
                     </div>
                     {member.buildLog && (
@@ -578,15 +578,15 @@ export default function CompetitionsPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
           {/* Add Asset to Project Vault */}
           <div className={styles.compCard}>
-            <h2 style={{ fontSize: "1.2rem", color: "#F9FAFB", marginBottom: "0.35rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
-              <PlusCircle size={18} color="#F5B800" /> Publish to Project Vault
+            <h2 style={{ fontSize: "1.2rem", color: "#27211d", marginBottom: "0.35rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
+              <PlusCircle size={18} color="#9c6f18" /> Publish to Project Vault
             </h2>
-            <p style={{ fontSize: "0.82rem", color: "#94A3B8", marginBottom: "1rem" }}>
+            <p style={{ fontSize: "0.82rem", color: "#6f665e", marginBottom: "1rem" }}>
               Central repository for circuit schematics, GitHub C++/ROS firmware repositories, and 3D CAD (`.step` / `.stl`) files.
             </p>
             <form onSubmit={handleAddVaultAsset} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Asset Title</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Asset Title</label>
                 <input
                   type="text"
                   required
@@ -598,7 +598,7 @@ export default function CompetitionsPage() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Asset Classification</label>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Asset Classification</label>
                   <select
                     value={vaultType}
                     onChange={(e) => setVaultType(e.target.value as any)}
@@ -611,7 +611,7 @@ export default function CompetitionsPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Revision Tag</label>
+                  <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Revision Tag</label>
                   <input
                     type="text"
                     value={vaultVersion}
@@ -622,7 +622,7 @@ export default function CompetitionsPage() {
                 </div>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Repository / File URL (GitHub, Onshape, GrabCAD, Drive)</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Repository / File URL (GitHub, Onshape, GrabCAD, Drive)</label>
                 <input
                   type="url"
                   required
@@ -633,7 +633,7 @@ export default function CompetitionsPage() {
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Linked Competition (Optional)</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Linked Competition (Optional)</label>
                 <select
                   value={vaultCompId}
                   onChange={(e) => setVaultCompId(e.target.value)}
@@ -646,7 +646,7 @@ export default function CompetitionsPage() {
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.25rem" }}>Release Notes / Pinout Summary</label>
+                <label style={{ display: "block", fontSize: "0.78rem", color: "#6f665e", marginBottom: "0.25rem" }}>Release Notes / Pinout Summary</label>
                 <input
                   type="text"
                   placeholder="Key changes, MCU target, or print infill specs..."
@@ -663,9 +663,9 @@ export default function CompetitionsPage() {
 
           {/* Project Vault Repository List */}
           <div className={styles.compCard}>
-            <h2 style={{ fontSize: "1.2rem", color: "#F9FAFB", marginBottom: "0.85rem" }}>Engineering Project Vault</h2>
+            <h2 style={{ fontSize: "1.2rem", color: "#27211d", marginBottom: "0.85rem" }}>Engineering Project Vault</h2>
             {vaultAssets.length === 0 ? (
-              <p style={{ color: "#94A3B8", fontSize: "0.86rem" }}>
+              <p style={{ color: "#6f665e", fontSize: "0.86rem" }}>
                 No schematics, firmware repos, or 3D CAD files published yet. Add the first engineering asset on the left.
               </p>
             ) : (
@@ -691,9 +691,9 @@ export default function CompetitionsPage() {
                         ) : asset.assetType === "cad" ? (
                           <Box size={16} color="#10B981" />
                         ) : (
-                          <Cpu size={16} color="#F5B800" />
+                          <Cpu size={16} color="#9c6f18" />
                         )}
-                        <strong style={{ color: "#F9FAFB", fontSize: "0.94rem" }}>{asset.title}</strong>
+                        <strong style={{ color: "#27211d", fontSize: "0.94rem" }}>{asset.title}</strong>
                         <span style={{
                           fontSize: "0.68rem",
                           fontFamily: "var(--font-mono)",
@@ -705,7 +705,7 @@ export default function CompetitionsPage() {
                           {asset.version || "v1.0"}
                         </span>
                       </div>
-                      <div style={{ fontSize: "0.76rem", color: "#94A3B8", marginTop: "0.3rem" }}>
+                      <div style={{ fontSize: "0.76rem", color: "#6f665e", marginTop: "0.3rem" }}>
                         {asset.competitionName} • Uploaded by {asset.uploadedByName}
                       </div>
                       {asset.notes && (
@@ -726,7 +726,7 @@ export default function CompetitionsPage() {
                         borderRadius: "7px",
                         background: "rgba(245, 184, 0, 0.14)",
                         border: "1px solid rgba(245, 184, 0, 0.35)",
-                        color: "#F5B800",
+                        color: "#9c6f18",
                         fontSize: "0.76rem",
                         fontWeight: 700,
                         textDecoration: "none",

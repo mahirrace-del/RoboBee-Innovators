@@ -13,6 +13,30 @@
   margin-bottom: 1.75rem;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .65rem;
+}
+
+.createTaskButton {
+  align-items: center;
+  background: #84243a;
+  border: 1px solid #84243a;
+  border-radius: 8px;
+  color: #fff;
+  display: inline-flex;
+  font-size: .82rem;
+  font-weight: 750;
+  gap: .4rem;
+  min-height: 38px;
+  padding: .5rem .75rem;
+}
+
+.createTaskButton:hover { background: #6f1f34; }
+
 .viewToggleGroup {
   display: inline-flex;
   background: #ffffff;
@@ -52,6 +76,39 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
+}
+
+.advancedFields {
+  grid-column: 1 / -1;
+}
+
+.advancedDetails {
+  border-top: 1px solid #e5ded5;
+  margin-top: .25rem;
+  padding-top: .9rem;
+}
+
+.advancedDetails summary {
+  color: #6f665e;
+  cursor: pointer;
+  font-size: .82rem;
+  font-weight: 750;
+  list-style: none;
+}
+
+.advancedDetails summary::-webkit-details-marker { display: none; }
+.advancedDetails summary::before { content: "+"; color: #84243a; display: inline-block; font-size: 1.05rem; margin-right: .5rem; }
+.advancedDetails[open] summary::before { content: "−"; }
+
+.advancedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f7f5f1;
+  border: 1px solid #e5ded5;
+  border-radius: 10px;
 }
 
 .formGroup {

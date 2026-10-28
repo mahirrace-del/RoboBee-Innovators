@@ -108,6 +108,39 @@
   color: #99651a;
 }
 
+.managementNav {
+  margin-top: 0.95rem;
+}
+
+.managementSummary {
+  margin-top: 0;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 7px;
+}
+
+.managementSummary::-webkit-details-marker {
+  display: none;
+}
+
+.managementSummary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.managementSummary:hover {
+  background: var(--bg-elevated);
+}
+
+.managementChevron {
+  transition: transform 0.18s ease;
+}
+
+.managementNav[open] .managementChevron {
+  transform: rotate(180deg);
+}
+
 .navItem {
   padding: 0.62rem 0.75rem;
   border-radius: 8px;

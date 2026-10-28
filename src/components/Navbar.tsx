@@ -34,7 +34,6 @@ export default function Navbar() {
           {isDashboard ? (
             <>
               <Link href="/" className={styles.link}>Public Site</Link>
-              <Link href="/dashboard" className={styles.loginBtn}>Portal Overview</Link>
             </>
           ) : (
             <>

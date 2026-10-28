@@ -16,6 +16,8 @@ export default function BOMDashboard() {
 
   // New Project Form
   const [newProjectName, setNewProjectName] = useState("");
+  const [isProjectCreateOpen, setIsProjectCreateOpen] = useState(false);
+  const [isItemFormOpen, setIsItemFormOpen] = useState(false);
 
   // Add Item to BOM Form (Custom or Inventory)
   const [addMode, setAddMode] = useState<"custom" | "inventory">("custom");
@@ -61,6 +63,7 @@ export default function BOMDashboard() {
     });
     setNewProjectName("");
     setSelectedProjectId(docRef.id);
+    setIsProjectCreateOpen(false);
   };
 
   const handleAddItemToBOM = async (e: React.FormEvent) => {
@@ -106,6 +109,7 @@ export default function BOMDashboard() {
     setCustomPrice(0);
     setSelectedItemId("");
     setQuantity(1);
+    setIsItemFormOpen(false);
   };
 
   const totalProjectCost = activeProject?.bom?.reduce((acc: number, item: any) => acc + item.totalCost, 0) || 0;
@@ -119,7 +123,7 @@ export default function BOMDashboard() {
       </div>
 
       {role === "admin" && (
-        <div className={styles.panel} style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+        <div className={styles.panel} style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Switch Project</label>
             <select className={styles.select} value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)}>
@@ -129,7 +133,10 @@ export default function BOMDashboard() {
             </select>
           </div>
           
-          <form onSubmit={handleCreateProject} style={{ display: 'flex', gap: '1rem', flex: 1 }}>
+          <button type="button" className={styles.btn} style={{ width: 'auto' }} onClick={() => setIsProjectCreateOpen((open) => !open)} aria-expanded={isProjectCreateOpen}>
+            {isProjectCreateOpen ? "Close form" : "New project"}
+          </button>
+          {isProjectCreateOpen && <form onSubmit={handleCreateProject} style={{ display: 'flex', gap: '1rem', flex: '1 1 360px' }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Create New Project</label>
               <input 
@@ -141,7 +148,7 @@ export default function BOMDashboard() {
               />
             </div>
             <button type="submit" className={styles.btn} style={{ width: 'auto', whiteSpace: 'nowrap' }}>Create</button>
-          </form>
+          </form>}
         </div>
       )}
 
@@ -203,20 +210,25 @@ export default function BOMDashboard() {
           </div>
 
           <div style={{ gridColumn: 'span 2' }}>
-            <h2 className={styles.sectionTitle}>Add Item to Budget</h2>
-            <div className={styles.panel}>
+            <div className={styles.bomActionHeader}>
+              <h2 className={styles.sectionTitle}>Project budget</h2>
+              <button type="button" className={styles.btn} style={{ width: 'auto' }} onClick={() => setIsItemFormOpen((open) => !open)} aria-expanded={isItemFormOpen} aria-controls="bom-item-form">
+                {isItemFormOpen ? "Close form" : "Add item"}
+              </button>
+            </div>
+            {isItemFormOpen && <div id="bom-item-form" className={styles.panel}>
               <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
                 <button 
                   onClick={() => setAddMode("custom")}
                   className={styles.btn} 
-                  style={{ background: addMode === 'custom' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)', color: addMode === 'custom' ? '#000' : '#fff' }}
+                  style={{ background: addMode === 'custom' ? 'var(--accent-primary)' : 'var(--bg-elevated)', color: addMode === 'custom' ? '#fff' : 'var(--text-primary)' }}
                 >
                   Add Custom Part (To Buy)
                 </button>
                 <button 
                   onClick={() => setAddMode("inventory")}
                   className={styles.btn} 
-                  style={{ background: addMode === 'inventory' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)', color: addMode === 'inventory' ? '#000' : '#fff' }}
+                  style={{ background: addMode === 'inventory' ? 'var(--accent-primary)' : 'var(--bg-elevated)', color: addMode === 'inventory' ? '#fff' : 'var(--text-primary)' }}
                 >
                   Add from Lab Inventory
                 </button>
@@ -263,7 +275,7 @@ export default function BOMDashboard() {
 
                 <button type="submit" className={styles.btn}>Add to BOM</button>
               </form>
-            </div>
+            </div>}
           </div>
         </div>
       ) : (

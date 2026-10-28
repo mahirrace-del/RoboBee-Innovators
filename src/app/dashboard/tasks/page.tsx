@@ -42,8 +42,8 @@ const KANBAN_COLUMNS: Array<{
   title: string;
   color: string;
 }> = [
-  { stage: "backlog", title: "Backlog", color: "#9CA3AF" },
-  { stage: "in_progress", title: "In Progress", color: "#F5B800" },
+  { stage: "backlog", title: "Backlog", color: "#6f665e" },
+  { stage: "in_progress", title: "In Progress", color: "#9c6f18" },
   { stage: "in_review", title: "In Review", color: "#06B6D4" },
   { stage: "completed", title: "Completed", color: "#10B981" },
 ];
@@ -58,6 +58,7 @@ export default function TasksPage() {
   // View Mode: Kanban vs Gantt Milestone Timeline
   const [viewMode, setViewMode] = useState<"kanban" | "gantt">("kanban");
   const [selectedCompetitionFilter, setSelectedCompetitionFilter] = useState<string>("ALL");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Create Task Form State
   const [title, setTitle] = useState("");
@@ -267,8 +268,8 @@ export default function TasksPage() {
 
   const getPriorityStyle = (p: TaskPriority) => {
     if (p === "Critical") return { bg: "rgba(239, 68, 68, 0.2)", color: "#EF4444" };
-    if (p === "High") return { bg: "rgba(245, 158, 11, 0.2)", color: "#F59E0B" };
-    if (p === "Low") return { bg: "rgba(156, 163, 175, 0.18)", color: "#9CA3AF" };
+    if (p === "High") return { bg: "rgba(245, 158, 11, 0.2)", color: "#9c6f18" };
+    if (p === "Low") return { bg: "rgba(156, 163, 175, 0.18)", color: "#6f665e" };
     return { bg: "rgba(6, 182, 212, 0.18)", color: "#06B6D4" };
   };
 
@@ -287,6 +288,18 @@ export default function TasksPage() {
           </p>
         </div>
 
+        <div className={styles.headerActions}>
+          {role === "admin" && (
+            <button
+              onClick={() => setIsCreateOpen((current) => !current)}
+              className={styles.createTaskButton}
+              aria-expanded={isCreateOpen}
+              aria-controls="create-task-form"
+            >
+              <Plus size={16} />
+              {isCreateOpen ? "Close task form" : "Create task"}
+            </button>
+          )}
         <div className={styles.viewToggleGroup}>
           <button
             onClick={() => setViewMode("kanban")}
@@ -307,23 +320,24 @@ export default function TasksPage() {
             Gantt Milestone Timeline
           </button>
         </div>
+        </div>
       </div>
 
       {/* Admin Task Creation with Competition & Lab Stock Auto-Reservation */}
-      {role === "admin" && (
-        <form onSubmit={handleCreateTask} className={styles.formCard}>
+      {role === "admin" && isCreateOpen && (
+        <form id="create-task-form" onSubmit={handleCreateTask} className={styles.formCard}>
           <h3
             style={{
               fontSize: "1.1rem",
               marginBottom: "1rem",
-              color: "#F5B800",
+              color: "#9c6f18",
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
             }}
           >
             <Plus size={18} />
-            Assign Relational Sprint Task (Linked to Competition &amp; Lab Inventory)
+            Create a task
           </h3>
 
           <div className={styles.formGrid}>
@@ -359,6 +373,22 @@ export default function TasksPage() {
               </select>
             </div>
 
+            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+              <label className={styles.label}>Task Description &amp; Acceptance Criteria *</label>
+              <textarea
+                className={styles.input}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                style={{ minHeight: "72px", resize: "vertical" }}
+                placeholder="What should be delivered, tested, or reviewed?"
+              />
+            </div>
+
+            <div className={styles.advancedFields}>
+              <details className={styles.advancedDetails}>
+                <summary>Project link, priority, and lab stock options</summary>
+                <div className={styles.advancedGrid}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Connected Competition / Milestone</label>
               <select
@@ -436,7 +466,7 @@ export default function TasksPage() {
                     alignItems: "center",
                     gap: "0.4rem",
                     fontSize: "0.8rem",
-                    color: "#9CA3AF",
+                    color: "#6f665e",
                     cursor: "pointer",
                   }}
                 >
@@ -450,22 +480,13 @@ export default function TasksPage() {
                 </label>
               </div>
             </div>
-
-            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
-              <label className={styles.label}>Task Description &amp; Acceptance Criteria *</label>
-              <textarea
-                className={styles.input}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                style={{ minHeight: "72px", resize: "vertical" }}
-                placeholder="Specify pinout details, calibration targets, or deliverable expectations..."
-              />
+                </div>
+              </details>
             </div>
 
             <div>
               <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
-                {isSubmitting ? "Assigning Sprint..." : "Create & Link Task"}
+                {isSubmitting ? "Creating task..." : "Create task"}
               </button>
             </div>
           </div>
@@ -475,7 +496,7 @@ export default function TasksPage() {
       {/* Filter Bar by Connected Competition */}
       <div className={styles.filterBar}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#9CA3AF" }}>
+          <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#6f665e" }}>
             Filter by Competition Milestone:
           </span>
           <select
@@ -494,8 +515,8 @@ export default function TasksPage() {
           </select>
         </div>
 
-        <div style={{ fontSize: "0.8rem", color: "#9CA3AF" }}>
-          Showing <strong style={{ color: "#F5B800" }}>{filteredTasks.length}</strong> task(s)
+        <div style={{ fontSize: "0.8rem", color: "#6f665e" }}>
+          Showing <strong style={{ color: "#9c6f18" }}>{filteredTasks.length}</strong> task(s)
         </div>
       </div>
 
@@ -583,7 +604,7 @@ export default function TasksPage() {
                                 size={12}
                                 style={{ display: "inline", marginRight: 4 }}
                               />
-                              <strong style={{ color: "#F9FAFB" }}>
+                              <strong style={{ color: "#27211d" }}>
                                 {task.assignedTo === "GENERAL"
                                   ? "All Members"
                                   : task.assignedTo}
@@ -650,7 +671,7 @@ export default function TasksPage() {
       {viewMode === "gantt" && (
         <div className={styles.ganttContainer}>
           {ganttGroups.length === 0 ? (
-            <div style={{ padding: "2rem", textAlign: "center", color: "#9CA3AF" }}>
+            <div style={{ padding: "2rem", textAlign: "center", color: "#6f665e" }}>
               No tasks available for timeline visualization.
             </div>
           ) : (
@@ -658,7 +679,7 @@ export default function TasksPage() {
               <div key={groupKey} className={styles.ganttGroup}>
                 <div className={styles.ganttGroupHeader}>
                   <span>🏆 {group.name}</span>
-                  <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>
+                  <span style={{ fontSize: "0.75rem", color: "#6f665e" }}>
                     {group.tasks.filter((t) => t.stage === "completed").length} /{" "}
                     {group.tasks.length} Completed
                   </span>
@@ -679,16 +700,16 @@ export default function TasksPage() {
                       : task.stage === "in_review"
                       ? "#06B6D4"
                       : task.stage === "in_progress"
-                      ? "#F5B800"
+                      ? "#9c6f18"
                       : "#6B7280";
 
                   return (
                     <div key={task.id} className={styles.ganttRow}>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "#F9FAFB" }}>
+                        <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "#27211d" }}>
                           {task.title}
                         </div>
-                        <div style={{ fontSize: "0.76rem", color: "#9CA3AF" }}>
+                        <div style={{ fontSize: "0.76rem", color: "#6f665e" }}>
                           Assignee: {task.assignedTo}
                           {task.reservedParts && task.reservedParts.length > 0
                             ? ` • Gear: ${task.reservedParts
@@ -698,7 +719,7 @@ export default function TasksPage() {
                         </div>
                       </div>
 
-                      <div style={{ fontSize: "0.78rem", color: "#9CA3AF" }}>
+                      <div style={{ fontSize: "0.78rem", color: "#6f665e" }}>
                         {task.dueDate ? `📅 Target: ${task.dueDate}` : "Ongoing Sprint"}
                       </div>
 

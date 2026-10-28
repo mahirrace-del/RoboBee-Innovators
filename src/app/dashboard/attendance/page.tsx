@@ -111,7 +111,7 @@ export default function AttendancePage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h1 className={styles.title}>
-              <Calendar size={28} color="#F5B800" />
+              <Calendar size={28} color="#9c6f18" />
               Class Schedule &amp; Attendance
             </h1>
             <p className={styles.subtitle}>
@@ -123,9 +123,9 @@ export default function AttendancePage() {
             <Link
               href="/dashboard/admin/attendance"
               className={styles.actionBtn}
-              style={{ background: '#6B0F24', borderColor: '#F5B800', color: '#ffffff' }}
+              style={{ background: '#6B0F24', borderColor: '#9c6f18', color: 'var(--text-primary)' }}
             >
-              <Shield size={16} color="#F5B800" />
+              <Shield size={16} color="#9c6f18" />
               Instructor Attendance Command
             </Link>
           )}
@@ -136,7 +136,7 @@ export default function AttendancePage() {
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>My Attendance Rate</span>
-          <span className={styles.statValue} style={{ color: userStats.percentage >= 80 ? '#10b981' : '#F5B800' }}>
+          <span className={styles.statValue} style={{ color: userStats.percentage >= 80 ? '#10b981' : '#9c6f18' }}>
             {userStats.percentage}%
           </span>
           <span className={styles.statSub}>
@@ -156,7 +156,7 @@ export default function AttendancePage() {
 
         <div className={styles.statCard}>
           <span className={styles.statLabel}>Dedication Tier</span>
-          <span className={styles.statValue} style={{ color: '#F5B800', fontSize: '1.4rem' }}>
+          <span className={styles.statValue} style={{ color: '#9c6f18', fontSize: '1.4rem' }}>
             {userStats.percentage >= 90 ? 'Master Innovator' : userStats.percentage >= 75 ? 'Active Engineer' : 'Apprentice'}
           </span>
           <span className={styles.statSub}>
@@ -176,19 +176,19 @@ export default function AttendancePage() {
                   <span className={styles.livePulseDot} />
                   Class Currently in Session
                 </span>
-                <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                   {progression.activeSession.time || '15:30'}
                 </span>
               </div>
 
               <div className={styles.lessonTag}>{progression.activeSession.lessonCode}</div>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', margin: '0.2rem 0 0.5rem 0' }}>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.2rem 0 0.5rem 0' }}>
                 {progression.activeSession.title}
               </h3>
-              <p style={{ color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: '1.4' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: '1.4' }}>
                 {getLessonForSession(progression.activeSession)?.promise || "Active laboratory build sprint."}
               </p>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1.25rem' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
                 📍 {progression.activeSession.location}
               </div>
             </div>
@@ -248,14 +248,14 @@ export default function AttendancePage() {
         ) : (
           <div className={styles.spotlightCard}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
                 <Clock size={16} />
                 Lab Status
               </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 No Active Class Today
               </h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.35rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.35rem' }}>
                 Check-in buttons activate automatically when the instructor starts a laboratory session.
               </p>
             </div>
@@ -271,7 +271,7 @@ export default function AttendancePage() {
                 Up Next in Schedule
               </span>
               {progression.nextSession && (
-                <span style={{ fontSize: '0.8rem', color: '#F5B800', fontWeight: 700 }}>
+                <span style={{ fontSize: '0.8rem', color: '#9c6f18', fontWeight: 700 }}>
                   📅 {progression.nextSession.date} &bull; {progression.nextSession.time || '15:30'}
                 </span>
               )}
@@ -280,10 +280,10 @@ export default function AttendancePage() {
             {progression.nextSession ? (
               <>
                 <div className={styles.lessonTag}>{progression.nextSession.lessonCode}</div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', margin: '0.2rem 0 0.5rem 0' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.2rem 0 0.5rem 0' }}>
                   {progression.nextSession.title}
                 </h3>
-                <p style={{ color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: '1.4' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: '1.4' }}>
                   {getLessonForSession(progression.nextSession)?.promise || "Upcoming hands-on robotics session."}
                 </p>
 
@@ -292,7 +292,7 @@ export default function AttendancePage() {
                   const lesson = getLessonForSession(progression.nextSession);
                   if (lesson?.fieldGuideLinks?.readBeforeClass?.length) {
                     return (
-                      <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(245, 184, 0, 0.1)', border: '1px solid rgba(245, 184, 0, 0.25)', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.8rem', color: '#F5B800' }}>
+                      <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(245, 184, 0, 0.1)', border: '1px solid rgba(245, 184, 0, 0.25)', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.8rem', color: '#9c6f18' }}>
                         📖 <strong>Pre-Class Reading:</strong> Review the Field Guide before coming to the lab!
                       </div>
                     );
@@ -303,10 +303,10 @@ export default function AttendancePage() {
             ) : (
               <>
                 <div className={styles.lessonTag}>{progression.suggestedNextLesson.code}</div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', margin: '0.2rem 0 0.5rem 0' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0.2rem 0 0.5rem 0' }}>
                   Next in Syllabus: {progression.suggestedNextLesson.title}
                 </h3>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
                   The instructor will publish the next session date shortly. Read ahead in the curriculum!
                 </p>
               </>
@@ -336,13 +336,13 @@ export default function AttendancePage() {
 
       {/* Classes Taken / Participation History ("Taken Away") */}
       <div>
-        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <CheckCircle size={20} color="#10b981" />
           Classes Taken &amp; My Attendance Record ({userStats.history.length})
         </h2>
 
         {userStats.history.length === 0 ? (
-          <div style={{ padding: '2.5rem', textAlign: 'center', color: '#94a3b8', background: 'rgba(22, 27, 38, 0.5)', borderRadius: '12px' }}>
+          <div style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
             No completed classes recorded yet. Once classes are conducted in the lab, your personal attendance record will appear here.
           </div>
         ) : (
@@ -356,15 +356,15 @@ export default function AttendancePage() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
                       <span className={styles.lessonTag}>{session.lessonCode}</span>
-                      <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                         📅 {session.date} &bull; {session.time || '15:30'}
                       </span>
                     </div>
 
-                    <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.25rem' }}>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
                       {session.title}
                     </h3>
-                    <p style={{ color: '#cbd5e1', fontSize: '0.85rem', maxWidth: '750px', lineHeight: '1.4' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', maxWidth: '750px', lineHeight: '1.4' }}>
                       {lesson?.promise || "Completed robotics laboratory session."}
                     </p>
                   </div>

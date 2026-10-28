@@ -54,8 +54,8 @@
   width: 100%;
   padding: 0.8rem 1rem;
   border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   font-family: inherit;
   margin-top: 0.5rem;
@@ -94,14 +94,14 @@
 .historyTable th {
   text-align: left;
   padding: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-weight: 600;
 }
 
 .historyTable td {
   padding: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .statusBadge {

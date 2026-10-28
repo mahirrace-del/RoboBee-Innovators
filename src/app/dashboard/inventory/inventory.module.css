@@ -39,6 +39,23 @@
   gap: 0.5rem;
 }
 
+.addComponentButton {
+  align-items: center;
+  background: #84243a;
+  border: 1px solid #84243a;
+  border-radius: 8px;
+  color: #fff;
+  display: inline-flex;
+  font-size: .82rem;
+  font-weight: 750;
+  gap: .4rem;
+  min-height: 38px;
+  padding: .5rem .75rem;
+}
+
+.addComponentButton:hover { background: #6f1f34; }
+.mobileAddForm { display: none; }
+
 .backBtn:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
@@ -331,6 +348,8 @@
   .mobileAddToggle {
     display: flex;
   }
+
+  .mobileAddForm { display: block; }
 
   .adminFormContainer {
     display: none;

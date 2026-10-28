@@ -13,7 +13,12 @@
 
 .btnAction {
   padding: 0.8rem 1.5rem;
-  background: var(--accent-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 0;
+  cursor: pointer;
+  background: var(--accent-primary);
   color: #fff;
   border-radius: var(--radius-sm);
   font-weight: 600;
@@ -40,14 +45,14 @@
 .table th {
   text-align: left;
   padding: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-weight: 600;
 }
 
 .table td {
   padding: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .statusBadge {

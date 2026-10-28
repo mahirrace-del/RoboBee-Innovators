@@ -63,8 +63,8 @@
 .searchBar {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 0.9rem;
@@ -85,8 +85,8 @@
 }
 
 .categoryPill {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   padding: 0.35rem 0.85rem;
   border-radius: 20px;
@@ -134,10 +134,10 @@
 }
 
 .panel {
-  background: var(--bg-glass);
+  background: var(--bg-secondary);
   padding: 1.5rem;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
   min-height: 300px;
 }
 
@@ -151,10 +151,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-primary);
   padding: 1rem 1.25rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
   gap: 1rem;
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
@@ -304,8 +304,8 @@
 }
 
 .modalContent {
-  background: #13141f;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 2rem;
   max-width: 480px;
@@ -349,8 +349,8 @@
 
 .input {
   padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 0.95rem;
@@ -365,7 +365,7 @@
 .btnPrimary {
   flex: 1;
   background: var(--accent-primary);
-  color: #000;
+  color: #fff;
   border: none;
   padding: 0.75rem;
   border-radius: var(--radius-sm);

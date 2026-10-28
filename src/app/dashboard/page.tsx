@@ -303,7 +303,7 @@ export default function DashboardOverview() {
           t.assignedTo === "GENERAL" ? "All Members" : t.assignedTo
         }${t.competitionName ? ` • ${t.competitionName}` : ""}`,
         tag: t.stage.toUpperCase().replace("_", " "),
-        color: t.stage === "completed" ? "#10B981" : "#F5B800",
+        color: t.stage === "completed" ? "#10B981" : "#9c6f18",
       });
     });
 
@@ -314,7 +314,7 @@ export default function DashboardOverview() {
         title: `Member Payment (${p.amount} BDT via ${p.method})`,
         subtitle: `Type: ${p.type} • Status: ${p.status}`,
         tag: p.status === "verified" ? "VERIFIED" : "PENDING",
-        color: p.status === "verified" ? "#10B981" : "#F59E0B",
+        color: p.status === "verified" ? "#10B981" : "#9c6f18",
       });
     });
 
@@ -329,7 +329,7 @@ export default function DashboardOverview() {
   let scoreColor = "#EF4444";
   if (score >= 50) {
     scoreGrade = "Solid Contributor";
-    scoreColor = "#F5B800";
+    scoreColor = "#9c6f18";
   }
   if (score >= 100) {
     scoreGrade = "Top Innovator";
@@ -343,13 +343,13 @@ export default function DashboardOverview() {
         <div>
           <h1 className={styles.title}>
             {isAdmin && viewMode === "command"
-              ? "RoboBEE Command Dashboard"
+              ? "Operations overview"
               : `Welcome back, ${userData?.name || "Innovator"}!`}
           </h1>
           <p className={styles.subtitle}>
             {isAdmin && viewMode === "command"
-              ? "Live relational telemetry across Lab Checkouts, Competitions, Sprints, Classroom Sessions, and Treasury."
-              : "Your personalized daily briefing, assigned sprint tasks, scheduled classes, and lab gear custody."}
+              ? "The lab, team, and finance updates that need attention today."
+              : "Your tasks, upcoming classes, and equipment in one place."}
           </p>
         </div>
 
@@ -362,7 +362,7 @@ export default function DashboardOverview() {
               }`}
             >
               <Shield size={14} />
-              Admin Command
+              Admin overview
             </button>
             <button
               onClick={() => setViewMode("member")}
@@ -371,7 +371,7 @@ export default function DashboardOverview() {
               }`}
             >
               <UserIcon size={14} />
-              Member Hub
+              My member view
             </button>
           </div>
         )}
@@ -406,7 +406,7 @@ export default function DashboardOverview() {
                 </span>
                 <Link
                   href="/dashboard/checkout"
-                  style={{ color: "#F5B800", fontWeight: 700 }}
+                  style={{ color: "#9c6f18", fontWeight: 700 }}
                 >
                   Track &rarr;
                 </Link>
@@ -418,7 +418,7 @@ export default function DashboardOverview() {
               <div>
                 <div className={styles.kpiHeader}>
                   <span className={styles.kpiTitle}>Competition Countdown</span>
-                  <Trophy size={18} color="#F5B800" />
+                  <Trophy size={18} color="#9c6f18" />
                 </div>
                 <div className={styles.kpiValue}>
                   {daysToNextComp !== null
@@ -434,7 +434,7 @@ export default function DashboardOverview() {
                 </span>
                 <Link
                   href="/dashboard/admin/competitions"
-                  style={{ color: "#F5B800", fontWeight: 700 }}
+                  style={{ color: "#9c6f18", fontWeight: 700 }}
                 >
                   Command &rarr;
                 </Link>
@@ -465,7 +465,7 @@ export default function DashboardOverview() {
                 </span>
                 <Link
                   href="/dashboard/admin/finance"
-                  style={{ color: "#F5B800", fontWeight: 700 }}
+                  style={{ color: "#9c6f18", fontWeight: 700 }}
                 >
                   Ledger &rarr;
                 </Link>
@@ -486,7 +486,7 @@ export default function DashboardOverview() {
               <div className={styles.kpiMeta}>
                 <span
                   style={{
-                    color: progression.activeSession ? "#10B981" : "#9CA3AF",
+                    color: progression.activeSession ? "#10B981" : "#6f665e",
                     fontWeight: 700,
                   }}
                 >
@@ -496,7 +496,7 @@ export default function DashboardOverview() {
                 </span>
                 <Link
                   href="/dashboard/admin/curriculum"
-                  style={{ color: "#F5B800", fontWeight: 700 }}
+                  style={{ color: "#9c6f18", fontWeight: 700 }}
                 >
                   Studio &rarr;
                 </Link>
@@ -510,16 +510,16 @@ export default function DashboardOverview() {
             <div className={styles.panelCard}>
               <div className={styles.panelHeader}>
                 <div className={styles.panelTitle}>
-                  <Activity size={18} color="#F5B800" />
-                  <span>Live Operational Activity Stream</span>
+                  <Activity size={18} color="#9c6f18" />
+                  <span>Recent activity</span>
                 </div>
-                <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>
-                  Cross-Module Feed
+                <span style={{ fontSize: "0.75rem", color: "#6f665e" }}>
+                  Latest updates
                 </span>
               </div>
 
               {activityStream.length === 0 ? (
-                <div style={{ padding: "2rem", textAlign: "center", color: "#9CA3AF" }}>
+                <div style={{ padding: "2rem", textAlign: "center", color: "#6f665e" }}>
                   No recent activity recorded yet.
                 </div>
               ) : (
@@ -567,12 +567,12 @@ export default function DashboardOverview() {
             <div className={styles.panelCard}>
               <div className={styles.panelHeader}>
                 <div className={styles.panelTitle}>
-                  <AlertTriangle size={18} color="#F59E0B" />
-                  <span>Stock Depletion &amp; Custody Alerts</span>
+                  <AlertTriangle size={18} color="#9c6f18" />
+                  <span>Equipment alerts</span>
                 </div>
                 <Link
                   href="/dashboard/inventory"
-                  style={{ fontSize: "0.78rem", color: "#F5B800", fontWeight: 700 }}
+                  style={{ fontSize: "0.78rem", color: "#9c6f18", fontWeight: 700 }}
                 >
                   Manage Ledger &rarr;
                 </Link>
@@ -608,7 +608,7 @@ export default function DashboardOverview() {
                             href="/dashboard/admin/finance"
                             style={{
                               fontSize: "0.74rem",
-                              color: "#F5B800",
+                              color: "#9c6f18",
                               fontWeight: 700,
                               whiteSpace: "nowrap",
                             }}
@@ -651,7 +651,7 @@ export default function DashboardOverview() {
               <strong style={{ color: "#EF4444", fontSize: "0.95rem" }}>
                 Action Required: {myOverdueCheckouts.length} Checked-Out Lab Component(s) Overdue
               </strong>
-              <div style={{ fontSize: "0.82rem", color: "#F9FAFB" }}>
+              <div style={{ fontSize: "0.82rem", color: "#27211d" }}>
                 Please return {myOverdueCheckouts.map((c) => c.partName).join(", ")} to the Lab Rack or renew your checkout.
               </div>
             </div>
@@ -669,11 +669,11 @@ export default function DashboardOverview() {
       {/* Quick Actions Floating Dock */}
       <div className={styles.quickActionsDock}>
         <div>
-          <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#F5B800", textTransform: "uppercase", letterSpacing: "1px" }}>
-            Quick Actions Dock
+          <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#9c6f18", textTransform: "uppercase", letterSpacing: "1px" }}>
+            Frequent actions
           </div>
-          <div style={{ fontSize: "0.92rem", color: "#F9FAFB", fontWeight: 600 }}>
-            Jump directly to high-frequency engineering workflows
+          <div style={{ fontSize: "0.92rem", color: "#27211d", fontWeight: 600 }}>
+            Start a common workspace task
           </div>
         </div>
         <div className={styles.dockButtons}>
@@ -705,13 +705,13 @@ export default function DashboardOverview() {
               <CheckSquare size={18} color="#10B981" />
               <span>My Active Tasks ({myActiveTasks.length})</span>
             </div>
-            <Link href="/dashboard/tasks" style={{ fontSize: "0.78rem", color: "#F5B800", fontWeight: 700 }}>
+            <Link href="/dashboard/tasks" style={{ fontSize: "0.78rem", color: "#9c6f18", fontWeight: 700 }}>
               Sprint Board &rarr;
             </Link>
           </div>
           <div className={styles.streamList}>
             {myActiveTasks.length === 0 ? (
-              <div style={{ padding: "1.25rem", textAlign: "center", color: "#9CA3AF", fontSize: "0.86rem" }}>
+              <div style={{ padding: "1.25rem", textAlign: "center", color: "#6f665e", fontSize: "0.86rem" }}>
                 No pending tasks assigned to you right now.
               </div>
             ) : (
@@ -728,7 +728,7 @@ export default function DashboardOverview() {
                     className={styles.tagBadge}
                     style={{
                       background: "rgba(245, 184, 0, 0.15)",
-                      color: "#F5B800",
+                      color: "#9c6f18",
                       border: "1px solid rgba(245, 184, 0, 0.35)",
                     }}
                   >
@@ -744,10 +744,10 @@ export default function DashboardOverview() {
         <div className={styles.panelCard}>
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>
-              <Calendar size={18} color="#F5B800" />
+              <Calendar size={18} color="#9c6f18" />
               <span>Upcoming Class Routine</span>
             </div>
-            <Link href="/dashboard/attendance" style={{ fontSize: "0.78rem", color: "#F5B800", fontWeight: 700 }}>
+            <Link href="/dashboard/attendance" style={{ fontSize: "0.78rem", color: "#9c6f18", fontWeight: 700 }}>
               Full Schedule &rarr;
             </Link>
           </div>
@@ -765,7 +765,7 @@ export default function DashboardOverview() {
                 <Link
                   href="/dashboard/attendance"
                   className={styles.tagBadge}
-                  style={{ background: "#10B981", color: "#0B0F17" }}
+                  style={{ background: "#10B981", color: "#f7f5f1" }}
                 >
                   Check In
                 </Link>
@@ -780,7 +780,7 @@ export default function DashboardOverview() {
                 </div>
                 <span
                   className={styles.tagBadge}
-                  style={{ background: "rgba(245, 184, 0, 0.16)", color: "#F5B800" }}
+                  style={{ background: "rgba(245, 184, 0, 0.16)", color: "#9c6f18" }}
                 >
                   {progression.nextSession.lessonCode}
                 </span>
@@ -798,7 +798,7 @@ export default function DashboardOverview() {
                 <Link
                   href="/dashboard/curriculum"
                   className={styles.tagBadge}
-                  style={{ background: "rgba(245, 184, 0, 0.16)", color: "#F5B800" }}
+                  style={{ background: "rgba(245, 184, 0, 0.16)", color: "#9c6f18" }}
                 >
                   Study &rarr;
                 </Link>
@@ -814,13 +814,13 @@ export default function DashboardOverview() {
               <Cpu size={18} color="#06B6D4" />
               <span>Hardware in My Custody ({myCheckouts.length})</span>
             </div>
-            <Link href="/dashboard/checkout" style={{ fontSize: "0.78rem", color: "#F5B800", fontWeight: 700 }}>
+            <Link href="/dashboard/checkout" style={{ fontSize: "0.78rem", color: "#9c6f18", fontWeight: 700 }}>
               Lab Desk &rarr;
             </Link>
           </div>
           <div className={styles.streamList}>
             {myCheckouts.length === 0 ? (
-              <div style={{ padding: "1.25rem", textAlign: "center", color: "#9CA3AF", fontSize: "0.86rem" }}>
+              <div style={{ padding: "1.25rem", textAlign: "center", color: "#6f665e", fontSize: "0.86rem" }}>
                 You currently have 0 components checked out from the lab.
               </div>
             ) : (
@@ -901,7 +901,7 @@ export default function DashboardOverview() {
           <div className={styles.statItem}>
             <div
               className={styles.statNum}
-              style={{ color: myPendingPayments > 0 ? "#F59E0B" : "#10B981" }}
+              style={{ color: myPendingPayments > 0 ? "#9c6f18" : "#10B981" }}
             >
               {myPendingPayments > 0 ? `${myPendingPayments} Pending` : "Clear"}
             </div>
@@ -913,7 +913,7 @@ export default function DashboardOverview() {
       {/* Quick Launchpad Tiles */}
       <div className={styles.quickSectionTitle}>
         <Zap size={18} style={{ color: "var(--accent-primary)" }} />
-        <span>Portal Modules Launchpad</span>
+          <span>Explore the workspace</span>
       </div>
       <div className={styles.quickGrid}>
         <Link
@@ -927,12 +927,12 @@ export default function DashboardOverview() {
         >
           <div
             className={styles.quickIconBox}
-            style={{ background: "rgba(245, 184, 0, 0.2)", color: "#F5B800" }}
+            style={{ background: "rgba(245, 184, 0, 0.2)", color: "#9c6f18" }}
           >
             <Zap size={22} />
           </div>
           <div className={styles.quickInfo}>
-            <h4 style={{ color: "#F5B800" }}>Learning Deck &amp; LMS</h4>
+            <h4 style={{ color: "#9c6f18" }}>Learning Deck &amp; LMS</h4>
             <p>36 Classes • 4 Tracks</p>
           </div>
         </Link>

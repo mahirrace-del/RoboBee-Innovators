@@ -5,7 +5,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 1.5rem 1.5rem 4rem 1.5rem;
-  color: #f1f5f9;
+  color: var(--text-primary);
 }
 
 .header {
@@ -15,7 +15,7 @@
 .title {
   font-size: 2rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 0.35rem;
   display: flex;
   align-items: center;
@@ -23,7 +23,7 @@
 }
 
 .subtitle {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   max-width: 750px;
   line-height: 1.5;
@@ -38,7 +38,7 @@
 }
 
 .statCard {
-  background: rgba(22, 27, 38, 0.7);
+  background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
@@ -51,19 +51,19 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--text-secondary);
   letter-spacing: 0.5px;
 }
 
 .statValue {
   font-size: 1.75rem;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .statSub {
   font-size: 0.8rem;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 /* Spotlights: Live Session & Next Class */
@@ -75,7 +75,7 @@
 }
 
 .spotlightCard {
-  background: rgba(22, 27, 38, 0.85);
+  background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 1.5rem;
@@ -89,7 +89,7 @@
 
 .spotlightActive {
   border-color: #9c6f18;
-  background: linear-gradient(135deg, rgba(107, 15, 36, 0.55), rgba(22, 27, 38, 0.95));
+  background: linear-gradient(135deg, rgba(107, 15, 36, 0.55), var(--bg-secondary));
 }
 
 .spotlightActive::before {
@@ -162,7 +162,7 @@
   width: 100%;
   padding: 0.85rem 1.25rem;
   background: #9c6f18;
-  color: #161B26;
+  color: var(--text-primary);
   font-weight: 800;
   font-size: 1rem;
   border: none;
@@ -191,7 +191,7 @@
 .actionBtn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f1f5f9;
+  color: var(--text-primary);
   padding: 0.5rem 0.9rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -206,13 +206,13 @@
 
 .actionBtn:hover {
   background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .actionBtnPrimary {
   background: #6B0F24;
   border-color: #9c6f18;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .actionBtnPrimary:hover {
@@ -221,7 +221,7 @@
 
 /* History Cards */
 .historyCard {
-  background: rgba(22, 27, 38, 0.7);
+  background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
@@ -234,7 +234,7 @@
 
 .historyCard:hover {
   border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(22, 27, 38, 0.9);
+  background: var(--bg-secondary);
 }
 
 .historyCardAttended {

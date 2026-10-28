@@ -45,6 +45,7 @@ export default function AdminAttendancePage() {
   const [newTime, setNewTime] = useState<string>(() => getDefaultNextClassDate().timeStr);
   const [location, setLocation] = useState<string>("RoboBEE Lab (Kids Den Int. Preschool)");
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [isScheduleOpen, setIsScheduleOpen] = useState<boolean>(false);
 
   // Active Session Attendance Taking
   const [activeAttendanceSession, setActiveAttendanceSession] = useState<ScheduledClassSession | null>(null);
@@ -176,6 +177,7 @@ export default function AdminAttendancePage() {
         }
       }
       setCustomTitle("");
+      setIsScheduleOpen(false);
       alert(`Successfully scheduled: ${finalTitle} on ${newDate}!`);
     } catch (error) {
       console.error("Error creating session:", error);
@@ -383,7 +385,7 @@ export default function AdminAttendancePage() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>
-            <Calendar size={28} color="#F5B800" />
+            <Calendar size={28} color="#9c6f18" />
             Class Schedule &amp; Attendance Command
           </h1>
           <p className={styles.subtitle}>
@@ -398,8 +400,18 @@ export default function AdminAttendancePage() {
             className={styles.projectorBtn}
             title="Automatically schedule next 4 Friday classes"
           >
-            <Sparkles size={16} color="#F5B800" />
+            <Sparkles size={16} color="#9c6f18" />
             Auto-Schedule Next 4 Fridays
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsScheduleOpen((open) => !open)}
+            className={styles.takeBtn}
+            aria-expanded={isScheduleOpen}
+            aria-controls="class-schedule-form"
+          >
+            <Plus size={16} />
+            {isScheduleOpen ? "Close scheduler" : "Schedule class"}
           </button>
         </div>
       </div>
@@ -436,15 +448,15 @@ export default function AdminAttendancePage() {
                       <span className={styles.livePulseDot} />
                       Class in Progress
                     </span>
-                    <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                       {progression.activeSession.time || '15:30'}
                     </span>
                   </div>
                   <div className={styles.lessonTag}>{progression.activeSession.lessonCode}</div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', margin: '0.2rem 0 0.5rem 0' }}>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.2rem 0 0.5rem 0' }}>
                     {progression.activeSession.title}
                   </h3>
-                  <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                     📍 {progression.activeSession.location}
                   </div>
                 </div>
@@ -478,14 +490,14 @@ export default function AdminAttendancePage() {
             ) : (
               <div className={styles.spotlightCard}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
                     <Clock size={16} />
                     Lab Status
                   </div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                     No Active Class Currently Running
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.35rem' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.35rem' }}>
                     Start an upcoming class session below when students enter the lab to enable live attendance check-ins.
                   </p>
                 </div>
@@ -501,7 +513,7 @@ export default function AdminAttendancePage() {
                     Next Scheduled Class
                   </span>
                   {progression.nextSession && (
-                    <span style={{ fontSize: '0.8rem', color: '#F5B800', fontWeight: 700 }}>
+                    <span style={{ fontSize: '0.8rem', color: '#9c6f18', fontWeight: 700 }}>
                       📅 {progression.nextSession.date}
                     </span>
                   )}
@@ -510,20 +522,20 @@ export default function AdminAttendancePage() {
                 {progression.nextSession ? (
                   <>
                     <div className={styles.lessonTag}>{progression.nextSession.lessonCode}</div>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', margin: '0.2rem 0 0.5rem 0' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.2rem 0 0.5rem 0' }}>
                       {progression.nextSession.title}
                     </h3>
-                    <p style={{ color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: '1.4' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: '1.4' }}>
                       {getLessonForSession(progression.nextSession)?.promise || "Integrated robotics class session."}
                     </p>
                   </>
                 ) : (
                   <>
                     <div className={styles.lessonTag}>{progression.suggestedNextLesson.code}</div>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#f1f5f9' }}>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                       Next Up in Syllabus: {progression.suggestedNextLesson.title}
                     </h3>
-                    <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.35rem', marginBottom: '1rem' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.35rem', marginBottom: '1rem' }}>
                       No future session scheduled yet. Use the scheduler below to lock in the next class!
                     </p>
                   </>
@@ -560,14 +572,14 @@ export default function AdminAttendancePage() {
                   <CheckCircle size={16} />
                   Curriculum Progress
                 </div>
-                <div style={{ fontSize: '2rem', fontWeight: 900, color: '#ffffff' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)' }}>
                   {progression.completedSessions.length} / 36
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginTop: '0.2rem' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
                   Classes Conducted &amp; Attendance Recorded
                 </div>
                 {progression.lastCompletedSession && (
-                  <div style={{ marginTop: '0.85rem', padding: '0.65rem 0.85rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '6px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                  <div style={{ marginTop: '0.85rem', padding: '0.65rem 0.85rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                     <strong>Last Completed:</strong> {progression.lastCompletedSession.lessonCode} &bull; {progression.lastCompletedSession.date}
                   </div>
                 )}
@@ -580,12 +592,12 @@ export default function AdminAttendancePage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               
               {/* Form: Schedule Class Linked to Curriculum */}
-              <div className={styles.formCard}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Plus size={18} color="#F5B800" />
+              {isScheduleOpen && <div id="class-schedule-form" className={styles.formCard}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Plus size={18} color="#9c6f18" />
                   Schedule a Class from Curriculum
                 </h2>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
                   Choose a lesson from the 36-class masterclass curriculum. Details and estimated duration will auto-populate.
                 </p>
 
@@ -632,17 +644,17 @@ export default function AdminAttendancePage() {
                   {currentSelectedLesson && (
                     <div style={{ padding: '0.85rem 1rem', background: 'rgba(107, 15, 36, 0.25)', border: '1px solid rgba(245, 184, 0, 0.3)', borderRadius: '8px', marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                        <span style={{ fontWeight: 800, color: '#F5B800', fontSize: '0.85rem' }}>
+                        <span style={{ fontWeight: 800, color: '#9c6f18', fontSize: '0.85rem' }}>
                           {currentSelectedLesson.code} &bull; {currentSelectedLesson.title}
                         </span>
-                        <span style={{ fontSize: '0.75rem', color: '#cbd5e1' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                           ⏱ {currentSelectedLesson.durationMinutes} Minutes
                         </span>
                       </div>
-                      <p style={{ fontSize: '0.8rem', color: '#cbd5e1', margin: '0.25rem 0 0.5rem 0', lineHeight: '1.4' }}>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0.5rem 0', lineHeight: '1.4' }}>
                         {currentSelectedLesson.promise}
                       </p>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                         Hardware Pack: {currentSelectedLesson.physicalBuildPack?.verifiedBoardAndModules.slice(0, 3).join(', ')}...
                       </div>
                     </div>
@@ -692,17 +704,17 @@ export default function AdminAttendancePage() {
                     {isCreating ? "Scheduling Session..." : "+ Schedule Class Session"}
                   </button>
                 </form>
-              </div>
+              </div>}
 
               {/* Scheduled Sessions List */}
               <div>
-                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Calendar size={18} color="#F5B800" />
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Calendar size={18} color="#9c6f18" />
                   All Scheduled Sessions ({sessions.length})
                 </h2>
 
                 {sessions.length === 0 ? (
-                  <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', background: 'rgba(22, 27, 38, 0.5)', borderRadius: '12px' }}>
+                  <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                     No sessions scheduled yet. Use the form above or click "Auto-Schedule Next 4 Fridays".
                   </div>
                 ) : (
@@ -718,7 +730,7 @@ export default function AdminAttendancePage() {
                           key={session.id}
                           className={`${styles.sessionCard} ${isActive ? styles.sessionActive : ''}`}
                           style={{
-                            border: isSelected ? '1px solid #F5B800' : undefined
+                            border: isSelected ? '1px solid #9c6f18' : undefined
                           }}
                         >
                           <div>
@@ -731,7 +743,7 @@ export default function AdminAttendancePage() {
                                 padding: '0.2rem 0.5rem',
                                 borderRadius: '4px',
                                 background: isActive ? 'rgba(239, 68, 68, 0.2)' : isCompleted ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 184, 0, 0.15)',
-                                color: isActive ? '#ef4444' : isCompleted ? '#10b981' : '#F5B800'
+                                color: isActive ? '#ef4444' : isCompleted ? '#10b981' : '#9c6f18'
                               }}>
                                 {session.status}
                               </span>
@@ -743,7 +755,7 @@ export default function AdminAttendancePage() {
                               <span>&bull;</span>
                               <span>⏱ {session.time || '15:30'} ({session.durationMinutes}m)</span>
                               <span>&bull;</span>
-                              <span style={{ color: attendanceCount > 0 ? '#10b981' : '#cbd5e1' }}>
+                              <span style={{ color: attendanceCount > 0 ? '#10b981' : 'var(--text-secondary)' }}>
                                 👥 {attendanceCount} / {members.length} Present
                               </span>
                             </div>
@@ -825,19 +837,19 @@ export default function AdminAttendancePage() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
                       <span className={styles.lessonTag}>{activeAttendanceSession.lessonCode}</span>
-                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{activeAttendanceSession.date}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{activeAttendanceSession.date}</span>
                     </div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                       {activeAttendanceSession.title}
                     </h2>
-                    <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                       Present: <strong style={{ color: '#10b981' }}>{presentMemberIds.size}</strong> of {members.length} members
                     </div>
                   </div>
 
                   <button
                     onClick={() => setActiveAttendanceSession(null)}
-                    style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}
                   >
                     &times;
                   </button>
@@ -868,7 +880,7 @@ export default function AdminAttendancePage() {
                     className={styles.inputField}
                     style={{ paddingLeft: '2.2rem', fontSize: '0.85rem' }}
                   />
-                  <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <Search size={14} color="var(--text-secondary)" style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)' }} />
                 </div>
 
                 {/* Member Roster List */}
@@ -888,7 +900,7 @@ export default function AdminAttendancePage() {
                             height: '32px',
                             borderRadius: '50%',
                             background: isPresent ? '#10b981' : '#334155',
-                            color: '#ffffff',
+                            color: 'var(--text-primary)',
                             fontWeight: 800,
                             display: 'flex',
                             alignItems: 'center',
@@ -898,10 +910,10 @@ export default function AdminAttendancePage() {
                             {member.name ? member.name.charAt(0).toUpperCase() : 'M'}
                           </div>
                           <div>
-                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#ffffff' }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
                               {member.name || member.email}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                               @{member.username || member.email?.split('@')[0]}
                             </div>
                           </div>
@@ -943,20 +955,20 @@ export default function AdminAttendancePage() {
         <div className={styles.matrixTableWrapper}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                 Enrolled Student Participation Matrix
               </h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                 Cross-sectional audit showing every student’s participation record across all completed and scheduled classes.
               </p>
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
               Completed Sessions: <strong>{progression.completedSessions.length}</strong>
             </div>
           </div>
 
           {members.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
               No members enrolled yet.
             </div>
           ) : (
@@ -969,7 +981,7 @@ export default function AdminAttendancePage() {
                   {sessions.map(s => (
                     <th key={s.id} title={`${s.lessonCode}: ${s.title} (${s.date})`}>
                       <div style={{ fontSize: '0.7rem' }}>{s.lessonCode || 'CLASS'}</div>
-                      <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{s.date.split('-').slice(1).join('/')}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{s.date.split('-').slice(1).join('/')}</div>
                     </th>
                   ))}
                 </tr>
@@ -991,14 +1003,14 @@ export default function AdminAttendancePage() {
 
                   return (
                     <tr key={member.id}>
-                      <td className={styles.matrixHeaderSticky} style={{ fontWeight: 700, color: '#ffffff' }}>
+                      <td className={styles.matrixHeaderSticky} style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
                         <div>{member.name || member.email}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{member.username || 'user'}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>@{member.username || 'user'}</div>
                       </td>
                       <td>
                         <span style={{
                           fontWeight: 800,
-                          color: pct >= 80 ? '#10b981' : pct >= 60 ? '#F5B800' : '#ef4444'
+                          color: pct >= 80 ? '#10b981' : pct >= 60 ? '#9c6f18' : '#ef4444'
                         }}>
                           {pct}%
                         </span>
