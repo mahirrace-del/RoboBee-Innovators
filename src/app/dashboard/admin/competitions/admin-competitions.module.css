@@ -228,11 +228,11 @@
 .compCard {
   padding: 1.75rem;
   border-left: 4px solid var(--accent-primary);
-  background: var(--bg-glass);
+  background: var(--bg-secondary);
   border-radius: var(--radius-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .compHeader {
@@ -271,8 +271,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 20px;
   font-size: 0.82rem;
   color: var(--text-primary);
@@ -291,7 +291,7 @@
 /* Registrations Tab System */
 .tabsContainer {
   margin-top: 1.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-subtle);
   padding-top: 1.25rem;
 }
 
@@ -299,15 +299,15 @@
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 0.5rem;
 }
 
 .tabBtn {
   padding: 0.6rem 1.2rem;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   cursor: pointer;
   font-weight: 600;
@@ -325,7 +325,7 @@
 }
 
 .tabCountBadge {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-elevated);
   padding: 0.15rem 0.5rem;
   border-radius: 12px;
   font-size: 0.75rem;
@@ -343,7 +343,7 @@
   text-align: left;
   padding: 0.85rem;
   color: var(--text-secondary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-subtle);
   font-weight: 600;
   font-size: 0.82rem;
   text-transform: uppercase;
@@ -352,7 +352,7 @@
 
 .table td {
   padding: 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
   vertical-align: middle;
 }
 
@@ -463,12 +463,12 @@
 
 .btnPrimary {
   background: var(--accent-primary);
-  color: #000;
+  color: #fff;
   font-weight: 700;
 }
 
 .btnSecondary {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
@@ -480,10 +480,10 @@
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-primary);
   padding: 0.5rem;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
 }
 
 /* Desktop vs Mobile Participants View */
@@ -499,8 +499,8 @@
 }
 
 .mobileCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 1.1rem;
   display: flex;
@@ -520,7 +520,7 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   padding-top: 0.6rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .mobileActions .actionBtn {

@@ -26,7 +26,7 @@ export default function Navbar() {
           <Link href={isDashboard ? "/dashboard" : "/"} className={styles.brandLink}>
             <Logo width={28} height={28} />
           </Link>
-          <ClientLabStatus variant={isStyledPublicPage ? "light" : "default"} />
+          <ClientLabStatus variant={isStyledPublicPage || isDashboard ? "light" : "default"} />
         </div>
         
         {/* Desktop Links */}

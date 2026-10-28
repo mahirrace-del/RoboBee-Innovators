@@ -2,7 +2,7 @@
  * RoboBEE Innovators Academy - Comprehensive Completeness & Integrity Audit
  * 
  * Verifies:
- * 1. 36 lessons across 4 tiers (Explorer: 4, Beginner: 10, Intermediate: 10, Advanced: 12)
+ * 1. 38 lessons across 4 tiers (Explorer: 4, Beginner: 12, Intermediate: 10, Advanced: 12)
  * 2. Unique lesson IDs and correct sequencing
  * 3. Exact rhythm time sums for both default and compact rhythms
  * 4. Complete physical build packs (BOM, schematics, wire tables, safety, test cases)
@@ -77,13 +77,13 @@ const authoritativeResources = resourcesMod.AUTHORITATIVE_RESOURCES || [];
 console.log(`[PASS] Loaded: ${lessons.length} lessons, ${fieldGuideEntries.length} field guide entries, ${boardPins.length} pin specs, ${authoritativeResources.length} resources.\n`);
 
 // 1. LESSON COUNT & TIER DISTRIBUTION
-if (lessons.length !== 36) {
-  errors.push(`Expected exactly 36 lessons, found ${lessons.length}`);
+if (lessons.length !== 38) {
+  errors.push(`Expected exactly 38 lessons, found ${lessons.length}`);
 }
 
 const expectedTiers = {
   explorer: { name: 'Free Robo Explorers', expected: 4 },
-  beginner: { name: 'Beginner Robotics & Arduino', expected: 10 },
+  beginner: { name: 'Beginner Robotics & Arduino', expected: 12 },
   intermediate: { name: 'Intermediate Robotics & Systems', expected: 10 },
   advanced: { name: 'Advanced Robotics & Competition', expected: 12 }
 };
@@ -133,8 +133,8 @@ lessons.forEach(l => {
 // Class 01 compact duration check
 const beg01 = lessons.find(l => l.id === 'beg-01');
 if (beg01) {
-  if (beg01.durationMinutes !== 90) {
-    errors.push(`beg-01 expected default 90m duration, found ${beg01.durationMinutes}m`);
+  if (beg01.durationMinutes !== 120) {
+    errors.push(`beg-01 expected default 120m duration, found ${beg01.durationMinutes}m`);
   }
   if (beg01.compactDurationMinutes !== 60) {
     errors.push(`beg-01 expected 60m compact duration, found ${beg01.compactDurationMinutes}m`);
@@ -285,7 +285,7 @@ if (errors.length > 0) {
   process.exit(1);
 } else {
   console.log('✅ ALL 14 AUDIT SUITES PASSED WITH ZERO ERRORS:');
-  console.log('  1. Exactly 36 lessons across 4 tiers (4 / 10 / 10 / 12)');
+  console.log('  1. Exactly 38 lessons across 4 tiers (4 / 12 / 10 / 12)');
   console.log('  2. Unique lesson IDs and correct sequencing');
   console.log('  3. All rhythm sums match lesson durationMinutes');
   console.log('  4. Physical build packs complete (BOM, schematics, wire tables, safety, test cases)');

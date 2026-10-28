@@ -53,5 +53,6 @@ VERSION
 ANTIGRAVITY_ROBOBEE_CURRICULUM_MASTER_PROMPT.md
 *.bak
 tmp-*.png
+tmp-*.jpg
 
 

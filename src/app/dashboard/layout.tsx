@@ -338,12 +338,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           href="/dashboard/inventory"
           className={isAct("/dashboard/inventory")}
           onClick={closeSidebar}
-          title="Component Ledger & Inventory"
+          title="Components & Inventory"
         >
           <Package size={18} className={styles.navIcon} />
           {!sidebarCollapsed && (
             <>
-              <span className={styles.navLabel}>Component Ledger</span>
+              <span className={styles.navLabel}>Components</span>
               {(role === "admin" || canManage("manage_store")) && lowStockCount > 0 && (
                 <span className={`${styles.navPill} ${styles.navPillAlert}`}>{lowStockCount} Low</span>
               )}

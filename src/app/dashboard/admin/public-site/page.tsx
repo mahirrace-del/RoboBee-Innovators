@@ -371,6 +371,12 @@ export default function AdminPublicSitePage() {
                 <div className={styles.itemContent}>
                   <h3 className={styles.itemTitle}>{p.title}</h3>
                   <p className={styles.itemDesc}>{p.description}</p>
+                  {p.description.length > 180 && (
+                    <details className={styles.descriptionDetails}>
+                      <summary>Read full description</summary>
+                      <p>{p.description}</p>
+                    </details>
+                  )}
                 </div>
                 <button onClick={() => handleDelete('projects', p.id)} className={styles.deleteBtn}>Delete</button>
               </div>
@@ -399,6 +405,12 @@ export default function AdminPublicSitePage() {
                 <div className={styles.itemContent}>
                   <h3 className={styles.itemTitle}><span style={{ color: '#F4B304' }}>{a.year}</span> | {a.title}</h3>
                   <p className={styles.itemDesc}>{a.description}</p>
+                  {a.description.length > 180 && (
+                    <details className={styles.descriptionDetails}>
+                      <summary>Read full description</summary>
+                      <p>{a.description}</p>
+                    </details>
+                  )}
                 </div>
                 <button onClick={() => handleDelete('achievements', a.id)} className={styles.deleteBtn}>Delete</button>
               </div>
