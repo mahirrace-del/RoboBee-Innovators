@@ -51,12 +51,13 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  color: var(--text-primary, #27211d);
 }
 
 .table th {
   padding: 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
+  color: var(--text-secondary, #6f665e);
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -65,8 +66,9 @@
 
 .table td {
   padding: 1rem;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
   vertical-align: middle;
+  color: var(--text-primary, #27211d);
 }
 
 /* Mobile Member Cards */

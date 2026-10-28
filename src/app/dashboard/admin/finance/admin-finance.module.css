@@ -40,19 +40,21 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  color: var(--text-primary, #27211d);
 }
 
 .table th {
   text-align: left;
   padding: 1rem;
   border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
+  color: var(--text-secondary, #6f665e);
   font-weight: 600;
 }
 
 .table td {
   padding: 1rem;
   border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary, #27211d);
 }
 
 .statusBadge {

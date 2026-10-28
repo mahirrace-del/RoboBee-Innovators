@@ -2,15 +2,16 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  color: #27211d;
 }
 
 .header h1 {
   font-size: 2rem;
-  color: var(--text-primary);
+  color: #27211d;
 }
 
 .header p {
-  color: var(--text-secondary);
+  color: #6f665e;
 }
 
 .panels {
@@ -24,6 +25,47 @@
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
+  color: var(--text-primary, #27211d);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  color: var(--text-primary, #27211d);
+}
+
+.table th {
+  padding: 1rem;
+  color: var(--text-secondary, #6f665e);
+  font-weight: 700;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
+}
+
+.table td {
+  padding: 1rem;
+  color: var(--text-primary, #27211d);
+  font-size: 0.92rem;
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
+}
+
+.partName {
+  font-weight: 700;
+  color: #27211d !important;
+}
+
+.partSource {
+  color: #6f665e !important;
+}
+
+.partPrice {
+  font-family: var(--font-mono);
+  color: #27211d !important;
+}
+
+.partQty {
+  color: #27211d !important;
 }
 
 .sectionTitle {

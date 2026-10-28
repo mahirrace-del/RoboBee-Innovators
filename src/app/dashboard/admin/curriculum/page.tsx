@@ -498,10 +498,6 @@ export default function AdminCurriculumPage() {
   return (
     <div
       className={styles.pageContainer}
-      style={{
-        background: "#161B26",
-        color: "#FFFFFF",
-      }}
       onClick={() => {
         if (openCardMenuId) setOpenCardMenuId(null);
         if (showDataMenu) setShowDataMenu(false);
@@ -789,7 +785,7 @@ export default function AdminCurriculumPage() {
               >
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
-                    <strong style={{ fontSize: "1rem", color: "#FFFFFF" }}>
+                    <strong style={{ fontSize: "1rem", color: "#27211d" }}>
                       {activeSpace.title}
                     </strong>
                     <span
@@ -926,7 +922,7 @@ export default function AdminCurriculumPage() {
                         margin: "0 0 0.35rem 0",
                         fontSize: "1.08rem",
                         fontWeight: 800,
-                        color: "#FFFFFF",
+                        color: "#27211d",
                         lineHeight: 1.3,
                       }}
                     >
@@ -1094,7 +1090,7 @@ export default function AdminCurriculumPage() {
                             borderRadius: "6px",
                             background: "transparent",
                             border: "none",
-                            color: "#FFFFFF",
+                            color: "#27211d",
                             fontSize: "0.76rem",
                             fontWeight: 700,
                             cursor: "pointer",
@@ -1119,7 +1115,7 @@ export default function AdminCurriculumPage() {
                             borderRadius: "6px",
                             background: "transparent",
                             border: "none",
-                            color: "#FFFFFF",
+                            color: "#27211d",
                             fontSize: "0.76rem",
                             fontWeight: 700,
                             cursor: "pointer",
@@ -1290,7 +1286,7 @@ export default function AdminCurriculumPage() {
             }}
           >
             <div>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#27211d", margin: 0 }}>
                 Student Exit Check Reflections &amp; Rubric Alignment
               </h2>
               <div style={{ fontSize: "0.8rem", color: "#6f665e", marginTop: "0.2rem" }}>
@@ -1330,7 +1326,7 @@ export default function AdminCurriculumPage() {
           ) : submissions.length === 0 ? (
             <div className={styles.emptyState}>
               <AlertCircle size={36} color="#6f665e" style={{ marginBottom: "0.75rem" }} />
-              <p style={{ color: "#FFFFFF", fontWeight: 700, margin: "0 0 0.35rem 0" }}>
+              <p style={{ color: "#27211d", fontWeight: 700, margin: "0 0 0.35rem 0" }}>
                 No exit check submissions recorded yet.
               </p>
               <p style={{ color: "#6f665e", margin: 0, fontSize: "0.82rem" }}>
@@ -1351,7 +1347,7 @@ export default function AdminCurriculumPage() {
               <tbody>
                 {submissions.map((sub) => (
                   <tr key={sub.id}>
-                    <td style={{ fontWeight: 800, color: "#FFFFFF" }}>
+                    <td style={{ fontWeight: 800, color: "#27211d" }}>
                       {sub.userEmail || sub.userId || "Student Member"}
                     </td>
                     <td>
@@ -1367,7 +1363,7 @@ export default function AdminCurriculumPage() {
                               key={k}
                               style={{
                                 fontSize: "0.78rem",
-                                color: "#CBD5E1",
+                                color: "#475569",
                                 whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",

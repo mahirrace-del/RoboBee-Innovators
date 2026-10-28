@@ -156,8 +156,8 @@ export default function BOMDashboard() {
         <div className={styles.panels}>
           <div style={{ gridColumn: 'span 2' }}>
             <div className={styles.panel}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>{activeProject.name} - Bill of Materials</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 className={styles.sectionTitle} style={{ marginBottom: 0, color: '#27211d' }}>{activeProject.name} - Bill of Materials</h2>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--brand-burgundy, #84243a)', fontFamily: 'var(--font-mono)' }}>
                     Total Est: <span style={{ marginRight: '0.2rem' }}>৳</span>{totalProjectCost.toLocaleString()}
@@ -169,26 +169,26 @@ export default function BOMDashboard() {
               </div>
 
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <table className={styles.table} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#27211d' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border-subtle, #dfd7cc)' }}>
-                      <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Part Name</th>
-                      <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Source</th>
-                      <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Unit Cost</th>
-                      <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Qty</th>
-                      <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Total Cost</th>
-                      <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Status</th>
+                      <th style={{ padding: '1rem', color: '#6f665e', fontWeight: 700, fontSize: '0.88rem' }}>Part Name</th>
+                      <th style={{ padding: '1rem', color: '#6f665e', fontWeight: 700, fontSize: '0.88rem' }}>Source</th>
+                      <th style={{ padding: '1rem', color: '#6f665e', fontWeight: 700, fontSize: '0.88rem' }}>Unit Cost</th>
+                      <th style={{ padding: '1rem', color: '#6f665e', fontWeight: 700, fontSize: '0.88rem' }}>Qty</th>
+                      <th style={{ padding: '1rem', color: '#6f665e', fontWeight: 700, fontSize: '0.88rem' }}>Total Cost</th>
+                      <th style={{ padding: '1rem', color: '#6f665e', fontWeight: 700, fontSize: '0.88rem' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {activeProject.bom?.length > 0 ? activeProject.bom.map((b: any, idx: number) => (
                       <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle, #dfd7cc)' }}>
-                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>{b.name}</td>
-                        <td style={{ padding: '1rem' }}>{b.source}</td>
-                        <td style={{ padding: '1rem', fontFamily: 'var(--font-mono)' }}>
+                        <td className={styles.partName} style={{ padding: '1rem', fontWeight: 'bold', color: '#27211d' }}>{b.name}</td>
+                        <td className={styles.partSource} style={{ padding: '1rem', color: '#6f665e' }}>{b.source}</td>
+                        <td className={styles.partPrice} style={{ padding: '1rem', fontFamily: 'var(--font-mono)', color: '#27211d' }}>
                           <span style={{ marginRight: '0.2rem' }}>৳</span>{b.price?.toLocaleString()}
                         </td>
-                        <td style={{ padding: '1rem' }}>{b.quantity}</td>
+                        <td className={styles.partQty} style={{ padding: '1rem', color: '#27211d' }}>{b.quantity}</td>
                         <td style={{ padding: '1rem', color: 'var(--brand-burgundy, #84243a)', fontWeight: '700', fontFamily: 'var(--font-mono)' }}>
                           <span style={{ marginRight: '0.2rem' }}>৳</span>{b.totalCost?.toLocaleString()}
                         </td>
@@ -208,8 +208,8 @@ export default function BOMDashboard() {
                       </tr>
                     )) : (
                       <tr>
-                        <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                          No items added to this project's BOM yet.
+                        <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: '#6f665e' }}>
+                          No items added to this project&apos;s BOM yet.
                         </td>
                       </tr>
                     )}
@@ -221,34 +221,34 @@ export default function BOMDashboard() {
 
           <div style={{ gridColumn: 'span 2' }}>
             <div className={styles.bomActionHeader}>
-              <h2 className={styles.sectionTitle}>Project budget</h2>
+              <h2 className={styles.sectionTitle} style={{ color: '#27211d' }}>Project budget</h2>
               <button type="button" className={styles.btn} style={{ width: 'auto' }} onClick={() => setIsItemFormOpen((open) => !open)} aria-expanded={isItemFormOpen} aria-controls="bom-item-form">
                 {isItemFormOpen ? "Close form" : "Add item"}
               </button>
             </div>
             {isItemFormOpen && <div id="bom-item-form" className={styles.panel}>
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                 <button 
                   onClick={() => setAddMode("custom")}
                   className={styles.btn} 
-                  style={{ background: addMode === 'custom' ? 'var(--accent-primary)' : 'var(--bg-elevated)', color: addMode === 'custom' ? '#fff' : 'var(--text-primary)' }}
+                  style={{ background: addMode === 'custom' ? 'var(--accent-primary)' : 'var(--bg-elevated)', color: addMode === 'custom' ? '#fff' : '#27211d' }}
                 >
                   Add Custom Part (To Buy)
                 </button>
                 <button 
                   onClick={() => setAddMode("inventory")}
                   className={styles.btn} 
-                  style={{ background: addMode === 'inventory' ? 'var(--accent-primary)' : 'var(--bg-elevated)', color: addMode === 'inventory' ? '#fff' : 'var(--text-primary)' }}
+                  style={{ background: addMode === 'inventory' ? 'var(--accent-primary)' : 'var(--bg-elevated)', color: addMode === 'inventory' ? '#fff' : '#27211d' }}
                 >
                   Add from Lab Inventory
                 </button>
               </div>
 
-              <form onSubmit={handleAddItemToBOM} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', alignItems: 'end' }}>
+              <form onSubmit={handleAddItemToBOM} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', alignItems: 'end' }}>
                 {addMode === "inventory" ? (
                   <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Select Part</label>
-                    <select className={styles.select} value={selectedItemId} onChange={e => setSelectedItemId(e.target.value)} required>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#6f665e', fontWeight: 600 }}>Select Part</label>
+                    <select className={styles.select} value={selectedItemId} onChange={e => setSelectedItemId(e.target.value)} required style={{ color: '#27211d' }}>
                       <option value="">-- Choose Part --</option>
                       {inventory.map(i => (
                         <option key={i.id} value={i.id}>{i.name} (Est. {i.price} ৳)</option>
@@ -258,16 +258,16 @@ export default function BOMDashboard() {
                 ) : (
                   <>
                     <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Part Name</label>
-                      <input type="text" className={styles.input} style={{ marginBottom: 0 }} value={customName} onChange={e => setCustomName(e.target.value)} required placeholder="e.g. 12V DC Motor" />
+                      <label style={{ display: 'block', marginBottom: '0.5rem', color: '#6f665e', fontWeight: 600 }}>Part Name</label>
+                      <input type="text" className={styles.input} style={{ marginBottom: 0, color: '#27211d' }} value={customName} onChange={e => setCustomName(e.target.value)} required placeholder="e.g. 12V DC Motor" />
                     </div>
                     <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Unit Cost (৳)</label>
-                      <input type="number" className={styles.input} style={{ marginBottom: 0 }} min="0" value={customPrice} onChange={e => setCustomPrice(parseFloat(e.target.value) || 0)} required />
+                      <label style={{ display: 'block', marginBottom: '0.5rem', color: '#6f665e', fontWeight: 600 }}>Unit Cost (৳)</label>
+                      <input type="number" className={styles.input} style={{ marginBottom: 0, color: '#27211d' }} min="0" value={customPrice} onChange={e => setCustomPrice(parseFloat(e.target.value) || 0)} required />
                     </div>
                     <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Source</label>
-                      <select className={styles.select} value={customSource} onChange={e => setCustomSource(e.target.value)}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', color: '#6f665e', fontWeight: 600 }}>Source</label>
+                      <select className={styles.select} value={customSource} onChange={e => setCustomSource(e.target.value)} style={{ color: '#27211d' }}>
                         <option value="Daraz">Daraz</option>
                         <option value="AliExpress">AliExpress</option>
                         <option value="Local Market (Patuatuli)">Local Market (Patuatuli)</option>
@@ -279,8 +279,8 @@ export default function BOMDashboard() {
                 )}
 
                 <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Quantity</label>
-                  <input type="number" className={styles.input} style={{ marginBottom: 0 }} min="1" value={quantity} onChange={e => setQuantity(parseInt(e.target.value) || 1)} required />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#6f665e', fontWeight: 600 }}>Quantity</label>
+                  <input type="number" className={styles.input} style={{ marginBottom: 0, color: '#27211d' }} min="1" value={quantity} onChange={e => setQuantity(parseInt(e.target.value) || 1)} required />
                 </div>
 
                 <button type="submit" className={styles.btn}>Add to BOM</button>
@@ -289,7 +289,7 @@ export default function BOMDashboard() {
           </div>
         </div>
       ) : (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#6f665e' }}>
           Select or create a project to start planning the budget.
         </div>
       )}

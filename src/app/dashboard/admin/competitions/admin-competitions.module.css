@@ -337,13 +337,14 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  color: var(--text-primary, #27211d);
 }
 
 .table th {
   text-align: left;
   padding: 0.85rem;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary, #6f665e);
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
   font-weight: 600;
   font-size: 0.82rem;
   text-transform: uppercase;
@@ -352,8 +353,9 @@
 
 .table td {
   padding: 0.85rem;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
   vertical-align: middle;
+  color: var(--text-primary, #27211d);
 }
 
 /* Badges */

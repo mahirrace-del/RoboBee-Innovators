@@ -526,7 +526,7 @@ export default function CheckoutDashboard() {
                               </div>
                             )}
                             {item.notes ? (
-                              <div style={{ fontStyle: "italic", marginTop: "2px", color: "rgba(255,255,255,0.7)" }}>
+                              <div style={{ fontStyle: "italic", marginTop: "2px", color: "#6f665e" }}>
                                 &ldquo;{item.notes}&rdquo;
                               </div>
                             ) : null}
