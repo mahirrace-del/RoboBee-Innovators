@@ -34,17 +34,8 @@
 .metricItem { display: flex; flex-direction: column; gap: 4px; }
 .metricValue { color: #373029; font-size: .9rem; font-weight: 800; line-height: 1.3; }
 .metricLabel { color: #857a6d; font-size: .71rem; line-height: 1.4; }
-.heroVisualColumn { display: flex; flex-direction: column; min-width: 0; width: 100%; }
-.robotStage { position: relative; width: 100%; min-height: 420px; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid #e9dfd3; border-radius: 22px; background: radial-gradient(ellipse at 50% 76%, #f4ead9, #f8f4ed 59%, #f0e9df); box-shadow: 0 22px 55px rgba(59,39,29,.09); }
-.robotStage::before { position: absolute; inset: 0; background: radial-gradient(circle at 50% 72%, rgba(204,152,50,.12), transparent 42%); content: ""; }
-.robotStage :global(.robotFallback) { position: absolute; inset: 5% 2% 2%; width: 96%; height: 93%; }
-.robotStage :global(.robotFallback[hidden]) { display: none !important; }
-.robotStage :global(.robotSceneCanvas) { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; }
-.robotStage :global(.robotSceneCanvas):focus-visible { outline: 3px solid #a57824; outline-offset: -5px; }
-.robotStage :global(canvas) { display: block; width: 100%; height: 100%; }
-.robotOrbitLabel, .robotControlHint { position: absolute; z-index: 2; bottom: 17px; color: #806f5b; font-size: .61rem; font-weight: 800; letter-spacing: .14em; }
-.robotOrbitLabel { left: 19px; }
-.robotControlHint { right: 19px; color: #9b866b; letter-spacing: .04em; text-transform: none; }
+.heroVisualColumn { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; width: 100%; position: relative; }
+.robotStage { position: relative; width: 100%; max-width: 650px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 0; box-shadow: none; overflow: visible; }
 
 .sectionHeader { max-width: 760px; margin: 0 auto 34px; text-align: center; }
 .sectionPill { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 12px; color: var(--wine); font-size: .7rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
@@ -147,9 +138,7 @@
   .badge { max-width: 100%; font-size: .62rem; }
   .heroMetricsStrip { grid-template-columns: repeat(2, 1fr); gap: 16px 10px; text-align: center; }
   .heroVisualColumn { width: 100%; }
-  .robotStage { min-height: 300px; }
-  .robotOrbitLabel { left: 12px; font-size: .52rem; }
-  .robotControlHint { right: 12px; font-size: .66rem; }
+  .robotStage { width: 100%; min-height: unset; }
   .projectsSection, .competitionsSection, .achievementsSection, .leadershipSection { padding: 60px 20px; }
   .projectsGrid, .competitionsGrid, .achievementsGrid { grid-template-columns: 1fr; }
   .featuredLeaders { grid-template-columns: 1fr; }

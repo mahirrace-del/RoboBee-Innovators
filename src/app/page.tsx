@@ -22,7 +22,6 @@ import { ProjectHardwareCard } from "@/components/public/ProjectHardwareCard";
 import { CompetitionCard, CompetitionCardItem, Segment } from "@/components/public/CompetitionCard";
 import { AchievementBentoCard } from "@/components/public/AchievementBentoCard";
 import { MemberOrbitShowcase, MarqueeItem } from "@/components/public/MemberOrbitShowcase";
-import { RobotArtwork } from "@/components/public/RobotArtwork";
 
 const InteractiveRobotScene = dynamic(
   () => import("@/components/public/InteractiveRobotScene"),
@@ -316,13 +315,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Interactive 3D Video & Parallax Stage */}
+          {/* Integrated Robotics Lab Diorama Video */}
           <div className={styles.heroVisualColumn}>
-            <div className={styles.robotStage} role="group" aria-label="RoboBEE Humanoid Robot Prototype">
-              <RobotArtwork />
+            <div className={styles.robotStage} role="region" aria-label="RoboBEE Humanoid Robot Workshop">
               <InteractiveRobotScene />
-              <span className={styles.robotOrbitLabel}>ROBOBEE · HUMANOID PROTOTYPE 01</span>
-              <span className={styles.robotControlHint}>It follows your cursor</span>
             </div>
           </div>
         </div>
