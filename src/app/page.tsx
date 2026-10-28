@@ -17,7 +17,6 @@ import {
   X,
   Phone,
 } from "lucide-react";
-import { HeroLearningStackBento } from "@/components/public/HeroLearningStackBento";
 import { FacilitiesAndPathwaysBento } from "@/components/public/FacilitiesAndPathwaysBento";
 import { ProjectHardwareCard } from "@/components/public/ProjectHardwareCard";
 import { CompetitionCard, CompetitionCardItem, Segment } from "@/components/public/CompetitionCard";
@@ -325,7 +324,6 @@ export default function Home() {
               <span className={styles.robotOrbitLabel}>ROBOBEE · HUMANOID PROTOTYPE 01</span>
               <span className={styles.robotControlHint}>It follows your cursor</span>
             </div>
-            <HeroLearningStackBento />
           </div>
         </div>
       </section>

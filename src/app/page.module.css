@@ -34,8 +34,8 @@
 .metricItem { display: flex; flex-direction: column; gap: 4px; }
 .metricValue { color: #373029; font-size: .9rem; font-weight: 800; line-height: 1.3; }
 .metricLabel { color: #857a6d; font-size: .71rem; line-height: 1.4; }
-.heroVisualColumn { display: grid; gap: 17px; min-width: 0; }
-.robotStage { position: relative; min-height: 380px; overflow: hidden; border: 1px solid #e9dfd3; border-radius: 22px; background: radial-gradient(ellipse at 50% 76%, #f4ead9, #f8f4ed 59%, #f0e9df); box-shadow: 0 22px 55px rgba(59,39,29,.09); }
+.heroVisualColumn { display: flex; flex-direction: column; min-width: 0; width: 100%; }
+.robotStage { position: relative; width: 100%; min-height: 420px; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid #e9dfd3; border-radius: 22px; background: radial-gradient(ellipse at 50% 76%, #f4ead9, #f8f4ed 59%, #f0e9df); box-shadow: 0 22px 55px rgba(59,39,29,.09); }
 .robotStage::before { position: absolute; inset: 0; background: radial-gradient(circle at 50% 72%, rgba(204,152,50,.12), transparent 42%); content: ""; }
 .robotStage :global(.robotFallback) { position: absolute; inset: 5% 2% 2%; width: 96%; height: 93%; }
 .robotStage :global(.robotFallback[hidden]) { display: none !important; }
