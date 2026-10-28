@@ -9,9 +9,10 @@ export interface MarqueeItem { id?: string; name?: string; role?: string; image?
 export function MemberOrbitShowcase({ marquees }: { marquees: MarqueeItem[] }) {
   const [paused, setPaused] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
-  if (!marquees?.length) return null;
+  const validMarquees = Array.isArray(marquees) ? marquees.filter(Boolean) : [];
+  if (!validMarquees.length) return null;
 
-  const copies = Array.from({ length: Math.max(1, Math.ceil(18 / marquees.length)) }, () => marquees).flat();
+  const copies = Array.from({ length: Math.max(1, Math.ceil(18 / validMarquees.length)) }, () => validMarquees).flat();
   const items = [...copies, ...copies];
 
   return (

@@ -356,7 +356,7 @@ export default function Home() {
             onClick={() => setProjectFilter("all")}
             className={`${styles.filterPill} ${projectFilter === "all" ? styles.filterPillActive : ""}`}
           >
-            All Builds ({projects.length})
+            All Builds ({(projects || []).length})
           </button>
           <button
             onClick={() => setProjectFilter("beginner")}
@@ -378,13 +378,13 @@ export default function Home() {
           </button>
         </div>
 
-        {filteredProjects.length === 0 ? (
+        {(filteredProjects || []).length === 0 ? (
           <p className={styles.emptyState}>
             No builds in this category yet. Explore our other projects or visit the lab on Friday.
           </p>
         ) : (
           <div className={styles.projectsGrid}>
-            {filteredProjects.map((project) => (
+            {(filteredProjects || []).map((project) => (
               <ProjectHardwareCard key={project.id} project={project} />
             ))}
           </div>
@@ -394,7 +394,7 @@ export default function Home() {
       {/* =========================================================================
           DYNAMIC COMPETITIONS & TOURNAMENTS (ADMIN CMS SYNCED)
           ========================================================================= */}
-      {competitions.length > 0 && (
+      {(competitions || []).length > 0 && (
         <section id="competitions" className={styles.competitionsSection}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionPill}>
@@ -438,11 +438,11 @@ export default function Home() {
           </p>
         </div>
 
-        {achievements.length === 0 ? (
+        {(achievements || []).length === 0 ? (
           <p className={styles.emptyState}>Our journey has just begun.</p>
         ) : (
           <div className={styles.achievementsGrid}>
-            {achievements.map((ach) => (
+            {(achievements || []).map((ach) => (
               <AchievementBentoCard key={ach.id} achievement={ach} />
             ))}
           </div>
@@ -459,9 +459,9 @@ export default function Home() {
           <p className={styles.sectionSubtitle}>Meet the people who lead, coordinate, and build the RoboBEE community.</p>
         </div>
 
-        {teamLeaders.length > 0 && (
+        {(teamLeaders || []).length > 0 && (
           <div className={styles.featuredLeaders}>
-            {teamLeaders.map((leader) => (
+            {(teamLeaders || []).map((leader) => (
               <article key={leader.id} className={styles.featuredLeaderCard}>
                 {leader.image?.trim() ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -478,11 +478,11 @@ export default function Home() {
           </div>
         )}
 
-        {coreMembers.length > 0 ? (
+        {(coreMembers || []).length > 0 ? (
           <>
             <h3 className={styles.coreTeamHeading}>Core members</h3>
             <div className={styles.leaderGrid}>
-              {coreMembers.map((member) => (
+              {(coreMembers || []).map((member) => (
                 <article key={member.id} className={styles.leaderCard}>
                   {member.image?.trim() ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -495,7 +495,7 @@ export default function Home() {
               ))}
             </div>
           </>
-        ) : leaders.length === 0 ? (
+        ) : (leaders || []).length === 0 ? (
           <p className={styles.emptyState}>Our team roster is being updated. Check back soon.</p>
         ) : null}
       </section>

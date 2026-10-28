@@ -38,11 +38,11 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/#features" className={styles.link}>Programs</Link>
-              <Link href="/#projects" className={styles.link}>Projects</Link>
-              <Link href="/#competitions" className={styles.link}>Competitions</Link>
-              <Link href="/#achievements" className={styles.link}>Achievements</Link>
-              <Link href="/#members" className={styles.link}>Community</Link>
+              <Link href="/#features" prefetch={false} className={styles.link}>Programs</Link>
+              <Link href="/#projects" prefetch={false} className={styles.link}>Projects</Link>
+              <Link href="/#competitions" prefetch={false} className={styles.link}>Competitions</Link>
+              <Link href="/#achievements" prefetch={false} className={styles.link}>Achievements</Link>
+              <Link href="/#members" prefetch={false} className={styles.link}>Community</Link>
               <Link href="/recruitment" className={styles.link}>Apply</Link>
               <Link href={!authLoading && user ? "/dashboard" : "/portal"} className={styles.portalActiveBtn}>
                 <span className={styles.onlineDot} />

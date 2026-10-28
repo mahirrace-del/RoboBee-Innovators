@@ -16,33 +16,35 @@ interface ProjectHardwareCardProps {
 export function ProjectHardwareCard({ project }: ProjectHardwareCardProps) {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const descriptionId = useId();
-  const hasLongDescription = project.description.length > 180;
-  const tags = project.tags?.length ? project.tags : [
-    project.title.toLowerCase().includes("arm") ? "Robotic arm" :
-      project.title.toLowerCase().includes("maze") ? "Autonomous" :
-        project.title.toLowerCase().includes("soccer") ? "Competition bot" : "Maker lab",
+  const description = project?.description || "";
+  const title = project?.title || "Robotics Project";
+  const hasLongDescription = description.length > 180;
+  const tags = project?.tags?.length ? project.tags : [
+    title.toLowerCase().includes("arm") ? "Robotic arm" :
+      title.toLowerCase().includes("maze") ? "Autonomous" :
+        title.toLowerCase().includes("soccer") ? "Competition bot" : "Maker lab",
     "3D designed",
   ];
 
   return (
     <article className={styles.projectCard}>
       <div className={styles.projectVisual}>
-        {project.image?.trim() ? (
+        {project?.image?.trim() ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className={styles.projectImage} src={project.image.trim()} alt={project.title} loading="lazy" />
+          <img className={styles.projectImage} src={project.image.trim()} alt={title} loading="lazy" />
         ) : (
           <div className={styles.projectPlaceholder} aria-hidden="true"><Cpu size={42} strokeWidth={1.2} /></div>
         )}
-        <span className={styles.projectStatus}><span />{project.status || "Building in the lab"}</span>
+        <span className={styles.projectStatus}><span />{project?.status || "Building in the lab"}</span>
       </div>
       <div className={styles.projectBody}>
-        <div className={styles.tagList}>{tags.slice(0, 3).map((tag) => <span className={styles.tag} key={tag}>{tag}</span>)}</div>
-        <h3>{project.title}</h3>
+        <div className={styles.tagList}>{(tags || []).slice(0, 3).map((tag) => <span className={styles.tag} key={tag}>{tag}</span>)}</div>
+        <h3>{title}</h3>
         <p
           className={`${styles.projectDescription} ${descriptionExpanded ? styles.projectDescriptionExpanded : ""}`}
           id={descriptionId}
         >
-          {project.description}
+          {description}
         </p>
         {hasLongDescription && (
           <button
