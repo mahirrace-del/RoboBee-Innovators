@@ -6,10 +6,10 @@ import { useEffect, useState } from "react";
 import styles from "./public-site.module.css";
 import { useAuth } from "@/context/AuthContext";
 
-interface AdminProject { id: string; title: string; description: string; image?: string }
-interface AdminAchievement { id: string; title: string; year: string; description: string; image?: string }
-interface AdminMarquee { id: string; image?: string }
-interface AdminLeader { id: string; name: string; role: string; image?: string; bio?: string; group?: string }
+interface AdminProject { id: string; title?: string; name?: string; description?: string; image?: string; [key: string]: any }
+interface AdminAchievement { id: string; title?: string; year?: string; description?: string; image?: string; [key: string]: any }
+interface AdminMarquee { id: string; image?: string; [key: string]: any }
+interface AdminLeader { id: string; name?: string; role?: string; image?: string; bio?: string; group?: string; [key: string]: any }
 
 export default function AdminPublicSitePage() {
   const { role, canManage } = useAuth();
@@ -363,24 +363,30 @@ export default function AdminPublicSitePage() {
             <button type="submit" className={styles.btnAction}>Add Project</button>
           </form>}
 
-          <h2 style={{ marginBottom: '1.5rem' }}>Current Projects</h2>
+          <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Current Projects</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
-            {projects.length === 0 ? <p className={styles.emptyState}>No featured projects yet. Add the first project when it is ready for the public homepage.</p> : projects.map(p => (
-              <div key={p.id} className={styles.itemCard}>
-                {p.image?.trim() ? <img src={p.image.trim()} alt={p.title} className={styles.itemImg} /> : null}
-                <div className={styles.itemContent}>
-                  <h3 className={styles.itemTitle}>{p.title}</h3>
-                  <p className={styles.itemDesc}>{p.description}</p>
-                  {p.description.length > 180 && (
-                    <details className={styles.descriptionDetails}>
-                      <summary>Read full description</summary>
-                      <p>{p.description}</p>
-                    </details>
-                  )}
+            {projects.length === 0 ? (
+              <p className={styles.emptyState}>No featured projects yet. Add the first project when it is ready for the public homepage.</p>
+            ) : projects.map(p => {
+              const displayTitle = p.title || (p as any).name || "Untitled Project";
+              const displayDesc = p.description || "";
+              return (
+                <div key={p.id} className={styles.itemCard}>
+                  {p.image?.trim() ? <img src={p.image.trim()} alt={displayTitle} className={styles.itemImg} /> : null}
+                  <div className={styles.itemContent}>
+                    <h3 className={styles.itemTitle}>{displayTitle}</h3>
+                    <p className={styles.itemDesc}>{displayDesc || "No description provided."}</p>
+                    {displayDesc.length > 180 && (
+                      <details className={styles.descriptionDetails}>
+                        <summary>Read full description</summary>
+                        <p>{displayDesc}</p>
+                      </details>
+                    )}
+                  </div>
+                  <button onClick={() => handleDelete('projects', p.id)} className={styles.deleteBtn}>Delete</button>
                 </div>
-                <button onClick={() => handleDelete('projects', p.id)} className={styles.deleteBtn}>Delete</button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -397,24 +403,31 @@ export default function AdminPublicSitePage() {
             <button type="submit" className={styles.btnAction}>Add Achievement</button>
           </form>}
 
-          <h2 style={{ marginBottom: '1.5rem' }}>Current Achievements</h2>
+          <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Current Achievements</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
-            {achievements.length === 0 ? <p className={styles.emptyState}>No achievements published yet. Add a milestone to feature it on the public homepage.</p> : achievements.map(a => (
-              <div key={a.id} className={styles.itemCard}>
-                {a.image?.trim() ? <img src={a.image.trim()} alt={a.title} className={styles.itemImg} /> : null}
-                <div className={styles.itemContent}>
-                  <h3 className={styles.itemTitle}><span style={{ color: '#F4B304' }}>{a.year}</span> | {a.title}</h3>
-                  <p className={styles.itemDesc}>{a.description}</p>
-                  {a.description.length > 180 && (
-                    <details className={styles.descriptionDetails}>
-                      <summary>Read full description</summary>
-                      <p>{a.description}</p>
-                    </details>
-                  )}
+            {achievements.length === 0 ? (
+              <p className={styles.emptyState}>No achievements published yet. Add a milestone to feature it on the public homepage.</p>
+            ) : achievements.map(a => {
+              const displayYear = a.year || "Award";
+              const displayTitle = a.title || "Untitled Milestone";
+              const displayDesc = a.description || "";
+              return (
+                <div key={a.id} className={styles.itemCard}>
+                  {a.image?.trim() ? <img src={a.image.trim()} alt={displayTitle} className={styles.itemImg} /> : null}
+                  <div className={styles.itemContent}>
+                    <h3 className={styles.itemTitle}><span style={{ color: '#F4B304' }}>{displayYear}</span> | {displayTitle}</h3>
+                    <p className={styles.itemDesc}>{displayDesc || "No description provided."}</p>
+                    {displayDesc.length > 180 && (
+                      <details className={styles.descriptionDetails}>
+                        <summary>Read full description</summary>
+                        <p>{displayDesc}</p>
+                      </details>
+                    )}
+                  </div>
+                  <button onClick={() => handleDelete('achievements', a.id)} className={styles.deleteBtn}>Delete</button>
                 </div>
-                <button onClick={() => handleDelete('achievements', a.id)} className={styles.deleteBtn}>Delete</button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
