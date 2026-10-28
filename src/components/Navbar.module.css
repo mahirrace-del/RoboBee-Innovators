@@ -125,8 +125,18 @@
 .brandGroup {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.15rem;
   flex-shrink: 0;
+}
+
+.brandDivider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.publicNavbar .brandDivider {
+  background: #e2d7cb !important;
 }
 
 .brandLink {

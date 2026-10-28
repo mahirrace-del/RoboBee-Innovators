@@ -24,8 +24,9 @@ export default function Navbar() {
       <div className={styles.navContainer}>
         <div className={styles.brandGroup}>
           <Link href={isDashboard ? "/dashboard" : "/"} className={styles.brandLink}>
-            <Logo width={28} height={28} />
+            <Logo width={32} height={32} variant={isStyledPublicPage ? "light" : "dark"} />
           </Link>
+          <div className={styles.brandDivider} />
           <ClientLabStatus variant={isStyledPublicPage || isDashboard ? "light" : "default"} />
         </div>
         

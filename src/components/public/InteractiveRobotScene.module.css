@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8f4ed;
+  background: transparent;
   overflow: visible;
 }
 
@@ -14,15 +14,15 @@
   aspect-ratio: 16 / 9;
   object-fit: contain;
   display: block;
-  background: #f8f4ed;
+  background: transparent;
   border: none;
   border-radius: 0;
   box-shadow: none;
   outline: none;
   pointer-events: none;
-  /* Soft edge feathering so the video melts seamlessly into the #F8F4ED background */
-  -webkit-mask-image: radial-gradient(ellipse 98% 96% at 50% 50%, black 90%, transparent 100%);
-  mask-image: radial-gradient(ellipse 98% 96% at 50% 50%, black 90%, transparent 100%);
+  /* Feathered radial edge mask so the diorama seamlessly dissolves into the #F8F0E3 page canvas */
+  -webkit-mask-image: radial-gradient(ellipse 96% 94% at 50% 50%, #000 80%, rgba(0, 0, 0, 0.4) 92%, transparent 99%);
+  mask-image: radial-gradient(ellipse 96% 94% at 50% 50%, #000 80%, rgba(0, 0, 0, 0.4) 92%, transparent 99%);
 }
 
 @media (max-width: 640px) {

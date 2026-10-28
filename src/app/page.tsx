@@ -272,7 +272,7 @@ export default function Home() {
             <h1 className={styles.title}>
               Learn electronics.<br />
               Build real robots.<br />
-              <span className={styles.titleHighlight}>Compete<br className={styles.desktopBr} /> globally.</span>
+              <span className={styles.titleHighlight}>Compete<br />globally.</span>
             </h1>
 
             <p className={styles.subtitle}>
@@ -286,7 +286,17 @@ export default function Home() {
               </Link>
 
               <Link href="#features" className={styles.secondaryBtn}>
-                <Cpu size={18} />
+                <svg width="20" height="20" viewBox="0 0 100 100" fill="none" style={{ flexShrink: 0 }}>
+                  <path d="M43 20C39 13 32 12 30 13" stroke="#C99225" strokeWidth="6" strokeLinecap="round" />
+                  <path d="M57 20C61 13 68 12 70 13" stroke="#C99225" strokeWidth="6" strokeLinecap="round" />
+                  <circle cx="50" cy="25" r="10" fill="#C99225" />
+                  <path d="M43 36C26 24 10 34 16 50C21 61 38 51 45 46Z" fill="#C99225" fillOpacity="0.3" stroke="#C99225" strokeWidth="4" />
+                  <path d="M57 36C74 24 90 34 84 50C79 61 62 51 55 46Z" fill="#C99225" fillOpacity="0.3" stroke="#C99225" strokeWidth="4" />
+                  <rect x="40" y="36" width="20" height="12" rx="6" fill="#C99225" />
+                  <rect x="38" y="50" width="24" height="10" rx="5" fill="#302B24" />
+                  <rect x="40" y="62" width="20" height="10" rx="5" fill="#C99225" />
+                  <path d="M44 74L50 86L56 74Z" fill="#302B24" />
+                </svg>
                 <span>Explore Curriculum &amp; Lab</span>
               </Link>
             </div>
