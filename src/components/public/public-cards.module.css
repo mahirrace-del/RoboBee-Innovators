@@ -64,9 +64,44 @@
 .achievementLabel { display: flex; align-items: center; gap: 10px; color: #7c293b; font-size: .76rem; font-weight: 750; }
 .achievementIcon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 12px; background: #f6eddb; color: #9b6d18; }
 .year { padding: 7px 11px; border: 1px solid #ead9b4; border-radius: 999px; background: #fcf6e9; color: #795714; font-size: .8rem; font-weight: 750; }
-.achievementImage { width: 100%; height: 190px; margin: 20px 0 4px; border-radius: 13px; object-fit: cover; }
-.achievementCard h3 { margin: 20px 0 8px; color: #292521; font-size: 1.18rem; line-height: 1.35; }
+.achievementVisual {
+  width: 100%;
+  height: 220px;
+  margin: 16px 0 6px;
+  border-radius: 14px;
+  background: #1c1815;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.achievementImage {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.achievementCard h3 { margin: 16px 0 8px; color: #292521; font-size: 1.18rem; line-height: 1.35; }
 .achievementCard p { margin: 0; color: #665f57; font-size: .9rem; line-height: 1.65; }
+.achievementDescription {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: #665f57;
+  font-size: .9rem;
+  line-height: 1.65;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.achievementDescriptionExpanded {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
 
 @media (max-width: 640px) {
   .competitionCard { padding: 20px; }

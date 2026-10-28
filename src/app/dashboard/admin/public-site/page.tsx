@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 import styles from "./public-site.module.css";
 import { useAuth } from "@/context/AuthContext";
 
-interface AdminProject { id: string; title?: string; name?: string; description?: string; image?: string; [key: string]: any }
-interface AdminAchievement { id: string; title?: string; year?: string; description?: string; image?: string; [key: string]: any }
+interface AdminProject { id: string; title?: string; name?: string; description?: string; image?: string; status?: string; [key: string]: any }
+interface AdminAchievement { id: string; title?: string; year?: string; description?: string; image?: string; category?: string; milestoneType?: string; imageFit?: "contain" | "cover"; [key: string]: any }
 interface AdminMarquee { id: string; image?: string; [key: string]: any }
 interface AdminLeader { id: string; name?: string; role?: string; image?: string; bio?: string; group?: string; [key: string]: any }
 
@@ -22,13 +22,18 @@ export default function AdminPublicSitePage() {
   const [projectTitle, setProjectTitle] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [projectImage, setProjectImage] = useState("");
+  const [projectStatus, setProjectStatus] = useState("Building in the lab");
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
 
   // State for Achievements
   const [achievements, setAchievements] = useState<AdminAchievement[]>([]);
   const [achYear, setAchYear] = useState("");
   const [achTitle, setAchTitle] = useState("");
   const [achDesc, setAchDesc] = useState("");
+  const [achCategory, setAchCategory] = useState("International Milestone");
+  const [achImageFit, setAchImageFit] = useState<"contain" | "cover">("contain");
   const [achImage, setAchImage] = useState("");
+  const [editingAchievementId, setEditingAchievementId] = useState<string | null>(null);
 
   // State for Marquee
   const [marquees, setMarquees] = useState<AdminMarquee[]>([]);
@@ -101,25 +106,21 @@ export default function AdminPublicSitePage() {
       let totalDeleted = 0;
       for (const collKey of selectedCleanups) {
         if (collKey === "competitions") {
-          // Clean competitions
           const compSnap = await getDocs(collection(db, "competitions"));
           const compDeletes = compSnap.docs.map(d => deleteDoc(doc(db, "competitions", d.id)));
           await Promise.all(compDeletes);
           totalDeleted += compSnap.docs.length;
 
-          // Clean competition_participants
           const partSnap = await getDocs(collection(db, "competition_participants"));
           const partDeletes = partSnap.docs.map(d => deleteDoc(doc(db, "competition_participants", d.id)));
           await Promise.all(partDeletes);
           totalDeleted += partSnap.docs.length;
 
-          // Clean public_competition_registrations
           const pubSnap = await getDocs(collection(db, "public_competition_registrations"));
           const pubDeletes = pubSnap.docs.map(d => deleteDoc(doc(db, "public_competition_registrations", d.id)));
           await Promise.all(pubDeletes);
           totalDeleted += pubSnap.docs.length;
         } else if (collKey === "sessions") {
-          // Clean sessions and classes
           const sessSnap = await getDocs(collection(db, "sessions"));
           const sessDeletes = sessSnap.docs.map(d => deleteDoc(doc(db, "sessions", d.id)));
           await Promise.all(sessDeletes);
@@ -138,10 +139,9 @@ export default function AdminPublicSitePage() {
       }
 
       setCleanupMessage(`Success! Successfully purged ${totalDeleted} test record(s) from Firebase. Your website is ready for live content!`);
-      alert(`Cleanup completed! ${totalDeleted} test items removed.`);
-    } catch (err: unknown) {
-      console.error("Cleanup error:", err);
-      alert("Failed to delete some test records: " + (err instanceof Error ? err.message : "Unknown error"));
+    } catch (error) {
+      console.error("Cleanup error:", error);
+      alert("Error occurred during cleanup. Check console for details.");
     } finally {
       setIsCleaning(false);
     }
@@ -151,7 +151,7 @@ export default function AdminPublicSitePage() {
     const unsubProjects = onSnapshot(collection(db, "projects"), (snap) => {
       setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() } as AdminProject)));
     });
-    
+
     const unsubAchievements = onSnapshot(query(collection(db, "achievements"), orderBy("year", "desc")), (snap) => {
       setAchievements(snap.docs.map(d => ({ id: d.id, ...d.data() } as AdminAchievement)));
     });
@@ -180,8 +180,7 @@ export default function AdminPublicSitePage() {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          // Max dimension to compress the image
-          const MAX_SIZE = 800;
+          const MAX_SIZE = 900;
           let width = img.width;
           let height = img.height;
 
@@ -203,8 +202,7 @@ export default function AdminPublicSitePage() {
           const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, width, height);
           
-          // Compress as JPEG
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
           setter(dataUrl);
         };
         img.src = event.target?.result as string;
@@ -213,46 +211,102 @@ export default function AdminPublicSitePage() {
     }
   };
 
-  const handleAddProject = async (e: React.FormEvent) => {
+  // --- PROJECTS FORM & ACTIONS ---
+  const resetProjectForm = () => {
+    setProjectTitle("");
+    setProjectDesc("");
+    setProjectImage("");
+    setProjectStatus("Building in the lab");
+    setEditingProjectId(null);
+  };
+
+  const handleEditProject = (p: AdminProject) => {
+    setIsEditorOpen(true);
+    setEditingProjectId(p.id);
+    setProjectTitle(p.title || (p as any).name || "");
+    setProjectDesc(p.description || "");
+    setProjectImage(p.image || "");
+    setProjectStatus(p.status || "Building in the lab");
+  };
+
+  const handleSaveProject = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, "projects"), {
-        title: projectTitle,
-        description: projectDesc,
+      const details = {
+        title: projectTitle.trim(),
+        description: projectDesc.trim(),
         image: projectImage,
-        createdAt: new Date()
-      });
-      setProjectTitle("");
-      setProjectDesc("");
-      setProjectImage("");
+        status: projectStatus,
+        updatedAt: new Date(),
+      };
+      if (editingProjectId) {
+        await updateDoc(doc(db, "projects", editingProjectId), details);
+      } else {
+        await addDoc(collection(db, "projects"), {
+          ...details,
+          createdAt: new Date(),
+        });
+      }
+      resetProjectForm();
       setIsEditorOpen(false);
     } catch (error) {
       console.error(error);
-      alert("Error adding project");
+      alert("Error saving project");
     }
   };
 
-  const handleAddAchievement = async (e: React.FormEvent) => {
+  // --- ACHIEVEMENTS FORM & ACTIONS ---
+  const resetAchievementForm = () => {
+    setAchYear("");
+    setAchTitle("");
+    setAchDesc("");
+    setAchCategory("International Milestone");
+    setAchImageFit("contain");
+    setAchImage("");
+    setEditingAchievementId(null);
+  };
+
+  const handleEditAchievement = (a: AdminAchievement) => {
+    setIsEditorOpen(true);
+    setEditingAchievementId(a.id);
+    setAchYear(a.year || "");
+    setAchTitle(a.title || "");
+    setAchDesc(a.description || "");
+    setAchCategory(a.category || a.milestoneType || "International Milestone");
+    setAchImageFit(a.imageFit || "contain");
+    setAchImage(a.image || "");
+  };
+
+  const handleSaveAchievement = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, "achievements"), {
-        year: achYear,
-        title: achTitle,
-        description: achDesc,
+      const details = {
+        year: achYear.trim(),
+        title: achTitle.trim(),
+        description: achDesc.trim(),
+        category: achCategory,
+        milestoneType: achCategory,
+        imageFit: achImageFit,
         image: achImage,
-        createdAt: new Date()
-      });
-      setAchYear("");
-      setAchTitle("");
-      setAchDesc("");
-      setAchImage("");
+        updatedAt: new Date(),
+      };
+      if (editingAchievementId) {
+        await updateDoc(doc(db, "achievements", editingAchievementId), details);
+      } else {
+        await addDoc(collection(db, "achievements"), {
+          ...details,
+          createdAt: new Date(),
+        });
+      }
+      resetAchievementForm();
       setIsEditorOpen(false);
     } catch (error) {
       console.error(error);
-      alert("Error adding achievement");
+      alert("Error saving achievement");
     }
   };
 
+  // --- MARQUEE FORM & ACTIONS ---
   const handleAddMarquee = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -268,6 +322,7 @@ export default function AdminPublicSitePage() {
     }
   };
 
+  // --- LEADERS FORM & ACTIONS ---
   const resetLeaderForm = () => {
     setLeaderName("");
     setLeaderRole("");
@@ -312,8 +367,10 @@ export default function AdminPublicSitePage() {
   };
 
   const handleDelete = async (collectionName: string, id: string) => {
-    if(confirm("Are you sure?")) {
+    if(confirm("Are you sure you want to delete this item?")) {
       if (collectionName === "leaders" && editingLeaderId === id) resetLeaderForm();
+      if (collectionName === "projects" && editingProjectId === id) resetProjectForm();
+      if (collectionName === "achievements" && editingAchievementId === id) resetAchievementForm();
       await deleteDoc(doc(db, collectionName, id));
     }
   };
@@ -330,13 +387,48 @@ export default function AdminPublicSitePage() {
   return (
     <div className={styles.container}>
       <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Public Site Management</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Customize the public homepage features.</p>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Customize the public homepage features, project showcases, and award milestones.</p>
 
       <div className={styles.tabsContainer}>
-        <button className={activeTab === 'projects' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('projects'); setIsEditorOpen(false); }}>Projects</button>
-        <button className={activeTab === 'achievements' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('achievements'); setIsEditorOpen(false); }}>Achievements</button>
-        <button className={activeTab === 'marquee' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('marquee'); setIsEditorOpen(false); }}>Member Marquee</button>
-        <button className={activeTab === 'leaders' ? styles.activeTab : styles.tab} onClick={() => { setActiveTab('leaders'); setIsEditorOpen(false); }}>Core Team</button>
+        <button
+          className={activeTab === 'projects' ? styles.activeTab : styles.tab}
+          onClick={() => {
+            setActiveTab('projects');
+            resetProjectForm();
+            setIsEditorOpen(false);
+          }}
+        >
+          Projects
+        </button>
+        <button
+          className={activeTab === 'achievements' ? styles.activeTab : styles.tab}
+          onClick={() => {
+            setActiveTab('achievements');
+            resetAchievementForm();
+            setIsEditorOpen(false);
+          }}
+        >
+          Achievements
+        </button>
+        <button
+          className={activeTab === 'marquee' ? styles.activeTab : styles.tab}
+          onClick={() => {
+            setActiveTab('marquee');
+            setIsEditorOpen(false);
+          }}
+        >
+          Member Marquee
+        </button>
+        <button
+          className={activeTab === 'leaders' ? styles.activeTab : styles.tab}
+          onClick={() => {
+            setActiveTab('leaders');
+            resetLeaderForm();
+            setIsEditorOpen(false);
+          }}
+        >
+          Core Team
+        </button>
         {role === 'admin' && (
           <button 
             className={activeTab === 'cleanup' ? styles.activeTab : styles.tab} 
@@ -352,18 +444,107 @@ export default function AdminPublicSitePage() {
         )}
       </div>
 
+      {/* --- TAB 1: PROJECTS --- */}
       {activeTab === 'projects' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <div className={styles.sectionHeader}><h2>Projects</h2><button type="button" className={styles.btnAction} onClick={() => setIsEditorOpen((open) => !open)} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add project"}</button></div>
-          {isEditorOpen && <form onSubmit={handleAddProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
-            <input type="text" placeholder="Project Title" value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} required className={styles.input} />
-            <textarea placeholder="Description" value={projectDesc} onChange={(e) => setProjectDesc(e.target.value)} required className={styles.input} style={{ minHeight: '80px' }} />
-            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setProjectImage)} required className={styles.input} />
-            {projectImage?.trim() ? <img src={projectImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'contain', alignSelf: 'flex-start' }} /> : null}
-            <button type="submit" className={styles.btnAction}>Add Project</button>
-          </form>}
+          <div className={styles.sectionHeader}>
+            <h2>Featured Projects</h2>
+            <button
+              type="button"
+              className={styles.btnAction}
+              onClick={() => {
+                if (isEditorOpen) resetProjectForm();
+                setIsEditorOpen((open) => !open);
+              }}
+              aria-expanded={isEditorOpen}
+            >
+              {isEditorOpen ? "Close Form" : "+ Add Project"}
+            </button>
+          </div>
 
-          <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Current Projects</h2>
+          {isEditorOpen && (
+            <form onSubmit={handleSaveProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>
+                  {editingProjectId ? "Edit Featured Project" : "Add New Project"}
+                </h3>
+                {editingProjectId && (
+                  <button type="button" className={styles.tab} onClick={resetProjectForm}>
+                    Cancel Editing
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Project Title *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Robo-Soccer Striker Bot"
+                  value={projectTitle}
+                  onChange={(e) => setProjectTitle(e.target.value)}
+                  required
+                  className={styles.input}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Status Badge</label>
+                <select
+                  value={projectStatus}
+                  onChange={(e) => setProjectStatus(e.target.value)}
+                  className={styles.input}
+                >
+                  <option value="Building in the lab">Building in the lab</option>
+                  <option value="Competition Ready">Competition Ready</option>
+                  <option value="Prototyping">Prototyping</option>
+                  <option value="Chassis Assembled">Chassis Assembled</option>
+                  <option value="Testing & Tuning">Testing & Tuning</option>
+                  <option value="Completed Showcase">Completed Showcase</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Description *</label>
+                <textarea
+                  placeholder="Detailed breakdown of mechanical CAD, electronics, sensors, and firmware."
+                  value={projectDesc}
+                  onChange={(e) => setProjectDesc(e.target.value)}
+                  required
+                  className={styles.input}
+                  style={{ minHeight: '100px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Project Photo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, setProjectImage)}
+                  className={styles.input}
+                />
+                {projectImage?.trim() ? (
+                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img src={projectImage.trim()} alt="Preview" style={{ height: '90px', borderRadius: '6px', objectFit: 'contain' }} />
+                    <button type="button" className={styles.tab} onClick={() => setProjectImage("")}>Remove photo</button>
+                  </div>
+                ) : null}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button type="submit" className={styles.btnAction}>
+                  {editingProjectId ? "Save Changes" : "Publish Project"}
+                </button>
+                {editingProjectId && (
+                  <button type="button" className={styles.tab} onClick={resetProjectForm}>
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
+
+          <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Current Projects ({projects.length})</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
             {projects.length === 0 ? (
               <p className={styles.emptyState}>No featured projects yet. Add the first project when it is ready for the public homepage.</p>
@@ -374,6 +555,11 @@ export default function AdminPublicSitePage() {
                 <div key={p.id} className={styles.itemCard}>
                   {p.image?.trim() ? <img src={p.image.trim()} alt={displayTitle} className={styles.itemImg} /> : null}
                   <div className={styles.itemContent}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(156, 111, 24, 0.12)', color: '#9c6f18' }}>
+                        {p.status || "Building in the lab"}
+                      </span>
+                    </div>
                     <h3 className={styles.itemTitle}>{displayTitle}</h3>
                     <p className={styles.itemDesc}>{displayDesc || "No description provided."}</p>
                     {displayDesc.length > 180 && (
@@ -383,7 +569,10 @@ export default function AdminPublicSitePage() {
                       </details>
                     )}
                   </div>
-                  <button onClick={() => handleDelete('projects', p.id)} className={styles.deleteBtn}>Delete</button>
+                  <div className={styles.cardActionGroup}>
+                    <button onClick={() => handleEditProject(p)} className={styles.editBtn}>Edit</button>
+                    <button onClick={() => handleDelete('projects', p.id)} className={styles.deleteBtn}>Delete</button>
+                  </div>
                 </div>
               );
             })}
@@ -391,19 +580,133 @@ export default function AdminPublicSitePage() {
         </div>
       )}
 
+      {/* --- TAB 2: ACHIEVEMENTS --- */}
       {activeTab === 'achievements' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <div className={styles.sectionHeader}><h2>Achievements</h2><button type="button" className={styles.btnAction} onClick={() => setIsEditorOpen((open) => !open)} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add achievement"}</button></div>
-          {isEditorOpen && <form onSubmit={handleAddAchievement} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
-            <input type="text" placeholder="Year (e.g. 2024)" value={achYear} onChange={(e) => setAchYear(e.target.value)} required className={styles.input} />
-            <input type="text" placeholder="Title (e.g. EWU RoboFest - Runner Up)" value={achTitle} onChange={(e) => setAchTitle(e.target.value)} required className={styles.input} />
-            <textarea placeholder="Description" value={achDesc} onChange={(e) => setAchDesc(e.target.value)} required className={styles.input} style={{ minHeight: '80px' }} />
-            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setAchImage)} className={styles.input} />
-            {achImage?.trim() ? <img src={achImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'contain', alignSelf: 'flex-start' }} /> : null}
-            <button type="submit" className={styles.btnAction}>Add Achievement</button>
-          </form>}
+          <div className={styles.sectionHeader}>
+            <h2>Milestones &amp; Achievements</h2>
+            <button
+              type="button"
+              className={styles.btnAction}
+              onClick={() => {
+                if (isEditorOpen) resetAchievementForm();
+                setIsEditorOpen((open) => !open);
+              }}
+              aria-expanded={isEditorOpen}
+            >
+              {isEditorOpen ? "Close Form" : "+ Add Achievement"}
+            </button>
+          </div>
 
-          <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Current Achievements</h2>
+          {isEditorOpen && (
+            <form onSubmit={handleSaveAchievement} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>
+                  {editingAchievementId ? "Edit Milestone" : "Add New Milestone"}
+                </h3>
+                {editingAchievementId && (
+                  <button type="button" className={styles.tab} onClick={resetAchievementForm}>
+                    Cancel Editing
+                  </button>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Year *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 2025"
+                    value={achYear}
+                    onChange={(e) => setAchYear(e.target.value)}
+                    required
+                    className={styles.input}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Milestone Category Badge *</label>
+                  <select
+                    value={achCategory}
+                    onChange={(e) => setAchCategory(e.target.value)}
+                    className={styles.input}
+                  >
+                    <option value="International Milestone">🌍 International Milestone</option>
+                    <option value="National Milestone">🇧🇩 National Milestone</option>
+                    <option value="Award of Excellence">🏆 Award of Excellence</option>
+                    <option value="Championship Trophy">🥇 Championship Trophy</option>
+                    <option value="Special Recognition">⭐ Special Recognition</option>
+                    <option value="Runner Up">🥈 Runner Up</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Photo Display Fit</label>
+                  <select
+                    value={achImageFit}
+                    onChange={(e) => setAchImageFit(e.target.value as "contain" | "cover")}
+                    className={styles.input}
+                  >
+                    <option value="contain">Full Picture (Fit Entire Image - No Crop)</option>
+                    <option value="cover">Top-Focused Cover (Fill Frame, Face Centered)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Award Headline / Title *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Gold at WICO 2025 South Korea"
+                  value={achTitle}
+                  onChange={(e) => setAchTitle(e.target.value)}
+                  required
+                  className={styles.input}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Full Story / Description *</label>
+                <textarea
+                  placeholder="Share the full story: date, university/venue, category, team effort, and podium victory."
+                  value={achDesc}
+                  onChange={(e) => setAchDesc(e.target.value)}
+                  required
+                  className={styles.input}
+                  style={{ minHeight: '100px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Award Photo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, setAchImage)}
+                  className={styles.input}
+                />
+                {achImage?.trim() ? (
+                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img src={achImage.trim()} alt="Preview" style={{ height: '90px', borderRadius: '6px', objectFit: 'contain' }} />
+                    <button type="button" className={styles.tab} onClick={() => setAchImage("")}>Remove photo</button>
+                  </div>
+                ) : null}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button type="submit" className={styles.btnAction}>
+                  {editingAchievementId ? "Save Changes" : "Publish Achievement"}
+                </button>
+                {editingAchievementId && (
+                  <button type="button" className={styles.tab} onClick={resetAchievementForm}>
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
+
+          <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Current Achievements ({achievements.length})</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
             {achievements.length === 0 ? (
               <p className={styles.emptyState}>No achievements published yet. Add a milestone to feature it on the public homepage.</p>
@@ -411,10 +714,17 @@ export default function AdminPublicSitePage() {
               const displayYear = a.year || "Award";
               const displayTitle = a.title || "Untitled Milestone";
               const displayDesc = a.description || "";
+              const badgeLabel = a.category || a.milestoneType || "Milestone";
+
               return (
                 <div key={a.id} className={styles.itemCard}>
                   {a.image?.trim() ? <img src={a.image.trim()} alt={displayTitle} className={styles.itemImg} /> : null}
                   <div className={styles.itemContent}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(132, 36, 58, 0.1)', color: '#84243a' }}>
+                        {badgeLabel}
+                      </span>
+                    </div>
                     <h3 className={styles.itemTitle}><span style={{ color: '#F4B304' }}>{displayYear}</span> | {displayTitle}</h3>
                     <p className={styles.itemDesc}>{displayDesc || "No description provided."}</p>
                     {displayDesc.length > 180 && (
@@ -424,7 +734,10 @@ export default function AdminPublicSitePage() {
                       </details>
                     )}
                   </div>
-                  <button onClick={() => handleDelete('achievements', a.id)} className={styles.deleteBtn}>Delete</button>
+                  <div className={styles.cardActionGroup}>
+                    <button onClick={() => handleEditAchievement(a)} className={styles.editBtn}>Edit</button>
+                    <button onClick={() => handleDelete('achievements', a.id)} className={styles.deleteBtn}>Delete</button>
+                  </div>
                 </div>
               );
             })}
@@ -432,9 +745,10 @@ export default function AdminPublicSitePage() {
         </div>
       )}
 
+      {/* --- TAB 3: MARQUEE --- */}
       {activeTab === 'marquee' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <div className={styles.sectionHeader}><h2>Member marquee</h2><button type="button" className={styles.btnAction} onClick={() => setIsEditorOpen((open) => !open)} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add image"}</button></div>
+          <div className={styles.sectionHeader}><h2>Member Marquee</h2><button type="button" className={styles.btnAction} onClick={() => setIsEditorOpen((open) => !open)} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add image"}</button></div>
           {isEditorOpen && <form onSubmit={handleAddMarquee} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMarqueeImage)} required className={styles.input} />
             {marqueeImage?.trim() ? <img src={marqueeImage.trim()} alt="Preview" style={{ height: '100px', objectFit: 'cover', borderRadius: '50%', alignSelf: 'flex-start' }} /> : null}
@@ -453,9 +767,10 @@ export default function AdminPublicSitePage() {
         </div>
       )}
 
+      {/* --- TAB 4: CORE TEAM LEADERS --- */}
       {activeTab === 'leaders' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <div className={styles.sectionHeader}><h2>Core team</h2><button type="button" className={styles.btnAction} onClick={() => { resetLeaderForm(); setIsEditorOpen((open) => !open); }} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add profile"}</button></div>
+          <div className={styles.sectionHeader}><h2>Core Team</h2><button type="button" className={styles.btnAction} onClick={() => { resetLeaderForm(); setIsEditorOpen((open) => !open); }} aria-expanded={isEditorOpen}>{isEditorOpen ? "Close form" : "Add profile"}</button></div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Add and update leadership profiles and core member introductions shown on the public site.</p>
           {isEditorOpen && <form onSubmit={handleSaveLeader} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
             <label htmlFor="team-group">Profile group</label>
@@ -499,99 +814,84 @@ export default function AdminPublicSitePage() {
                   <button type="button" onClick={() => handleDelete('leaders', l.id)} className={styles.deleteBtn}>Delete</button>
                 </div>
               </div>
-            );})}
+            );
+            })}
           </div>
         </div>
       )}
 
-      {activeTab === 'cleanup' && role === 'admin' && (
+      {/* --- TAB 5: CLEANUP --- */}
+      {activeTab === 'cleanup' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '0.5rem', color: '#ff5555' }}>Live Launch: Test Data Cleanup</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
-            Ready to take the website live? Select which categories of mock/test data you would like to purge from Firebase Firestore.
-          </p>
-
-          <div style={{ background: 'rgba(0, 210, 255, 0.08)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
-            <h4 style={{ color: '#00d2ff', marginBottom: '0.3rem' }}>🔒 Accounts Are Safe</h4>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-              User logins, admin accounts, and authentication credentials will <strong>NEVER</strong> be deleted by this cleanup tool.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-            <button onClick={handleSelectAllCleanups} type="button" className={styles.tab} style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>
-              Select All
-            </button>
-            <button onClick={handleDeselectAllCleanups} type="button" className={styles.tab} style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>
-              Clear Selection
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-            {cleanupOptions.map(opt => {
-              const checked = selectedCleanups.includes(opt.key);
-              return (
-                <label 
-                  key={opt.key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.75rem',
-                    background: checked ? 'rgba(255, 85, 85, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                    border: checked ? '1px solid rgba(255, 85, 85, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <input 
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => handleToggleCleanup(opt.key)}
-                    style={{ marginTop: '0.2rem', accentColor: '#ff5555' }}
-                  />
-                  <div>
-                    <div style={{ fontWeight: '600', color: checked ? '#fff' : 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                      {opt.label}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                      {opt.desc}
-                    </div>
-                  </div>
-                </label>
-              );
-            })}
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 style={{ color: '#ff5555' }}>🧹 Live Launch Test Data Cleanup</h2>
+              <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                Safely purge mock and test data created during development so your website is pristine for live members.
+              </p>
+            </div>
           </div>
 
           {cleanupMessage && (
-            <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#10b981', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#10b981', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontWeight: 600 }}>
               {cleanupMessage}
             </div>
           )}
 
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            <button type="button" onClick={handleSelectAllCleanups} className={styles.tab} style={{ fontSize: '0.85rem' }}>Select All</button>
+            <button type="button" onClick={handleDeselectAllCleanups} className={styles.tab} style={{ fontSize: '0.85rem' }}>Deselect All</button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+            {cleanupOptions.map(option => (
+              <label 
+                key={option.key} 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'flex-start', 
+                  gap: '0.75rem', 
+                  padding: '1rem', 
+                  borderRadius: '8px', 
+                  background: selectedCleanups.includes(option.key) ? 'rgba(255, 85, 85, 0.1)' : 'var(--bg-secondary)', 
+                  border: selectedCleanups.includes(option.key) ? '1px solid rgba(255, 85, 85, 0.4)' : '1px solid var(--border-subtle)',
+                  cursor: 'pointer' 
+                }}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={selectedCleanups.includes(option.key)} 
+                  onChange={() => handleToggleCleanup(option.key)}
+                  style={{ marginTop: '0.2rem', accentColor: '#ff5555' }}
+                />
+                <div>
+                  <strong style={{ display: 'block', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{option.label}</strong>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4, display: 'block', marginTop: '0.2rem' }}>{option.desc}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+
           <button 
             type="button" 
-            onClick={handleExecuteCleanup}
+            onClick={handleExecuteCleanup} 
             disabled={isCleaning || selectedCleanups.length === 0}
-            style={{
-              background: '#ff5555',
-              color: 'white',
-              border: 'none',
-              padding: '0.9rem 2rem',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: isCleaning ? 'not-allowed' : 'pointer',
-              opacity: isCleaning || selectedCleanups.length === 0 ? 0.6 : 1,
-              boxShadow: '0 4px 15px rgba(255, 85, 85, 0.3)'
+            style={{ 
+              background: '#dc2626', 
+              color: '#ffffff', 
+              padding: '0.85rem 1.75rem', 
+              borderRadius: '8px', 
+              border: 'none', 
+              fontWeight: 700, 
+              cursor: selectedCleanups.length === 0 || isCleaning ? 'not-allowed' : 'pointer',
+              opacity: selectedCleanups.length === 0 || isCleaning ? 0.6 : 1,
+              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.3)'
             }}
           >
-            {isCleaning ? "Purging Selected Test Data..." : `Purge Selected Data (${selectedCleanups.length} categories)`}
+            {isCleaning ? "Purging test records..." : `Permanently Purge Selected (${selectedCleanups.length})`}
           </button>
         </div>
       )}
-
     </div>
   );
 }

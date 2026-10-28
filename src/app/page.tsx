@@ -55,6 +55,9 @@ interface AchievementData {
   year: string;
   description: string;
   image?: string;
+  category?: string;
+  milestoneType?: string;
+  imageFit?: "contain" | "cover";
 }
 
 export default function Home() {
