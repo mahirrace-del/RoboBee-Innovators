@@ -103,9 +103,82 @@
   -webkit-line-clamp: unset;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 680px) {
   .competitionCard { padding: 20px; }
   .projectBody { padding: 18px; }
+
+  /* Compact 2-column mobile achievements card */
+  .achievementCard {
+    padding: 12px 10px 14px;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(43, 30, 26, 0.05);
+  }
+  .achievementTop {
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .achievementLabel {
+    gap: 5px;
+    font-size: 0.65rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .achievementIcon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 7px;
+  }
+  .achievementIcon svg {
+    width: 13px;
+    height: 13px;
+  }
+  .year {
+    padding: 2px 7px;
+    font-size: 0.66rem;
+    flex-shrink: 0;
+  }
+  .achievementVisual {
+    height: 125px;
+    margin: 8px 0 6px;
+    border-radius: 10px;
+  }
+  .achievementCard h3 {
+    margin: 8px 0 4px;
+    font-size: 0.88rem;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .achievementDescription {
+    font-size: 0.74rem;
+    line-height: 1.45;
+  }
+  .readDetailsButton {
+    margin-top: 4px;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 420px) {
+  .achievementCard {
+    padding: 10px 8px 12px;
+    border-radius: 13px;
+  }
+  .achievementVisual {
+    height: 110px;
+  }
+  .achievementCard h3 {
+    font-size: 0.82rem;
+  }
+  .achievementDescription {
+    font-size: 0.7rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -137,4 +210,15 @@
 .joinLink:hover { background: #5b1a2c; }
 .joinLink:focus-visible { outline: 3px solid #d4a43c; outline-offset: 3px; }
 @media (max-width: 900px) { .programGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } .programCard:last-of-type { grid-column: 1 / -1; } }
-@media (max-width: 620px) { .programSection { padding: 60px 20px; } .programGrid { grid-template-columns: 1fr; } .programCard:last-of-type { grid-column: auto; } .joinPanel { grid-column: auto; align-items: stretch; flex-direction: column; padding: 22px; } .joinCopy ul { grid-template-columns: 1fr; } }
+@media (max-width: 620px) {
+  .programSection { padding: 48px 16px; }
+  .programGrid { grid-template-columns: 1fr; gap: 12px; }
+  .programCard { padding: 18px 16px; border-radius: 15px; }
+  .programIcon { width: 38px; height: 38px; margin-bottom: 12px; }
+  .programCard h3 { font-size: 1rem; margin-bottom: 6px; }
+  .programCard > p { font-size: 0.83rem; line-height: 1.55; }
+  .programTags { padding-top: 12px; }
+  .programCard:last-of-type { grid-column: auto; }
+  .joinPanel { grid-column: auto; align-items: stretch; flex-direction: column; padding: 22px; }
+  .joinCopy ul { grid-template-columns: 1fr; }
+}

@@ -436,9 +436,6 @@ export default function Home() {
           <h2 className={styles.sectionTitle}>
             Competitive <span>Milestones &amp; Achievements</span>
           </h2>
-          <p className={styles.sectionSubtitle}>
-            Representing on the national and international stage—from FIRSO 2026 UIU to international arenas in Malaysia.
-          </p>
         </div>
 
         {(achievements || []).length === 0 ? (

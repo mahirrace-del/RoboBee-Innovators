@@ -153,8 +153,13 @@
   .heroMetricsStrip { grid-template-columns: repeat(2, 1fr); gap: 16px 10px; text-align: center; }
   .heroVisualColumn { width: 100%; }
   .robotStage { width: 100%; min-height: unset; }
-  .projectsSection, .competitionsSection, .achievementsSection, .leadershipSection { padding: 60px 20px; }
-  .projectsGrid, .competitionsGrid, .achievementsGrid { grid-template-columns: 1fr; }
+  .projectsSection, .competitionsSection, .leadershipSection { padding: 60px 20px; }
+  .achievementsSection { padding: 50px 14px 60px; }
+  .projectsGrid, .competitionsGrid { grid-template-columns: 1fr; }
+  .achievementsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
   .featuredLeaders { grid-template-columns: 1fr; }
   .featuredLeaderCard { grid-template-columns: 104px minmax(0,1fr); gap: 15px; padding: 15px; }
   .featuredLeaderAvatar, .featuredLeaderPlaceholder { width: 104px; height: 128px; }
@@ -168,6 +173,8 @@
 }
 
 @media (max-width: 420px) {
+  .achievementsSection { padding: 42px 10px 50px; }
+  .achievementsGrid { gap: 8px; }
   .ctaContainer { flex-direction: column; align-items: stretch; }
   .primaryBtn, .secondaryBtn { width: 100%; }
   .leaderGrid { grid-template-columns: 1fr 1fr; }
