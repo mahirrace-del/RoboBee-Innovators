@@ -14,10 +14,10 @@
 
 /* Public Pages Modern Glass Navbar Override */
 .publicNavbar {
-  background: rgba(248, 244, 237, 0.94) !important;
+  background: rgba(248, 238, 222, 0.94) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid rgba(232, 223, 213, 0.8) !important;
+  border-bottom: 1px solid rgba(220, 204, 185, 0.35) !important;
   box-shadow: none !important;
 }
 
