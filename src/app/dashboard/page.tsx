@@ -254,21 +254,21 @@ export default function DashboardOverview() {
       .filter((p) => p.status === "verified")
       .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
     const inflows = expenses
-      .filter((e) => e.entryType === "income" && e.status === "approved")
+      .filter((e) => (e.type === "income" || e.entryType === "income") && (e.status === "approved" || e.status === "verified"))
       .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
     return memberFees + inflows;
   }, [payments, expenses]);
 
   const approvedOutflow = useMemo(() => {
     return expenses
-      .filter((e) => e.entryType !== "income" && e.status === "approved")
+      .filter((e) => e.type !== "income" && e.entryType !== "income" && (e.status === "approved" || e.status === "verified"))
       .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
   }, [expenses]);
 
   const netTreasuryBalance = verifiedIncome - approvedOutflow;
   const pendingFinanceApprovals =
     payments.filter((p) => p.status === "pending_verification").length +
-    expenses.filter((e) => e.status === "pending_approval").length;
+    expenses.filter((e) => e.status === "pending" || e.status === "pending_approval").length;
 
   // Unified Real-Time Activity Stream (Admin)
   const activityStream = useMemo(() => {

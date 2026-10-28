@@ -304,11 +304,11 @@ export default function MemberCurriculumPage() {
         <h1 style={{ margin: "0 0 0.4rem 0", fontSize: "1.65rem", fontWeight: 800, color: "#FFFFFF" }}>
           Robotics &amp; Engineering Curriculum Hub
         </h1>
-        <p style={{ margin: "0 0 1.15rem 0", color: "#6f665e", fontSize: "0.9rem", lineHeight: 1.55, maxWidth: "820px" }}>
-          <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em> — Explore 36 proposed 120-minute (2-hour) hands-on lessons across 4 progressive courses. Click <strong style={{ color: "#FFFFFF" }}>Start Lesson</strong> on any unlocked class to open its 12-slide presentation, wiring guide, C++ code lab, interactive circuit simulator, and 4-question Exit Check.
+        <p style={{ margin: "0 0 1.15rem 0", color: "#94A3B8", fontSize: "0.9rem", lineHeight: 1.55, maxWidth: "820px" }}>
+          <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em> — Explore 38 proposed 120-minute (2-hour) hands-on lessons across 4 progressive courses. Click <strong style={{ color: "#FFFFFF" }}>Start Lesson</strong> on any unlocked class to open its 12-slide presentation, wiring guide, C++ code lab, interactive circuit simulator, and 4-question Exit Check.
         </p>
 
-        {/* Accurate 36-Lesson Student Stats Row */}
+        {/* Accurate 38-Lesson Student Stats Row */}
         <div
           style={{
             display: "grid",
@@ -317,16 +317,16 @@ export default function MemberCurriculumPage() {
           }}
         >
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
-            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF" }}>36 Total Lessons</div>
-            <div style={{ fontSize: "0.74rem", color: "#6f665e" }}>4 Proposed Courses (4 + 10 + 10 + 12)</div>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF" }}>38 Total Lessons</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>4 Comprehensive Courses (4 + 12 + 10 + 12)</div>
           </div>
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#9c6f18" }}>120 Min / Class</div>
-            <div style={{ fontSize: "0.74rem", color: "#6f665e" }}>2-Hour Workshop Standard (72h Total)</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>2-Hour Workshop Standard (76h Total)</div>
           </div>
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#10B981" }}>{completedCount} Completed</div>
-            <div style={{ fontSize: "0.74rem", color: "#6f665e" }}>Exit Checks Submitted</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>Exit Checks Submitted</div>
           </div>
         </div>
       </div>
@@ -392,7 +392,7 @@ export default function MemberCurriculumPage() {
                   <Calendar size={12} /> Next Scheduled Class
                 </span>
               )}
-              <span style={{ fontSize: "0.8rem", color: "#6f665e" }}>
+              <span style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
                 {(progression.activeSession || progression.nextSession)?.date} &bull;{" "}
                 {(progression.activeSession || progression.nextSession)?.time || "15:30"}
               </span>
@@ -452,7 +452,7 @@ export default function MemberCurriculumPage() {
                   borderRadius: "8px",
                   border: `1px solid ${isSelected ? "#9c6f18" : "#2E374B"}`,
                   background: isSelected ? "#6B0F24" : "#161B26",
-                  color: isSelected ? "#FFFFFF" : "#6f665e",
+                  color: isSelected ? "#FFFFFF" : "#94A3B8",
                   fontSize: "0.78rem",
                   fontWeight: 800,
                   cursor: "pointer",
@@ -467,7 +467,7 @@ export default function MemberCurriculumPage() {
                     padding: "0.1rem 0.4rem",
                     borderRadius: "999px",
                     background: isSelected ? "rgba(245, 184, 0, 0.2)" : "#1E2533",
-                    color: isSelected ? "#9c6f18" : "#6f665e",
+                    color: isSelected ? "#9c6f18" : "#94A3B8",
                     fontSize: "0.7rem",
                   }}
                 >
@@ -485,20 +485,20 @@ export default function MemberCurriculumPage() {
               borderRadius: "8px",
               border: `1px solid ${courseFilter === "ALL" ? "#9c6f18" : "#2E374B"}`,
               background: courseFilter === "ALL" ? "#6B0F24" : "#161B26",
-              color: courseFilter === "ALL" ? "#FFFFFF" : "#6f665e",
+              color: courseFilter === "ALL" ? "#FFFFFF" : "#94A3B8",
               fontSize: "0.78rem",
               fontWeight: 800,
               cursor: "pointer",
             }}
           >
-            All 36 Classes
+            All 38 Classes
           </button>
         </div>
 
         <div style={{ position: "relative", minWidth: "240px", flex: "0 1 300px" }}>
           <Search
             size={14}
-            color="#6f665e"
+            color="#94A3B8"
             style={{
               position: "absolute",
               left: "11px",
@@ -562,12 +562,12 @@ export default function MemberCurriculumPage() {
                   {activeSpace.badge}
                 </span>
               </div>
-              <div style={{ fontSize: "0.8rem", color: "#6f665e" }}>
+              <div style={{ fontSize: "0.8rem", color: "#94A3B8" }}>
                 {activeSpace.description}
               </div>
             </div>
             <div style={{ fontSize: "0.76rem", color: "#E2E8F0", fontWeight: 700 }}>
-              Recommended Hardware: <span style={{ color: "#6f665e", fontWeight: 500 }}>{activeSpace.recommendedHardware}</span>
+              Recommended Hardware: <span style={{ color: "#CBD5E1", fontWeight: 500 }}>{activeSpace.recommendedHardware}</span>
             </div>
           </div>
         );
@@ -653,7 +653,7 @@ export default function MemberCurriculumPage() {
                         borderRadius: "6px",
                         background: "#161B26",
                         border: "1px solid #2E374B",
-                        color: "#6f665e",
+                        color: "#94A3B8",
                         fontSize: "0.7rem",
                         fontWeight: 700,
                       }}
@@ -690,7 +690,7 @@ export default function MemberCurriculumPage() {
                     style={{
                       margin: 0,
                       fontSize: "0.82rem",
-                      color: "#6f665e",
+                      color: "#94A3B8",
                       lineHeight: 1.5,
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
@@ -709,7 +709,7 @@ export default function MemberCurriculumPage() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     fontSize: "0.74rem",
-                    color: "#6f665e",
+                    color: "#94A3B8",
                     paddingTop: "0.5rem",
                     borderTop: "1px solid #2E374B",
                   }}
@@ -832,7 +832,7 @@ export default function MemberCurriculumPage() {
                   >
                     {activeLessonDeck.classCode}
                   </span>
-                  <span style={{ fontSize: "0.75rem", color: "#6f665e", fontWeight: 700 }}>
+                  <span style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: 700 }}>
                     120-Minute Student Lesson &amp; Hardware Guide
                   </span>
                 </div>
@@ -893,7 +893,7 @@ export default function MemberCurriculumPage() {
                     borderRadius: "8px",
                     border: "1px solid #2E374B",
                     background: "transparent",
-                    color: "#6f665e",
+                    color: "#94A3B8",
                     cursor: "pointer",
                   }}
                 >
@@ -913,7 +913,7 @@ export default function MemberCurriculumPage() {
                   {activeLessonRecord.promise}
                 </p>
 
-                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#6f665e", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", marginBottom: "0.5rem" }}>
                   120-Minute (2-Hour) Workshop Timeline
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: "0.6rem" }}>
@@ -925,7 +925,7 @@ export default function MemberCurriculumPage() {
                       <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#FFFFFF", marginTop: "0.15rem" }}>
                         {seg.segment}
                       </div>
-                      <div style={{ fontSize: "0.74rem", color: "#6f665e", marginTop: "0.25rem", lineHeight: 1.4 }}>
+                      <div style={{ fontSize: "0.74rem", color: "#94A3B8", marginTop: "0.25rem", lineHeight: 1.4 }}>
                         {seg.studentAction}
                       </div>
                     </div>
@@ -961,7 +961,7 @@ export default function MemberCurriculumPage() {
                             {w.from} &rarr; {w.to}
                           </div>
                           {w.wireOrPolarityNote && (
-                            <div style={{ fontSize: "0.73rem", color: "#6f665e", marginTop: "0.15rem" }}>
+                            <div style={{ fontSize: "0.73rem", color: "#94A3B8", marginTop: "0.15rem" }}>
                               {w.wireOrPolarityNote}
                             </div>
                           )}

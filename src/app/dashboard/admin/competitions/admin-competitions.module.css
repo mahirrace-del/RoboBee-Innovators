@@ -370,31 +370,31 @@
 
 .badgeSuccess {
   background: rgba(46, 204, 113, 0.18);
-  color: #2ecc71;
+  color: #15803d;
   border: 1px solid rgba(46, 204, 113, 0.3);
 }
 
 .badgeWarning {
   background: rgba(244, 179, 4, 0.18);
-  color: #F4B304;
+  color: #9c6f18;
   border: 1px solid rgba(244, 179, 4, 0.3);
 }
 
 .badgeDanger {
   background: rgba(255, 85, 85, 0.18);
-  color: #ff5555;
+  color: #dc2626;
   border: 1px solid rgba(255, 85, 85, 0.3);
 }
 
 .badgeInfo {
   background: rgba(0, 210, 255, 0.15);
-  color: #00d2ff;
+  color: #0284c7;
   border: 1px solid rgba(0, 210, 255, 0.3);
 }
 
 .badgePublic {
   background: rgba(52, 211, 153, 0.15);
-  color: #34d399;
+  color: #059669;
   border: 1px solid rgba(52, 211, 153, 0.3);
 }
 

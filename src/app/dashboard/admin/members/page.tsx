@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, doc, updateDoc, orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import styles from "./members.module.css";
 
 export default function MembersManagementPage() {
@@ -60,8 +61,28 @@ export default function MembersManagementPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 style={{ fontSize: '2rem', color: 'var(--text-primary)' }}>Member Management</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>View all registered members and assign roles.</p>
+        <div>
+          <h1 style={{ fontSize: '2rem', color: 'var(--text-primary)' }}>Member Management</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>View all registered members and assign roles.</p>
+        </div>
+        <Link 
+          href="/dashboard/members"
+          style={{
+            background: '#6B0F24',
+            color: '#ffffff',
+            border: '1px solid #9c6f18',
+            padding: '0.6rem 1.25rem',
+            borderRadius: '8px',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem'
+          }}
+        >
+          Open Unified RBAC &amp; Recruitment Center &rarr;
+        </Link>
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem' }}>

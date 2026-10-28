@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function AdminRecruitmentPage() {
   const { role } = useAuth();
@@ -54,8 +55,30 @@ export default function AdminRecruitmentPage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Recruitment Applications</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Review and manage pending applications to join Robo Innovators.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '0.4rem', color: 'var(--text-primary)' }}>Recruitment Applications</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Review and manage pending applications to join Robo Innovators.</p>
+        </div>
+        <Link 
+          href="/dashboard/members?tab=recruitment"
+          style={{
+            background: '#6B0F24',
+            color: '#ffffff',
+            border: '1px solid #9c6f18',
+            padding: '0.6rem 1.25rem',
+            borderRadius: '8px',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem'
+          }}
+        >
+          Open Consolidated Member Portal &rarr;
+        </Link>
+      </div>
 
       {loading ? (
         <p>Loading applications...</p>

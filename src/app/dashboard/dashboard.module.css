@@ -46,7 +46,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.2rem 0.4rem 0.9rem 0.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
   margin-bottom: 0.5rem;
   gap: 0.5rem;
 }
@@ -71,9 +71,9 @@
   width: 30px;
   height: 30px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary, #f7f5f1);
   color: #6f665e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle, #dfd7cc);
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s ease;
@@ -156,7 +156,7 @@
 }
 
 .navItem:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated, #f4f1eb);
   color: #27211d;
 }
 
@@ -350,7 +350,7 @@
 .userInfo {
   margin-top: auto;
   padding-top: 0.9rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid var(--border-subtle, #dfd7cc);
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
@@ -436,8 +436,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--bg-secondary, #ffffff);
+    border: 1px solid var(--border-subtle, #dfd7cc);
     color: #27211d;
     width: 32px;
     height: 32px;
@@ -498,7 +498,7 @@
     align-items: center;
     justify-content: center;
     gap: 3px;
-    color: #6f665e;
+    color: #94A3B8;
     text-decoration: none;
     font-size: 0.68rem;
     font-weight: 600;
@@ -513,7 +513,7 @@
   }
 
   .bottomNavItemActive {
-    color: #9c6f18 !important;
+    color: #F5B800 !important;
     font-weight: 800;
   }
 

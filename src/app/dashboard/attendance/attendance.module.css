@@ -205,7 +205,7 @@
 }
 
 .actionBtn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bg-elevated, #f4f1eb);
   color: var(--text-primary);
 }
 
@@ -222,7 +222,7 @@
 /* History Cards */
 .historyCard {
   background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle, #dfd7cc);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   display: flex;
@@ -233,7 +233,7 @@
 }
 
 .historyCard:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: #9c6f18;
   background: var(--bg-secondary);
 }
 

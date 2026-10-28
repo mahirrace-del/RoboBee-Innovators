@@ -165,16 +165,20 @@ export default function InventoryDashboard() {
 
       await addDoc(collection(db, "treasury_expenses"), {
         title: `Lab Stock Replenishment: ${restockQty}x ${item.name}`,
+        type: "expense",
         entryType: "expense",
         amount: estCost,
+        category: "Lab Requisitions & Sensors",
         budgetLine: "Hardware & Sensors",
-        status: "pending_approval",
-        submittedBy: user?.uid || "system",
-        submittedByEmail: user?.email || "system",
+        status: "pending",
+        submittedByUid: user?.uid || "system",
+        submittedByName: user?.displayName || user?.email || "Inventory System",
+        inventoryItemId: item.id,
+        inventoryItemName: item.name,
         partId: item.id,
         partName: item.name,
         date: new Date().toISOString(),
-        notes: `Triggered from Component Ledger stock depletion warning (${item.quantity} left in stock).`,
+        notes: `Triggered from Component Ledger stock depletion warning (${item.quantity} left in stock, min threshold: ${item.minThreshold}).`,
       });
 
       alert(

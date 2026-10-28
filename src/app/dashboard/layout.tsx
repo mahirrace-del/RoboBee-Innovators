@@ -179,7 +179,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button
               onClick={handleSignOut}
               className={styles.submitBtn}
-              style={{ flex: 1, background: "rgba(255, 255, 255, 0.1)", color: "#27211d" }}
+              style={{ flex: 1, background: "var(--bg-elevated, #f4f1eb)", border: "1px solid var(--border-subtle, #dfd7cc)", color: "#27211d" }}
             >
               Sign Out
             </button>
@@ -252,13 +252,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           href="/dashboard/curriculum"
           className={isAct("/dashboard/curriculum")}
           onClick={closeSidebar}
-          title="Learning Deck (36 Classes)"
+          title="Learning Deck (38 Classes)"
         >
           <BookOpen size={18} className={styles.navIcon} />
           {!sidebarCollapsed && (
             <>
               <span className={styles.navLabel}>Learning Deck</span>
-              <span className={styles.navPill}>36 Classes</span>
+              <span className={styles.navPill}>38 Classes</span>
             </>
           )}
         </Link>

@@ -2,11 +2,11 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./members.module.css";
-import { Shield, User as UserIcon, Trash2, Mail, Phone } from "lucide-react";
+import { Shield, User as UserIcon, Trash2, Mail, Phone, Users, UserPlus, Check, X, Clock } from "lucide-react";
 import { 
   PERMISSION_LIST, 
   ROLE_PRESETS, 
@@ -18,7 +18,10 @@ export default function MembersDashboard() {
   const { role, canManage, user: currentUser } = useAuth();
   const canAccess = role === "admin" || canManage("manage_members");
 
+  const [activeTab, setActiveTab] = useState<"members" | "recruitment">("members");
   const [users, setUsers] = useState<any[]>([]);
+  const [recruitmentApps, setRecruitmentApps] = useState<any[]>([]);
+  const [recruitmentFilter, setRecruitmentFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Role Assignment Modal State
@@ -29,16 +32,36 @@ export default function MembersDashboard() {
   const [selectedStatus, setSelectedStatus] = useState<string>("member");
   const [isSavingRole, setIsSavingRole] = useState(false);
 
+  // Sync tab from URL query if opened with ?tab=recruitment
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const tab = new URLSearchParams(window.location.search).get("tab");
+      if (tab === "recruitment") {
+        setActiveTab("recruitment");
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!canAccess) return;
     
     // Listen to all users in the system
-    const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
+    const unsubUsers = onSnapshot(collection(db, "users"), (snapshot) => {
       const allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setUsers(allUsers);
     });
 
-    return () => unsub();
+    // Listen to recruitment applications
+    const qRecruit = query(collection(db, "recruitment"), orderBy("submittedAt", "desc"));
+    const unsubRecruit = onSnapshot(qRecruit, (snapshot) => {
+      const apps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setRecruitmentApps(apps);
+    });
+
+    return () => {
+      unsubUsers();
+      unsubRecruit();
+    };
   }, [canAccess]);
 
   const handleOpenRoleModal = (user: any) => {
@@ -150,6 +173,28 @@ export default function MembersDashboard() {
     }
   };
 
+  const handleUpdateAppStatus = async (appId: string, newStatus: string) => {
+    try {
+      await updateDoc(doc(db, "recruitment", appId), {
+        status: newStatus
+      });
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update recruitment application status.");
+    }
+  };
+
+  const handleDeleteApp = async (appId: string, applicantName: string) => {
+    if (window.confirm(`Are you sure you want to permanently delete application from ${applicantName}?`)) {
+      try {
+        await deleteDoc(doc(db, "recruitment", appId));
+      } catch (error) {
+        console.error("Error deleting application:", error);
+        alert("Failed to delete application.");
+      }
+    }
+  };
+
   if (!canAccess) {
     return <div style={{ color: '#ff5555', padding: '2rem' }}>Access Denied. Member Management or Admin privileges required.</div>;
   }
@@ -161,6 +206,17 @@ export default function MembersDashboard() {
     const username = (u.username || "").toLowerCase();
     const roleTitle = (u.roleTitle || "").toLowerCase();
     return name.includes(q) || email.includes(q) || username.includes(q) || roleTitle.includes(q);
+  });
+
+  const filteredRecruitment = recruitmentApps.filter(a => {
+    const q = searchQuery.toLowerCase();
+    const matchQuery = !searchQuery || 
+      (a.name || "").toLowerCase().includes(q) || 
+      (a.email || "").toLowerCase().includes(q) || 
+      (a.department || "").toLowerCase().includes(q) ||
+      (a.skills || "").toLowerCase().includes(q);
+    const matchStatus = recruitmentFilter === "all" || a.status === recruitmentFilter;
+    return matchQuery && matchStatus;
   });
 
   return (
@@ -180,8 +236,39 @@ export default function MembersDashboard() {
         />
       </div>
 
-      {/* Desktop View: Multi-Column Data Table */}
-      <div className={`glass-panel ${styles.desktopTableContainer}`} style={{ padding: '1.5rem' }}>
+      {/* Tab Switcher: Active Members vs Recruitment Applications */}
+      <div className={styles.tabsBar}>
+        <button
+          type="button"
+          onClick={() => setActiveTab("members")}
+          className={`${styles.tabBtn} ${activeTab === "members" ? styles.tabBtnActive : ""}`}
+        >
+          <Users size={16} />
+          <span>Active Team &amp; RBAC</span>
+          <span className={styles.tabBadge}>{users.length}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("recruitment")}
+          className={`${styles.tabBtn} ${activeTab === "recruitment" ? styles.tabBtnActive : ""}`}
+        >
+          <UserPlus size={16} />
+          <span>Recruitment Applications</span>
+          {recruitmentApps.filter(a => a.status === "pending").length > 0 ? (
+            <span className={styles.tabBadge} style={{ background: "#F5B800", color: "#111827" }}>
+              {recruitmentApps.filter(a => a.status === "pending").length} Pending
+            </span>
+          ) : (
+            <span className={styles.tabBadge}>{recruitmentApps.length}</span>
+          )}
+        </button>
+      </div>
+
+      {activeTab === "members" && (
+        <>
+          {/* Desktop View: Multi-Column Data Table */}
+          <div className={`glass-panel ${styles.desktopTableContainer}`} style={{ padding: '1.5rem' }}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -398,6 +485,164 @@ export default function MembersDashboard() {
           })
         )}
       </div>
+        </>
+      )}
+
+      {activeTab === "recruitment" && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Status filter bar */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {["all", "pending", "approved", "rejected"].map((st) => {
+              const count = st === "all" 
+                ? recruitmentApps.length 
+                : recruitmentApps.filter(a => a.status === st).length;
+              const isSel = recruitmentFilter === st;
+              return (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setRecruitmentFilter(st)}
+                  style={{
+                    padding: '0.45rem 0.9rem',
+                    borderRadius: '8px',
+                    border: `1px solid ${isSel ? '#9c6f18' : 'var(--border-subtle, #dfd7cc)'}`,
+                    background: isSel ? '#6B0F24' : 'var(--bg-secondary, #ffffff)',
+                    color: isSel ? '#ffffff' : 'var(--text-secondary, #6f665e)',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                    textTransform: 'capitalize',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                  }}
+                >
+                  <span>{st}</span>
+                  <span style={{
+                    padding: '0.1rem 0.4rem',
+                    borderRadius: '999px',
+                    fontSize: '0.7rem',
+                    background: isSel ? 'rgba(255, 255, 255, 0.25)' : 'var(--bg-primary, #f7f5f1)',
+                    color: isSel ? '#ffffff' : 'var(--text-secondary, #6f665e)',
+                  }}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {filteredRecruitment.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              No recruitment applications found matching your criteria.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {filteredRecruitment.map((app) => (
+                <div key={app.id} className={styles.recruitmentCard}>
+                  <div className={styles.recruitmentTop}>
+                    <div>
+                      <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', margin: '0 0 0.25rem 0' }}>
+                        {app.name}
+                      </h3>
+                      <div style={{ color: 'var(--accent-primary, #9c6f18)', fontSize: '0.88rem', fontWeight: 600 }}>
+                        {app.email} &bull; {app.phone}
+                      </div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                        Department: <strong>{app.department || "General"}</strong>
+                        {app.submittedAt && (
+                          <span style={{ marginLeft: '0.75rem', color: 'var(--text-secondary)' }}>
+                            &bull; Submitted: {new Date(app.submittedAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{
+                        padding: '0.3rem 0.8rem',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        backgroundColor: app.status === 'pending' ? 'rgba(245, 184, 0, 0.15)' : 
+                                         app.status === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(220, 38, 38, 0.15)',
+                        color: app.status === 'pending' ? '#9c6f18' : 
+                               app.status === 'approved' ? '#15803d' : '#dc2626',
+                        border: `1px solid ${app.status === 'pending' ? 'rgba(245, 184, 0, 0.35)' : 
+                                            app.status === 'approved' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(220, 38, 38, 0.35)'}`
+                      }}>
+                        {app.status || 'pending'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {app.skills && (
+                    <div style={{ background: 'var(--bg-primary, #f7f5f1)', padding: '0.75rem 1rem', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                        Key Skills &amp; Experience
+                      </div>
+                      <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', lineHeight: 1.45 }}>
+                        {app.skills}
+                      </div>
+                    </div>
+                  )}
+
+                  {app.reason && (
+                    <div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                        Reason for Joining RoboBee Innovators
+                      </div>
+                      <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', lineHeight: 1.45 }}>
+                        {app.reason}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={styles.recruitmentActions}>
+                    {app.status !== 'approved' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateAppStatus(app.id, 'approved')}
+                        className={styles.btnApprove}
+                      >
+                        Approve Recruit
+                      </button>
+                    )}
+                    {app.status !== 'rejected' && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateAppStatus(app.id, 'rejected')}
+                        className={styles.btnReject}
+                      >
+                        Reject
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteApp(app.id, app.name)}
+                      style={{
+                        background: 'transparent',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-subtle, #dfd7cc)',
+                        padding: '0.45rem 0.85rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        marginLeft: 'auto'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Role & Permissions Assignment Modal */}
       {editingMember && (

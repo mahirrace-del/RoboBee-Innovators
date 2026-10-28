@@ -35,7 +35,7 @@
 .tabsBar {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
   padding-bottom: 0.75rem;
   margin-bottom: 2rem;
   overflow-x: auto;
@@ -60,7 +60,7 @@
 
 .tabBtn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated, #f4f1eb);
 }
 
 .tabBtnActive {
@@ -167,7 +167,7 @@
 /* Schedule Card */
 .sessionCard {
   background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle, #dfd7cc);
   padding: 1.25rem 1.5rem;
   border-radius: 12px;
   display: flex;
@@ -276,7 +276,7 @@
 }
 
 .statusToggleBtn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bg-elevated, #f4f1eb);
   color: var(--text-primary);
 }
 
@@ -313,7 +313,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-subtle, #dfd7cc);
   padding-bottom: 1rem;
 }
 
@@ -338,15 +338,15 @@
 }
 
 .memberRowAbsent {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-primary, #f7f5f1);
+  border: 1px solid var(--border-subtle, #dfd7cc);
 }
 
 /* Attendance Matrix Table */
 .matrixTableWrapper {
   overflow-x: auto;
   background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle, #dfd7cc);
   border-radius: 12px;
   padding: 1rem;
 }

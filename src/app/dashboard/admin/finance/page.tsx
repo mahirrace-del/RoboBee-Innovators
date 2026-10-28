@@ -143,12 +143,12 @@ export default function AdminFinancePage() {
       .filter(p => p.status === "verified")
       .reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
     const approvedSponsorIncome = expenses
-      .filter(e => e.status === "approved" && e.type === "income")
+      .filter(e => (e.status === "approved" || e.status === "verified") && (e.type === "income" || e.entryType === "income"))
       .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
     const approvedExpenses = expenses
-      .filter(e => e.status === "approved" && e.type !== "income")
+      .filter(e => (e.status === "approved" || e.status === "verified") && e.type !== "income" && e.entryType !== "income")
       .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
-    const pendingExpenseClaims = expenses.filter(e => e.status === "pending").length;
+    const pendingExpenseClaims = expenses.filter(e => e.status === "pending" || e.status === "pending_approval").length;
     const pendingPaymentCount = payments.filter(p => p.status === "pending_verification").length;
     return {
       totalIncome: verifiedDuesIncome + approvedSponsorIncome,
@@ -512,9 +512,9 @@ export default function AdminFinancePage() {
                             <Trophy size={11} /> {exp.competitionName}
                           </span>
                         )}
-                        {exp.inventoryItemName && (
+                        {(exp.inventoryItemName || exp.partName) && (
                           <span style={{ color: "#0284c7", display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
-                            <Cpu size={11} /> {exp.inventoryItemName}
+                            <Cpu size={11} /> {exp.inventoryItemName || exp.partName}
                           </span>
                         )}
                       </div>
@@ -534,15 +534,15 @@ export default function AdminFinancePage() {
                       </div>
                       <div style={{ marginTop: "0.35rem", display: "flex", gap: "0.4rem", justifyContent: "flex-end", alignItems: "center" }}>
                         <span className={`${styles.statusBadge} ${
-                          exp.status === "approved"
+                          exp.status === "approved" || exp.status === "verified"
                             ? styles.statusApproved
                             : exp.status === "rejected"
                             ? styles.statusRejected
                             : styles.statusPending
                         }`}>
-                          {exp.status}
+                          {exp.status === "pending_approval" ? "pending" : exp.status}
                         </span>
-                        {exp.status === "pending" && (
+                        {(exp.status === "pending" || exp.status === "pending_approval") && (
                           <>
                             <button onClick={() => handleExpenseDecision(exp.id, "approved")} className={styles.approveBtn}>
                               Approve

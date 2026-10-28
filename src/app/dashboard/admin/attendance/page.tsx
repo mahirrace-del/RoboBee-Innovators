@@ -196,7 +196,7 @@ export default function AdminAttendancePage() {
       const uncompletedLessons = ALL_ROBOTICS_LESSONS.filter(l => !scheduledLessonIds.has(l.id));
 
       if (uncompletedLessons.length === 0) {
-        alert("All 36 curriculum classes are already scheduled!");
+        alert("All 38 curriculum classes are already scheduled!");
         return;
       }
 
