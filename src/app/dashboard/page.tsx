@@ -22,6 +22,7 @@ import {
   Clock,
   BookOpen,
   Wrench,
+  Bell,
 } from "lucide-react";
 import {
   normalizeTask,
@@ -61,6 +62,27 @@ export default function DashboardOverview() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [sessions, setSessions] = useState<ScheduledClassSession[]>([]);
   const [attendanceCount, setAttendanceCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubNotifs = onSnapshot(
+      collection(db, "notifications"),
+      (snap) => {
+        const userEmail = (user.email || "").toLowerCase().trim();
+        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const myItems = items.filter((n: any) => {
+          const target = String(n.recipientEmail || "").toLowerCase().trim();
+          return target === userEmail || target === "general";
+        });
+        setNotifications(myItems);
+      },
+      () => {}
+    );
+
+    return () => unsubNotifs();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -226,6 +248,10 @@ export default function DashboardOverview() {
         (p) => p.userId === user?.uid && p.status === "pending_verification"
       ).length,
     [payments, user]
+  );
+  const unreadTaskNotifs = useMemo(
+    () => notifications.filter((n) => !n.read && (n.type?.startsWith("task_") || n.type === "general_broadcast")),
+    [notifications]
   );
 
   // Schedule Progression
@@ -676,6 +702,65 @@ export default function DashboardOverview() {
             style={{ padding: "0.5rem 0.95rem", borderRadius: "8px", fontWeight: 800, fontSize: "0.82rem" }}
           >
             Return Hardware Now
+          </Link>
+        </div>
+      )}
+
+      {/* Task & Sprint Notification Banner for Member */}
+      {unreadTaskNotifs.length > 0 && (
+        <div
+          style={{
+            background: "linear-gradient(135deg, rgba(132, 36, 58, 0.08), rgba(156, 111, 24, 0.1))",
+            border: "1px solid rgba(132, 36, 58, 0.25)",
+            borderRadius: "14px",
+            padding: "0.95rem 1.25rem",
+            marginBottom: "1.35rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "0.85rem",
+            boxShadow: "0 4px 16px rgba(132, 36, 58, 0.06)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: "#84243a",
+                color: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(132, 36, 58, 0.3)",
+              }}
+            >
+              <Bell size={18} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: "0.94rem", color: "#27211d" }}>
+                {unreadTaskNotifs.length} Task {unreadTaskNotifs.length === 1 ? "Update" : "Updates"} Assigned to You
+              </div>
+              <div style={{ fontSize: "0.82rem", color: "#6f665e", marginTop: "2px" }}>
+                {unreadTaskNotifs[0]?.title}: {unreadTaskNotifs[0]?.message}
+              </div>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/tasks"
+            className={styles.dockBtnPrimary}
+            style={{
+              padding: "0.5rem 1rem",
+              borderRadius: "8px",
+              fontWeight: 800,
+              fontSize: "0.82rem",
+              textDecoration: "none",
+            }}
+          >
+            Open Tasks &rarr;
           </Link>
         </div>
       )}

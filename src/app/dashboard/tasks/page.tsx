@@ -9,6 +9,7 @@ import {
   doc,
   addDoc,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
   orderBy,
   increment,
@@ -33,6 +34,9 @@ import {
   Search,
   Sparkles,
   Shield,
+  Pencil,
+  Trash2,
+  Bell,
 } from "lucide-react";
 import {
   normalizeTask,
@@ -42,6 +46,12 @@ import {
   TaskStatusStage,
   TaskPriority,
 } from "@/lib/portalRelations";
+import {
+  notifyTaskAssigned,
+  notifyTaskStageChanged,
+  notifyTaskUpdated,
+  notifyTaskDeleted,
+} from "@/lib/notifications";
 
 const KANBAN_COLUMNS: Array<{
   stage: TaskStatusStage;
@@ -84,6 +94,16 @@ export default function TasksPage() {
   const [reserveQty, setReserveQty] = useState(1);
   const [autoReserveStock, setAutoReserveStock] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit Task State
+  const [editingTask, setEditingTask] = useState<RelationalTask | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPriority, setEditPriority] = useState<TaskPriority>("Medium");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [editSelectedMemberEmails, setEditSelectedMemberEmails] = useState<string[]>([]);
+  const [editIsGeneralTask, setEditIsGeneralTask] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -395,7 +415,7 @@ export default function TasksPage() {
         });
       }
 
-      await addDoc(collection(db, "tasks"), {
+      const taskRef = await addDoc(collection(db, "tasks"), {
         title: title.trim(),
         description: description.trim(),
         assignedTo,
@@ -412,6 +432,22 @@ export default function TasksPage() {
         reservedParts,
         createdAt: serverTimestamp(),
       });
+
+      // Dispatch notifications to assigned members
+      try {
+        await notifyTaskAssigned({
+          taskId: taskRef.id,
+          taskTitle: title.trim(),
+          priority,
+          dueDate: dueDate || undefined,
+          assignedToEmails,
+          assignedMembers,
+          assignedByName: user?.displayName || user?.email?.split("@")[0] || "Team Lead",
+          assignedByEmail: user?.email || undefined,
+        });
+      } catch (notifErr) {
+        console.warn("Could not dispatch task assignment notification:", notifErr);
+      }
 
       // Reset form
       setTitle("");
@@ -434,6 +470,8 @@ export default function TasksPage() {
 
   const handleMoveStage = async (taskId: string, nextStage: TaskStatusStage) => {
     try {
+      const task = tasks.find((t) => t.id === taskId);
+      const oldStage = task ? task.stage : "backlog";
       const isDone = nextStage === "completed";
       await updateDoc(doc(db, "tasks", taskId), {
         stage: nextStage,
@@ -445,8 +483,192 @@ export default function TasksPage() {
             }
           : {}),
       });
+
+      // Dispatch real-time notification on stage update
+      if (task) {
+        try {
+          await notifyTaskStageChanged({
+            taskId,
+            taskTitle: task.title,
+            oldStage,
+            newStage: nextStage,
+            assignedToEmails: task.assignedToEmails || (task.assignedTo ? [task.assignedTo] : []),
+            actorName: user?.displayName || user?.email?.split("@")[0] || "Team Member",
+            actorEmail: user?.email || undefined,
+            assignedByEmail: task.assignedBy,
+          });
+        } catch (notifErr) {
+          console.warn("Could not dispatch stage change notification:", notifErr);
+        }
+      }
     } catch (error) {
       console.error("Error updating task stage:", error);
+    }
+  };
+
+  // Open Edit Modal
+  const handleOpenEditModal = (task: RelationalTask) => {
+    setEditingTask(task);
+    setEditTitle(task.title || "");
+    setEditDescription(task.description || "");
+    setEditPriority(task.priority || "Medium");
+    setEditDueDate(task.dueDate || "");
+    const isGen =
+      task.assignedTo === "GENERAL" ||
+      (task.assignedToEmails || []).includes("GENERAL");
+    setEditIsGeneralTask(isGen);
+    if (isGen) {
+      setEditSelectedMemberEmails(["GENERAL"]);
+    } else {
+      setEditSelectedMemberEmails(
+        task.assignedToEmails || (task.assignedTo ? [task.assignedTo] : [])
+      );
+    }
+  };
+
+  // Close Edit Modal
+  const handleCloseEditModal = () => {
+    setEditingTask(null);
+    setEditTitle("");
+    setEditDescription("");
+    setEditDueDate("");
+    setEditSelectedMemberEmails([]);
+    setEditIsGeneralTask(false);
+  };
+
+  // Save Edit Task
+  const handleSaveEditTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTask || !editTitle.trim()) return;
+
+    if (!editIsGeneralTask && editSelectedMemberEmails.length === 0) {
+      alert("Please assign at least one member or select 'General (All Members)'.");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const isGeneral =
+        editIsGeneralTask || editSelectedMemberEmails.includes("GENERAL");
+      const assignedToEmails = isGeneral
+        ? ["GENERAL"]
+        : [...editSelectedMemberEmails];
+
+      const selectedObjs = members.filter((m) =>
+        assignedToEmails.includes(m.email)
+      );
+      const assignedTo = isGeneral
+        ? "GENERAL"
+        : selectedObjs.length === 1
+        ? selectedObjs[0].email
+        : selectedObjs.map((m) => m.email).join(", ");
+
+      const assignedToName = isGeneral
+        ? "All Members (Open Task)"
+        : selectedObjs.length === 1
+        ? selectedObjs[0].name || selectedObjs[0].username || selectedObjs[0].email
+        : `${selectedObjs.length} Members (${selectedObjs
+            .map((m) => m.name || m.username || m.email.split("@")[0])
+            .join(", ")})`;
+
+      const assignedMembers = isGeneral
+        ? []
+        : selectedObjs.map((m) => ({
+            id: m.id || "",
+            name: m.name || m.username || m.email,
+            email: m.email,
+            username: m.username || "",
+          }));
+
+      // Detect changed fields for meaningful notification
+      const updatedFields: string[] = [];
+      if (editTitle.trim() !== editingTask.title) updatedFields.push("Title");
+      if (editDescription.trim() !== editingTask.description)
+        updatedFields.push("Description");
+      if (editPriority !== editingTask.priority)
+        updatedFields.push(`Priority (${editPriority})`);
+      if (editDueDate !== (editingTask.dueDate || ""))
+        updatedFields.push(`Due date (${editDueDate || "None"})`);
+      if (assignedTo !== editingTask.assignedTo) updatedFields.push("Assignees");
+
+      await updateDoc(doc(db, "tasks", editingTask.id), {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        priority: editPriority,
+        dueDate: editDueDate || null,
+        assignedTo,
+        assignedToName,
+        assignedToEmails,
+        assignedMembers,
+        updatedAt: serverTimestamp(),
+      });
+
+      // Dispatch update notification to assignees
+      try {
+        await notifyTaskUpdated({
+          taskId: editingTask.id,
+          taskTitle: editTitle.trim(),
+          updatedFields:
+            updatedFields.length > 0 ? updatedFields : ["Task parameters"],
+          assignedToEmails,
+          actorName: user?.displayName || user?.email?.split("@")[0] || "Admin",
+          actorEmail: user?.email || undefined,
+        });
+      } catch (notifErr) {
+        console.warn("Could not dispatch task update notification:", notifErr);
+      }
+
+      handleCloseEditModal();
+    } catch (error) {
+      console.error("Error updating task:", error);
+      alert("Failed to update task.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Delete Task
+  const handleDeleteTask = async (
+    taskId: string,
+    taskTitle: string,
+    assignedToEmails: string[],
+    reservedParts?: any[]
+  ) => {
+    if (!confirm(`Are you sure you want to delete task "${taskTitle}"?`)) {
+      return;
+    }
+
+    try {
+      // If hardware was reserved, return stock to inventory
+      if (reservedParts && reservedParts.length > 0) {
+        for (const rp of reservedParts) {
+          if (rp.partId && rp.quantity > 0) {
+            try {
+              await updateDoc(doc(db, "inventory", rp.partId), {
+                quantity: increment(rp.quantity),
+              });
+            } catch (err) {
+              console.warn("Could not return stock:", err);
+            }
+          }
+        }
+      }
+
+      await deleteDoc(doc(db, "tasks", taskId));
+
+      // Notify assignees of task deletion
+      try {
+        await notifyTaskDeleted({
+          taskTitle,
+          assignedToEmails,
+          actorName: user?.displayName || user?.email?.split("@")[0] || "Admin",
+        });
+      } catch (notifErr) {
+        console.warn("Could not dispatch task deletion notification:", notifErr);
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      alert("Failed to delete task.");
     }
   };
 
@@ -973,13 +1195,44 @@ export default function TasksPage() {
                           style={{ borderLeftColor: col.color }}
                         >
                           <div className={styles.taskHeader}>
-                            <div className={styles.taskTitle}>{task.title}</div>
-                            <span
-                              className={styles.priorityBadge}
-                              style={{ background: pStyle.bg, color: pStyle.color }}
-                            >
-                              {task.priority}
-                            </span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div className={styles.taskTitle}>{task.title}</div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                              <span
+                                className={styles.priorityBadge}
+                                style={{ background: pStyle.bg, color: pStyle.color }}
+                              >
+                                {task.priority}
+                              </span>
+                              {role === "admin" && (
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
+                                  <button
+                                    onClick={() => handleOpenEditModal(task)}
+                                    className={styles.iconActionBtn}
+                                    title="Edit task & notify assignees"
+                                    aria-label="Edit task"
+                                  >
+                                    <Pencil size={12} />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteTask(
+                                        task.id,
+                                        task.title,
+                                        task.assignedToEmails || [task.assignedTo],
+                                        task.reservedParts
+                                      )
+                                    }
+                                    className={`${styles.iconActionBtn} ${styles.iconActionBtnDanger}`}
+                                    title="Delete task"
+                                    aria-label="Delete task"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
 
                           <div className={styles.taskDesc}>{task.description}</div>
@@ -1181,6 +1434,187 @@ export default function TasksPage() {
               </div>
             ))
           )}
+        </div>
+      )}
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <div className={styles.modalOverlay} onClick={handleCloseEditModal}>
+          <div
+            className={styles.modalCard}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-label="Edit Task"
+          >
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>
+                <Pencil size={18} style={{ color: "#9c6f18" }} />
+                Edit Task &amp; Notify Members
+              </h3>
+              <button
+                type="button"
+                onClick={handleCloseEditModal}
+                className={styles.modalCloseBtn}
+                title="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditTask} className={styles.formGrid}>
+              <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                <label className={styles.label}>Task Title *</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                <label className={styles.label}>Task Description &amp; Acceptance Criteria *</label>
+                <textarea
+                  className={styles.input}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  required
+                  style={{ minHeight: "85px", resize: "vertical" }}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Priority</label>
+                <select
+                  className={styles.input}
+                  value={editPriority}
+                  onChange={(e) => setEditPriority(e.target.value as TaskPriority)}
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Target Due Date</label>
+                <input
+                  type="date"
+                  className={styles.input}
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                />
+              </div>
+
+              {/* Assignment Quick Toggle */}
+              <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "0.4rem",
+                  }}
+                >
+                  <label className={styles.label} style={{ margin: 0 }}>
+                    Assigned Member(s)
+                  </label>
+                  <label
+                    style={{
+                      fontSize: "0.78rem",
+                      color: "#6f665e",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.3rem",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editIsGeneralTask}
+                      onChange={(e) => {
+                        setEditIsGeneralTask(e.target.checked);
+                        if (e.target.checked) setEditSelectedMemberEmails(["GENERAL"]);
+                      }}
+                    />
+                    Open to All Members (GENERAL)
+                  </label>
+                </div>
+
+                {!editIsGeneralTask && (
+                  <div className={styles.memberListScroll} style={{ maxHeight: "150px" }}>
+                    {members.map((m) => {
+                      const isSel = editSelectedMemberEmails.includes(m.email);
+                      return (
+                        <div
+                          key={m.id}
+                          className={styles.memberOptionRow}
+                          onClick={() => {
+                            setEditSelectedMemberEmails((prev) =>
+                              prev.includes(m.email)
+                                ? prev.filter((e) => e !== m.email)
+                                : [...prev, m.email]
+                            );
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <div
+                              style={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 4,
+                                border: "1px solid #dfd7cc",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: isSel ? "#84243a" : "#fff",
+                                color: "#fff",
+                              }}
+                            >
+                              {isSel && <Check size={12} />}
+                            </div>
+                            <span style={{ fontSize: "0.82rem", fontWeight: 600 }}>
+                              {m.name || m.username || m.email}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: "0.74rem", color: "#8c827a" }}>
+                            {m.email}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  display: "flex",
+                  gap: "0.75rem",
+                  marginTop: "0.5rem",
+                }}
+              >
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={isUpdating}
+                  style={{ flex: 1 }}
+                >
+                  {isUpdating ? "Saving & Notifying..." : "Save Changes & Notify Assignees"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseEditModal}
+                  className={styles.viewToggleBtn}
+                  style={{ padding: "0.75rem 1.25rem" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

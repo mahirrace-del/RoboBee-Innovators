@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { getUserRoleBadge } from "@/lib/permissions";
 import { normalizeCheckout, normalizeInventoryItem } from "@/lib/portalRelations";
+import { NotificationCenter } from "@/components/NotificationCenter";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, role, signOut, userData, canManage } = useAuth();
@@ -614,6 +615,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span>{lowStockCount} Low Stock</span>
               </Link>
             )}
+            <NotificationCenter />
             <span
               style={{
                 fontSize: "0.72rem",
