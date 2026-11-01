@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { evaluateConversationAndCreateTask } from "@/lib/whatsappAgent";
 
@@ -126,17 +126,16 @@ export async function POST(req: NextRequest) {
       console.error("[WhatsApp Webhook] Failed to insert message:", insertMsgErr);
     }
 
-    // 3. Trigger asynchronous background AI evaluation
-    // Next.js returns 200 immediately to Meta, processing the decision engine asynchronously
+    // 3. Trigger asynchronous background AI evaluation using Next.js after()
+    // This returns 200 immediately to Meta while keeping Vercel serverless runtime alive for Gemini
     if (conversation?.id) {
-      // Execute without blocking the Meta 200 OK response
-      setTimeout(async () => {
+      after(async () => {
         try {
           await evaluateConversationAndCreateTask(conversation.id);
         } catch (err) {
           console.error("[WhatsApp Webhook] Async AI evaluation failed:", err);
         }
-      }, 3000); // 3-second debounce window
+      });
     }
 
     return NextResponse.json({ status: "success", received: true }, { status: 200 });
