@@ -107,8 +107,6 @@ export default function TasksPage() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-
     let firestoreTasks: RelationalTask[] = [];
     let supabaseTasks: RelationalTask[] = [];
 
@@ -123,7 +121,8 @@ export default function TasksPage() {
 
       const userEmail = user?.email?.toLowerCase() || "";
       const taskData = unique.filter((t) => {
-        if (role === "admin") return true;
+        // Always display all tasks if admin or viewing portal
+        if (!user || role === "admin" || !role) return true;
         if (t.assignedTo === "GENERAL") return true;
         if (t.assignedTo?.toLowerCase() === userEmail) return true;
         if (
@@ -142,7 +141,7 @@ export default function TasksPage() {
       setTasks(taskData);
     };
 
-    // 1. Fetch live tasks from Supabase
+    // 1. Fetch live tasks from Supabase (runs immediately)
     const fetchSupabaseTasks = async () => {
       try {
         const { data, error } = await supabase
@@ -173,20 +172,23 @@ export default function TasksPage() {
       )
       .subscribe();
 
-    // 2. Fetch live tasks from Firestore
-    const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
-    const unsubscribeFirestore = onSnapshot(
-      q,
-      (snapshot) => {
-        firestoreTasks = snapshot.docs.map((d) =>
-          normalizeTask({ id: d.id, ...d.data() })
-        );
-        mergeAndSetTasks();
-      },
-      (error) => {
-        console.error("Error fetching firestore tasks:", error);
-      }
-    );
+    // 2. Fetch live tasks from Firestore (if user is authenticated)
+    let unsubscribeFirestore = () => {};
+    if (user) {
+      const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
+      unsubscribeFirestore = onSnapshot(
+        q,
+        (snapshot) => {
+          firestoreTasks = snapshot.docs.map((d) =>
+            normalizeTask({ id: d.id, ...d.data() })
+          );
+          mergeAndSetTasks();
+        },
+        (error) => {
+          console.error("Error fetching firestore tasks:", error);
+        }
+      );
+    }
 
     return () => {
       unsubscribeFirestore();
