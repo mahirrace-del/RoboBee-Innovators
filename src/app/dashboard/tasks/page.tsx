@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import {
   collection,
   query,
@@ -108,43 +109,89 @@ export default function TasksPage() {
   useEffect(() => {
     if (!user) return;
 
-    // Listen to tasks collection ordered by createdAt descending
-    const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
+    let firestoreTasks: RelationalTask[] = [];
+    let supabaseTasks: RelationalTask[] = [];
 
-    const unsubscribe = onSnapshot(
+    const mergeAndSetTasks = () => {
+      const combined = [...supabaseTasks, ...firestoreTasks];
+      const seen = new Set<string>();
+      const unique = combined.filter((t) => {
+        if (!t.id || seen.has(t.id)) return false;
+        seen.add(t.id);
+        return true;
+      });
+
+      const userEmail = user?.email?.toLowerCase() || "";
+      const taskData = unique.filter((t) => {
+        if (role === "admin") return true;
+        if (t.assignedTo === "GENERAL") return true;
+        if (t.assignedTo?.toLowerCase() === userEmail) return true;
+        if (
+          t.assignedToEmails?.some(
+            (e) => e.toLowerCase() === userEmail || e === "GENERAL"
+          )
+        ) {
+          return true;
+        }
+        if (typeof t.assignedTo === "string" && t.assignedTo.toLowerCase().includes(userEmail)) {
+          return true;
+        }
+        return false;
+      });
+
+      setTasks(taskData);
+    };
+
+    // 1. Fetch live tasks from Supabase
+    const fetchSupabaseTasks = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("tasks")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          supabaseTasks = data.map((d: any) => normalizeTask(d));
+          mergeAndSetTasks();
+        }
+      } catch (err) {
+        console.warn("Supabase tasks fetch error:", err);
+      }
+    };
+
+    fetchSupabaseTasks();
+
+    // Real-time subscription to Supabase tasks
+    const channel = supabase
+      .channel("tasks-supabase-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        () => {
+          fetchSupabaseTasks();
+        }
+      )
+      .subscribe();
+
+    // 2. Fetch live tasks from Firestore
+    const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
+    const unsubscribeFirestore = onSnapshot(
       q,
       (snapshot) => {
-        const allFetchedTasks = snapshot.docs.map((d) =>
+        firestoreTasks = snapshot.docs.map((d) =>
           normalizeTask({ id: d.id, ...d.data() })
         );
-
-        // For non-admin, filter to tasks assigned to them, to their squad, or GENERAL
-        const userEmail = user?.email?.toLowerCase() || "";
-        const taskData = allFetchedTasks.filter((t) => {
-          if (role === "admin") return true;
-          if (t.assignedTo === "GENERAL") return true;
-          if (t.assignedTo?.toLowerCase() === userEmail) return true;
-          if (
-            t.assignedToEmails?.some(
-              (e) => e.toLowerCase() === userEmail || e === "GENERAL"
-            )
-          ) {
-            return true;
-          }
-          if (typeof t.assignedTo === "string" && t.assignedTo.toLowerCase().includes(userEmail)) {
-            return true;
-          }
-          return false;
-        });
-
-        setTasks(taskData);
+        mergeAndSetTasks();
       },
       (error) => {
-        console.error("Error fetching tasks:", error);
+        console.error("Error fetching firestore tasks:", error);
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeFirestore();
+      supabase.removeChannel(channel);
+    };
   }, [user, role]);
 
   // Fetch relational entities: Competitions, Subteams, Inventory, Members
@@ -473,16 +520,34 @@ export default function TasksPage() {
       const task = tasks.find((t) => t.id === taskId);
       const oldStage = task ? task.stage : "backlog";
       const isDone = nextStage === "completed";
-      await updateDoc(doc(db, "tasks", taskId), {
-        stage: nextStage,
-        status: isDone ? "Done" : "pending",
-        ...(isDone
-          ? {
-              completedAt: serverTimestamp(),
-              completedBy: user?.email || "unknown",
-            }
-          : {}),
-      });
+      try {
+        await updateDoc(doc(db, "tasks", taskId), {
+          stage: nextStage,
+          status: isDone ? "Done" : "pending",
+          ...(isDone
+            ? {
+                completedAt: serverTimestamp(),
+                completedBy: user?.email || "unknown",
+              }
+            : {}),
+        });
+      } catch (fErr) {
+        // Document may reside in Supabase
+      }
+
+      try {
+        await supabase
+          .from("tasks")
+          .update({
+            stage: nextStage,
+            status: isDone ? "completed" : "pending",
+            completed_at: isDone ? new Date().toISOString() : null,
+            completed_by: isDone ? (user?.email || "unknown") : null,
+          })
+          .eq("id", taskId);
+      } catch (sErr) {
+        console.warn("Supabase stage sync error:", sErr);
+      }
 
       // Dispatch real-time notification on stage update
       if (task) {
@@ -591,17 +656,39 @@ export default function TasksPage() {
         updatedFields.push(`Due date (${editDueDate || "None"})`);
       if (assignedTo !== editingTask.assignedTo) updatedFields.push("Assignees");
 
-      await updateDoc(doc(db, "tasks", editingTask.id), {
-        title: editTitle.trim(),
-        description: editDescription.trim(),
-        priority: editPriority,
-        dueDate: editDueDate || null,
-        assignedTo,
-        assignedToName,
-        assignedToEmails,
-        assignedMembers,
-        updatedAt: serverTimestamp(),
-      });
+      try {
+        await updateDoc(doc(db, "tasks", editingTask.id), {
+          title: editTitle.trim(),
+          description: editDescription.trim(),
+          priority: editPriority,
+          dueDate: editDueDate || null,
+          assignedTo,
+          assignedToName,
+          assignedToEmails,
+          assignedMembers,
+          updatedAt: serverTimestamp(),
+        });
+      } catch (fErr) {
+        // May be in Supabase
+      }
+
+      try {
+        await supabase
+          .from("tasks")
+          .update({
+            title: editTitle.trim(),
+            description: editDescription.trim(),
+            priority: editPriority,
+            due_date: editDueDate || null,
+            assigned_to: assignedTo,
+            assigned_to_name: assignedToName || null,
+            assigned_to_emails: assignedToEmails,
+            assigned_members: assignedMembers,
+          })
+          .eq("id", editingTask.id);
+      } catch (sErr) {
+        console.warn("Supabase task edit sync error:", sErr);
+      }
 
       // Dispatch update notification to assignees
       try {
@@ -654,7 +741,17 @@ export default function TasksPage() {
         }
       }
 
-      await deleteDoc(doc(db, "tasks", taskId));
+      try {
+        await deleteDoc(doc(db, "tasks", taskId));
+      } catch (fErr) {
+        // Document may be in Supabase
+      }
+
+      try {
+        await supabase.from("tasks").delete().eq("id", taskId);
+      } catch (sErr) {
+        console.warn("Supabase task delete error:", sErr);
+      }
 
       // Notify assignees of task deletion
       try {

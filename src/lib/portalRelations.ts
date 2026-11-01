@@ -220,38 +220,38 @@ export function normalizeTask(idOrRaw: any, maybeData?: any): RelationalTask {
     }
   }
 
-  const rawAssignedTo = String(raw.assignedTo || "GENERAL");
-  const assignedToEmails: string[] = Array.isArray(raw.assignedToEmails)
-    ? raw.assignedToEmails
+  const rawAssignedTo = String(raw.assignedTo || raw.assigned_to || "GENERAL");
+  const assignedToEmails: string[] = Array.isArray(raw.assignedToEmails || raw.assigned_to_emails)
+    ? (raw.assignedToEmails || raw.assigned_to_emails)
     : rawAssignedTo.includes(",")
     ? rawAssignedTo.split(",").map((s: string) => s.trim()).filter(Boolean)
     : [rawAssignedTo];
 
-  const assignedMembers = Array.isArray(raw.assignedMembers)
-    ? raw.assignedMembers
+  const assignedMembers = Array.isArray(raw.assignedMembers || raw.assigned_members)
+    ? (raw.assignedMembers || raw.assigned_members)
     : [];
 
   return {
     id: raw.id || "",
     title: raw.title || "Untitled Task",
     description: raw.description || "",
-    assignedTo: raw.assignedTo || "GENERAL",
-    assignedToName: raw.assignedToName || undefined,
+    assignedTo: raw.assignedTo || raw.assigned_to || "GENERAL",
+    assignedToName: raw.assignedToName || raw.assigned_to_name || undefined,
     assignedToEmails,
     assignedMembers,
-    assignedBy: raw.assignedBy || "",
+    assignedBy: raw.assignedBy || raw.assigned_by || "",
     status: stage === "completed" ? "completed" : raw.status || "pending",
     stage,
     priority: raw.priority || "Medium",
-    dueDate: raw.dueDate || undefined,
-    competitionId: raw.competitionId || undefined,
-    competitionName: raw.competitionName || undefined,
-    projectId: raw.projectId || undefined,
-    projectName: raw.projectName || undefined,
-    reservedParts: Array.isArray(raw.reservedParts) ? raw.reservedParts : [],
-    createdAt: raw.createdAt,
-    completedAt: raw.completedAt,
-    completedBy: raw.completedBy,
+    dueDate: raw.dueDate || raw.due_date || undefined,
+    competitionId: raw.competitionId || raw.competition_id || undefined,
+    competitionName: raw.competitionName || raw.competition_name || undefined,
+    projectId: raw.projectId || raw.project_id || undefined,
+    projectName: raw.projectName || raw.project_name || undefined,
+    reservedParts: Array.isArray(raw.reservedParts || raw.reserved_parts) ? (raw.reservedParts || raw.reserved_parts) : [],
+    createdAt: raw.createdAt || raw.created_at,
+    completedAt: raw.completedAt || raw.completed_at,
+    completedBy: raw.completedBy || raw.completed_by,
   };
 }
 
