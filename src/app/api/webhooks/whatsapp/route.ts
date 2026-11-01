@@ -39,8 +39,15 @@ export async function POST(req: NextRequest) {
     const changes = entry?.changes?.[0];
     const value = changes?.value;
 
+    // Log delivery receipts / failure reports from Meta
+    if (value.statuses && value.statuses.length > 0) {
+      const st = value.statuses[0];
+      console.log(`[WhatsApp Webhook] Status: ${st.status} for recipient: ${st.recipient_id}. Errors:`, st.errors || "None");
+      return NextResponse.json({ status: "status_acknowledged", detail: st.status }, { status: 200 });
+    }
+
     if (!value || !value.messages || value.messages.length === 0) {
-      // Acknowledge status pings (sent, delivered, read receipts)
+      // Acknowledge other event pings
       return NextResponse.json({ status: "ignored_non_message_event" }, { status: 200 });
     }
 
