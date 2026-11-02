@@ -7,6 +7,8 @@ import {
   sendWhatsAppTextMessage,
 } from "@/lib/whatsappAgent";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -395,16 +397,51 @@ export async function POST(req: NextRequest) {
     // 8. Delete / Dismiss a Project Summary or Task
     if (action === "dismiss_project_summary") {
       const { taskId, conversationId } = body;
+      let targetConvId: string | null = conversationId || null;
+
       if (taskId) {
-        await supabaseAdmin.from("tasks").delete().eq("id", taskId);
-      }
-      if (conversationId) {
+        if (!targetConvId) {
+          const { data: existingTask } = await supabaseAdmin
+            .from("tasks")
+            .select("conversation_id")
+            .eq("id", taskId)
+            .maybeSingle();
+          if (existingTask?.conversation_id) {
+            targetConvId = existingTask.conversation_id;
+          }
+        }
+        const { error: delErr } = await supabaseAdmin.from("tasks").delete().eq("id", taskId);
+        if (delErr) {
+          return NextResponse.json({ error: delErr.message }, { status: 500 });
+        }
+      } else if (targetConvId) {
+        // If dismissing by conversationId directly, also remove any unconfirmed discussion tasks linked to it
         await supabaseAdmin
-          .from("whatsapp_conversations")
-          .update({ status: "casual", summary: null, updated_at: new Date().toISOString() })
-          .eq("id", conversationId);
+          .from("tasks")
+          .delete()
+          .eq("conversation_id", targetConvId)
+          .eq("stage", "in_discussion");
       }
-      return NextResponse.json({ status: "ok" });
+
+      if (targetConvId) {
+        const { data: remainingTasks } = await supabaseAdmin
+          .from("tasks")
+          .select("id")
+          .eq("conversation_id", targetConvId);
+
+        if (!remainingTasks || remainingTasks.length === 0) {
+          await supabaseAdmin
+            .from("whatsapp_conversations")
+            .update({ status: "casual", summary: null, updated_at: new Date().toISOString() })
+            .eq("id", targetConvId);
+        }
+      }
+
+      return NextResponse.json({
+        status: "ok",
+        deletedTaskId: taskId || null,
+        conversationId: targetConvId,
+      });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

@@ -134,7 +134,7 @@ export default function MessagingControlPanel() {
       if (!silent) setRefreshing(true);
       try {
         const query = targetConvId ? `?conversationId=${encodeURIComponent(targetConvId)}` : "";
-        const res = await fetch(`/api/messages${query}`);
+        const res = await fetch(`/api/messages${query}`, { cache: "no-store" });
         const data = await res.json();
         if (res.ok) {
           setConversations(data.conversations || []);
@@ -438,7 +438,24 @@ export default function MessagingControlPanel() {
 
   // Dismiss / Remove from Summary Panel
   const handleDismissSummary = async (params: { taskId?: string; conversationId?: string }) => {
-    if (!confirm("Remove this project summary/task?")) return;
+    // Optimistically remove from UI immediately so the item disappears on first click
+    if (params.taskId) {
+      setAllProjectTasks((prev) => prev.filter((t) => t.id !== params.taskId));
+      setLinkedTasks((prev) => prev.filter((t) => t.id !== params.taskId));
+    }
+    if (params.conversationId) {
+      const remainingForConv = allProjectTasks.filter(
+        (t) => t.conversation_id === params.conversationId && t.id !== params.taskId
+      );
+      if (!params.taskId || remainingForConv.length === 0) {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === params.conversationId ? { ...c, status: "casual", summary: null } : c
+          )
+        );
+      }
+    }
+
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
@@ -451,6 +468,10 @@ export default function MessagingControlPanel() {
       if (res.ok) {
         showToast("Removed from Project Summaries.");
         await fetchHubData(activeId, true);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(`Failed to remove: ${errData.error || "Error"}`);
+        await fetchHubData(activeId, true);
       }
     } catch (e) {
       console.error("Failed to dismiss summary:", e);
@@ -461,10 +482,14 @@ export default function MessagingControlPanel() {
   const ongoingProjectItems = allProjectTasks.filter((t) => t.stage === "in_discussion" || t.status === "in_discussion");
   const confirmedProjectItems = allProjectTasks.filter((t) => t.stage !== "in_discussion" && t.status !== "in_discussion");
 
-  // Also include conversations that have a summary or status='in_discussion' but no task row yet
+  // Also include conversations that have an active project summary or status='in_discussion' but no task row yet
   const convIdsWithTasks = new Set(allProjectTasks.map((t) => t.conversation_id).filter(Boolean));
   const summaryOnlyConvs = conversations.filter(
-    (c) => !convIdsWithTasks.has(c.id) && (c.summary || c.status === "in_discussion" || c.ai_mode !== "off")
+    (c) =>
+      !convIdsWithTasks.has(c.id) &&
+      c.status !== "casual" &&
+      c.status !== "dismissed" &&
+      (Boolean(c.summary && c.summary.trim()) || c.status === "in_discussion")
   );
 
   // Strict Admin-Only Guard: Regular members can NEVER view WhatsApp messages or AI task controls
@@ -923,7 +948,12 @@ export default function MessagingControlPanel() {
                           )}
                           <button
                             type="button"
-                            onClick={() => handleDismissSummary({ taskId: item.id })}
+                            onClick={() =>
+                              handleDismissSummary({
+                                taskId: item.id,
+                                conversationId: item.conversation_id || undefined,
+                              })
+                            }
                             style={{
                               padding: "0.4rem 0.7rem",
                               borderRadius: "8px",
@@ -1213,7 +1243,12 @@ export default function MessagingControlPanel() {
                         )}
                         <button
                           type="button"
-                          onClick={() => handleDismissSummary({ taskId: item.id })}
+                          onClick={() =>
+                            handleDismissSummary({
+                              taskId: item.id,
+                              conversationId: item.conversation_id || undefined,
+                            })
+                          }
                           style={{
                             padding: "0.38rem 0.7rem",
                             borderRadius: "8px",
@@ -2065,7 +2100,12 @@ export default function MessagingControlPanel() {
                           )}
                           <button
                             type="button"
-                            onClick={() => handleDismissSummary({ taskId: t.id })}
+                            onClick={() =>
+                              handleDismissSummary({
+                                taskId: t.id,
+                                conversationId: t.conversation_id || activeConv?.id,
+                              })
+                            }
                             style={{
                               padding: "0.28rem 0.55rem",
                               borderRadius: "6px",
