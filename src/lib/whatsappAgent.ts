@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 import { supabaseAdmin } from "./supabase";
 
 /**
@@ -129,6 +129,92 @@ export async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: 
 /**
  * Helper to call Gemini with automatic fallback across active healthy models
  */
+/**
+ * Helper to call Unlimited-Quota Gemini Live API models (0 / Unlimited RPM & RPD)
+ */
+async function callGeminiLiveUnlimited(
+  ai: GoogleGenAI,
+  modelName: string,
+  systemInstruction: string,
+  userPrompt: string,
+  jsonMode = true
+): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    let textOut = "";
+    let done = false;
+    const finish = (err: Error | null, val?: string) => {
+      if (done) return;
+      done = true;
+      if (err) reject(err);
+      else resolve(val || "");
+    };
+
+    try {
+      const session = await ai.live.connect({
+        model: modelName,
+        config: {
+          responseModalities: [Modality.AUDIO],
+          outputAudioTranscription: {},
+          thinkingConfig: { thinkingBudget: 0 },
+          systemInstruction: {
+            parts: [
+              {
+                text: jsonMode
+                  ? `${systemInstruction}\nCRITICAL: Output ONLY a raw valid JSON object starting with { and ending with }. Do NOT speak any conversational preamble outside the JSON.`
+                  : systemInstruction,
+              },
+            ],
+          },
+        },
+        callbacks: {
+          onmessage: (msg: unknown) => {
+            const sc = (msg as {
+              serverContent?: {
+                modelTurn?: { parts?: Array<{ text?: string; thought?: boolean }> };
+                outputTranscription?: { text?: string };
+                turnComplete?: boolean;
+              };
+            })?.serverContent;
+            if (sc?.modelTurn?.parts) {
+              for (const p of sc.modelTurn.parts) {
+                if (p.text && !p.thought) textOut += p.text;
+              }
+            }
+            if (sc?.outputTranscription?.text) {
+              textOut += sc.outputTranscription.text;
+            }
+            if (sc?.turnComplete) {
+              try {
+                session.close();
+              } catch {}
+              finish(null, textOut.trim());
+            }
+          },
+          onerror: (e: { message?: string }) => finish(new Error(e?.message || "Live API error")),
+          onclose: () => finish(new Error("Live session closed early")),
+        },
+      });
+
+      session.sendClientContent({
+        turns: [{ role: "user", parts: [{ text: userPrompt }] }],
+        turnComplete: true,
+      });
+
+      setTimeout(() => {
+        try {
+          session.close();
+        } catch {}
+        finish(new Error("Live API timeout"));
+      }, 7500);
+    } catch (e: unknown) {
+      finish(e instanceof Error ? e : new Error("Live connection failed"));
+    }
+  });
+}
+
+/**
+ * Helper to call Gemini with Unlimited Live API primary models + high-RPD standard fallback
+ */
 async function callGeminiWithFallback(systemInstruction: string, userPrompt: string, jsonMode = true): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -136,18 +222,40 @@ async function callGeminiWithFallback(systemInstruction: string, userPrompt: str
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  // High-RPD multi-tier model pool for long continuous conversations:
-  // 1. gemini-3.5-flash-lite (500 RPD, 15 RPM, ~800ms)
-  // 2. gemini-flash-lite-latest (500 RPD, 15 RPM)
-  // 3. gemma-4-26b-a4b-it (14,400 RPD high-capacity fallback)
-  // 4. gemini-3.6-flash (20 RPD fallback)
+  let lastErr: unknown = null;
+
+  // TIER 1: UNLIMITED QUOTA LIVE API MODELS (0 / Unlimited RPM & 0 / Unlimited RPD)
+  const unlimitedLiveModels = ["gemini-3.1-flash-live-preview", "gemini-3.8-live"];
+  for (const liveModel of unlimitedLiveModels) {
+    try {
+      const rawLive = await callGeminiLiveUnlimited(ai, liveModel, systemInstruction, userPrompt, jsonMode);
+      if (rawLive) {
+        if (jsonMode) {
+          const startIdx = rawLive.indexOf("{");
+          const endIdx = rawLive.lastIndexOf("}");
+          if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+            const jsonCandidate = rawLive.slice(startIdx, endIdx + 1);
+            JSON.parse(jsonCandidate); // Validate JSON before returning
+            console.log(`[WhatsApp Agent] Fulfilled via Unlimited Live Model: ${liveModel}`);
+            return jsonCandidate;
+          }
+          throw new Error("Live output did not contain valid JSON");
+        }
+        return rawLive;
+      }
+    } catch (liveErr) {
+      lastErr = liveErr;
+      console.warn(`[WhatsApp Agent] Live model ${liveModel} fallback:`, liveErr);
+    }
+  }
+
+  // TIER 2: HIGH-CAPACITY STANDARD MODELS (500 to 14,400 RPD)
   const candidateModels = [
     "gemini-3.5-flash-lite",
     "gemini-flash-lite-latest",
     "gemma-4-26b-a4b-it",
     "gemini-3.6-flash",
   ];
-  let lastErr: unknown = null;
 
   for (const modelName of candidateModels) {
     try {
