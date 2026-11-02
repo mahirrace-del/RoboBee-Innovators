@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
           .from("whatsapp_messages")
           .select("*")
           .eq("conversation_id", activeConvId)
-          .order("created_at", { ascending: true })
-          .limit(100),
+          .order("created_at", { ascending: false })
+          .limit(150),
         supabaseAdmin
           .from("tasks")
           .select("id, title, stage, status, budget_bdt, due_date, student_name, school_name, class_grade")
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
           .order("created_at", { ascending: false }),
       ]);
 
-      messages = msgRes.data || [];
+      messages = (msgRes.data || []).reverse();
       linkedTasks = taskRes.data || [];
     }
 

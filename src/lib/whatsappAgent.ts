@@ -136,27 +136,49 @@ async function callGeminiWithFallback(systemInstruction: string, userPrompt: str
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const candidateModels = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.5-flash"];
+  // High-RPD multi-tier model pool for long continuous conversations:
+  // 1. gemini-3.5-flash-lite (500 RPD, 15 RPM, ~800ms)
+  // 2. gemini-flash-lite-latest (500 RPD, 15 RPM)
+  // 3. gemma-4-26b-a4b-it (14,400 RPD high-capacity fallback)
+  // 4. gemini-3.6-flash (20 RPD fallback)
+  const candidateModels = [
+    "gemini-3.5-flash-lite",
+    "gemini-flash-lite-latest",
+    "gemma-4-26b-a4b-it",
+    "gemini-3.6-flash",
+  ];
   let lastErr: unknown = null;
 
   for (const modelName of candidateModels) {
     try {
+      const isGemma = modelName.startsWith("gemma-");
       const response = await ai.models.generateContent({
         model: modelName,
         contents: [
           {
             role: "user",
-            parts: [{ text: userPrompt }],
+            parts: [
+              {
+                text: isGemma ? `${systemInstruction}\n\n${userPrompt}` : userPrompt,
+              },
+            ],
           },
         ],
         config: {
-          systemInstruction,
-          ...(jsonMode ? { responseMimeType: "application/json" } : {}),
+          ...(!isGemma ? { systemInstruction } : {}),
+          ...(!isGemma && jsonMode ? { responseMimeType: "application/json" } : {}),
           temperature: 0.2,
         },
       });
       if (response?.text) {
-        return response.text;
+        let cleaned = response.text.trim();
+        if (jsonMode) {
+          cleaned = cleaned
+            .replace(/^```(?:json)?\s*/i, "")
+            .replace(/\s*```$/i, "")
+            .trim();
+        }
+        return cleaned;
       }
     } catch (mErr) {
       lastErr = mErr;
@@ -194,16 +216,18 @@ export async function evaluateConversationAndCreateTask(
     return null;
   }
 
-  const { data: messages, error: msgErr } = await supabaseAdmin
+  const { data: recentMessages, error: msgErr } = await supabaseAdmin
     .from("whatsapp_messages")
     .select("*")
     .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true })
-    .limit(25);
+    .order("created_at", { ascending: false })
+    .limit(40);
 
-  if (msgErr || !messages || messages.length === 0) {
+  if (msgErr || !recentMessages || recentMessages.length === 0) {
     return null;
   }
+
+  const messages = [...recentMessages].reverse();
 
   // Construct chat transcript representation for the AI
   const formattedTranscript = messages
@@ -222,16 +246,22 @@ export async function evaluateConversationAndCreateTask(
 
   const currentDate = new Date().toISOString().split("T")[0];
   const isAutoPilot = effectiveMode === "auto_pilot";
-  const customContext = conv.custom_ai_instructions
-    ? `\nSPECIAL INSTRUCTIONS FROM MAHIR FOR THIS CONTACT:\n${conv.custom_ai_instructions}\n`
-    : "";
+  const persistentMemory = `
+PERSISTENT CONTACT MEMORY (Retained across long conversations):
+- Contact Name: ${conv.contact_name || "Unknown"}
+- Phone: ${conv.phone_number}
+- Known School: ${conv.school_name || "Not provided yet"}
+- Known Class Grade: ${conv.class_grade || "Not provided yet"}
+- Previous Rolling Summary: ${conv.summary || "None"}
+${conv.custom_ai_instructions ? `- Special Instructions from Mahir: ${conv.custom_ai_instructions}` : ""}
+`;
 
   const systemInstruction = `
 You are the smart AI Operations Assistant for RoboBee Innovators (Flat 2, 75 North Chashara, Narayanganj, Bangladesh), working directly for Team Leader Mostakim Rahman Mahir (Mahir Rahman).
 RoboBee builds school science fair projects (Class 5 to Class 10), robotics prototypes, and runs STEM mentorship.
 Today's reference date: ${currentDate}.
 Current AI Mode for this contact: ${isAutoPilot ? "AUTO_PILOT (Direct AI Representative)" : "TASK_OBSERVER (Silent Task Extractor)"}.
-${customContext}
+${persistentMemory}
 
 CORE RULES:
 1. Conversation States:
@@ -239,7 +269,7 @@ CORE RULES:
    - "IN_DISCUSSION": Discussing project ideas, asking questions, or negotiating scope/timeline before final confirmation.
    - "CONFIRMED_WORK":
      * Triggered when Mahir explicitly approves/confirms ("ok", "okay", "ha", "hobe", "confirm", "thik ache", "kora jabe", "done", "ami banay dibo")
-     * OR when the client gives a clear, finalized instruction to build specific named project(s) (e.g., "project banay den", "koren", "confirm kore den") with deliverables and timeline.
+     * OR when the client gives a clear, finalized instruction to build specific named project(s) (e.g., "project banay den", "koren", "confirm kore den", "will you make it" after specifying project, class, and deadline).
 
 2. Behavior by Mode:
    - If Mode is "TASK_OBSERVER":
@@ -257,10 +287,9 @@ CORE RULES:
          "Hi, I'm Mahir's AI bot. Your project order for [Project Title(s)] is confirmed and added to our build schedule. Thank you!"
 
    - If Mode is "AUTO_PILOT":
-     * You represent Mahir professionally when he hasn't replied yet.
-     * Keep replies short, natural, smart, and helpful (1–3 sentences max, no robotic corporate fluff).
+     * You represent Mahir professionally and MUST ALWAYS populate "autoPilotReply" with a direct, smart, helpful reply (1–3 sentences max, no robotic corporate fluff) whenever the latest message is from CONTACT/CLIENT.
      * Help the contact clarify what project they need, their class grade, school name, and target delivery date. Do NOT invent final prices unless specified in Mahir's special instructions; let them know Mahir will confirm the exact budget or summarize what was already discussed.
-     * Populate "autoPilotReply" with your direct response to the latest message from CONTACT/CLIENT.
+     * Once they have shared the project name, class, and deadline, classify state as "CONFIRMED_WORK", extract the project into "projects", and in "autoPilotReply" confirm that you have noted their project for the schedule (and politely ask for their School Name if not yet shared).
 
 Output ONLY valid JSON matching this schema:
 {
