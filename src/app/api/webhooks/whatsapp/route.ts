@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const echoes = value?.message_echoes;
     if (echoes && echoes.length > 0) {
       const echo = echoes[0];
-      const recipientPhone = echo.to; // The customer's phone number
+      const recipientPhone = echo.to || echo.to_user_id || ""; // The customer's phone number or BSUID
       const echoText = echo.text?.body || (echo.image ? "[Photo sent by Mahir]" : "[Message sent by Mahir]");
       const echoWamId = echo.id;
       const echoType = echo.type || "text";
@@ -119,12 +119,19 @@ export async function POST(req: NextRequest) {
     const message = value.messages[0];
     const contact = value.contacts?.[0];
 
-    const rawSenderPhone = message.from || "";
+    const rawSenderPhone =
+      message.from ||
+      message.from_user_id ||
+      contact?.wa_id ||
+      contact?.user_id ||
+      "";
     const isOutboundFromMahir =
       rawSenderPhone.includes("1902821018") ||
       (message.to && !message.to.includes("1902821018") && rawSenderPhone.endsWith("1902821018"));
 
-    const customerPhone = isOutboundFromMahir ? (message.to || rawSenderPhone) : rawSenderPhone;
+    const customerPhone = isOutboundFromMahir
+      ? (message.to || message.to_user_id || rawSenderPhone)
+      : rawSenderPhone;
     const senderType = isOutboundFromMahir ? "agent_mahir" : "customer";
     const profileName = isOutboundFromMahir ? "Mahir Rahman (RoboBee Leader)" : (contact?.profile?.name || "Contact");
     const wamId = message.id;

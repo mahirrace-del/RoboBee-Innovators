@@ -60,25 +60,61 @@ export async function sendWhatsAppTextMessage(toPhone: string, textBody: string)
     return false;
   }
 
-  const cleanPhone = toPhone.replace(/[^0-9]/g, "");
+  const trimmedRecipient = (toPhone || "").trim();
+  if (!trimmedRecipient) {
+    console.warn("[WhatsApp Agent] Empty recipient identifier. Skipping outbound message dispatch.");
+    return false;
+  }
+
+  // Support both standard phone numbers and Meta Business-Scoped User IDs (BSUID, e.g. "BD.1801234624250524")
+  const isBsuid = /^[A-Za-z]{2}\.\d+/.test(trimmedRecipient);
+  const recipientId = isBsuid ? trimmedRecipient : trimmedRecipient.replace(/[^0-9]/g, "");
 
   try {
-    const res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+    const payload: Record<string, unknown> = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      type: "text",
+      text: { body: textBody },
+    };
+
+    if (isBsuid) {
+      payload.recipient = { user_id: recipientId };
+      payload.to = recipientId;
+    } else {
+      payload.to = recipientId;
+    }
+
+    let res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: cleanPhone,
-        type: "text",
-        text: { body: textBody },
-      }),
+      body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    let data = await res.json();
+
+    // Fallback if Meta Graph API rejects simultaneous 'recipient' + 'to' on BSUID
+    if (!res.ok && isBsuid) {
+      res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipientId,
+          type: "text",
+          text: { body: textBody },
+        }),
+      });
+      data = await res.json();
+    }
+
     if (!res.ok) {
       console.error("[WhatsApp Agent] Meta API send error:", data);
       return false;
@@ -213,7 +249,7 @@ async function callGeminiLiveUnlimited(
 }
 
 /**
- * Helper to call Gemini with Unlimited Live API primary models + high-RPD standard fallback
+ * Helper to call Gemini with fast native JSON models (~750ms) + Unlimited Live API fallback (0 / Unlimited RPD)
  */
 async function callGeminiWithFallback(systemInstruction: string, userPrompt: string, jsonMode = true): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -224,37 +260,11 @@ async function callGeminiWithFallback(systemInstruction: string, userPrompt: str
   const ai = new GoogleGenAI({ apiKey });
   let lastErr: unknown = null;
 
-  // TIER 1: UNLIMITED QUOTA LIVE API MODELS (0 / Unlimited RPM & 0 / Unlimited RPD)
-  const unlimitedLiveModels = ["gemini-3.1-flash-live-preview", "gemini-3.8-live"];
-  for (const liveModel of unlimitedLiveModels) {
-    try {
-      const rawLive = await callGeminiLiveUnlimited(ai, liveModel, systemInstruction, userPrompt, jsonMode);
-      if (rawLive) {
-        if (jsonMode) {
-          const startIdx = rawLive.indexOf("{");
-          const endIdx = rawLive.lastIndexOf("}");
-          if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-            const jsonCandidate = rawLive.slice(startIdx, endIdx + 1);
-            JSON.parse(jsonCandidate); // Validate JSON before returning
-            console.log(`[WhatsApp Agent] Fulfilled via Unlimited Live Model: ${liveModel}`);
-            return jsonCandidate;
-          }
-          throw new Error("Live output did not contain valid JSON");
-        }
-        return rawLive;
-      }
-    } catch (liveErr) {
-      lastErr = liveErr;
-      console.warn(`[WhatsApp Agent] Live model ${liveModel} fallback:`, liveErr);
-    }
-  }
-
-  // TIER 2: HIGH-CAPACITY STANDARD MODELS (500 to 14,400 RPD)
+  // TIER 1: FAST NATIVE JSON MODELS (~750ms latency, 500 to 14,400 RPD)
   const candidateModels = [
     "gemini-3.5-flash-lite",
     "gemini-flash-lite-latest",
     "gemma-4-26b-a4b-it",
-    "gemini-3.6-flash",
   ];
 
   for (const modelName of candidateModels) {
@@ -285,12 +295,44 @@ async function callGeminiWithFallback(systemInstruction: string, userPrompt: str
             .replace(/^```(?:json)?\s*/i, "")
             .replace(/\s*```$/i, "")
             .trim();
+          const startIdx = cleaned.indexOf("{");
+          const endIdx = cleaned.lastIndexOf("}");
+          if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+            cleaned = cleaned.slice(startIdx, endIdx + 1);
+          }
+          JSON.parse(cleaned);
         }
+        console.log(`[WhatsApp Agent] Fulfilled via fast model: ${modelName}`);
         return cleaned;
       }
     } catch (mErr) {
       lastErr = mErr;
       console.warn(`[WhatsApp Agent] Model ${modelName} unavailable, falling back to next...`);
+    }
+  }
+
+  // TIER 2: UNLIMITED QUOTA LIVE API MODELS (0 / Unlimited RPM & 0 / Unlimited RPD)
+  const unlimitedLiveModels = ["gemini-3.1-flash-live-preview", "gemini-3.8-live"];
+  for (const liveModel of unlimitedLiveModels) {
+    try {
+      const rawLive = await callGeminiLiveUnlimited(ai, liveModel, systemInstruction, userPrompt, jsonMode);
+      if (rawLive) {
+        if (jsonMode) {
+          const startIdx = rawLive.indexOf("{");
+          const endIdx = rawLive.lastIndexOf("}");
+          if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+            const jsonCandidate = rawLive.slice(startIdx, endIdx + 1);
+            JSON.parse(jsonCandidate); // Validate JSON before returning
+            console.log(`[WhatsApp Agent] Fulfilled via Unlimited Live Model: ${liveModel}`);
+            return jsonCandidate;
+          }
+          throw new Error("Live output did not contain valid JSON");
+        }
+        return rawLive;
+      }
+    } catch (liveErr) {
+      lastErr = liveErr;
+      console.warn(`[WhatsApp Agent] Live model ${liveModel} fallback:`, liveErr);
     }
   }
 
