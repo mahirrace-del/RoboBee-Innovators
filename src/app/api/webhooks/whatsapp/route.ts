@@ -9,7 +9,9 @@ import { evaluateConversationAndCreateTask } from "@/lib/whatsappAgent";
  * Path: /api/webhooks/whatsapp
  * Handles:
  *  1. GET: Webhook verification challenge from Meta Developer Dashboard
- *  2. POST: Ingestion of incoming messages, images, PDFs, and status updates
+ *  2. POST: Ingestion of incoming messages, images, PDFs, and status updates.
+ *     Saves all messages to the Unified Messaging Hub, and ONLY invokes AI
+ *     when the contact's ai_mode is explicitly set to 'task_observer' or 'auto_pilot'.
  */
 
 export async function GET(req: NextRequest) {
@@ -34,7 +36,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Meta sends ping events or delivery receipts without messages
     const entry = body?.entry?.[0];
     const changes = entry?.changes?.[0];
     const value = changes?.value;
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
 
       let { data: conv } = await supabaseAdmin
         .from("whatsapp_conversations")
-        .select("id")
+        .select("id, ai_mode")
         .eq("phone_number", recipientPhone)
         .maybeSingle();
 
@@ -68,10 +69,13 @@ export async function POST(req: NextRequest) {
           .from("whatsapp_conversations")
           .insert({
             phone_number: recipientPhone,
-            status: "in_discussion",
+            platform: "whatsapp",
+            ai_mode: "off",
+            contact_category: "personal",
+            status: "casual",
             last_message_at: new Date().toISOString(),
           })
-          .select("id")
+          .select("id, ai_mode")
           .single();
         conv = newConv;
       } else {
@@ -91,14 +95,17 @@ export async function POST(req: NextRequest) {
           raw_payload: echo,
         });
 
-        // Trigger AI evaluation with updated conversation history
-        after(async () => {
-          try {
-            await evaluateConversationAndCreateTask(conv.id);
-          } catch (err) {
-            console.error("[WhatsApp Webhook] Async AI evaluation failed on echo:", err);
-          }
-        });
+        // Trigger AI evaluation ONLY if Mahir assigned AI to this contact
+        if (conv.ai_mode && conv.ai_mode !== "off") {
+          const convId = conv.id;
+          after(async () => {
+            try {
+              await evaluateConversationAndCreateTask(convId);
+            } catch (err) {
+              console.error("[WhatsApp Webhook] Async AI evaluation failed on echo:", err);
+            }
+          });
+        }
       }
 
       return NextResponse.json({ status: "echo_processed" }, { status: 200 });
@@ -119,9 +126,9 @@ export async function POST(req: NextRequest) {
 
     const customerPhone = isOutboundFromMahir ? (message.to || rawSenderPhone) : rawSenderPhone;
     const senderType = isOutboundFromMahir ? "agent_mahir" : "customer";
-    const profileName = isOutboundFromMahir ? "Mahir Rahman (RoboBee Leader)" : (contact?.profile?.name || "Guardian / Student");
+    const profileName = isOutboundFromMahir ? "Mahir Rahman (RoboBee Leader)" : (contact?.profile?.name || "Contact");
     const wamId = message.id;
-    const msgType = message.type; // "text", "image", "document", etc.
+    const msgType = message.type;
 
     let bodyText: string | null = null;
     let mediaUrl: string | null = null;
@@ -134,7 +141,7 @@ export async function POST(req: NextRequest) {
       bodyText = message.image?.caption || (isOutboundFromMahir ? "[Photo sent by Mahir]" : "[Image sent]");
       mediaCaption = message.image?.caption || null;
       mediaMimeType = message.image?.mime_type || "image/jpeg";
-      mediaUrl = message.image?.id || null; // Stores Meta Media ID for download
+      mediaUrl = message.image?.id || null;
     } else if (msgType === "document") {
       bodyText = message.document?.caption || `[Document: ${message.document?.filename || "file.pdf"}]`;
       mediaCaption = message.document?.caption || null;
@@ -144,10 +151,10 @@ export async function POST(req: NextRequest) {
       bodyText = `[Received ${msgType} message]`;
     }
 
-    // 1. Locate or create conversation thread in Supabase
+    // 1. Locate or create conversation thread in Supabase (Default ai_mode = 'off' so personal chats never use AI tokens)
     let { data: conversation } = await supabaseAdmin
       .from("whatsapp_conversations")
-      .select("id, status")
+      .select("id, status, ai_mode")
       .eq("phone_number", customerPhone)
       .maybeSingle();
 
@@ -156,11 +163,14 @@ export async function POST(req: NextRequest) {
         .from("whatsapp_conversations")
         .insert({
           phone_number: customerPhone,
-          contact_name: isOutboundFromMahir ? "Student / Client" : profileName,
+          contact_name: isOutboundFromMahir ? "Contact" : profileName,
+          platform: "whatsapp",
+          ai_mode: "off",
+          contact_category: "personal",
           status: "casual",
           last_message_at: new Date().toISOString(),
         })
-        .select("id, status")
+        .select("id, status, ai_mode")
         .single();
 
       if (createConvErr) {
@@ -197,16 +207,20 @@ export async function POST(req: NextRequest) {
       console.error("[WhatsApp Webhook] Failed to insert message:", insertMsgErr);
     }
 
-    // 3. Trigger asynchronous background AI evaluation using Next.js after()
-    // This returns 200 immediately to Meta while keeping Vercel serverless runtime alive for Gemini
-    if (conversation?.id) {
+    // 3. Trigger asynchronous background AI evaluation ONLY if ai_mode is explicitly enabled ('task_observer' or 'auto_pilot')
+    if (conversation?.id && conversation.ai_mode && conversation.ai_mode !== "off") {
+      const convId = conversation.id;
       after(async () => {
         try {
-          await evaluateConversationAndCreateTask(conversation.id);
+          await evaluateConversationAndCreateTask(convId);
         } catch (err) {
           console.error("[WhatsApp Webhook] Async AI evaluation failed:", err);
         }
       });
+    } else {
+      console.log(
+        `[WhatsApp Webhook] Stored message for ${customerPhone} (ai_mode=${conversation?.ai_mode || "off"}). No AI tokens spent.`
+      );
     }
 
     return NextResponse.json({ status: "success", received: true }, { status: 200 });

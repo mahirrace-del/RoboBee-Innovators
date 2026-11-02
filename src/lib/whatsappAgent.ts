@@ -3,13 +3,18 @@ import { supabaseAdmin } from "./supabase";
 
 /**
  * ============================================================================
- * ROBOBEE INNOVATORS — WHATSAPP AI ASSISTANT & DECISION ENGINE
+ * ROBOBEE INNOVATORS — OMNICHANNEL AI MESSAGING & TASK ENGINE
  * ============================================================================
- * Watches incoming WhatsApp conversations between Team Leader Mahir Rahman and
- * guardians/members. Stays completely silent during casual chats.
- * Only triggers task creation and polite confirmation when an explicit project
- * agreement is reached.
+ * Supports strictly gated per-contact AI Modes so ZERO tokens are wasted on
+ * personal chats:
+ *  - 'off'           : Personal / Manual mode. AI never reads or replies.
+ *  - 'task_observer' : AI reads conversation, extracts confirmed tasks to
+ *                      Kanban Backlog, and asks only for missing student info.
+ *  - 'auto_pilot'    : AI actively replies on behalf of Mahir Rahman AND
+ *                      automatically logs confirmed orders to Kanban Backlog.
  */
+
+export type AIMode = "off" | "task_observer" | "auto_pilot";
 
 export interface ProjectItem {
   projectTitle: string;
@@ -40,10 +45,11 @@ export interface AnalysisResult {
   needsVerificationMessage?: boolean;
   verificationMessage?: string;
   confirmationMessage?: string;
+  autoPilotReply?: string;
 }
 
 /**
- * Send an outbound text message to a guardian via Meta WhatsApp Cloud API
+ * Send an outbound text message via Meta WhatsApp Cloud API
  */
 export async function sendWhatsAppTextMessage(toPhone: string, textBody: string) {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -54,14 +60,13 @@ export async function sendWhatsAppTextMessage(toPhone: string, textBody: string)
     return false;
   }
 
-  // Format clean phone number (remove '+' or leading dashes)
   const cleanPhone = toPhone.replace(/[^0-9]/g, "");
 
   try {
     const res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -95,7 +100,6 @@ export async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: 
   if (!token) return null;
 
   try {
-    // 1. Get temporary media URL
     const metaRes = await fetch(`https://graph.facebook.com/v21.0/${mediaId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -106,7 +110,6 @@ export async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: 
 
     if (!mediaUrl) return null;
 
-    // 2. Download the binary stream
     const fileRes = await fetch(mediaUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -124,10 +127,54 @@ export async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: 
 }
 
 /**
- * Core Decision Engine: Evaluates the conversation thread with Gemini 2.5/2.0
+ * Helper to call Gemini with automatic fallback across active healthy models
  */
-export async function evaluateConversationAndCreateTask(conversationId: string): Promise<AnalysisResult | null> {
-  // 1. Fetch conversation details & recent message history
+async function callGeminiWithFallback(systemInstruction: string, userPrompt: string, jsonMode = true): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not configured.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+  const candidateModels = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.5-flash"];
+  let lastErr: unknown = null;
+
+  for (const modelName of candidateModels) {
+    try {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: userPrompt }],
+          },
+        ],
+        config: {
+          systemInstruction,
+          ...(jsonMode ? { responseMimeType: "application/json" } : {}),
+          temperature: 0.2,
+        },
+      });
+      if (response?.text) {
+        return response.text;
+      }
+    } catch (mErr) {
+      lastErr = mErr;
+      console.warn(`[WhatsApp Agent] Model ${modelName} unavailable, falling back to next...`);
+    }
+  }
+
+  throw lastErr || new Error("Failed to get response from all candidate Gemini models");
+}
+
+/**
+ * Core Decision Engine: Evaluates the conversation thread ONLY if ai_mode !== 'off' (or forceRun === true)
+ */
+export async function evaluateConversationAndCreateTask(
+  conversationId: string,
+  options?: { forceRun?: boolean; overrideMode?: AIMode }
+): Promise<AnalysisResult | null> {
+  // 1. Fetch conversation details
   const { data: conv, error: convErr } = await supabaseAdmin
     .from("whatsapp_conversations")
     .select("*")
@@ -136,6 +183,14 @@ export async function evaluateConversationAndCreateTask(conversationId: string):
 
   if (convErr || !conv) {
     console.error("[WhatsApp Agent] Conversation not found:", convErr);
+    return null;
+  }
+
+  const effectiveMode: AIMode = options?.overrideMode || (conv.ai_mode as AIMode) || "off";
+
+  // CRITICAL TOKEN GUARD: Never read or spend tokens on 'off' (personal) conversations unless explicitly forced by Mahir
+  if (effectiveMode === "off" && !options?.forceRun) {
+    console.log(`[WhatsApp Agent] Conversation ${conversationId} (${conv.contact_name || conv.phone_number}) has ai_mode='off'. Skipping AI to save tokens.`);
     return null;
   }
 
@@ -150,86 +205,62 @@ export async function evaluateConversationAndCreateTask(conversationId: string):
     return null;
   }
 
-  // 2. Prepare Gemini Client
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.warn("[WhatsApp Agent] GEMINI_API_KEY is not configured. Skipping automated evaluation.");
-    return null;
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-
-  // 3. Construct chat transcript representation for the AI
+  // Construct chat transcript representation for the AI
   const formattedTranscript = messages
     .map((m) => {
-      const sender = m.sender_type === "agent_mahir" ? "MAHIR (RoboBee Leader)" : (m.sender_type === "ai_assistant" ? "AI ASSISTANT" : "GUARDIAN/MEMBER");
+      const sender =
+        m.sender_type === "agent_mahir"
+          ? "MAHIR (RoboBee Leader)"
+          : m.sender_type === "ai_assistant"
+          ? "AI ASSISTANT"
+          : "CONTACT/CLIENT";
       let content = m.body || "";
-      if (m.media_url) content += ` [Attached File: ${m.media_mime_type || 'Media'}]`;
+      if (m.media_url) content += ` [Attached File: ${m.media_mime_type || "Media"}]`;
       return `[${m.created_at}] ${sender}: ${content}`;
     })
     .join("\n");
 
   const currentDate = new Date().toISOString().split("T")[0];
+  const isAutoPilot = effectiveMode === "auto_pilot";
+  const customContext = conv.custom_ai_instructions
+    ? `\nSPECIAL INSTRUCTIONS FROM MAHIR FOR THIS CONTACT:\n${conv.custom_ai_instructions}\n`
+    : "";
 
   const systemInstruction = `
-You are the silent Lead Operations Analyst and AI Assistant for RoboBee Innovators (Narayanganj, Bangladesh), operating alongside Team Leader Mostakim Rahman Mahir (Mahir Rahman).
-RoboBee organizes school science fairs, robotics mentorship, and custom hardware builds for students from Class 5 to Class 10.
+You are the smart AI Operations Assistant for RoboBee Innovators (Flat 2, 75 North Chashara, Narayanganj, Bangladesh), working directly for Team Leader Mostakim Rahman Mahir (Mahir Rahman).
+RoboBee builds school science fair projects (Class 5 to Class 10), robotics prototypes, and runs STEM mentorship.
 Today's reference date: ${currentDate}.
+Current AI Mode for this contact: ${isAutoPilot ? "AUTO_PILOT (Direct AI Representative)" : "TASK_OBSERVER (Silent Task Extractor)"}.
+${customContext}
 
-CRITICAL ROLE PRINCIPLE:
-Mahir Rahman is the Team Leader and final authority. Clients, parents, and students reach out with inquiries, project proposals, or their own budget guesses.
-YOU MUST BE INTELLIGENT AND HIGHLY SELECTIVE. DO NOT ASSUME OR CONFIRM ORDERS PREMATURELY.
+CORE RULES:
+1. Conversation States:
+   - "CASUAL": Greetings or general chit-chat unrelated to specific project builds.
+   - "IN_DISCUSSION": Discussing project ideas, asking questions, or negotiating scope/timeline before final confirmation.
+   - "CONFIRMED_WORK":
+     * Triggered when Mahir explicitly approves/confirms ("ok", "okay", "ha", "hobe", "confirm", "thik ache", "kora jabe", "done", "ami banay dibo")
+     * OR when the client gives a clear, finalized instruction to build specific named project(s) (e.g., "project banay den", "koren", "confirm kore den") with deliverables and timeline.
 
-Conversation States:
-1. "CASUAL":
-   - General greetings ("hi", "assalamu alaikum", "ki khobor", "kemon achen"), non-work chit-chat.
-   - Action: DO NOTHING. No tasks. No messages.
+2. Behavior by Mode:
+   - If Mode is "TASK_OBSERVER":
+     * During "CASUAL" or "IN_DISCUSSION": Set "autoPilotReply": null, "needsVerificationMessage": false, "confirmationMessage": null. Stay completely silent.
+     * When "CONFIRMED_WORK" is reached: Extract all confirmed project(s) into the "projects" array.
+       - Never ask the client for budget (Mahir fixes the budget; only record budgetBdt if mentioned in chat).
+       - If critical details (Student Name, School Name, Class Grade) are missing:
+         Set "needsVerificationMessage": true, and format "verificationMessage" concisely:
+         Single project:
+         "Hi, I'm Mahir's AI bot. To proceed with your project order ([Project Title]), please send:\n- Student Name\n- School Name & Class\nThank you!"
+         Multiple projects:
+         "Hi, I'm Mahir's AI bot. To proceed with your project orders ([Project 1], [Project 2]), please send:\n- Student Name\n- School Name & Class\nThank you!"
+       - If all details are already present:
+         Set "needsVerificationMessage": false, and set "confirmationMessage":
+         "Hi, I'm Mahir's AI bot. Your project order for [Project Title(s)] is confirmed and added to our build schedule. Thank you!"
 
-2. "IN_DISCUSSION":
-   - Client is asking questions, requesting ideas, inquiring about prices, or proposing their budget.
-   - If Mahir has not agreed/confirmed, or if discussion is open-ended without a final build agreement, stay in IN_DISCUSSION.
-   - Action: DO NOTHING. DO NOT ask for budget. DO NOT create tasks. DO NOT message.
-
-3. "CONFIRMED_WORK":
-   - Triggered when:
-     * Mahir says phrases of confirmation/acceptance: "ok", "okay", "ha", "hobe", "confirm", "thik ache", "kora jabe", "order confirm", "done", "ami banay dibo", etc.
-     * OR the client explicitly gives an order instruction to execute/build a named project (e.g. "project banay den", "koren", "confirm kore den", "lagbo") with clear deliverables (e.g. "solar drone", "solar vibrator", "hydraulic bridge") and timeline.
-     * NOTE: Due to Meta Cloud API limitations, messages sent by Mahir from his mobile phone app are sometimes not echoed to the webhook. When a client explicitly instructs to build a named project ("koren", "project banay den"), treat it as CONFIRMED_WORK so the task is captured in Backlog immediately and never missed!
-
-WHEN "CONFIRMED_WORK" IS REACHED:
-- Extract all confirmed project(s). If multiple projects were agreed in the conversation (e.g. Project 1 and Project 2), include each in the "projects" array:
-  * projectTitle: Clean descriptive engineering title (e.g. "Solar Powered Vibrating System", "Hydraulic Bridge", "Solar Powered Model Boat")
-  * studentName: (string or null)
-  * guardianName: (string or null)
-  * schoolName: (string or null)
-  * classGrade: (e.g. "Class 7", or null)
-  * agreedDeadline: Exact target date YYYY-MM-DD. Convert relative days (e.g. "6din" from ${currentDate}) to the calculated ISO date.
-  * budgetBdt: The budget agreed or confirmed by Mahir. (Do not ask for budget if not finalized; summarize what was discussed).
-  * requirementsSummary: Concise technical summary
-  * hardwareBOM: realistic component list
-- If critical details (Student Name, School Name, Class Grade) are missing:
-  * Set "needsVerificationMessage": true.
-  * Set "verificationMessage": Professional, smart, and direct message sent ONLY AT THE END after confirmation:
-    For a single project:
-    "Hi, I'm Mahir's AI bot. To proceed with your project order ([Project Title]), please send:
-    - Student Name
-    - School Name & Class
-    Thank you!"
-    (If Mahir confirmed a budget, include it: e.g. "[Project Title], [Budget] BDT").
-    For multiple projects:
-    "Hi, I'm Mahir's AI bot. To proceed with your project orders ([Project 1 Title], [Project 2 Title]), please send:
-    - Student Name
-    - School Name & Class
-    Thank you!"
-  * Set "confirmationMessage": null.
-- If all details (Student Name, School Name, Class Grade) are already present:
-  * Set "needsVerificationMessage": false.
-  * Set "verificationMessage": null.
-  * Set "confirmationMessage":
-    For single project:
-    "Hi, I'm Mahir's AI bot. Your project order for [Project Title] is confirmed and added to our build schedule. Thank you!"
-    For multiple projects:
-    "Hi, I'm Mahir's AI bot. Your project orders for [Project 1 Title] and [Project 2 Title] are confirmed and added to our build schedule. Thank you!"
+   - If Mode is "AUTO_PILOT":
+     * You represent Mahir professionally when he hasn't replied yet.
+     * Keep replies short, natural, smart, and helpful (1–3 sentences max, no robotic corporate fluff).
+     * Help the contact clarify what project they need, their class grade, school name, and target delivery date. Do NOT invent final prices unless specified in Mahir's special instructions; let them know Mahir will confirm the exact budget or summarize what was already discussed.
+     * Populate "autoPilotReply" with your direct response to the latest message from CONTACT/CLIENT.
 
 Output ONLY valid JSON matching this schema:
 {
@@ -237,7 +268,7 @@ Output ONLY valid JSON matching this schema:
   "confidence": 0.0 to 1.0,
   "projects": [
     {
-      "projectTitle": "Clean descriptive title (e.g. Solar Powered Boat or Hydraulic Bridge)",
+      "projectTitle": "Clean descriptive engineering title",
       "studentName": "string or null",
       "schoolName": "string or null",
       "classGrade": "string or null",
@@ -247,7 +278,7 @@ Output ONLY valid JSON matching this schema:
       "hardwareBOM": ["item 1", "item 2"]
     }
   ],
-  "projectTitle": "Primary project title or null (for backward compatibility)",
+  "projectTitle": "Primary project title or null",
   "studentName": "string or null",
   "guardianName": "string or null",
   "schoolName": "string or null",
@@ -259,55 +290,34 @@ Output ONLY valid JSON matching this schema:
   "missingCriticalInfo": ["Student Name", "School Name"] or [],
   "needsVerificationMessage": boolean,
   "verificationMessage": "string or null",
-  "confirmationMessage": "string or null"
+  "confirmationMessage": "string or null",
+  "autoPilotReply": "string or null"
 }
 `;
 
   try {
-    const candidateModels = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.5-flash"];
-    let response: any = null;
-    let lastErr: any = null;
+    const rawText = await callGeminiWithFallback(
+      systemInstruction,
+      `Analyze this conversation transcript:\n\n${formattedTranscript}`,
+      true
+    );
+    const result: AnalysisResult = JSON.parse(rawText || "{}");
 
-    for (const modelName of candidateModels) {
-      try {
-        response = await ai.models.generateContent({
-          model: modelName,
-          contents: [
-            {
-              role: "user",
-              parts: [
-                { text: `Analyze this WhatsApp dialogue transcript:\n\n${formattedTranscript}` }
-              ]
-            }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: "application/json",
-            temperature: 0.2,
-          }
-        });
-        if (response?.text) break;
-      } catch (mErr) {
-        lastErr = mErr;
-        console.warn(`[WhatsApp Agent] Model ${modelName} unavailable, falling back to next...`);
-      }
-    }
+    console.log(
+      `[WhatsApp Agent] Conversation ${conversationId} [mode=${effectiveMode}] classified as: ${result.state} (confidence: ${result.confidence})`
+    );
 
-    if (!response?.text) {
-      throw lastErr || new Error("Failed to get response from all candidate models");
-    }
-
-    const rawText = response.text || "{}";
-    const result: AnalysisResult = JSON.parse(rawText);
-
-    console.log(`[WhatsApp Agent] Conversation ${conversationId} classified as: ${result.state} (confidence: ${result.confidence})`);
-
-    // 4. Update conversation metadata in Supabase
+    // Update conversation metadata in Supabase
     await supabaseAdmin
       .from("whatsapp_conversations")
       .update({
-        status: result.state === "CONFIRMED_WORK" ? "confirmed" : (result.state === "IN_DISCUSSION" ? "in_discussion" : "casual"),
-        contact_name: result.guardianName || conv.contact_name,
+        status:
+          result.state === "CONFIRMED_WORK"
+            ? "confirmed"
+            : result.state === "IN_DISCUSSION"
+            ? "in_discussion"
+            : "casual",
+        contact_name: result.guardianName || result.studentName || conv.contact_name,
         school_name: result.schoolName || conv.school_name,
         class_grade: result.classGrade || conv.class_grade,
         summary: result.requirementsSummary || conv.summary,
@@ -315,7 +325,7 @@ Output ONLY valid JSON matching this schema:
       })
       .eq("id", conversationId);
 
-    // 5. If CONFIRMED_WORK, create or update Task(s) on the RoboBee Website Kanban Board!
+    // If CONFIRMED_WORK, create or update Task(s) on the RoboBee Website Kanban Board
     const projectsToProcess: ProjectItem[] = [];
     if (result.projects && Array.isArray(result.projects) && result.projects.length > 0) {
       projectsToProcess.push(...result.projects);
@@ -334,7 +344,6 @@ Output ONLY valid JSON matching this schema:
     }
 
     if (result.state === "CONFIRMED_WORK" && projectsToProcess.length > 0) {
-      // Fetch all existing tasks linked to this conversation thread
       const { data: existingTasks } = await supabaseAdmin
         .from("tasks")
         .select("id, title")
@@ -343,9 +352,8 @@ Output ONLY valid JSON matching this schema:
       for (const proj of projectsToProcess) {
         if (!proj.projectTitle) continue;
 
-        // Match existing task by title similarity (case-insensitive)
         const projTitleLower = proj.projectTitle.toLowerCase().trim();
-        const existingTask = (existingTasks || []).find((t: any) => {
+        const existingTask = (existingTasks || []).find((t: { id: string; title?: string }) => {
           const tLower = (t.title || "").toLowerCase().trim();
           return tLower === projTitleLower || tLower.includes(projTitleLower) || projTitleLower.includes(tLower);
         });
@@ -361,7 +369,7 @@ Output ONLY valid JSON matching this schema:
           descParts.push(`Summary: ${proj.requirementsSummary}`);
         }
         if (proj.hardwareBOM && proj.hardwareBOM.length > 0) {
-          descParts.push(`Key Components:\n- ${proj.hardwareBOM.join('\n- ')}`);
+          descParts.push(`Key Components:\n- ${proj.hardwareBOM.join("\n- ")}`);
         }
 
         const taskPayload = {
@@ -383,10 +391,7 @@ Output ONLY valid JSON matching this schema:
         };
 
         if (existingTask) {
-          await supabaseAdmin
-            .from("tasks")
-            .update(taskPayload)
-            .eq("id", existingTask.id);
+          await supabaseAdmin.from("tasks").update(taskPayload).eq("id", existingTask.id);
           console.log(`[WhatsApp Agent] Updated existing Task ${existingTask.id} (${proj.projectTitle}) in Backlog.`);
         } else {
           const { data: newTask, error: taskErr } = await supabaseAdmin
@@ -397,31 +402,37 @@ Output ONLY valid JSON matching this schema:
           if (taskErr) {
             console.error("[WhatsApp Agent] Failed to create Task in Supabase:", taskErr);
           } else {
-            console.log(`[WhatsApp Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) in Backlog for RoboBee Team!`);
+            console.log(`[WhatsApp Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) in Backlog!`);
           }
         }
       }
+    }
 
-      // 6. Handle outbound notification message at the end (verification or confirmation)
-      const messageToSend = result.needsVerificationMessage
-        ? result.verificationMessage
-        : result.confirmationMessage;
+    // Determine outbound reply to send
+    const lastMsg = messages[messages.length - 1];
+    let outboundText: string | null = null;
 
-      if (messageToSend) {
-        const lastMsg = messages[messages.length - 1];
-        if (lastMsg && lastMsg.sender_type === "ai_assistant" && lastMsg.body?.trim() === messageToSend.trim()) {
-          console.log("[WhatsApp Agent] Skipping duplicate message - identical message was already sent by AI.");
-        } else {
-          console.log(`[WhatsApp Agent] Dispatching notification message to ${conv.phone_number}: "${messageToSend}"`);
-          const sent = await sendWhatsAppTextMessage(conv.phone_number, messageToSend);
-          if (sent) {
-            await supabaseAdmin.from("whatsapp_messages").insert({
-              conversation_id: conversationId,
-              sender_type: "ai_assistant",
-              message_type: "text",
-              body: messageToSend,
-            });
-          }
+    if (isAutoPilot && result.autoPilotReply && lastMsg?.sender_type === "customer") {
+      outboundText = result.autoPilotReply;
+    } else if (result.state === "CONFIRMED_WORK") {
+      outboundText = result.needsVerificationMessage
+        ? result.verificationMessage || null
+        : result.confirmationMessage || null;
+    }
+
+    if (outboundText) {
+      if (lastMsg && lastMsg.sender_type === "ai_assistant" && lastMsg.body?.trim() === outboundText.trim()) {
+        console.log("[WhatsApp Agent] Skipping duplicate AI message.");
+      } else {
+        console.log(`[WhatsApp Agent] Dispatching AI message to ${conv.phone_number}: "${outboundText}"`);
+        const sent = await sendWhatsAppTextMessage(conv.phone_number, outboundText);
+        if (sent) {
+          await supabaseAdmin.from("whatsapp_messages").insert({
+            conversation_id: conversationId,
+            sender_type: "ai_assistant",
+            message_type: "text",
+            body: outboundText,
+          });
         }
       }
     }
@@ -431,4 +442,62 @@ Output ONLY valid JSON matching this schema:
     console.error("[WhatsApp Agent] Error during Gemini analysis:", err);
     return null;
   }
+}
+
+/**
+ * Command & Broadcast Engine: Allows Mahir to instruct the AI to message a contact
+ * or broadcast to multiple team members / clients on his behalf.
+ */
+export async function executeAICommandOrBroadcast(params: {
+  instruction: string;
+  usePolishAI: boolean;
+  targetConversations: Array<{ id: string; phone_number: string; contact_name?: string | null }>;
+}): Promise<{ sentCount: number; generatedMessage: string; results: Array<{ phone: string; ok: boolean }> }> {
+  let finalMessage = params.instruction.trim();
+
+  if (params.usePolishAI) {
+    const sysPrompt = `
+You are Mahir Rahman's executive AI assistant at RoboBee Innovators (Narayanganj, Bangladesh).
+Convert Mahir's raw command/instruction into a clean, smart, direct WhatsApp message to be sent on his behalf.
+- Keep it concise, polite, and natural (no robotic fluff, no overly formal headers).
+- Maintain English or Banglish/Bengali tone matching Mahir's instruction.
+- Output ONLY the final message text to send, nothing else.
+`;
+    try {
+      const generated = await callGeminiWithFallback(sysPrompt, params.instruction, false);
+      if (generated && generated.trim()) {
+        finalMessage = generated.trim();
+      }
+    } catch (e) {
+      console.warn("[WhatsApp Agent] Failed to polish broadcast with AI, using raw instruction:", e);
+    }
+  }
+
+  const results: Array<{ phone: string; ok: boolean }> = [];
+  let sentCount = 0;
+
+  for (const target of params.targetConversations) {
+    const personalizedMsg = finalMessage.replace(/\{name\}/gi, target.contact_name || "Member");
+    const ok = await sendWhatsAppTextMessage(target.phone_number, personalizedMsg);
+    results.push({ phone: target.phone_number, ok });
+    if (ok) {
+      sentCount++;
+      await supabaseAdmin.from("whatsapp_messages").insert({
+        conversation_id: target.id,
+        sender_type: "ai_assistant",
+        message_type: "text",
+        body: personalizedMsg,
+      });
+      await supabaseAdmin
+        .from("whatsapp_conversations")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", target.id);
+    }
+  }
+
+  return {
+    sentCount,
+    generatedMessage: finalMessage,
+    results,
+  };
 }

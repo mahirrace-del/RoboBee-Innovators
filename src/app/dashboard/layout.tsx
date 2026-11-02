@@ -32,6 +32,7 @@ import {
   Wrench,
   Globe,
   Users,
+  MessageSquare,
 } from "lucide-react";
 import { getUserRoleBadge } from "@/lib/permissions";
 import { normalizeCheckout, normalizeInventoryItem } from "@/lib/portalRelations";
@@ -195,6 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const getBreadcrumbLabel = () => {
     if (pathname === "/dashboard") return role === "admin" ? "Overview" : "My workspace";
+    if (pathname.startsWith("/dashboard/messages")) return "Messaging & AI Control";
     if (pathname === "/dashboard/curriculum") return "Learning";
     if (pathname === "/dashboard/curriculum/reference") return "Field guide";
     if (pathname === "/dashboard/tasks") return "Tasks";
@@ -248,6 +250,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link href="/dashboard" className={isAct("/dashboard")} onClick={closeSidebar} title="Central Hub">
           <Home size={18} className={styles.navIcon} />
           {!sidebarCollapsed && <span className={styles.navLabel}>Central Hub</span>}
+        </Link>
+        <Link
+          href="/dashboard/messages"
+          className={isAct("/dashboard/messages")}
+          onClick={closeSidebar}
+          title="Omnichannel Messaging & AI Control"
+        >
+          <MessageSquare size={18} className={styles.navIcon} color="#7A1C24" />
+          {!sidebarCollapsed && (
+            <>
+              <span className={styles.navLabel} style={{ fontWeight: 700, color: "#7A1C24" }}>
+                Messaging &amp; AI Hub
+              </span>
+              <span className={styles.navPill}>WA / IG</span>
+            </>
+          )}
         </Link>
         <Link
           href="/dashboard/curriculum"
@@ -637,7 +655,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className={styles.mainContent}>{children}</main>
       </div>
 
-      {/* Fixed Bottom Glassmorphic Navigation Bar (Dashboard, Tasks, Class, Lab, Profile) */}
+      {/* Fixed Bottom Glassmorphic Navigation Bar (Dashboard, Messages, Tasks, Class, Profile) */}
       <nav className={styles.mobileBottomNav} aria-label="Mobile Navigation">
         <Link
           href="/dashboard"
@@ -645,6 +663,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         >
           <Home size={20} />
           <span>Dashboard</span>
+        </Link>
+        <Link
+          href="/dashboard/messages"
+          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/messages") ? styles.bottomNavItemActive : ""}`}
+        >
+          <MessageSquare size={20} />
+          <span>Messages</span>
         </Link>
         <Link
           href="/dashboard/tasks"
