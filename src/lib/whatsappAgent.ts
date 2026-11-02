@@ -110,6 +110,9 @@ export async function sendWhatsAppTextMessage(toPhone: string, textBody: string)
   }
 }
 
+const FALLBACK_MESSENGER_TOKEN =
+  "EAAbcLr4F7wEBSZCZAbZCJlrNNjzgJpcLyBvZBmALuq3V0lekD8xLcuSz5c8HRsEZAzGjsQOZCBte8AE9tZAX83htNzaUBdV3jSUZC0c1T5gyLGgJES6FTFdZAJqJwODwvZBcRjctpj29fPYulC2nQDIggLYYs9WspHgshIRkJZBpl1wAYhxWtUhBWPCwc1xi3yuUm7MuZBml";
+
 /**
  * Send a message via Meta Facebook Messenger API
  * Endpoint: https://graph.facebook.com/v21.0/me/messages
@@ -118,7 +121,10 @@ export async function sendMessengerTextMessage(
   recipientPsid: string,
   textBody: string
 ): Promise<string | null> {
-  const token = process.env.MESSENGER_PAGE_ACCESS_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+  const token =
+    process.env.MESSENGER_PAGE_ACCESS_TOKEN ||
+    FALLBACK_MESSENGER_TOKEN ||
+    process.env.WHATSAPP_ACCESS_TOKEN;
   if (!token) {
     console.warn("[Messenger Agent] MESSENGER_PAGE_ACCESS_TOKEN is not configured.");
     return null;

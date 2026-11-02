@@ -17,6 +17,9 @@ export const dynamic = "force-dynamic";
  *     Trigger AI evaluation ONLY if ai_mode is explicitly enabled ('task_observer' or 'auto_pilot').
  */
 
+const FALLBACK_MESSENGER_TOKEN =
+  "EAAbcLr4F7wEBSZCZAbZCJlrNNjzgJpcLyBvZBmALuq3V0lekD8xLcuSz5c8HRsEZAzGjsQOZCBte8AE9tZAX83htNzaUBdV3jSUZC0c1T5gyLGgJES6FTFdZAJqJwODwvZBcRjctpj29fPYulC2nQDIggLYYs9WspHgshIRkJZBpl1wAYhxWtUhBWPCwc1xi3yuUm7MuZBml";
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
@@ -84,7 +87,10 @@ export async function POST(req: NextRequest) {
 
         // Try to fetch Facebook User Profile name if Page Access Token is available
         let contactName = isEcho ? "Facebook Contact" : "Facebook User";
-        const pageToken = process.env.MESSENGER_PAGE_ACCESS_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+        const pageToken =
+          process.env.MESSENGER_PAGE_ACCESS_TOKEN ||
+          FALLBACK_MESSENGER_TOKEN ||
+          process.env.WHATSAPP_ACCESS_TOKEN;
 
         if (!isEcho && pageToken) {
           try {
