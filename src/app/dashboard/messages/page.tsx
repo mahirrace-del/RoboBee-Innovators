@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { notifyTaskAssigned } from "@/lib/notifications";
 import {
   MessageSquare,
   Send,
@@ -408,7 +409,18 @@ export default function MessagingControlPanel() {
         }),
       });
       if (res.ok) {
+        const resData = await res.json().catch(() => ({}));
         showToast("Confirmed! Project moved to Task & Sprint Board Backlog.");
+        if (resData.task) {
+          notifyTaskAssigned({
+            taskId: resData.task.id,
+            taskTitle: resData.task.title || params.title || "New Project Task",
+            priority: resData.task.priority || "High",
+            dueDate: resData.task.due_date,
+            assignedToEmails: ["GENERAL"],
+            assignedByName: "Mahir Rahman",
+          }).catch(() => {});
+        }
         await fetchHubData(activeId, true);
       }
     } catch (e) {

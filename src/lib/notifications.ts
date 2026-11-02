@@ -16,6 +16,7 @@ export type NotificationType =
   | "task_review"
   | "task_completed"
   | "task_deleted"
+  | "schedule_alert"
   | "general_broadcast";
 
 export interface PortalNotification {
@@ -422,6 +423,49 @@ export async function clearAllNotifications(notificationIds: string[]): Promise<
   });
 
   await batch.commit();
+}
+
+/**
+ * Dispatches notifications when a schedule or workshop session is created or updated.
+ */
+export async function notifyScheduleAlert(params: {
+  title: string;
+  message: string;
+  sessionDate?: string;
+  sessionTime?: string;
+  link?: string;
+  targetEmails?: string[];
+  senderName?: string;
+}) {
+  const { title, message, sessionDate, sessionTime, link, targetEmails, senderName } = params;
+  const isGeneral = !targetEmails || targetEmails.length === 0 || targetEmails.includes("GENERAL");
+
+  if (isGeneral) {
+    await createNotification({
+      recipientEmail: "GENERAL",
+      recipientName: "All Team Members",
+      title: title || "📅 Lab Schedule Notification",
+      message: message,
+      type: "schedule_alert",
+      link: link || "/dashboard/attendance",
+      senderName: senderName || "RoboBee Operations",
+      metadata: { sessionDate, sessionTime },
+    });
+    return;
+  }
+
+  const promises = targetEmails.map((email) =>
+    createNotification({
+      recipientEmail: email,
+      title: title || "📅 Lab Schedule Notification",
+      message: message,
+      type: "schedule_alert",
+      link: link || "/dashboard/attendance",
+      senderName: senderName || "RoboBee Operations",
+      metadata: { sessionDate, sessionTime },
+    })
+  );
+  await Promise.allSettled(promises);
 }
 
 /**

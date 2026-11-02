@@ -24,6 +24,7 @@ import {
   ExternalLink,
   X,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 import styles from "./NotificationCenter.module.css";
 import {
@@ -36,6 +37,38 @@ import {
   clearAllNotifications,
 } from "@/lib/notifications";
 
+/**
+ * Gentle Web Audio chime synthesizer (zero external audio files needed)
+ */
+function playNotificationChime() {
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(587.33, now); // D5
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.14); // A5
+
+    gain.gain.setValueAtTime(0.09, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.38);
+  } catch {
+    // Silently ignore if blocked by browser autoplay policy
+  }
+}
+
 export function NotificationCenter() {
   const { user, role } = useAuth();
   const router = useRouter();
@@ -43,7 +76,38 @@ export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [allNotifications, setAllNotifications] = useState<PortalNotification[]>([]);
+  const [toasts, setToasts] = useState<PortalNotification[]>([]);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  const initialLoadDoneRef = useRef(false);
+  const seenToastIdsRef = useRef<Set<string>>(new Set());
+
+  const addToast = (notif: PortalNotification) => {
+    setToasts((prev) => {
+      const filtered = prev.filter((t) => t.id !== notif.id);
+      return [notif, ...filtered].slice(0, 3);
+    });
+
+    // Auto-dismiss after 9 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== notif.id));
+    }, 9000);
+  };
+
+  const handleDismissToast = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleToastClick = async (notif: PortalNotification) => {
+    setToasts((prev) => prev.filter((t) => t.id !== notif.id));
+    if (!notif.read) {
+      await markNotificationRead(notif.id);
+    }
+    if (notif.link) {
+      router.push(notif.link);
+    }
+  };
 
   // Real-time listener for notifications
   useEffect(() => {
@@ -91,6 +155,58 @@ export function NotificationCenter() {
         });
 
         setAllNotifications(list);
+
+        // POP-UP TOAST TRIGGER LOGIC:
+        if (!initialLoadDoneRef.current) {
+          initialLoadDoneRef.current = true;
+          // On first page load, check if there's a fresh unread notification created in the last 20 mins
+          const nowMs = Date.now();
+          const freshUnread = list.find((n) => {
+            if (n.read) return false;
+            let ms = 0;
+            if (n.createdAt?.toMillis) ms = n.createdAt.toMillis();
+            else if (n.createdAt?.seconds) ms = n.createdAt.seconds * 1000;
+            else if (typeof n.createdAt === "number") ms = n.createdAt;
+            return ms > 0 && nowMs - ms < 20 * 60 * 1000;
+          });
+          if (freshUnread && !seenToastIdsRef.current.has(freshUnread.id)) {
+            seenToastIdsRef.current.add(freshUnread.id);
+            addToast(freshUnread);
+          }
+        } else {
+          // Live additions while the member is actively using the website
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === "added") {
+              const d = change.doc;
+              const data = d.data();
+              const target = String(data.recipientEmail || "").toLowerCase().trim();
+              const isTargetedToMe = target === userEmail;
+              const isGeneral = target === "general";
+              const isAdminView = role === "admin" && data.type === "task_review";
+
+              if ((isTargetedToMe || isGeneral || isAdminView) && !seenToastIdsRef.current.has(d.id)) {
+                seenToastIdsRef.current.add(d.id);
+                const notifItem: PortalNotification = {
+                  id: d.id,
+                  recipientEmail: data.recipientEmail || "",
+                  recipientName: data.recipientName || undefined,
+                  userId: data.userId || undefined,
+                  title: data.title || "Notification",
+                  message: data.message || "",
+                  type: data.type || "task_assigned",
+                  link: data.link || "/dashboard/tasks",
+                  read: false,
+                  createdAt: data.createdAt,
+                  senderEmail: data.senderEmail || undefined,
+                  senderName: data.senderName || undefined,
+                  metadata: data.metadata || {},
+                };
+                addToast(notifItem);
+                playNotificationChime();
+              }
+            }
+          });
+        }
       },
       (error) => {
         console.error("Error subscribing to notifications:", error);
@@ -219,6 +335,15 @@ export function NotificationCenter() {
             <Pencil size={16} />
           </div>
         );
+      case "schedule_alert":
+        return (
+          <div
+            className={styles.iconBox}
+            style={{ background: "rgba(14, 165, 233, 0.14)", color: "#0284c7" }}
+          >
+            <Calendar size={17} />
+          </div>
+        );
       default:
         return (
           <div
@@ -228,6 +353,42 @@ export function NotificationCenter() {
             <Sparkles size={17} />
           </div>
         );
+    }
+  };
+
+  const getCategoryLabel = (type: string) => {
+    switch (type) {
+      case "task_assigned":
+        return "Task Assigned";
+      case "task_stage_change":
+        return "Sprint Update";
+      case "task_review":
+        return "Review Request";
+      case "task_completed":
+        return "Task Completed";
+      case "task_updated":
+        return "Task Updated";
+      case "schedule_alert":
+        return "Schedule Alert";
+      default:
+        return "Notification";
+    }
+  };
+
+  const getToastIcon = (type: string) => {
+    switch (type) {
+      case "task_assigned":
+        return <CheckSquare size={13} />;
+      case "task_stage_change":
+        return <Zap size={13} />;
+      case "task_review":
+        return <Search size={13} />;
+      case "task_completed":
+        return <CheckCircle2 size={13} />;
+      case "schedule_alert":
+        return <Calendar size={13} />;
+      default:
+        return <Bell size={13} />;
     }
   };
 
@@ -391,6 +552,60 @@ export function NotificationCenter() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Real-Time Floating Pop-Up Toasts */}
+      {toasts.length > 0 && (
+        <div className={styles.toastContainer} aria-live="polite">
+          {toasts.map((toast) => {
+            const categoryLabel = getCategoryLabel(toast.type);
+            return (
+              <div
+                key={toast.id}
+                className={styles.toastItem}
+                onClick={() => handleToastClick(toast)}
+                role="alert"
+              >
+                <div className={styles.toastTop}>
+                  <div className={styles.toastCategoryPill}>
+                    {getToastIcon(toast.type)}
+                    <span>{categoryLabel}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDismissToast(e, toast.id)}
+                    className={styles.toastDismissBtn}
+                    aria-label="Dismiss notification"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+
+                <div className={styles.toastTitle}>{toast.title}</div>
+                <div className={styles.toastMessage}>{toast.message}</div>
+
+                <div className={styles.toastActions}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToastClick(toast);
+                    }}
+                    className={styles.toastViewBtn}
+                  >
+                    <span>{toast.type === "schedule_alert" ? "View Schedule" : "View Task"}</span>
+                    <ExternalLink size={12} />
+                  </button>
+                  <span className={styles.toastTime}>
+                    {formatNotificationTime(toast.createdAt)}
+                  </span>
+                </div>
+
+                <div className={styles.toastProgressBar} />
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
