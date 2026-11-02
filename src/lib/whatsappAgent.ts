@@ -51,22 +51,23 @@ export interface AnalysisResult {
 /**
  * Send an outbound text message via Meta WhatsApp Cloud API
  */
-export async function sendWhatsAppTextMessage(toPhone: string, textBody: string) {
+export async function sendWhatsAppTextMessage(toPhone: string, textBody: string): Promise<string | null> {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!token || !phoneNumberId) {
     console.warn("[WhatsApp Agent] Missing WHATSAPP_ACCESS_TOKEN or WHATSAPP_PHONE_NUMBER_ID. Skipping outbound message dispatch.");
-    return false;
+    return null;
   }
 
   const trimmedRecipient = (toPhone || "").trim();
   if (!trimmedRecipient) {
     console.warn("[WhatsApp Agent] Empty recipient identifier. Skipping outbound message dispatch.");
-    return false;
+    return null;
   }
 
   // Support both standard phone numbers and Meta Business-Scoped User IDs (BSUID, e.g. "BD.1801234624250524")
+  // CRITICAL: When sending to a BSUID, ONLY pass "recipient": "BD.1801234624250524" (NEVER pass "to", or Meta strips "BD." into a US +1801 number!)
   const isBsuid = /^[A-Za-z]{2}\.\d+/.test(trimmedRecipient);
   const recipientId = isBsuid ? trimmedRecipient : trimmedRecipient.replace(/[^0-9]/g, "");
 
@@ -79,13 +80,12 @@ export async function sendWhatsAppTextMessage(toPhone: string, textBody: string)
     };
 
     if (isBsuid) {
-      payload.recipient = { user_id: recipientId };
-      payload.to = recipientId;
+      payload.recipient = recipientId;
     } else {
       payload.to = recipientId;
     }
 
-    let res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+    const res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -94,37 +94,19 @@ export async function sendWhatsAppTextMessage(toPhone: string, textBody: string)
       body: JSON.stringify(payload),
     });
 
-    let data = await res.json();
-
-    // Fallback if Meta Graph API rejects simultaneous 'recipient' + 'to' on BSUID
-    if (!res.ok && isBsuid) {
-      res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to: recipientId,
-          type: "text",
-          text: { body: textBody },
-        }),
-      });
-      data = await res.json();
-    }
+    const data = await res.json();
 
     if (!res.ok) {
       console.error("[WhatsApp Agent] Meta API send error:", data);
-      return false;
+      return null;
     }
 
-    console.log("[WhatsApp Agent] Sent message successfully. WAM ID:", data?.messages?.[0]?.id);
-    return true;
+    const wamId = data?.messages?.[0]?.id || "sent";
+    console.log("[WhatsApp Agent] Sent message successfully. WAM ID:", wamId, "Recipient:", data?.contacts?.[0]);
+    return wamId;
   } catch (err) {
     console.error("[WhatsApp Agent] Exception while sending message:", err);
-    return false;
+    return null;
   }
 }
 
@@ -613,10 +595,11 @@ Output ONLY valid JSON matching this schema:
         console.log("[WhatsApp Agent] Skipping duplicate AI message.");
       } else {
         console.log(`[WhatsApp Agent] Dispatching AI message to ${conv.phone_number}: "${outboundText}"`);
-        const sent = await sendWhatsAppTextMessage(conv.phone_number, outboundText);
-        if (sent) {
+        const sentWamId = await sendWhatsAppTextMessage(conv.phone_number, outboundText);
+        if (sentWamId) {
           await supabaseAdmin.from("whatsapp_messages").insert({
             conversation_id: conversationId,
+            wam_id: sentWamId !== "sent" ? sentWamId : null,
             sender_type: "ai_assistant",
             message_type: "text",
             body: outboundText,
@@ -667,12 +650,14 @@ Convert Mahir's raw command/instruction into a warm, respectful, natural WhatsAp
 
   for (const target of params.targetConversations) {
     const personalizedMsg = finalMessage.replace(/\{name\}/gi, target.contact_name || "Member");
-    const ok = await sendWhatsAppTextMessage(target.phone_number, personalizedMsg);
+    const sentWamId = await sendWhatsAppTextMessage(target.phone_number, personalizedMsg);
+    const ok = Boolean(sentWamId);
     results.push({ phone: target.phone_number, ok });
-    if (ok) {
+    if (sentWamId) {
       sentCount++;
       await supabaseAdmin.from("whatsapp_messages").insert({
         conversation_id: target.id,
+        wam_id: sentWamId !== "sent" ? sentWamId : null,
         sender_type: "ai_assistant",
         message_type: "text",
         body: personalizedMsg,

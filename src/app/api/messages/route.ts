@@ -128,12 +128,14 @@ export async function POST(req: NextRequest) {
       }
 
       const trimmedText = text.trim();
-      const dispatched = await sendWhatsAppTextMessage(conv.phone_number, trimmedText);
+      const dispatchedWamId = await sendWhatsAppTextMessage(conv.phone_number, trimmedText);
+      const dispatched = Boolean(dispatchedWamId);
 
       const { data: insertedMsg, error: msgErr } = await supabaseAdmin
         .from("whatsapp_messages")
         .insert({
           conversation_id: conversationId,
+          wam_id: dispatchedWamId && dispatchedWamId !== "sent" ? dispatchedWamId : null,
           sender_type: "agent_mahir",
           message_type: "text",
           body: trimmedText,
