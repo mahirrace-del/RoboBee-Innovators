@@ -11,9 +11,22 @@ import { supabaseAdmin } from "./supabase";
  * agreement is reached.
  */
 
+export interface ProjectItem {
+  projectTitle: string;
+  studentName?: string | null;
+  guardianName?: string | null;
+  schoolName?: string | null;
+  classGrade?: string | null;
+  agreedDeadline?: string | null; // YYYY-MM-DD
+  budgetBdt?: number | null;
+  requirementsSummary?: string | null;
+  hardwareBOM?: string[];
+}
+
 export interface AnalysisResult {
   state: "CASUAL" | "IN_DISCUSSION" | "CONFIRMED_WORK";
   confidence: number;
+  projects?: ProjectItem[];
   projectTitle?: string;
   studentName?: string;
   guardianName?: string;
@@ -206,7 +219,19 @@ Output ONLY valid JSON matching this schema:
 {
   "state": "CASUAL" | "IN_DISCUSSION" | "CONFIRMED_WORK",
   "confidence": 0.0 to 1.0,
-  "projectTitle": "string or null",
+  "projects": [
+    {
+      "projectTitle": "Clean descriptive title (e.g. Solar Powered Boat or Hydraulic Bridge)",
+      "studentName": "string or null",
+      "schoolName": "string or null",
+      "classGrade": "string or null",
+      "agreedDeadline": "YYYY-MM-DD or null",
+      "budgetBdt": number or null,
+      "requirementsSummary": "string or null",
+      "hardwareBOM": ["item 1", "item 2"]
+    }
+  ],
+  "projectTitle": "Primary project title or null (for backward compatibility)",
   "studentName": "string or null",
   "guardianName": "string or null",
   "schoolName": "string or null",
@@ -273,49 +298,76 @@ Output ONLY valid JSON matching this schema:
       })
       .eq("id", conversationId);
 
-    // 5. If CONFIRMED_WORK, create or update a Task on the RoboBee Website Kanban Board!
-    if (result.state === "CONFIRMED_WORK" && result.projectTitle) {
-      // Check if a task for this conversation already exists
-      const { data: existingTask } = await supabaseAdmin
+    // 5. If CONFIRMED_WORK, create or update Task(s) on the RoboBee Website Kanban Board!
+    const projectsToProcess: ProjectItem[] = [];
+    if (result.projects && Array.isArray(result.projects) && result.projects.length > 0) {
+      projectsToProcess.push(...result.projects);
+    } else if (result.projectTitle) {
+      projectsToProcess.push({
+        projectTitle: result.projectTitle,
+        studentName: result.studentName,
+        guardianName: result.guardianName,
+        schoolName: result.schoolName,
+        classGrade: result.classGrade,
+        agreedDeadline: result.agreedDeadline,
+        budgetBdt: result.budgetBdt,
+        requirementsSummary: result.requirementsSummary,
+        hardwareBOM: result.hardwareBOM,
+      });
+    }
+
+    if (result.state === "CONFIRMED_WORK" && projectsToProcess.length > 0) {
+      // Fetch all existing tasks linked to this conversation thread
+      const { data: existingTasks } = await supabaseAdmin
         .from("tasks")
-        .select("id")
-        .eq("conversation_id", conversationId)
-        .maybeSingle();
+        .select("id, title")
+        .eq("conversation_id", conversationId);
 
-      const taskPayload = {
-        title: result.projectTitle,
-        description: `${result.requirementsSummary || 'Science Fair Project Build'}\n\nComponents:\n- ${(result.hardwareBOM || []).join('\n- ')}`,
-        assigned_to: "GENERAL",
-        assigned_by: "WhatsApp AI Assistant",
-        status: "pending",
-        stage: "backlog",
-        priority: "High",
-        due_date: result.agreedDeadline || null,
-        conversation_id: conversationId,
-        guardian_phone: conv.phone_number,
-        student_name: result.studentName || null,
-        school_name: result.schoolName || null,
-        class_grade: result.classGrade || null,
-        budget_bdt: result.budgetBdt || null,
-        source: "whatsapp",
-      };
+      for (const proj of projectsToProcess) {
+        if (!proj.projectTitle) continue;
 
-      if (existingTask) {
-        await supabaseAdmin
-          .from("tasks")
-          .update(taskPayload)
-          .eq("id", existingTask.id);
-        console.log(`[WhatsApp Agent] Updated existing Task ${existingTask.id} in Backlog.`);
-      } else {
-        const { data: newTask, error: taskErr } = await supabaseAdmin
-          .from("tasks")
-          .insert(taskPayload)
-          .select("id")
-          .single();
-        if (taskErr) {
-          console.error("[WhatsApp Agent] Failed to create Task in Supabase:", taskErr);
+        // Match existing task by title similarity (case-insensitive)
+        const projTitleLower = proj.projectTitle.toLowerCase().trim();
+        const existingTask = (existingTasks || []).find((t: any) => {
+          const tLower = (t.title || "").toLowerCase().trim();
+          return tLower === projTitleLower || tLower.includes(projTitleLower) || projTitleLower.includes(tLower);
+        });
+
+        const taskPayload = {
+          title: proj.projectTitle,
+          description: `${proj.requirementsSummary || 'Science Fair Project Build'}\n\nComponents:\n- ${(proj.hardwareBOM || []).join('\n- ')}`,
+          assigned_to: "GENERAL",
+          assigned_by: "WhatsApp AI Assistant",
+          status: "pending",
+          stage: "backlog",
+          priority: "High",
+          due_date: proj.agreedDeadline || result.agreedDeadline || null,
+          conversation_id: conversationId,
+          guardian_phone: conv.phone_number,
+          student_name: proj.studentName || result.studentName || null,
+          school_name: proj.schoolName || result.schoolName || null,
+          class_grade: proj.classGrade || result.classGrade || null,
+          budget_bdt: proj.budgetBdt || result.budgetBdt || null,
+          source: "whatsapp",
+        };
+
+        if (existingTask) {
+          await supabaseAdmin
+            .from("tasks")
+            .update(taskPayload)
+            .eq("id", existingTask.id);
+          console.log(`[WhatsApp Agent] Updated existing Task ${existingTask.id} (${proj.projectTitle}) in Backlog.`);
         } else {
-          console.log(`[WhatsApp Agent] Created NEW Task ${newTask?.id} in Backlog for RoboBee Team!`);
+          const { data: newTask, error: taskErr } = await supabaseAdmin
+            .from("tasks")
+            .insert(taskPayload)
+            .select("id")
+            .single();
+          if (taskErr) {
+            console.error("[WhatsApp Agent] Failed to create Task in Supabase:", taskErr);
+          } else {
+            console.log(`[WhatsApp Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) in Backlog for RoboBee Team!`);
+          }
         }
       }
 
