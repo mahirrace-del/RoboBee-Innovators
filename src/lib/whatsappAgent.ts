@@ -1,6 +1,6 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { supabaseAdmin } from "./supabase";
-import { notifyTaskAssigned } from "./notifications";
+import { notifyTaskAssigned, createNotification } from "./notifications";
 
 /**
  * ============================================================================
@@ -842,15 +842,45 @@ Output ONLY valid JSON matching this schema:
     const lastMsg = messages[messages.length - 1];
     let outboundText: string | null = null;
 
+    // Check if Mahir is requesting a live incoming call to his website via Messenger
+    if (isMahirAdminGateway && lastMsg?.body) {
+      const isCallReq = /\b(call me|give me a call|ring me|make a call|call koro|ring koro|voice call|phone me)\b/i.test(lastMsg.body);
+      if (isCallReq) {
+        try {
+          await createNotification({
+            recipientEmail: "rest.mahir@gmail.com",
+            recipientName: "Mahir Rahman",
+            title: "Executive Voice Call Request",
+            message: "Incoming live executive call requested via Messenger",
+            type: "trigger_voice_call",
+            link: "/dashboard",
+            senderName: "Messenger Gateway",
+          });
+          await createNotification({
+            recipientEmail: "race.mahir@gmail.com",
+            recipientName: "Mahir Rahman",
+            title: "Executive Voice Call Request",
+            message: "Incoming live executive call requested via Messenger",
+            type: "trigger_voice_call",
+            link: "/dashboard",
+            senderName: "Messenger Gateway",
+          });
+          outboundText = `${aiPrefix} Initiating a live voice call to your RoboBee Portal right now, Team Leader Mahir! Please pick up on your screen.`;
+        } catch (e) {
+          console.warn("[AI Agent] Voice call trigger dispatch error:", e);
+        }
+      }
+    }
+
     const shouldAutoReply =
       isAutoPilot &&
       (lastMsg?.sender_type === "customer" || (isMahirAdminGateway && lastMsg?.sender_type === "agent_mahir"));
 
-    if (shouldAutoReply) {
+    if (shouldAutoReply && !outboundText) {
       outboundText =
         result.autoPilotReply ||
         (result.needsVerificationMessage ? result.verificationMessage || null : result.confirmationMessage || null);
-    } else if (!isAutoPilot && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION" || projectsToProcess.length > 0)) {
+    } else if (!isAutoPilot && !outboundText && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION" || projectsToProcess.length > 0)) {
       outboundText = result.needsVerificationMessage
         ? result.verificationMessage || null
         : result.confirmationMessage || null;
