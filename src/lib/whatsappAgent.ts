@@ -181,21 +181,18 @@ YOU MUST BE INTELLIGENT AND HIGHLY SELECTIVE. DO NOT ASSUME OR CONFIRM ORDERS PR
 
 Conversation States:
 1. "CASUAL":
-   - General greetings ("hi", "assalamu alaikum", "ki khobor", "kemon achen"), social chit-chat.
+   - General greetings ("hi", "assalamu alaikum", "ki khobor", "kemon achen"), non-work chit-chat.
    - Action: DO NOTHING. No tasks. No messages.
 
 2. "IN_DISCUSSION":
-   - The client is asking questions, requesting a project, proposing their idea ("bhai project lagbo", "vibrator banay diven"), mentioning timelines ("6din"), or quoting their expected budget ("2000tk").
-   - CRITICAL INVARIANT: Even if the client asks for an order, says "confirm kore den", or specifies budget and deadline, IF MAHIR HAS NOT YET CONFIRMED OR AGREED TO IT, THE STATE REMAINS "IN_DISCUSSION"!
-   - Mahir fixes and approves the budget and workload. The client's unilateral request is NEVER a confirmation on its own.
-   - Action: DO NOTHING. DO NOT create any tasks in Backlog. DO NOT send any WhatsApp messages. Keep completely silent and wait!
+   - Open-ended browsing or vague questions without a concrete project order or build instruction.
+   - Action: DO NOTHING.
 
 3. "CONFIRMED_WORK":
-   - Triggered ONLY when MAHIR has explicitly reviewed and confirmed the project in the dialogue!
-   - Look for Mahir saying phrases of confirmation/acceptance:
-     * "ok", "okay", "ha", "hobe", "confirm", "thik ache", "kora jabe", "order confirm", "done", "ami banay dibo", etc.
-     * OR a clear mutual closing where both Mahir and the client have agreed on the deliverables and terms.
-   - WITHOUT Mahir's explicit approval or agreement, you CANNOT classify as "CONFIRMED_WORK".
+   - Triggered when:
+     * Mahir says phrases of confirmation/acceptance: "ok", "okay", "ha", "hobe", "confirm", "thik ache", "kora jabe", "order confirm", "done", "ami banay dibo", etc.
+     * OR the client explicitly gives an order instruction to execute/build a named project (e.g. "project banay den", "koren", "confirm kore den", "lagbo") with clear deliverables (e.g. "solar drone", "solar vibrator", "hydraulic bridge") and timeline.
+     * NOTE: Due to Meta Cloud API limitations, messages sent by Mahir from his mobile phone app are sometimes not echoed to the webhook. When a client explicitly instructs to build a named project ("koren", "project banay den"), treat it as CONFIRMED_WORK so the task is captured in Backlog immediately and never missed!
 
 WHEN "CONFIRMED_WORK" IS REACHED:
 - Extract all confirmed project(s). If multiple projects were agreed in the conversation (e.g. Project 1 and Project 2), include each in the "projects" array:
@@ -256,7 +253,7 @@ Output ONLY valid JSON matching this schema:
 `;
 
   try {
-    const candidateModels = ["gemini-3.5-flash-lite", "gemini-3.5-flash"];
+    const candidateModels = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.5-flash"];
     let response: any = null;
     let lastErr: any = null;
 
