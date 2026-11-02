@@ -390,7 +390,7 @@ export async function POST(req: NextRequest) {
       if (taskId) {
         await supabaseAdmin
           .from("tasks")
-          .update({ stage: "in_discussion", status: "in_discussion" })
+          .update({ stage: "backlog", status: "in_discussion" })
           .eq("id", taskId);
       }
       if (conversationId) {
@@ -422,25 +422,33 @@ export async function POST(req: NextRequest) {
         if (delErr) {
           return NextResponse.json({ error: delErr.message }, { status: 500 });
         }
-      } else if (targetConvId) {
-        // If dismissing by conversationId directly, also remove any unconfirmed discussion tasks linked to it
-        await supabaseAdmin
-          .from("tasks")
-          .delete()
-          .eq("conversation_id", targetConvId)
-          .eq("stage", "in_discussion");
       }
 
       if (targetConvId) {
+        if (!taskId) {
+          // If dismissing by conversationId directly, delete any unconfirmed discussion tasks for this conversation
+          await supabaseAdmin
+            .from("tasks")
+            .delete()
+            .eq("conversation_id", targetConvId)
+            .or("status.eq.in_discussion,stage.eq.in_discussion");
+        }
+
         const { data: remainingTasks } = await supabaseAdmin
           .from("tasks")
-          .select("id")
+          .select("id, title")
           .eq("conversation_id", targetConvId);
 
         if (!remainingTasks || remainingTasks.length === 0) {
           await supabaseAdmin
             .from("whatsapp_conversations")
             .update({ status: "casual", summary: null, updated_at: new Date().toISOString() })
+            .eq("id", targetConvId);
+        } else {
+          const remainingSummary = remainingTasks.map((t) => t.title).join(", ");
+          await supabaseAdmin
+            .from("whatsapp_conversations")
+            .update({ summary: remainingSummary || null, updated_at: new Date().toISOString() })
             .eq("id", targetConvId);
         }
       }

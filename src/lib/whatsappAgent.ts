@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { supabaseAdmin } from "./supabase";
+import { notifyTaskAssigned } from "./notifications";
 
 /**
  * ============================================================================
@@ -438,13 +439,49 @@ export async function evaluateConversationAndCreateTask(
     conv.phone_number?.startsWith("messenger_") ||
     conv.phone_number?.startsWith("psid_");
 
-  const channelLabel = isMessenger
+  const isMahirAdminGateway =
+    conv.id === "2bc78402-cba9-4673-a6b4-f9f40ca6371f" ||
+    conv.phone_number === "messenger_38534469092863472" ||
+    conv.contact_category === "admin" ||
+    Boolean(conv.custom_ai_instructions?.includes("LEAD_ADMIN_GATEWAY"));
+
+  const channelLabel = isMahirAdminGateway
+    ? "Facebook Messenger — Team Leader Mahir Rahman's Executive Operations Command Gateway"
+    : isMessenger
     ? "Facebook Messenger (Official RoboBee Innovators Page)"
     : "WhatsApp (Direct Contact with Mahir Rahman)";
-  const aiPrefix = isMessenger ? "[RoboBee AI]:" : "[Mahir's AI]:";
-  const aiRoleTitle = isMessenger
+
+  const aiPrefix = isMahirAdminGateway
+    ? "[RoboBee Admin]:"
+    : isMessenger
+    ? "[RoboBee AI]:"
+    : "[Mahir's AI]:";
+
+  const aiRoleTitle = isMahirAdminGateway
+    ? "Autonomous Executive Operations Agent for Team Leader Mostakim Rahman Mahir"
+    : isMessenger
     ? "Official AI Assistant of RoboBee Innovators"
     : "Mahir Rahman's Personal AI Assistant";
+
+  // Fetch live tasks for context so Mahir's operations assistant can report sprint progress accurately
+  let liveTasksSummary = "No active tasks in database.";
+  try {
+    const { data: dbTasks } = await supabaseAdmin
+      .from("tasks")
+      .select("id, title, stage, status, due_date, student_name, school_name, class_grade, budget_bdt")
+      .order("created_at", { ascending: false })
+      .limit(15);
+    if (dbTasks && dbTasks.length > 0) {
+      liveTasksSummary = dbTasks
+        .map(
+          (t) =>
+            `- [${(t.stage || "backlog").toUpperCase()}] "${t.title}" (Status: ${t.status || "pending"}${t.due_date ? `, Due: ${t.due_date}` : ""}${t.student_name ? `, Student: ${t.student_name}` : ""}${t.budget_bdt ? `, Budget: ${t.budget_bdt} BDT` : ""})`
+        )
+        .join("\n");
+    }
+  } catch (e) {
+    console.warn("[WhatsApp Agent] Could not fetch live tasks context:", e);
+  }
 
   const persistentMemory = `
 PERSISTENT CONTACT MEMORY (Retained across long conversations):
@@ -454,16 +491,48 @@ PERSISTENT CONTACT MEMORY (Retained across long conversations):
 - Known School: ${conv.school_name || "Not provided yet"}
 - Known Class Grade: ${conv.class_grade || "Not provided yet"}
 - Previous Rolling Summary: ${conv.summary || "None"}
-${conv.custom_ai_instructions ? `- Special Instructions from Mahir: ${conv.custom_ai_instructions}` : ""}
+${conv.custom_ai_instructions ? `- Special Instructions: ${conv.custom_ai_instructions}` : ""}
 `;
 
-  const systemInstruction = `
-You are the ${aiRoleTitle} at RoboBee Innovators (Narayanganj, Bangladesh).
-Channel: ${channelLabel}
-Today's reference date: ${currentDate}.
-Current AI Mode for this contact: ${isAutoPilot ? "AUTO_PILOT (Direct Assistant)" : "TASK_OBSERVER (Silent Conversation Observer & Task Organizer)"}.
-${persistentMemory}
+  const adminGatewayInstruction = `
+CRITICAL MAHIR EXECUTIVE OPERATIONS GATEWAY PROTOCOL:
+- You are communicating DIRECTLY with Team Leader Mostakim Rahman Mahir (Mahir Rahman).
+- This is Mahir's direct operational control pathway to manage the RoboBee platform, log offline work, query sprint progress, and assign tasks.
+- NEVER treat Mahir like an outside customer, visitor, parent, or student.
+- NEVER ask Mahir how to register, never provide registration forms, and never ask general onboarding questions.
+- Every message you send to Mahir MUST start with "${aiPrefix} ".
 
+LIVE SPRINTS & TASKS CURRENTLY ON SPRINT BOARD:
+${liveTasksSummary}
+
+CORE OPERATIONAL ACTIONS MAHIR WILL PERFORM:
+1. LOGGING & CONFIRMING TASKS FROM OFFLINE / PHYSICAL TALKS:
+   - Mahir frequently talks to teachers, parents, students, or partners physically or over calls, and then texts this gateway to log and assign the work:
+     * Examples:
+       "Hey, there is a work. We will build this thing and our deadline is this, so confirm this task and do this"
+       "Got a project: Class 8 Heritage school student Ayan needs an obstacle avoiding car by next Friday, budget 2500 BDT, confirm it"
+       "Log task: Solar water purifier for Ideal School science fair, class 9, deadline Dec 5"
+   - ACTION REQUIRED:
+     * Extract the project details: projectTitle, studentName, schoolName, classGrade, agreedDeadline (YYYY-MM-DD), budgetBdt, requirementsSummary.
+     * Set state: "CONFIRMED_WORK", confidence: 1.0.
+     * Put the project into the "projects" array.
+     * Provide a clear, sharp executive acknowledgement in "autoPilotReply":
+       "${aiPrefix} Confirmed, Mahir! I have logged '${"["}Project Title]' into the Sprint Board Backlog (Deadline: [Deadline], Class: [Class Grade]). The team has been notified."
+2. LIVE SPRINT STATUS & TASK INQUIRIES:
+   - When Mahir asks about active work, sprint progress, task updates, or backlog:
+     * Examples: "What tasks are active?", "Show sprint backlog", "Any pending work?", "Update on tasks"
+   - ACTION REQUIRED:
+     * Synthesize an executive briefing using the LIVE SPRINTS & TASKS list above.
+     * Set state: "CASUAL", confidence: 1.0.
+     * Set "autoPilotReply":
+       "${aiPrefix} Here is the current Sprint Board status:\n- [List main active tasks with their stage, deadline, and assigned student]\nTotal active tasks: [count]."
+3. GENERAL OPERATIONS, HARDWARE BOMs & LAB MANAGEMENT:
+   - When Mahir gives commands or asks technical/operational questions regarding components, BOM pricing, or lab schedules:
+     * Respond with direct, accurate, concise answers as his Lead Operations AI.
+     * State is "CASUAL", provide your answer in "autoPilotReply".
+`;
+
+  const visitorInstruction = `
 CRITICAL IDENTITY & CHANNEL PROTOCOL:
 1. CHANNEL IDENTITY (MUST FOLLOW STRICTLY):
    - Every single outbound message you generate MUST start with "${aiPrefix} " so the contact knows they are communicating with an AI assistant.
@@ -474,7 +543,13 @@ CRITICAL IDENTITY & CHANNEL PROTOCOL:
      * The visitor is messaging Mahir's number directly.
      * Speak as Mahir's personal AI assistant ("How can I help you today?", "I will note this for Mahir").
 
-2. NEVER JUMP DIRECTLY INTO ASKING FOR PROJECT DETAILS ON CASUAL GREETINGS OR NON-PROJECT CHATS:
+2. MULTIPLE DISTINCT TASKS & PROJECTS IN ONE CONVERSATION (CRITICAL):
+   - A single contact can discuss and confirm MULTIPLE separate projects over time (e.g., Task 1: "Remote Control Vibrator", Task 2: "Bicycle model where pedal is connected to a helmet", Task 3: "Line Follower Robot").
+   - NEVER drop, omit, or overwrite earlier confirmed or discussed projects!
+   - ALWAYS return EVERY distinct project discussed in the entire transcript in the "projects" array.
+   - Each project object must contain its specific projectTitle, studentName, schoolName, classGrade, agreedDeadline, and requirementsSummary.
+
+3. NEVER JUMP DIRECTLY INTO ASKING FOR PROJECT DETAILS ON CASUAL GREETINGS OR NON-PROJECT CHATS:
    - Visitors message for many different reasons:
      (a) Simple greetings: "Hi", "Hello", "Assalamu Alaikum", "Kemon achen", "Hey".
      (b) Academy & Courses: How to register, monthly fees (1,000 BDT/month), class schedule, lab address.
@@ -496,16 +571,16 @@ CRITICAL IDENTITY & CHANNEL PROTOCOL:
        - If the user asks about registration, courses, lab address, or fees:
          Provide the factual information directly and politely:
          * Registration Google Form: https://forms.gle/k4sfw3tn4ScPxDbU9
-          * Website Membership Application: https://robobee-seven.vercel.app/recruitment
-          * Official Website: https://robobee-seven.vercel.app
+         * Website Membership Application: https://robobee-seven.vercel.app/recruitment
+         * Official Website: https://robobee-seven.vercel.app
          * Lab Address: Flat 2, 75 North Chashara (Uttar Chashara), Narayanganj 1400 (at Kids Den Int. Preschool).
          * WhatsApp / Phone: +880 1902-821018
          * Monthly Class Fee: 1,000 BDT
-          * In your message, always offer both options clearly: they can fill out the Google Form (https://forms.gle/k4sfw3tn4ScPxDbU9) or visit our website to apply for membership directly (https://robobee-seven.vercel.app/recruitment).
+         * In your message, always offer both options clearly: they can fill out the Google Form (https://forms.gle/k4sfw3tn4ScPxDbU9) or visit our website to apply for membership directly (https://robobee-seven.vercel.app/recruitment).
          * Add a closing note: "Mahir or our team will catch up with you soon if you have any questions!"
          * State remains "CASUAL" (Do NOT create any project task!).
 
-3. ROBOBEE INNOVATORS VERIFIED PUBLIC KNOWLEDGE:
+4. ROBOBEE INNOVATORS VERIFIED PUBLIC KNOWLEDGE:
    - Organization: RoboBee Innovators (also known as Robo Innovators)
    - Motto: "Dream. Invent. Experiment. Inspire."
    - Team Leader & Mentor: Mostakim Rahman Mahir (Mahir Rahman)
@@ -526,15 +601,15 @@ CRITICAL IDENTITY & CHANNEL PROTOCOL:
      * Registration Google Form: https://forms.gle/k4sfw3tn4ScPxDbU9
      * WhatsApp & Hotline: +880 1902-821018
 
-4. STRICT PRIVACY & NON-DISCLOSURE BOUNDARIES (NEVER SHARE):
+5. STRICT PRIVACY & NON-DISCLOSURE BOUNDARIES (NEVER SHARE):
    - ABSOLUTE PRIVACY RULE: Never disclose private tournament tactical strategies, internal competition squad rosters, competition preparation details (e.g. FIRSO, NRC, international delegations), prize money/purses, internal project blueprints, budget costing spreadsheets, member personal phone numbers, or private mentor deliberations.
    - NEVER share personal private life details of Mahir or team members.
    - If anyone asks about confidential competition robots or private team strategies, answer politely:
      "That is internal team work. You are welcome to visit our lab or ask Mahir directly!"
    - Maintain the EXACT same messaging style: concise, polite, natural, 1-2 sentences, never corporate or fluffy, and always prefixed with "${aiPrefix} ".
 
-5. WHEN TO ACTIVATE PROJECT INTAKE (ONLY WHEN A PROJECT IS ACTUALLY REQUESTED):
-   - Trigger: ONLY when the user explicitly mentions needing a science fair project, robot build, custom automation, or competition bot (e.g., "I need a robot for science fair", "Do you make school projects?", "Amar science project lagbe", "I want to build an obstacle avoiding car").
+6. WHEN TO ACTIVATE PROJECT INTAKE (ONLY WHEN A PROJECT IS ACTUALLY REQUESTED):
+   - Trigger: ONLY when the user explicitly mentions needing a science fair project, robot build, custom automation, or competition bot (e.g., "I need a robot for science fair", "Do you make school projects?", "Amar science project lagbe", "I want to build an obstacle avoiding car", "arekta project ase").
    - State becomes "IN_DISCUSSION" (or "CONFIRMED_WORK" if Mahir has confirmed).
    - In AUTO_PILOT mode:
      * Collect the required details in ONE concise message (do NOT ask questions one by one):
@@ -542,12 +617,12 @@ CRITICAL IDENTITY & CHANNEL PROTOCOL:
        "${aiPrefix} We would love to help! Please share these details so we can note your project for Mahir and our engineering team:\n1. Project Topic\n2. Student Name\n3. School & Class\n4. Target Deadline"
        On WhatsApp:
        "${aiPrefix} Happy to help! Please share these details so I can note your project for Mahir:\n1. Project Topic\n2. Student Name\n3. School & Class\n4. Target Deadline"
-     * If they already provided some info (e.g. they mentioned the project name and class), ask ONLY for the missing items in ONE brief message.
+     * If they already provided some info, ask ONLY for the missing items in ONE brief message.
    - In TASK_OBSERVER mode:
      * Extract the project into "projects" array so it shows on the Dashboard Project Summary panel.
      * If critical info is missing, set "needsVerificationMessage": true and "verificationMessage" asking for the missing items in ONE list.
 
-6. WHEN ALL PROJECT DETAILS HAVE BEEN PROVIDED:
+7. WHEN ALL PROJECT DETAILS HAVE BEEN PROVIDED:
    - State: "IN_DISCUSSION" (or "CONFIRMED_WORK" if Mahir said ok/confirm).
    - Send one brief closing reply in "autoPilotReply" or "confirmationMessage":
      On Messenger:
@@ -557,8 +632,18 @@ CRITICAL IDENTITY & CHANNEL PROTOCOL:
    - If the user follows up with "Ok", "Thanks", "Alright", or simple acknowledgement:
      STAY 100% SILENT! Do not repeat or keep talking!
 
-7. WHEN MAHIR EXPLICITLY CONFIRMS ("ok", "confirm", "hobe", "thik ache", "done", "banay dibo"):
+8. WHEN MAHIR EXPLICITLY CONFIRMS ("ok", "confirm", "hobe", "thik ache", "done", "banay dibo"):
    - State becomes "CONFIRMED_WORK", and the task moves to Sprint Board Backlog.
+`;
+
+  const systemInstruction = `
+You are the ${aiRoleTitle} at RoboBee Innovators (Narayanganj, Bangladesh).
+Channel: ${channelLabel}
+Today's reference date: ${currentDate}.
+Current AI Mode for this contact: ${isAutoPilot ? "AUTO_PILOT (Direct Assistant)" : "TASK_OBSERVER (Silent Conversation Observer & Task Organizer)"}.
+${persistentMemory}
+
+${isMahirAdminGateway ? adminGatewayInstruction : visitorInstruction}
 
 Output ONLY valid JSON matching this schema:
 {
@@ -602,7 +687,7 @@ Output ONLY valid JSON matching this schema:
     const result: AnalysisResult = JSON.parse(rawText || "{}");
 
     console.log(
-      `[WhatsApp Agent] Conversation ${conversationId} [mode=${effectiveMode}] classified as: ${result.state} (confidence: ${result.confidence})`
+      `[WhatsApp Agent] Conversation ${conversationId} [mode=${effectiveMode}, adminGateway=${isMahirAdminGateway}] classified as: ${result.state} (confidence: ${result.confidence})`
     );
 
     // Update conversation metadata in Supabase
@@ -615,7 +700,7 @@ Output ONLY valid JSON matching this schema:
             : result.state === "IN_DISCUSSION"
             ? "in_discussion"
             : "casual",
-        contact_name: result.guardianName || result.studentName || conv.contact_name,
+        contact_name: isMahirAdminGateway ? "Mahir Rahman" : (result.guardianName || result.studentName || conv.contact_name),
         school_name: result.schoolName || conv.school_name,
         class_grade: result.classGrade || conv.class_grade,
         summary: result.requirementsSummary || conv.summary,
@@ -623,7 +708,7 @@ Output ONLY valid JSON matching this schema:
       })
       .eq("id", conversationId);
 
-    // If CONFIRMED_WORK, create or update Task(s) on the RoboBee Website Kanban Board
+    // If CONFIRMED_WORK or IN_DISCUSSION, create or update Task(s) on the RoboBee Website Kanban Board
     const projectsToProcess: ProjectItem[] = [];
     if (result.projects && Array.isArray(result.projects) && result.projects.length > 0) {
       projectsToProcess.push(...result.projects);
@@ -641,10 +726,10 @@ Output ONLY valid JSON matching this schema:
       });
     }
 
-    // Save or update Task(s) on the RoboBee Website:
-    // - If IN_DISCUSSION (ongoing conversation, not confirmed yet) -> stage: 'in_discussion', status: 'in_discussion'
-    // - If CONFIRMED_WORK (confirmed by Mahir or finalized) -> stage: 'backlog', status: 'pending'
-    // Note: If an existing task was already manually finalized to 'backlog' / 'in_progress' / 'in_review' / 'completed', never downgrade it back to 'in_discussion'!
+    // Save or update Task(s) in Supabase:
+    // IMPORTANT INVARIANT: PostgreSQL check constraint tasks_stage_check requires stage to be
+    // one of: 'backlog', 'in_progress', 'in_review', 'completed'. NEVER write 'in_discussion' to stage!
+    // Discussion status is stored in status: 'in_discussion'.
     if (projectsToProcess.length > 0 && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION")) {
       const { data: existingTasks } = await supabaseAdmin
         .from("tasks")
@@ -655,11 +740,17 @@ Output ONLY valid JSON matching this schema:
         if (!proj.projectTitle) continue;
 
         const projTitleLower = proj.projectTitle.toLowerCase().trim();
-        const existingTask =
-          (existingTasks || []).find((t: { id: string; title?: string; stage?: string; status?: string }) => {
+        // Strict matching: Only match existing task if titles are identical or highly similar.
+        // Never blindly overwrite an existing task with an entirely different project!
+        const existingTask = (existingTasks || []).find(
+          (t: { id: string; title?: string; stage?: string; status?: string }) => {
             const tLower = (t.title || "").toLowerCase().trim();
-            return tLower === projTitleLower || tLower.includes(projTitleLower) || projTitleLower.includes(tLower);
-          }) || (projectsToProcess.length === 1 && existingTasks && existingTasks.length === 1 ? existingTasks[0] : undefined);
+            return (
+              tLower === projTitleLower ||
+              (tLower.length > 5 && projTitleLower.length > 5 && (tLower.includes(projTitleLower) || projTitleLower.includes(tLower)))
+            );
+          }
+        );
 
         const descParts: string[] = [];
         if (proj.classGrade || proj.schoolName) {
@@ -675,21 +766,26 @@ Output ONLY valid JSON matching this schema:
           descParts.push(`Key Components:\n- ${proj.hardwareBOM.join("\n- ")}`);
         }
 
-        const alreadyFinalized =
-          existingTask &&
-          existingTask.stage &&
-          existingTask.stage !== "in_discussion" &&
-          existingTask.stage !== "dismissed";
+        const isConfirmed = result.state === "CONFIRMED_WORK" || isMahirAdminGateway;
+        const validStages = ["backlog", "in_progress", "in_review", "completed"];
+        let resolvedStage = "backlog";
+        if (existingTask?.stage && validStages.includes(existingTask.stage)) {
+          resolvedStage = existingTask.stage;
+        }
 
-        const isConfirmed = result.state === "CONFIRMED_WORK" || Boolean(alreadyFinalized);
-        const resolvedStage = isConfirmed ? (existingTask?.stage && existingTask.stage !== "in_discussion" ? existingTask.stage : "backlog") : "in_discussion";
-        const resolvedStatus = isConfirmed ? (existingTask?.status && existingTask.status !== "in_discussion" ? existingTask.status : "pending") : "in_discussion";
+        const resolvedStatus = isConfirmed
+          ? (existingTask?.status && existingTask.status !== "in_discussion" ? existingTask.status : "pending")
+          : "in_discussion";
 
         const taskPayload = {
           title: proj.projectTitle,
           description: descParts.join("\n\n") || "Science Fair Project Build",
           assigned_to: "GENERAL",
-          assigned_by: "WhatsApp AI Assistant",
+          assigned_by: isMahirAdminGateway
+            ? "Mahir Rahman (Messenger Gateway)"
+            : isMessenger
+            ? "RoboBee AI Agent"
+            : "WhatsApp AI Assistant",
           status: resolvedStatus,
           stage: resolvedStage,
           priority: "High",
@@ -700,22 +796,43 @@ Output ONLY valid JSON matching this schema:
           school_name: proj.schoolName || result.schoolName || conv.school_name || null,
           class_grade: proj.classGrade || result.classGrade || conv.class_grade || null,
           budget_bdt: proj.budgetBdt || result.budgetBdt || null,
-          source: "whatsapp",
+          source: isMessenger ? "messenger" : "whatsapp",
         };
 
         if (existingTask) {
           await supabaseAdmin.from("tasks").update(taskPayload).eq("id", existingTask.id);
-          console.log(`[WhatsApp Agent] Updated Task ${existingTask.id} (${proj.projectTitle}) -> stage=${resolvedStage}.`);
+          console.log(
+            `[AI Agent] Updated Task ${existingTask.id} (${proj.projectTitle}) -> stage=${resolvedStage}, status=${resolvedStatus}.`
+          );
         } else {
           const { data: newTask, error: taskErr } = await supabaseAdmin
             .from("tasks")
             .insert(taskPayload)
             .select("id")
             .single();
+
           if (taskErr) {
-            console.error("[WhatsApp Agent] Failed to create Task in Supabase:", taskErr);
+            console.error("[AI Agent] Failed to create Task in Supabase:", taskErr);
           } else {
-            console.log(`[WhatsApp Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) -> stage=${resolvedStage}!`);
+            console.log(
+              `[AI Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) -> stage=${resolvedStage}, status=${resolvedStatus}!`
+            );
+            // Trigger instant real-time pop-up notification and audio chime on website
+            if (isConfirmed && newTask?.id) {
+              try {
+                await notifyTaskAssigned({
+                  taskId: newTask.id,
+                  taskTitle: proj.projectTitle,
+                  assignedToEmails: ["GENERAL"],
+                  priority: "High",
+                  dueDate: proj.agreedDeadline || result.agreedDeadline || undefined,
+                  assignedByName: isMahirAdminGateway ? "Mahir Rahman" : "RoboBee AI",
+                  assignedByEmail: "admin@robobee.org",
+                });
+              } catch (nErr) {
+                console.warn("[AI Agent] Notification dispatch error:", nErr);
+              }
+            }
           }
         }
       }
@@ -725,7 +842,11 @@ Output ONLY valid JSON matching this schema:
     const lastMsg = messages[messages.length - 1];
     let outboundText: string | null = null;
 
-    if (isAutoPilot && lastMsg?.sender_type === "customer") {
+    const shouldAutoReply =
+      isAutoPilot &&
+      (lastMsg?.sender_type === "customer" || (isMahirAdminGateway && lastMsg?.sender_type === "agent_mahir"));
+
+    if (shouldAutoReply) {
       outboundText =
         result.autoPilotReply ||
         (result.needsVerificationMessage ? result.verificationMessage || null : result.confirmationMessage || null);
@@ -749,7 +870,7 @@ Output ONLY valid JSON matching this schema:
         console.log("[AI Agent] Skipping extra chatter after confirmation.");
         outboundText = null;
       } else {
-        const cleaned = outboundText.replace(/^\[(Mahir's|RoboBee) AI\]:\s*/i, "").trim();
+        const cleaned = outboundText.replace(/^\[(Mahir's AI|RoboBee AI|RoboBee Admin)\]:\s*/i, "").trim();
         outboundText = `${aiPrefix} ${cleaned}`;
       }
     }
@@ -758,15 +879,15 @@ Output ONLY valid JSON matching this schema:
       if (lastMsg && lastMsg.sender_type === "ai_assistant" && lastMsg.body?.trim() === outboundText.trim()) {
         console.log("[WhatsApp Agent] Skipping duplicate AI message.");
       } else {
-        const isMessenger =
+        const isMessengerChannel =
           conv.platform === "messenger" ||
           conv.phone_number?.startsWith("messenger_") ||
           conv.phone_number?.startsWith("psid_");
 
         console.log(
-          `[AI Agent] Dispatching AI message (${isMessenger ? "Messenger" : "WhatsApp"}) to ${conv.phone_number}: "${outboundText}"`
+          `[AI Agent] Dispatching AI message (${isMessengerChannel ? "Messenger" : "WhatsApp"}) to ${conv.phone_number}: "${outboundText}"`
         );
-        const sentMsgId = isMessenger
+        const sentMsgId = isMessengerChannel
           ? await sendMessengerTextMessage(conv.phone_number, outboundText)
           : await sendWhatsAppTextMessage(conv.phone_number, outboundText);
 
@@ -789,10 +910,7 @@ Output ONLY valid JSON matching this schema:
   }
 }
 
-/**
- * Command & Broadcast Engine: Allows Mahir to instruct the AI to message a contact
- * or broadcast to multiple team members / clients on his behalf.
- */
+
 export async function executeAICommandOrBroadcast(params: {
   instruction: string;
   usePolishAI: boolean;

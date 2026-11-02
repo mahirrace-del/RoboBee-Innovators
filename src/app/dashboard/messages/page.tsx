@@ -494,14 +494,14 @@ export default function MessagingControlPanel() {
   const ongoingProjectItems = allProjectTasks.filter((t) => t.stage === "in_discussion" || t.status === "in_discussion");
   const confirmedProjectItems = allProjectTasks.filter((t) => t.stage !== "in_discussion" && t.status !== "in_discussion");
 
-  // Also include conversations that have an active project summary or status='in_discussion' but no task row yet
+  // Also include conversations that have an active project summary but no task row yet
   const convIdsWithTasks = new Set(allProjectTasks.map((t) => t.conversation_id).filter(Boolean));
   const summaryOnlyConvs = conversations.filter(
     (c) =>
       !convIdsWithTasks.has(c.id) &&
       c.status !== "casual" &&
       c.status !== "dismissed" &&
-      (Boolean(c.summary && c.summary.trim()) || c.status === "in_discussion")
+      Boolean(c.summary && c.summary.trim())
   );
 
   // Strict Admin-Only Guard: Regular members can NEVER view WhatsApp messages or AI task controls
