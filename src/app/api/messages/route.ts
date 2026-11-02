@@ -5,6 +5,7 @@ import {
   evaluateConversationAndCreateTask,
   executeAICommandOrBroadcast,
   sendWhatsAppTextMessage,
+  sendMessengerTextMessage,
 } from "@/lib/whatsappAgent";
 
 export const dynamic = "force-dynamic";
@@ -148,14 +149,21 @@ export async function POST(req: NextRequest) {
       }
 
       const trimmedText = text.trim();
-      const dispatchedWamId = await sendWhatsAppTextMessage(conv.phone_number, trimmedText);
-      const dispatched = Boolean(dispatchedWamId);
+      const isMessenger =
+        conv.platform === "messenger" ||
+        conv.phone_number?.startsWith("messenger_") ||
+        conv.phone_number?.startsWith("psid_");
+
+      const dispatchedMsgId = isMessenger
+        ? await sendMessengerTextMessage(conv.phone_number, trimmedText)
+        : await sendWhatsAppTextMessage(conv.phone_number, trimmedText);
+      const dispatched = Boolean(dispatchedMsgId);
 
       const { data: insertedMsg, error: msgErr } = await supabaseAdmin
         .from("whatsapp_messages")
         .insert({
           conversation_id: conversationId,
-          wam_id: dispatchedWamId && dispatchedWamId !== "sent" ? dispatchedWamId : null,
+          wam_id: dispatchedMsgId && dispatchedMsgId !== "sent" ? dispatchedMsgId : null,
           sender_type: "agent_mahir",
           message_type: "text",
           body: trimmedText,

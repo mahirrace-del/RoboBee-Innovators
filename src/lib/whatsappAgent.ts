@@ -111,6 +111,55 @@ export async function sendWhatsAppTextMessage(toPhone: string, textBody: string)
 }
 
 /**
+ * Send a message via Meta Facebook Messenger API
+ * Endpoint: https://graph.facebook.com/v21.0/me/messages
+ */
+export async function sendMessengerTextMessage(
+  recipientPsid: string,
+  textBody: string
+): Promise<string | null> {
+  const token = process.env.MESSENGER_PAGE_ACCESS_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+  if (!token) {
+    console.warn("[Messenger Agent] MESSENGER_PAGE_ACCESS_TOKEN is not configured.");
+    return null;
+  }
+
+  const cleanPsid = (recipientPsid || "").replace(/^messenger_|^psid_/, "").trim();
+  if (!cleanPsid) {
+    console.warn("[Messenger Agent] Invalid recipient PSID.");
+    return null;
+  }
+
+  try {
+    const res = await fetch("https://graph.facebook.com/v21.0/me/messages", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        recipient: { id: cleanPsid },
+        message: { text: textBody },
+        messaging_type: "RESPONSE",
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.error("[Messenger Agent] Meta Messenger send error:", data);
+      return null;
+    }
+
+    const mid = data?.message_id || "sent";
+    console.log("[Messenger Agent] Sent message successfully. MID:", mid);
+    return mid;
+  } catch (err) {
+    console.error("[Messenger Agent] Exception sending messenger text:", err);
+    return null;
+  }
+}
+
+/**
  * Download media (photo / PDF guideline) from Meta's Graph API
  */
 export async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
@@ -653,12 +702,22 @@ Output ONLY valid JSON matching this schema:
       if (lastMsg && lastMsg.sender_type === "ai_assistant" && lastMsg.body?.trim() === outboundText.trim()) {
         console.log("[WhatsApp Agent] Skipping duplicate AI message.");
       } else {
-        console.log(`[WhatsApp Agent] Dispatching AI message to ${conv.phone_number}: "${outboundText}"`);
-        const sentWamId = await sendWhatsAppTextMessage(conv.phone_number, outboundText);
-        if (sentWamId) {
+        const isMessenger =
+          conv.platform === "messenger" ||
+          conv.phone_number?.startsWith("messenger_") ||
+          conv.phone_number?.startsWith("psid_");
+
+        console.log(
+          `[AI Agent] Dispatching AI message (${isMessenger ? "Messenger" : "WhatsApp"}) to ${conv.phone_number}: "${outboundText}"`
+        );
+        const sentMsgId = isMessenger
+          ? await sendMessengerTextMessage(conv.phone_number, outboundText)
+          : await sendWhatsAppTextMessage(conv.phone_number, outboundText);
+
+        if (sentMsgId) {
           await supabaseAdmin.from("whatsapp_messages").insert({
             conversation_id: conversationId,
-            wam_id: sentWamId !== "sent" ? sentWamId : null,
+            wam_id: sentMsgId !== "sent" ? sentMsgId : null,
             sender_type: "ai_assistant",
             message_type: "text",
             body: outboundText,
@@ -709,14 +768,21 @@ Convert Mahir's raw command/instruction into a warm, respectful, natural WhatsAp
 
   for (const target of params.targetConversations) {
     const personalizedMsg = finalMessage.replace(/\{name\}/gi, target.contact_name || "Member");
-    const sentWamId = await sendWhatsAppTextMessage(target.phone_number, personalizedMsg);
-    const ok = Boolean(sentWamId);
+    const isMessenger =
+      target.phone_number?.startsWith("messenger_") ||
+      target.phone_number?.startsWith("psid_");
+
+    const sentMsgId = isMessenger
+      ? await sendMessengerTextMessage(target.phone_number, personalizedMsg)
+      : await sendWhatsAppTextMessage(target.phone_number, personalizedMsg);
+
+    const ok = Boolean(sentMsgId);
     results.push({ phone: target.phone_number, ok });
-    if (sentWamId) {
+    if (sentMsgId) {
       sentCount++;
       await supabaseAdmin.from("whatsapp_messages").insert({
         conversation_id: target.id,
-        wam_id: sentWamId !== "sent" ? sentWamId : null,
+        wam_id: sentMsgId !== "sent" ? sentMsgId : null,
         sender_type: "ai_assistant",
         message_type: "text",
         body: personalizedMsg,

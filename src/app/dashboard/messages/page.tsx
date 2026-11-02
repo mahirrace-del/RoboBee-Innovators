@@ -576,8 +576,8 @@ export default function MessagingControlPanel() {
           {(
             [
               { id: "all", label: "All Channels", badge: conversations.length },
-              { id: "whatsapp", label: "WhatsApp", badge: "LIVE" },
-              { id: "messenger", label: "Messenger", badge: "Ready" },
+              { id: "whatsapp", label: "WhatsApp", badge: conversations.filter((c) => (c.platform || "whatsapp") === "whatsapp").length || "LIVE" },
+              { id: "messenger", label: "Messenger", badge: conversations.filter((c) => c.platform === "messenger").length || "LIVE" },
               { id: "instagram", label: "Instagram", badge: "Ready" },
             ] as const
           ).map((ch) => (
@@ -1418,8 +1418,17 @@ export default function MessagingControlPanel() {
                         marginTop: "0.2rem",
                       }}
                     >
-                      <Phone size={11} />
-                      <span>+{c.phone_number.replace(/^\+/, "")}</span>
+                      {c.platform === "messenger" ? (
+                        <>
+                          <MessageSquare size={11} color="#0084ff" />
+                          <span style={{ color: "#0084ff", fontWeight: 700 }}>Facebook Messenger</span>
+                        </>
+                      ) : (
+                        <>
+                          <Phone size={11} />
+                          <span>+{c.phone_number.replace(/^\+/, "")}</span>
+                        </>
+                      )}
                       {c.contact_category === "team_member" && (
                         <span style={{ color: "#7A1C24", fontWeight: 700 }}>• Team</span>
                       )}
@@ -1485,12 +1494,14 @@ export default function MessagingControlPanel() {
                         fontSize: "0.7rem",
                         padding: "0.1rem 0.45rem",
                         borderRadius: "6px",
-                        background: "#e2e8f0",
-                        color: "#334155",
+                        background: activeConv.platform === "messenger" ? "#eff6ff" : "#e2e8f0",
+                        color: activeConv.platform === "messenger" ? "#1d4ed8" : "#334155",
                         fontWeight: 700,
                       }}
                     >
-                      +{activeConv.phone_number.replace(/^\+/, "")}
+                      {activeConv.platform === "messenger"
+                        ? `Messenger (${activeConv.phone_number.replace(/^messenger_/, "")})`
+                        : `+${activeConv.phone_number.replace(/^\+/, "")}`}
                     </span>
                   </div>
                   <div style={{ fontSize: "0.73rem", color: "#6e6259", marginTop: "0.15rem" }}>
@@ -1785,7 +1796,9 @@ export default function MessagingControlPanel() {
                     onChange={(e) => setComposerText(e.target.value)}
                     placeholder={
                       composerMode === "direct"
-                        ? "Type a WhatsApp message as Mahir (e.g., 'Ok confirm, budget 2500 BDT')..."
+                        ? activeConv?.platform === "messenger"
+                          ? "Type a Messenger reply as RoboBee Admin..."
+                          : "Type a WhatsApp message as Mahir (e.g., 'Ok confirm, budget 2500 BDT')..."
                         : "Instruct AI what to tell this person (e.g., 'Ask for his school name and confirm delivery on Friday')..."
                     }
                     style={{
