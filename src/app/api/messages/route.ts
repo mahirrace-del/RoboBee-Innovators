@@ -25,8 +25,14 @@ export async function GET(req: NextRequest) {
     let messages: unknown[] = [];
     let linkedTasks: unknown[] = [];
 
+    const allTasksPromise = supabaseAdmin
+      .from("tasks")
+      .select("id, title, description, stage, status, budget_bdt, due_date, student_name, school_name, class_grade, guardian_phone, conversation_id, created_at")
+      .not("conversation_id", "is", null)
+      .order("created_at", { ascending: false });
+
     if (activeConvId) {
-      const [msgRes, taskRes] = await Promise.all([
+      const [msgRes, taskRes, allTasksRes] = await Promise.all([
         supabaseAdmin
           .from("whatsapp_messages")
           .select("*")
@@ -35,20 +41,32 @@ export async function GET(req: NextRequest) {
           .limit(150),
         supabaseAdmin
           .from("tasks")
-          .select("id, title, stage, status, budget_bdt, due_date, student_name, school_name, class_grade")
+          .select("id, title, description, stage, status, budget_bdt, due_date, student_name, school_name, class_grade, guardian_phone, conversation_id, created_at")
           .eq("conversation_id", activeConvId)
           .order("created_at", { ascending: false }),
+        allTasksPromise,
       ]);
 
       messages = (msgRes.data || []).reverse();
       linkedTasks = taskRes.data || [];
+
+      return NextResponse.json({
+        conversations: conversations || [],
+        activeConversationId: activeConvId,
+        messages,
+        linkedTasks,
+        allProjectTasks: allTasksRes.data || [],
+      });
     }
+
+    const allTasksRes = await allTasksPromise;
 
     return NextResponse.json({
       conversations: conversations || [],
       activeConversationId: activeConvId,
       messages,
       linkedTasks,
+      allProjectTasks: allTasksRes.data || [],
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
@@ -268,6 +286,125 @@ export async function POST(req: NextRequest) {
       }
 
       return NextResponse.json({ status: "ok", conversation: created });
+    }
+
+    // 6. Finalize an Ongoing Project Discussion into a Confirmed Task (Moves to Sprint Board Backlog)
+    if (action === "finalize_project_task") {
+      const { taskId, conversationId, title, description, student_name, school_name, class_grade, due_date, budget_bdt } = body;
+
+      if (taskId) {
+        const updateData: Record<string, unknown> = {
+          stage: "backlog",
+          status: "pending",
+        };
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (student_name !== undefined) updateData.student_name = student_name;
+        if (school_name !== undefined) updateData.school_name = school_name;
+        if (class_grade !== undefined) updateData.class_grade = class_grade;
+        if (due_date !== undefined) updateData.due_date = due_date;
+        if (budget_bdt !== undefined) updateData.budget_bdt = budget_bdt;
+
+        const { data: updatedTask, error: taskErr } = await supabaseAdmin
+          .from("tasks")
+          .update(updateData)
+          .eq("id", taskId)
+          .select("*")
+          .single();
+
+        if (taskErr) {
+          return NextResponse.json({ error: taskErr.message }, { status: 500 });
+        }
+
+        if (updatedTask?.conversation_id) {
+          await supabaseAdmin
+            .from("whatsapp_conversations")
+            .update({ status: "confirmed", updated_at: new Date().toISOString() })
+            .eq("id", updatedTask.conversation_id);
+        }
+
+        return NextResponse.json({ status: "ok", task: updatedTask });
+      }
+
+      if (conversationId) {
+        const { data: conv } = await supabaseAdmin
+          .from("whatsapp_conversations")
+          .select("*")
+          .eq("id", conversationId)
+          .single();
+
+        if (!conv) {
+          return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+        }
+
+        const { data: createdTask, error: createErr } = await supabaseAdmin
+          .from("tasks")
+          .insert({
+            title: title || conv.summary || `${conv.contact_name || "Student"}'s Science Project`,
+            description: description || conv.summary || "Science Fair Project Build",
+            assigned_to: "GENERAL",
+            assigned_by: "Mahir Rahman (Messaging Hub)",
+            status: "pending",
+            stage: "backlog",
+            priority: "High",
+            due_date: due_date || null,
+            conversation_id: conversationId,
+            guardian_phone: conv.phone_number,
+            student_name: student_name || conv.contact_name || null,
+            school_name: school_name || conv.school_name || null,
+            class_grade: class_grade || conv.class_grade || null,
+            budget_bdt: budget_bdt || null,
+            source: "whatsapp",
+          })
+          .select("*")
+          .single();
+
+        if (createErr) {
+          return NextResponse.json({ error: createErr.message }, { status: 500 });
+        }
+
+        await supabaseAdmin
+          .from("whatsapp_conversations")
+          .update({ status: "confirmed", updated_at: new Date().toISOString() })
+          .eq("id", conversationId);
+
+        return NextResponse.json({ status: "ok", task: createdTask });
+      }
+
+      return NextResponse.json({ error: "Missing taskId or conversationId" }, { status: 400 });
+    }
+
+    // 7. Move a Finalized Task back to Ongoing Discussion (Remove from Sprint Board without deleting summary)
+    if (action === "move_to_discussion") {
+      const { taskId, conversationId } = body;
+      if (taskId) {
+        await supabaseAdmin
+          .from("tasks")
+          .update({ stage: "in_discussion", status: "in_discussion" })
+          .eq("id", taskId);
+      }
+      if (conversationId) {
+        await supabaseAdmin
+          .from("whatsapp_conversations")
+          .update({ status: "in_discussion", updated_at: new Date().toISOString() })
+          .eq("id", conversationId);
+      }
+      return NextResponse.json({ status: "ok" });
+    }
+
+    // 8. Delete / Dismiss a Project Summary or Task
+    if (action === "dismiss_project_summary") {
+      const { taskId, conversationId } = body;
+      if (taskId) {
+        await supabaseAdmin.from("tasks").delete().eq("id", taskId);
+      }
+      if (conversationId) {
+        await supabaseAdmin
+          .from("whatsapp_conversations")
+          .update({ status: "casual", summary: null, updated_at: new Date().toISOString() })
+          .eq("id", conversationId);
+      }
+      return NextResponse.json({ status: "ok" });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

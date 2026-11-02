@@ -9,7 +9,7 @@ import { RoboticsLesson } from "./curriculumData";
  * Preserves 100% backward compatibility with all existing Firestore documents.
  */
 
-export type TaskStatusStage = "backlog" | "in_progress" | "in_review" | "completed";
+export type TaskStatusStage = "in_discussion" | "backlog" | "in_progress" | "in_review" | "completed";
 export type TaskPriority = "Low" | "Medium" | "High" | "Critical";
 
 export interface ReservedHardwareItem {
@@ -17,6 +17,13 @@ export interface ReservedHardwareItem {
   partName: string;
   quantity: number;
   checkoutId?: string;
+}
+
+export interface TaskQueryNote {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
 }
 
 export interface RelationalTask {
@@ -28,7 +35,7 @@ export interface RelationalTask {
   assignedToEmails?: string[];
   assignedMembers?: Array<{ id?: string; name: string; email: string; username?: string }>;
   assignedBy?: string;
-  // Legacy status ("pending" | "completed" | "Done") + normalized stage
+  // Legacy status ("pending" | "completed" | "Done" | "in_discussion") + normalized stage
   status: string;
   stage: TaskStatusStage;
   priority: TaskPriority;
@@ -38,6 +45,13 @@ export interface RelationalTask {
   competitionName?: string;
   projectId?: string;
   projectName?: string;
+  conversationId?: string;
+  guardianPhone?: string;
+  studentName?: string;
+  schoolName?: string;
+  classGrade?: string;
+  budgetBdt?: number;
+  attachments?: any[];
   reservedParts?: ReservedHardwareItem[];
   createdAt?: any;
   completedAt?: any;
@@ -215,6 +229,8 @@ export function normalizeTask(idOrRaw: any, maybeData?: any): RelationalTask {
       stage = "in_review";
     } else if (rawStatus === "in_progress" || rawStatus === "active") {
       stage = "in_progress";
+    } else if (rawStatus === "in_discussion") {
+      stage = "in_discussion";
     } else {
       stage = "backlog";
     }
@@ -248,6 +264,13 @@ export function normalizeTask(idOrRaw: any, maybeData?: any): RelationalTask {
     competitionName: raw.competitionName || raw.competition_name || undefined,
     projectId: raw.projectId || raw.project_id || undefined,
     projectName: raw.projectName || raw.project_name || undefined,
+    conversationId: raw.conversationId || raw.conversation_id || undefined,
+    guardianPhone: raw.guardianPhone || raw.guardian_phone || undefined,
+    studentName: raw.studentName || raw.student_name || undefined,
+    schoolName: raw.schoolName || raw.school_name || undefined,
+    classGrade: raw.classGrade || raw.class_grade || undefined,
+    budgetBdt: raw.budgetBdt !== undefined && raw.budgetBdt !== null ? Number(raw.budgetBdt) : raw.budget_bdt !== undefined && raw.budget_bdt !== null ? Number(raw.budget_bdt) : undefined,
+    attachments: Array.isArray(raw.attachments) ? raw.attachments : [],
     reservedParts: Array.isArray(raw.reservedParts || raw.reserved_parts) ? (raw.reservedParts || raw.reserved_parts) : [],
     createdAt: raw.createdAt || raw.created_at,
     completedAt: raw.completedAt || raw.completed_at,

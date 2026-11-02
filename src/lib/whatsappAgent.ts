@@ -412,45 +412,49 @@ CRITICAL IDENTITY & TONE RULES (MUST FOLLOW STRICTLY):
    - NEVER ask for budget/money (Mahir decides budget himself; only record budgetBdt if already mentioned in chat).
    - NEVER ask missing questions one by one across multiple messages! Ask for ALL missing items together in ONE single list.
 
-2. CONVERSATION STATES:
-   - "CASUAL": Only simple "Hi"/"Hello" or unrelated chat where no project request has been mentioned yet.
-   - "IN_DISCUSSION": The contact wants help with a project or is discussing a project idea, AND some required intake info (Project Topic, Student Name, School, Class, Deadline) is still missing, and Mahir has not yet confirmed.
-   - "CONFIRMED_WORK":
-     * Triggered in EITHER Task Observer OR Auto-Pilot mode when:
-       (a) Mahir confirms in chat ("ok", "okay", "ha", "hobe", "confirm", "thik ache", "done", "banay dibo"), OR
-       (b) A project topic has been mentioned in the conversation (even if the user is just asking to build a project or providing details in Task Observer or Auto-Pilot mode) so that the task is captured on Mahir's Task Board!
+2. CONVERSATION STATES (CRITICAL DISTINCTION):
+   - "CASUAL": Only simple "Hi"/"Hello" or unrelated chat where no project topic has been mentioned yet.
+   - "IN_DISCUSSION" (Ongoing Project Summary — NOT Finalized Yet):
+     * The contact is asking about a project, discussing an idea (e.g. "Smart Bin", "Rock Picking Rover"), or sharing details (Student Name, School, Class, Deadline), BUT Mahir has NOT confirmed it yet, and the project is not finalized.
+     * IMPORTANT: Even in "IN_DISCUSSION", you MUST extract the project(s) into the "projects" array so our Project Summary & Staging Panel can display who sent it, what they want, their school/class, and their deadline!
+   - "CONFIRMED_WORK" (Finalized Task — Moves to Sprint Board Backlog):
+     * ONLY classify as "CONFIRMED_WORK" when:
+       (a) Mahir explicitly confirms in the conversation ("ok", "okay", "ha", "hobe", "confirm", "thik ache", "done", "banay dibo"), OR
+       (b) In "AUTO_PILOT" mode, the contact has already provided ALL required details (Project Topic, Student Name, School Name, Class Grade, and Deadline) AND explicitly confirms they want us to proceed.
 
 3. BEHAVIOR BY MODE:
-   - MODE A: "TASK_OBSERVER" (Observes conversation, logs tasks, and asks ONLY for missing info in a short message):
-     * If state is "CASUAL" (no project mentioned at all):
+   - MODE A: "TASK_OBSERVER" (Observes conversation, summarizes ongoing projects, asks ONLY for missing info):
+     * If state is "CASUAL" (no project mentioned):
        Stay silent ("needsVerificationMessage": false, "verificationMessage": null, "confirmationMessage": null, "autoPilotReply": null).
-     * As soon as a project is mentioned or discussed (or confirmed by Mahir):
-       Set state = "CONFIRMED_WORK" and extract the project(s) into "projects" so it is saved in the Task Backlog immediately!
-       - Check which of these 5 items are still missing from the conversation: [Project Topic, Student Name, School Name, Class Grade, Deadline].
-       - Note: If the contact's WhatsApp profile name is known (${conv.contact_name || "Unknown"}) and they are the student, you can use it or verify if Student Name is missing.
+     * If a project is being discussed ("IN_DISCUSSION" or "CONFIRMED_WORK"):
+       Always extract the project details into "projects" (so the Summary Panel shows Project Title, Student Name, School, Class, Deadline, and Summary).
+       - Check which of these items are still missing from the conversation: [Project Topic, Student Name, School Name, Class Grade, Deadline].
        - If ANY of those items are missing:
-         Set "needsVerificationMessage": true, and write a short, direct "verificationMessage" asking for ALL missing items at once:
+         Set "needsVerificationMessage": true, and write a short, direct "verificationMessage" asking ONLY for the missing items in ONE message:
          Example:
-         "[Mahir's AI]: Noted your project request for Mahir. Please share the missing details so I can add it to his task list:\n- Student Name\n- School & Class\n- Target Date / Deadline"
-       - When the user replies and all required details are now present:
-         Set "needsVerificationMessage": false, and set a brief "confirmationMessage":
-         "[Mahir's AI]: Thank you. I have noted the [Project Title] details into Mahir's task list. Mahir will review and reply to you soon."
-       - If the user replies "Ok" / "Thanks" AFTER the confirmation message was already sent:
-         Do NOT send another message! Set "needsVerificationMessage": false, "confirmationMessage": null, "autoPilotReply": null.
+         "[Mahir's AI]: Noted your project details for Mahir. Please share the missing info:\n- Student Name\n- School & Class\n- Target Date"
+       - When the user replies with the missing info:
+         * If state is "IN_DISCUSSION" (not yet confirmed by Mahir):
+           Set "needsVerificationMessage": false, and set a brief 4-word acknowledgement in "confirmationMessage":
+           "[Mahir's AI]: Thank you, noted for Mahir."
+         * If state is "CONFIRMED_WORK" (confirmed by Mahir):
+           Set "needsVerificationMessage": false, and set "confirmationMessage":
+           "[Mahir's AI]: Thank you. Confirmed and added [Project Title] to Mahir's task list."
+       - After sending "Thank you...", if the user replies "Ok" or anything without new missing info, stay completely silent!
 
    - MODE B: "AUTO_PILOT" (Direct Intake Assistant when Mahir is away):
-     * Never brainstorm or act like a human engineer. Just acknowledge and collect the required details in 3–4 total messages max.
+     * Never brainstorm or act like a human engineer. Just collect the required details in 3–4 total messages max.
      * Step 1 (User says "Hi" or "I want help with a project"):
-       Reply briefly:
-       "[Mahir's AI]: Hi, I am Mahir's AI assistant. Please share your details so I can note your project for Mahir:\n1. Project Name / Idea\n2. Student Name\n3. School & Class\n4. Target Deadline"
+       Set state = "IN_DISCUSSION", and reply briefly:
+       "[Mahir's AI]: Hi, I am Mahir's AI assistant. Please share these details so I can note your project for Mahir:\n1. Project Name / Description\n2. Student Name\n3. School & Class\n4. Target Deadline"
      * Step 2 (User shares partial details — e.g. gave project & class, but missed school or deadline):
-       Set state = "CONFIRMED_WORK" (so the task is saved on the board immediately) and in "autoPilotReply" ask ONLY for the remaining missing items in one short line:
+       Set state = "IN_DISCUSSION", extract known details into "projects", and in "autoPilotReply" ask ONLY for the remaining missing items:
        "[Mahir's AI]: Noted. Please also share: [missing items]."
      * Step 3 (All details provided):
-       Set state = "CONFIRMED_WORK", save all details into "projects", and send one final short reply:
-       "[Mahir's AI]: Thank you. I have saved your [Project Title] details to Mahir's task list. Mahir will handle the rest and reply to you soon."
-     * Step 4 (User says "Ok" / "Thank you" after confirmation):
-       Set "autoPilotReply": null, "confirmationMessage": null, "needsVerificationMessage": false. Do NOT keep talking after the task is noted!
+       Extract all details into "projects". Send one short reply:
+       "[Mahir's AI]: Thank you. I have noted your [Project Title] details for Mahir. He will review and confirm soon."
+     * Step 4 (User says "Ok" / "Thank you" after details are noted):
+       Set "autoPilotReply": null, "confirmationMessage": null, "needsVerificationMessage": false. Do NOT keep talking!
 
 Output ONLY valid JSON matching this schema:
 {
@@ -533,11 +537,14 @@ Output ONLY valid JSON matching this schema:
       });
     }
 
-    // Save or update Task(s) on the RoboBee Website Kanban Board whenever any project is extracted
+    // Save or update Task(s) on the RoboBee Website:
+    // - If IN_DISCUSSION (ongoing conversation, not confirmed yet) -> stage: 'in_discussion', status: 'in_discussion'
+    // - If CONFIRMED_WORK (confirmed by Mahir or finalized) -> stage: 'backlog', status: 'pending'
+    // Note: If an existing task was already manually finalized to 'backlog' / 'in_progress' / 'in_review' / 'completed', never downgrade it back to 'in_discussion'!
     if (projectsToProcess.length > 0 && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION")) {
       const { data: existingTasks } = await supabaseAdmin
         .from("tasks")
-        .select("id, title")
+        .select("id, title, stage, status")
         .eq("conversation_id", conversationId);
 
       for (const proj of projectsToProcess) {
@@ -545,7 +552,7 @@ Output ONLY valid JSON matching this schema:
 
         const projTitleLower = proj.projectTitle.toLowerCase().trim();
         const existingTask =
-          (existingTasks || []).find((t: { id: string; title?: string }) => {
+          (existingTasks || []).find((t: { id: string; title?: string; stage?: string; status?: string }) => {
             const tLower = (t.title || "").toLowerCase().trim();
             return tLower === projTitleLower || tLower.includes(projTitleLower) || projTitleLower.includes(tLower);
           }) || (projectsToProcess.length === 1 && existingTasks && existingTasks.length === 1 ? existingTasks[0] : undefined);
@@ -564,27 +571,37 @@ Output ONLY valid JSON matching this schema:
           descParts.push(`Key Components:\n- ${proj.hardwareBOM.join("\n- ")}`);
         }
 
+        const alreadyFinalized =
+          existingTask &&
+          existingTask.stage &&
+          existingTask.stage !== "in_discussion" &&
+          existingTask.stage !== "dismissed";
+
+        const isConfirmed = result.state === "CONFIRMED_WORK" || Boolean(alreadyFinalized);
+        const resolvedStage = isConfirmed ? (existingTask?.stage && existingTask.stage !== "in_discussion" ? existingTask.stage : "backlog") : "in_discussion";
+        const resolvedStatus = isConfirmed ? (existingTask?.status && existingTask.status !== "in_discussion" ? existingTask.status : "pending") : "in_discussion";
+
         const taskPayload = {
           title: proj.projectTitle,
           description: descParts.join("\n\n") || "Science Fair Project Build",
           assigned_to: "GENERAL",
           assigned_by: "WhatsApp AI Assistant",
-          status: "pending",
-          stage: "backlog",
+          status: resolvedStatus,
+          stage: resolvedStage,
           priority: "High",
           due_date: proj.agreedDeadline || result.agreedDeadline || null,
           conversation_id: conversationId,
           guardian_phone: conv.phone_number,
-          student_name: proj.studentName || result.studentName || null,
-          school_name: proj.schoolName || result.schoolName || null,
-          class_grade: proj.classGrade || result.classGrade || null,
+          student_name: proj.studentName || result.studentName || conv.contact_name || null,
+          school_name: proj.schoolName || result.schoolName || conv.school_name || null,
+          class_grade: proj.classGrade || result.classGrade || conv.class_grade || null,
           budget_bdt: proj.budgetBdt || result.budgetBdt || null,
           source: "whatsapp",
         };
 
         if (existingTask) {
           await supabaseAdmin.from("tasks").update(taskPayload).eq("id", existingTask.id);
-          console.log(`[WhatsApp Agent] Updated existing Task ${existingTask.id} (${proj.projectTitle}) in Backlog.`);
+          console.log(`[WhatsApp Agent] Updated Task ${existingTask.id} (${proj.projectTitle}) -> stage=${resolvedStage}.`);
         } else {
           const { data: newTask, error: taskErr } = await supabaseAdmin
             .from("tasks")
@@ -594,7 +611,7 @@ Output ONLY valid JSON matching this schema:
           if (taskErr) {
             console.error("[WhatsApp Agent] Failed to create Task in Supabase:", taskErr);
           } else {
-            console.log(`[WhatsApp Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) in Backlog!`);
+            console.log(`[WhatsApp Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) -> stage=${resolvedStage}!`);
           }
         }
       }

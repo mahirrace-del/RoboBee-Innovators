@@ -54,6 +54,7 @@ interface ChatMessage {
 interface LinkedTask {
   id: string;
   title: string;
+  description?: string | null;
   stage: string;
   status: string;
   budget_bdt: number | null;
@@ -61,6 +62,9 @@ interface LinkedTask {
   student_name: string | null;
   school_name: string | null;
   class_grade: string | null;
+  guardian_phone?: string | null;
+  conversation_id?: string | null;
+  created_at?: string;
 }
 
 export default function MessagingControlPanel() {
@@ -68,6 +72,8 @@ export default function MessagingControlPanel() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [linkedTasks, setLinkedTasks] = useState<LinkedTask[]>([]);
+  const [allProjectTasks, setAllProjectTasks] = useState<LinkedTask[]>([]);
+  const [topViewTab, setTopViewTab] = useState<"chat" | "summary_panel">("chat");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -122,6 +128,7 @@ export default function MessagingControlPanel() {
           setActiveId(resolvedId);
           setMessages(data.messages || []);
           setLinkedTasks(data.linkedTasks || []);
+          setAllProjectTasks(data.allProjectTasks || []);
         }
       } catch (err) {
         console.error("Failed to fetch messaging hub:", err);
@@ -375,6 +382,77 @@ export default function MessagingControlPanel() {
     }
   };
 
+  // Finalize an Ongoing Project Discussion into a Confirmed Task (Moves to Sprint Board Backlog)
+  const handleFinalizeTask = async (params: { taskId?: string; conversationId?: string; title?: string }) => {
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "finalize_project_task",
+          ...params,
+        }),
+      });
+      if (res.ok) {
+        showToast("Confirmed! Project moved to Task & Sprint Board Backlog.");
+        await fetchHubData(activeId, true);
+      }
+    } catch (e) {
+      console.error("Failed to finalize task:", e);
+    }
+  };
+
+  // Move a Finalized Task back to Ongoing Discussion
+  const handleMoveToDiscussion = async (params: { taskId?: string; conversationId?: string }) => {
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "move_to_discussion",
+          ...params,
+        }),
+      });
+      if (res.ok) {
+        showToast("Moved back to Ongoing Project Discussions (removed from Sprint Board).");
+        await fetchHubData(activeId, true);
+      }
+    } catch (e) {
+      console.error("Failed to move to discussion:", e);
+    }
+  };
+
+  // Dismiss / Remove from Summary Panel
+  const handleDismissSummary = async (params: { taskId?: string; conversationId?: string }) => {
+    if (!confirm("Remove this project summary/task?")) return;
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "dismiss_project_summary",
+          ...params,
+        }),
+      });
+      if (res.ok) {
+        showToast("Removed from Project Summaries.");
+        await fetchHubData(activeId, true);
+      }
+    } catch (e) {
+      console.error("Failed to dismiss summary:", e);
+    }
+  };
+
+  // Compute Ongoing Discussions vs Confirmed Tasks for the Summary & Task Staging Panel
+  const ongoingProjectItems = allProjectTasks.filter((t) => t.stage === "in_discussion" || t.status === "in_discussion");
+  const confirmedProjectItems = allProjectTasks.filter((t) => t.stage !== "in_discussion" && t.status !== "in_discussion");
+
+  // Also include conversations that have a summary or status='in_discussion' but no task row yet
+  const convIdsWithTasks = new Set(allProjectTasks.map((t) => t.conversation_id).filter(Boolean));
+  const summaryOnlyConvs = conversations.filter(
+    (c) => !convIdsWithTasks.has(c.id) && (c.summary || c.status === "in_discussion" || c.ai_mode !== "off")
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 88px)", gap: "0.75rem" }}>
       {/* TOP BAR: OMNICHANNEL SWITCHER & TOKEN SHIELD */}
@@ -451,6 +529,55 @@ export default function MessagingControlPanel() {
 
         {/* Right Action Buttons */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", flexWrap: "wrap" }}>
+          {/* View Mode Toggle: Live Chat Inbox vs Project Summaries & Task Staging */}
+          <div
+            style={{
+              display: "flex",
+              background: "#f4f1ea",
+              padding: "0.22rem",
+              borderRadius: "10px",
+              border: "1px solid #dfd7cc",
+              gap: "0.2rem",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setTopViewTab("chat")}
+              style={{
+                padding: "0.38rem 0.75rem",
+                borderRadius: "8px",
+                border: "none",
+                background: topViewTab === "chat" ? "#27211d" : "transparent",
+                color: topViewTab === "chat" ? "#fff" : "#5c5149",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              💬 Live Chat Inbox
+            </button>
+            <button
+              type="button"
+              onClick={() => setTopViewTab("summary_panel")}
+              style={{
+                padding: "0.38rem 0.75rem",
+                borderRadius: "8px",
+                border: "none",
+                background: topViewTab === "summary_panel" ? "#7A1C24" : "transparent",
+                color: topViewTab === "summary_panel" ? "#fff" : "#5c5149",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.35rem",
+              }}
+            >
+              <CheckSquare size={14} />
+              <span>Project Summaries &amp; Task Staging ({ongoingProjectItems.length + summaryOnlyConvs.length} Ongoing / {confirmedProjectItems.length} Confirmed)</span>
+            </button>
+          </div>
+
           <div
             style={{
               display: "flex",
@@ -467,7 +594,7 @@ export default function MessagingControlPanel() {
             title="New contacts default to Personal Mode (AI Off) so zero Gemini tokens are spent on personal chats."
           >
             <Lock size={13} />
-            <span>Token Shield Active: Default = Personal (AI Off)</span>
+            <span>Default = Personal (AI Off)</span>
           </div>
 
           <button
@@ -552,7 +679,502 @@ export default function MessagingControlPanel() {
         </div>
       )}
 
-      {/* MAIN 3-COLUMN WHATSAPP WEB LAYOUT */}
+      {topViewTab === "summary_panel" ? (
+        <div
+          style={{
+            flex: 1,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "0.9rem",
+            minHeight: 0,
+            overflow: "hidden",
+          }}
+        >
+          {/* COLUMN 1: ONGOING PROJECT CONVERSATIONS (NOT FINALIZED YET) */}
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e6dfd5",
+              borderRadius: "14px",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "0.9rem 1.1rem",
+                borderBottom: "1px solid #eee7de",
+                background: "#fffbeb",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 800, fontSize: "0.95rem", color: "#92400e" }}>
+                  ⏳ Ongoing Project Discussions (Not Finalized Yet)
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#78350f", marginTop: "0.15rem" }}>
+                  Summarized from WhatsApp conversations. They stay here until confirmed in chat or finalized by you.
+                </div>
+              </div>
+              <span
+                style={{
+                  padding: "0.2rem 0.6rem",
+                  borderRadius: "99px",
+                  background: "#fde68a",
+                  color: "#92400e",
+                  fontWeight: 800,
+                  fontSize: "0.78rem",
+                }}
+              >
+                {ongoingProjectItems.length + summaryOnlyConvs.length}
+              </span>
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {ongoingProjectItems.length === 0 && summaryOnlyConvs.length === 0 ? (
+                <div style={{ padding: "2.5rem 1rem", textAlign: "center", color: "#7c7067", fontSize: "0.84rem" }}>
+                  No unconfirmed ongoing project discussions right now.
+                </div>
+              ) : (
+                <>
+                  {ongoingProjectItems.map((item) => {
+                    const convObj = conversations.find((c) => c.id === item.conversation_id);
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          padding: "0.9rem",
+                          borderRadius: "12px",
+                          border: "1px solid #fcd34d",
+                          background: "#fffdf5",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "0.45rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: "0.94rem", color: "#27211d" }}>
+                              {item.title}
+                            </div>
+                            <div style={{ fontSize: "0.75rem", color: "#6e6259", marginTop: "0.15rem" }}>
+                              From: <strong>{convObj?.contact_name || item.student_name || "Contact"}</strong>{" "}
+                              ({item.guardian_phone || convObj?.phone_number || "WhatsApp"})
+                            </div>
+                          </div>
+                          <span
+                            style={{
+                              fontSize: "0.68rem",
+                              padding: "0.15rem 0.5rem",
+                              borderRadius: "99px",
+                              background: "#fef3c7",
+                              color: "#b45309",
+                              fontWeight: 700,
+                              border: "1px solid #fde68a",
+                            }}
+                          >
+                            Awaiting Confirmation
+                          </span>
+                        </div>
+
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", fontSize: "0.74rem", color: "#4a4039" }}>
+                          {item.student_name && (
+                            <span style={{ background: "#f3f0ea", padding: "0.15rem 0.45rem", borderRadius: "6px" }}>
+                              👤 Student: <strong>{item.student_name}</strong>
+                            </span>
+                          )}
+                          {(item.school_name || item.class_grade) && (
+                            <span style={{ background: "#f3f0ea", padding: "0.15rem 0.45rem", borderRadius: "6px" }}>
+                              🏫 {[item.class_grade, item.school_name].filter(Boolean).join(" • ")}
+                            </span>
+                          )}
+                          {item.due_date && (
+                            <span style={{ background: "#fef2f2", color: "#991b1b", padding: "0.15rem 0.45rem", borderRadius: "6px", fontWeight: 700 }}>
+                              📅 Target: {item.due_date}
+                            </span>
+                          )}
+                          {item.budget_bdt && (
+                            <span style={{ background: "#ecfdf5", color: "#065f46", padding: "0.15rem 0.45rem", borderRadius: "6px", fontWeight: 700 }}>
+                              💰 {item.budget_bdt} BDT
+                            </span>
+                          )}
+                        </div>
+
+                        {item.description && (
+                          <div
+                            style={{
+                              fontSize: "0.78rem",
+                              color: "#3f3731",
+                              background: "#fff",
+                              padding: "0.55rem 0.7rem",
+                              borderRadius: "8px",
+                              border: "1px solid #eee7de",
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {item.description}
+                          </div>
+                        )}
+
+                        <div style={{ display: "flex", gap: "0.45rem", marginTop: "0.25rem", flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            onClick={() => handleFinalizeTask({ taskId: item.id })}
+                            style={{
+                              padding: "0.4rem 0.75rem",
+                              borderRadius: "8px",
+                              border: "none",
+                              background: "#059669",
+                              color: "#fff",
+                              fontSize: "0.76rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            ✓ Confirm &amp; Finalize to Tasks
+                          </button>
+                          {item.conversation_id && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveId(item.conversation_id!);
+                                setTopViewTab("chat");
+                                fetchHubData(item.conversation_id!);
+                              }}
+                              style={{
+                                padding: "0.4rem 0.7rem",
+                                borderRadius: "8px",
+                                border: "1px solid #dfd7cc",
+                                background: "#fff",
+                                color: "#27211d",
+                                fontSize: "0.76rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              💬 Open Chat
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDismissSummary({ taskId: item.id })}
+                            style={{
+                              padding: "0.4rem 0.7rem",
+                              borderRadius: "8px",
+                              border: "1px solid #fca5a5",
+                              background: "#fef2f2",
+                              color: "#b91c1c",
+                              fontSize: "0.76rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {summaryOnlyConvs.map((conv) => (
+                    <div
+                      key={conv.id}
+                      style={{
+                        padding: "0.9rem",
+                        borderRadius: "12px",
+                        border: "1px solid #e2dad0",
+                        background: "#faf8f5",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.45rem",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: "0.9rem", color: "#27211d" }}>
+                            {conv.contact_name || conv.phone_number}
+                          </div>
+                          <div style={{ fontSize: "0.74rem", color: "#6e6259" }}>
+                            {[conv.class_grade, conv.school_name].filter(Boolean).join(" • ") || "School/Class not specified yet"}
+                          </div>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: "0.68rem",
+                            padding: "0.12rem 0.45rem",
+                            borderRadius: "99px",
+                            background: "#f1f5f9",
+                            color: "#475569",
+                            fontWeight: 700,
+                          }}
+                        >
+                          In Conversation
+                        </span>
+                      </div>
+                      <div style={{ fontSize: "0.78rem", color: "#3f3731" }}>
+                        {conv.summary || "Project conversation active — click Summarize or Finalize below."}
+                      </div>
+                      <div style={{ display: "flex", gap: "0.45rem", marginTop: "0.2rem", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          onClick={() => handleFinalizeTask({ conversationId: conv.id })}
+                          style={{
+                            padding: "0.38rem 0.7rem",
+                            borderRadius: "8px",
+                            border: "none",
+                            background: "#059669",
+                            color: "#fff",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          ✓ Confirm &amp; Finalize to Tasks
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveId(conv.id);
+                            setTopViewTab("chat");
+                            fetchHubData(conv.id);
+                          }}
+                          style={{
+                            padding: "0.38rem 0.7rem",
+                            borderRadius: "8px",
+                            border: "1px solid #dfd7cc",
+                            background: "#fff",
+                            color: "#27211d",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          💬 Open Chat
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDismissSummary({ conversationId: conv.id })}
+                          style={{
+                            padding: "0.38rem 0.7rem",
+                            borderRadius: "8px",
+                            border: "1px solid #fca5a5",
+                            background: "#fef2f2",
+                            color: "#b91c1c",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* COLUMN 2: CONFIRMED & FINALIZED TASKS (ACTIVE ON SPRINT BOARD) */}
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e6dfd5",
+              borderRadius: "14px",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "0.9rem 1.1rem",
+                borderBottom: "1px solid #eee7de",
+                background: "#ecfdf5",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 800, fontSize: "0.95rem", color: "#065f46" }}>
+                  ✅ Confirmed Project Tasks (On Sprint Board)
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#047857", marginTop: "0.15rem" }}>
+                  Confirmed by Mahir in chat or manually finalized. Visible on the Task &amp; Sprint Board.
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <Link
+                  href="/dashboard/tasks"
+                  style={{
+                    fontSize: "0.75rem",
+                    padding: "0.3rem 0.65rem",
+                    borderRadius: "8px",
+                    background: "#059669",
+                    color: "#fff",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                  }}
+                >
+                  <span>Go to Sprint Board</span>
+                  <ExternalLink size={12} />
+                </Link>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {confirmedProjectItems.length === 0 ? (
+                <div style={{ padding: "2.5rem 1rem", textAlign: "center", color: "#7c7067", fontSize: "0.84rem" }}>
+                  No confirmed WhatsApp project tasks yet. Click &quot;Confirm &amp; Finalize to Tasks&quot; on any ongoing project on the left.
+                </div>
+              ) : (
+                confirmedProjectItems.map((item) => {
+                  const convObj = conversations.find((c) => c.id === item.conversation_id);
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        padding: "0.9rem",
+                        borderRadius: "12px",
+                        border: "1px solid #a7f3d0",
+                        background: "#f8fffb",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.45rem",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: "0.94rem", color: "#27211d" }}>
+                            {item.title}
+                          </div>
+                          <div style={{ fontSize: "0.75rem", color: "#6e6259", marginTop: "0.15rem" }}>
+                            Contact: <strong>{convObj?.contact_name || item.student_name || "Contact"}</strong>{" "}
+                            ({item.guardian_phone || convObj?.phone_number || "WhatsApp"})
+                          </div>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: "0.68rem",
+                            padding: "0.15rem 0.5rem",
+                            borderRadius: "99px",
+                            background: "#d1fae5",
+                            color: "#065f46",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {item.stage.toUpperCase()}
+                        </span>
+                      </div>
+
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", fontSize: "0.74rem", color: "#4a4039" }}>
+                        {item.student_name && (
+                          <span style={{ background: "#f3f0ea", padding: "0.15rem 0.45rem", borderRadius: "6px" }}>
+                            👤 Student: <strong>{item.student_name}</strong>
+                          </span>
+                        )}
+                        {(item.school_name || item.class_grade) && (
+                          <span style={{ background: "#f3f0ea", padding: "0.15rem 0.45rem", borderRadius: "6px" }}>
+                            🏫 {[item.class_grade, item.school_name].filter(Boolean).join(" • ")}
+                          </span>
+                        )}
+                        {item.due_date && (
+                          <span style={{ background: "#fef2f2", color: "#991b1b", padding: "0.15rem 0.45rem", borderRadius: "6px", fontWeight: 700 }}>
+                            📅 Due: {item.due_date}
+                          </span>
+                        )}
+                      </div>
+
+                      {item.description && (
+                        <div
+                          style={{
+                            fontSize: "0.78rem",
+                            color: "#3f3731",
+                            background: "#fff",
+                            padding: "0.55rem 0.7rem",
+                            borderRadius: "8px",
+                            border: "1px solid #e2e8f0",
+                            whiteSpace: "pre-wrap",
+                          }}
+                        >
+                          {item.description}
+                        </div>
+                      )}
+
+                      <div style={{ display: "flex", gap: "0.45rem", marginTop: "0.25rem", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveToDiscussion({ taskId: item.id, conversationId: item.conversation_id || undefined })}
+                          style={{
+                            padding: "0.38rem 0.7rem",
+                            borderRadius: "8px",
+                            border: "1px solid #d97706",
+                            background: "#fffbeb",
+                            color: "#92400e",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          ↩ Unconfirm (Move back to Ongoing Discussion)
+                        </button>
+                        {item.conversation_id && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveId(item.conversation_id!);
+                              setTopViewTab("chat");
+                              fetchHubData(item.conversation_id!);
+                            }}
+                            style={{
+                              padding: "0.38rem 0.7rem",
+                              borderRadius: "8px",
+                              border: "1px solid #dfd7cc",
+                              background: "#fff",
+                              color: "#27211d",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            💬 Open Chat
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDismissSummary({ taskId: item.id })}
+                          style={{
+                            padding: "0.38rem 0.7rem",
+                            borderRadius: "8px",
+                            border: "1px solid #fca5a5",
+                            background: "#fef2f2",
+                            color: "#b91c1c",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Remove Task
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+      /* MAIN 3-COLUMN WHATSAPP WEB LAYOUT */
       <div
         style={{
           flex: 1,
@@ -1232,7 +1854,7 @@ export default function MessagingControlPanel() {
               </button>
             </div>
 
-            {/* Linked Kanban Tasks Section */}
+            {/* Linked Project Summary & Kanban Tasks Section */}
             <div style={{ borderTop: "1px solid #eee7de", paddingTop: "0.75rem" }}>
               <div
                 style={{
@@ -1243,7 +1865,7 @@ export default function MessagingControlPanel() {
                 }}
               >
                 <span style={{ fontWeight: 800, fontSize: "0.82rem", color: "#27211d" }}>
-                  Linked Kanban Tasks ({linkedTasks.length})
+                  Project Summary &amp; Tasks ({linkedTasks.length})
                 </span>
                 <Link
                   href="/dashboard/tasks"
@@ -1257,7 +1879,7 @@ export default function MessagingControlPanel() {
                     textDecoration: "none",
                   }}
                 >
-                  <span>Open Board</span>
+                  <span>Sprint Board</span>
                   <ExternalLink size={12} />
                 </Link>
               </div>
@@ -1270,43 +1892,142 @@ export default function MessagingControlPanel() {
                     background: "#f8f6f2",
                     fontSize: "0.75rem",
                     color: "#7c7067",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.45rem",
                   }}
                 >
-                  No tasks created from this conversation yet. Switch to <strong>Task Observer</strong> or click{" "}
-                  <strong>Extract &amp; Sync Tasks Now</strong> when an order is confirmed.
+                  <div>
+                    {activeConv.summary ? (
+                      <>
+                        <strong>Conversation Summary:</strong> {activeConv.summary}
+                      </>
+                    ) : (
+                      <>
+                        No project summarized yet. Click <strong>Extract &amp; Sync Tasks Now</strong> to summarize this chat.
+                      </>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleFinalizeTask({ conversationId: activeConv.id })}
+                    style={{
+                      padding: "0.4rem 0.65rem",
+                      borderRadius: "7px",
+                      border: "none",
+                      background: "#059669",
+                      color: "#fff",
+                      fontSize: "0.74rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✓ Finalize &amp; Move to Sprint Board
+                  </button>
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
-                  {linkedTasks.map((t) => (
-                    <div
-                      key={t.id}
-                      style={{
-                        padding: "0.6rem 0.7rem",
-                        borderRadius: "9px",
-                        border: "1px solid #e6dfd5",
-                        background: "#faf8f5",
-                      }}
-                    >
-                      <div style={{ fontWeight: 700, fontSize: "0.8rem", color: "#27211d" }}>{t.title}</div>
-                      <div style={{ fontSize: "0.72rem", color: "#6e6259", marginTop: "0.2rem" }}>
-                        Stage: <strong>{t.stage.toUpperCase()}</strong>
-                        {t.budget_bdt ? ` • ${t.budget_bdt} BDT` : ""}
-                        {t.due_date ? ` • Due: ${t.due_date}` : ""}
-                      </div>
-                      {(t.school_name || t.class_grade) && (
-                        <div style={{ fontSize: "0.7rem", color: "#7A1C24", marginTop: "0.15rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                          <School size={11} />
-                          <span>{[t.class_grade, t.school_name].filter(Boolean).join(" — ")}</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {linkedTasks.map((t) => {
+                    const isDiscussion = t.stage === "in_discussion" || t.status === "in_discussion";
+                    return (
+                      <div
+                        key={t.id}
+                        style={{
+                          padding: "0.65rem 0.75rem",
+                          borderRadius: "9px",
+                          border: isDiscussion ? "1px solid #f59e0b" : "1px solid #10b981",
+                          background: isDiscussion ? "#fffbeb" : "#ecfdf5",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.35rem" }}>
+                          <div style={{ fontWeight: 800, fontSize: "0.82rem", color: "#27211d" }}>{t.title}</div>
+                          <span
+                            style={{
+                              fontSize: "0.65rem",
+                              padding: "0.1rem 0.4rem",
+                              borderRadius: "99px",
+                              fontWeight: 700,
+                              background: isDiscussion ? "#fde68a" : "#a7f3d0",
+                              color: isDiscussion ? "#92400e" : "#065f46",
+                            }}
+                          >
+                            {isDiscussion ? "ONGOING CHAT" : `CONFIRMED (${t.stage.toUpperCase()})`}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        <div style={{ fontSize: "0.72rem", color: "#4a4039", marginTop: "0.25rem" }}>
+                          {t.student_name ? `Student: ${t.student_name}` : ""}
+                          {t.due_date ? ` • Due: ${t.due_date}` : ""}
+                          {t.budget_bdt ? ` • ${t.budget_bdt} BDT` : ""}
+                        </div>
+                        {(t.school_name || t.class_grade) && (
+                          <div style={{ fontSize: "0.7rem", color: "#7A1C24", marginTop: "0.15rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                            <School size={11} />
+                            <span>{[t.class_grade, t.school_name].filter(Boolean).join(" — ")}</span>
+                          </div>
+                        )}
+                        <div style={{ display: "flex", gap: "0.35rem", marginTop: "0.45rem", flexWrap: "wrap" }}>
+                          {isDiscussion ? (
+                            <button
+                              type="button"
+                              onClick={() => handleFinalizeTask({ taskId: t.id })}
+                              style={{
+                                padding: "0.28rem 0.55rem",
+                                borderRadius: "6px",
+                                border: "none",
+                                background: "#059669",
+                                color: "#fff",
+                                fontSize: "0.7rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              ✓ Finalize as Task
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleMoveToDiscussion({ taskId: t.id, conversationId: activeConv.id })}
+                              style={{
+                                padding: "0.28rem 0.55rem",
+                                borderRadius: "6px",
+                                border: "1px solid #d97706",
+                                background: "#fff",
+                                color: "#92400e",
+                                fontSize: "0.7rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              ↩ Move to Ongoing
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDismissSummary({ taskId: t.id })}
+                            style={{
+                              padding: "0.28rem 0.55rem",
+                              borderRadius: "6px",
+                              border: "1px solid #fca5a5",
+                              background: "#fef2f2",
+                              color: "#b91c1c",
+                              fontSize: "0.7rem",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
         )}
       </div>
+      )}
 
       {/* MODAL 1: ADD CONTACT / TEAM MEMBER */}
       {showAddModal && (

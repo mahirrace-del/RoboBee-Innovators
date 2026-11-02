@@ -106,6 +106,11 @@ export default function TasksPage() {
   const [editIsGeneralTask, setEditIsGeneralTask] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Task Detail & Queries Modal State (Click any compact card to view full details & post queries)
+  const [viewingTask, setViewingTask] = useState<RelationalTask | null>(null);
+  const [newQueryText, setNewQueryText] = useState("");
+  const [isPostingQuery, setIsPostingQuery] = useState(false);
+
   useEffect(() => {
     let firestoreTasks: RelationalTask[] = [];
     let supabaseTasks: RelationalTask[] = [];
@@ -121,7 +126,9 @@ export default function TasksPage() {
 
       const userEmail = user?.email?.toLowerCase() || "";
       const taskData = unique.filter((t) => {
-        // Always display all tasks if admin or viewing portal
+        // Hide unconfirmed ongoing WhatsApp discussions from the Sprint Board (they live in the Messaging Summary Panel until finalized)
+        if (t.stage === "in_discussion" || t.status === "in_discussion") return false;
+        // Always display all confirmed tasks if admin or viewing portal
         if (!user || role === "admin" || !role) return true;
         if (t.assignedTo === "GENERAL") return true;
         if (t.assignedTo?.toLowerCase() === userEmail) return true;
@@ -716,6 +723,47 @@ export default function TasksPage() {
     }
   };
 
+  // Post a Query / Update Instruction on a Task
+  const handlePostTaskQuery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!viewingTask || !newQueryText.trim()) return;
+    setIsPostingQuery(true);
+    try {
+      const authorName = user?.displayName || user?.email?.split("@")[0] || (role === "admin" ? "Mahir Rahman" : "Team Member");
+      const newEntry = {
+        id: `q_${Date.now()}`,
+        type: "query_note",
+        author: authorName,
+        text: newQueryText.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      const updatedAttachments = [...(viewingTask.attachments || []), newEntry];
+
+      try {
+        await supabase
+          .from("tasks")
+          .update({ attachments: updatedAttachments })
+          .eq("id", viewingTask.id);
+      } catch (sErr) {
+        console.warn("Supabase query update error:", sErr);
+      }
+
+      try {
+        await updateDoc(doc(db, "tasks", viewingTask.id), {
+          attachments: updatedAttachments,
+        });
+      } catch {}
+
+      setViewingTask({ ...viewingTask, attachments: updatedAttachments });
+      setTasks((prev) =>
+        prev.map((t) => (t.id === viewingTask.id ? { ...t, attachments: updatedAttachments } : t))
+      );
+      setNewQueryText("");
+    } finally {
+      setIsPostingQuery(false);
+    }
+  };
+
   // Delete Task
   const handleDeleteTask = async (
     taskId: string,
@@ -1291,13 +1339,21 @@ export default function TasksPage() {
                         <div
                           key={task.id}
                           className={styles.taskCard}
-                          style={{ borderLeftColor: col.color }}
+                          style={{
+                            borderLeftColor: col.color,
+                            padding: "0.75rem 0.85rem",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => setViewingTask(task)}
+                          title="Click to view full task details, student info, and post queries"
                         >
-                          <div className={styles.taskHeader}>
+                          <div className={styles.taskHeader} style={{ marginBottom: "0.35rem" }}>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div className={styles.taskTitle}>{task.title}</div>
+                              <div className={styles.taskTitle} style={{ fontSize: "0.9rem", lineHeight: 1.3 }}>
+                                {task.title}
+                              </div>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }} onClick={(e) => e.stopPropagation()}>
                               <span
                                 className={styles.priorityBadge}
                                 style={{ background: pStyle.bg, color: pStyle.color }}
@@ -1305,7 +1361,7 @@ export default function TasksPage() {
                                 {task.priority}
                               </span>
                               {role === "admin" && (
-                                <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.18rem" }}>
                                   <button
                                     onClick={() => handleOpenEditModal(task)}
                                     className={styles.iconActionBtn}
@@ -1334,117 +1390,25 @@ export default function TasksPage() {
                             </div>
                           </div>
 
-                          <div className={styles.taskDesc}>{task.description}</div>
-
-                          {/* Relational Badges: Competition & Reserved Lab Hardware */}
-                          {(task.competitionName ||
-                            (task.reservedParts && task.reservedParts.length > 0)) && (
-                            <div className={styles.relationTags}>
-                              {task.competitionName && (
-                                <span className={styles.relChip}>
-                                  <Trophy size={11} />
-                                  {task.competitionName}
-                                </span>
-                              )}
-                              {task.reservedParts?.map((rp, i) => (
-                                <span
-                                  key={i}
-                                  className={`${styles.relChip} ${styles.relChipHardware}`}
-                                >
-                                  <Cpu size={11} />
-                                  {rp.quantity}x {rp.partName}
-                                </span>
-                              ))}
+                          {/* COMPACT META: ONLY DUE DATE & QUICK CLICK HINT */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              fontSize: "0.75rem",
+                              color: "#6f665e",
+                              marginTop: "0.2rem",
+                            }}
+                          >
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                              <Calendar size={12} />
+                              <span>{task.dueDate ? `Due: ${task.dueDate}` : "No due date"}</span>
                             </div>
-                          )}
-
-                          {/* ASSIGNEES DISPLAY */}
-                          <div className={styles.metaInfo}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
-                              {task.assignedTo === "GENERAL" ? (
-                                <>
-                                  <Users size={12} style={{ color: "#9c6f18" }} />
-                                  <strong style={{ color: "#27211d" }}>📢 All Members (Open Task)</strong>
-                                </>
-                              ) : task.assignedMembers && task.assignedMembers.length > 1 ? (
-                                <>
-                                  <Users size={12} style={{ color: "#84243a" }} />
-                                  <strong style={{ color: "#84243a" }}>
-                                    Squad ({task.assignedMembers.length}):
-                                  </strong>
-                                  <div style={{ display: "inline-flex", gap: "0.25rem", flexWrap: "wrap" }}>
-                                    {task.assignedMembers.map((m: any, idx: number) => (
-                                      <span
-                                        key={idx}
-                                        style={{
-                                          fontSize: "0.72rem",
-                                          padding: "0.1rem 0.4rem",
-                                          borderRadius: "4px",
-                                          background: "rgba(132, 36, 58, 0.08)",
-                                          color: "#84243a",
-                                          fontWeight: 600,
-                                        }}
-                                      >
-                                        {m.name || m.username || m.email.split("@")[0]}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <UserIcon size={12} style={{ color: "#6f665e" }} />
-                                  <strong style={{ color: "#27211d" }}>
-                                    {task.assignedToName || task.assignedTo}
-                                  </strong>
-                                </>
-                              )}
-                            </div>
-
-                            {task.dueDate && (
-                              <div>
-                                <Calendar
-                                  size={12}
-                                  style={{ display: "inline", marginRight: 4 }}
-                                />
-                                Due: {task.dueDate}
-                              </div>
-                            )}
-
-                            {task.stage === "completed" && task.completedBy && (
-                              <div style={{ color: "#10B981" }}>
-                                ✓ Completed by {task.completedBy}
-                              </div>
-                            )}
+                            <span style={{ fontSize: "0.7rem", color: "#84243a", fontWeight: 700 }}>
+                              Click for details →
+                            </span>
                           </div>
-
-                          {canAct && (
-                            <div className={styles.stageActions}>
-                              {task.stage !== "in_progress" && task.stage !== "completed" && (
-                                <button
-                                  onClick={() => handleMoveStage(task.id, "in_progress")}
-                                  className={styles.stageBtn}
-                                >
-                                  Start Sprint
-                                </button>
-                              )}
-                              {task.stage === "in_progress" && (
-                                <button
-                                  onClick={() => handleMoveStage(task.id, "in_review")}
-                                  className={styles.stageBtn}
-                                >
-                                  Submit Review
-                                </button>
-                              )}
-                              {task.stage !== "completed" && (
-                                <button
-                                  onClick={() => handleMoveStage(task.id, "completed")}
-                                  className={styles.completeBtn}
-                                >
-                                  ✓ Complete
-                                </button>
-                              )}
-                            </div>
-                          )}
                         </div>
                       );
                     })
@@ -1713,6 +1677,265 @@ export default function TasksPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Task Detail & Queries Modal (Opened when clicking any compact task card) */}
+      {viewingTask && (
+        <div className={styles.modalOverlay} onClick={() => setViewingTask(null)}>
+          <div
+            className={styles.modalCard}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-label="Task Details and Queries"
+            style={{ maxWidth: "620px" }}
+          >
+            <div className={styles.modalHeader}>
+              <div>
+                <h3 className={styles.modalTitle} style={{ fontSize: "1.15rem" }}>
+                  {viewingTask.title}
+                </h3>
+                <div style={{ display: "flex", gap: "0.45rem", alignItems: "center", marginTop: "0.25rem", flexWrap: "wrap" }}>
+                  <span
+                    className={styles.priorityBadge}
+                    style={{
+                      background: getPriorityStyle(viewingTask.priority).bg,
+                      color: getPriorityStyle(viewingTask.priority).color,
+                    }}
+                  >
+                    {viewingTask.priority}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "0.72rem",
+                      padding: "0.14rem 0.5rem",
+                      borderRadius: "99px",
+                      background: "#f3f0ea",
+                      color: "#4a4039",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Stage: {viewingTask.stage.replace("_", " ").toUpperCase()}
+                  </span>
+                  {viewingTask.dueDate && (
+                    <span style={{ fontSize: "0.75rem", color: "#991b1b", fontWeight: 700 }}>
+                      📅 Due: {viewingTask.dueDate}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingTask(null)}
+                className={styles.modalCloseBtn}
+                title="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
+              {/* Student / School / Budget Info if linked from WhatsApp */}
+              {(viewingTask.studentName || viewingTask.schoolName || viewingTask.classGrade || viewingTask.budgetBdt) && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0.5rem",
+                    padding: "0.65rem 0.8rem",
+                    borderRadius: "10px",
+                    background: "#faf8f5",
+                    border: "1px solid #e6dfd5",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  {viewingTask.studentName && (
+                    <span>
+                      👤 <strong>Student:</strong> {viewingTask.studentName}
+                    </span>
+                  )}
+                  {(viewingTask.classGrade || viewingTask.schoolName) && (
+                    <span>
+                      🏫 <strong>Class/School:</strong> {[viewingTask.classGrade, viewingTask.schoolName].filter(Boolean).join(" • ")}
+                    </span>
+                  )}
+                  {viewingTask.budgetBdt && (
+                    <span>
+                      💰 <strong>Budget:</strong> {viewingTask.budgetBdt} BDT
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Full Task Description */}
+              <div>
+                <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#6f665e", marginBottom: "0.3rem", textTransform: "uppercase" }}>
+                  Project Details &amp; Requirements
+                </div>
+                <div
+                  style={{
+                    padding: "0.8rem",
+                    borderRadius: "10px",
+                    background: "#fff",
+                    border: "1px solid #e6dfd5",
+                    fontSize: "0.85rem",
+                    color: "#27211d",
+                    whiteSpace: "pre-wrap",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {viewingTask.description || "No additional description provided."}
+                </div>
+              </div>
+
+              {/* Assignees & Stage Actions */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "0.5rem",
+                  padding: "0.65rem 0.8rem",
+                  borderRadius: "10px",
+                  background: "#f8f6f2",
+                  border: "1px solid #eee7de",
+                }}
+              >
+                <div style={{ fontSize: "0.8rem", color: "#27211d" }}>
+                  <strong>Assigned To: </strong>
+                  {viewingTask.assignedTo === "GENERAL"
+                    ? "📢 All Members (Open Task)"
+                    : viewingTask.assignedToName || viewingTask.assignedTo}
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                  {viewingTask.stage !== "in_progress" && viewingTask.stage !== "completed" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleMoveStage(viewingTask.id, "in_progress");
+                        setViewingTask({ ...viewingTask, stage: "in_progress" });
+                      }}
+                      className={styles.stageBtn}
+                    >
+                      Start Sprint
+                    </button>
+                  )}
+                  {viewingTask.stage === "in_progress" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleMoveStage(viewingTask.id, "in_review");
+                        setViewingTask({ ...viewingTask, stage: "in_review" });
+                      }}
+                      className={styles.stageBtn}
+                    >
+                      Submit Review
+                    </button>
+                  )}
+                  {viewingTask.stage !== "completed" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleMoveStage(viewingTask.id, "completed");
+                        setViewingTask({ ...viewingTask, stage: "completed" });
+                      }}
+                      className={styles.completeBtn}
+                    >
+                      ✓ Complete
+                    </button>
+                  )}
+                  {role === "admin" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const t = viewingTask;
+                        setViewingTask(null);
+                        handleOpenEditModal(t);
+                      }}
+                      className={styles.stageBtn}
+                    >
+                      Edit / Assign Members
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Task Queries & Updated Instructions Thread */}
+              <div style={{ borderTop: "1px solid #eee7de", paddingTop: "0.75rem" }}>
+                <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#27211d", marginBottom: "0.45rem" }}>
+                  💬 Task Queries &amp; Updated Instructions
+                </div>
+
+                <div
+                  style={{
+                    maxHeight: "170px",
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.45rem",
+                    marginBottom: "0.6rem",
+                  }}
+                >
+                  {(viewingTask.attachments || []).filter((a: any) => a && a.text).length === 0 ? (
+                    <div style={{ fontSize: "0.76rem", color: "#7c7067", padding: "0.5rem 0" }}>
+                      No queries or updated instructions yet. Members can ask questions here, or Mahir can post updates (e.g., &quot;Work on this part, forget the last query&quot;).
+                    </div>
+                  ) : (
+                    (viewingTask.attachments || [])
+                      .filter((a: any) => a && a.text)
+                      .map((q: any, idx: number) => (
+                        <div
+                          key={q.id || idx}
+                          style={{
+                            padding: "0.55rem 0.7rem",
+                            borderRadius: "8px",
+                            background: "#faf8f5",
+                            border: "1px solid #e6dfd5",
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "#6f665e", marginBottom: "0.2rem" }}>
+                            <strong>{q.author || "Team Member"}</strong>
+                            <span>
+                              {q.createdAt
+                                ? new Date(q.createdAt).toLocaleString([], {
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : ""}
+                            </span>
+                          </div>
+                          <div style={{ color: "#27211d", whiteSpace: "pre-wrap" }}>{q.text}</div>
+                        </div>
+                      ))
+                  )}
+                </div>
+
+                <form onSubmit={handlePostTaskQuery} style={{ display: "flex", gap: "0.5rem" }}>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={newQueryText}
+                    onChange={(e) => setNewQueryText(e.target.value)}
+                    placeholder="Write a query or instruction (e.g. 'Work on this thing, forget the last query')..."
+                    style={{ flex: 1, fontSize: "0.82rem", padding: "0.5rem 0.75rem" }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isPostingQuery || !newQueryText.trim()}
+                    className={styles.submitBtn}
+                    style={{ width: "auto", padding: "0.5rem 1rem", fontSize: "0.8rem" }}
+                  >
+                    {isPostingQuery ? "Posting..." : "Post Note"}
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       )}
