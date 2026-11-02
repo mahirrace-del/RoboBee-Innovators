@@ -40,14 +40,72 @@ export async function POST(req: NextRequest) {
     const value = changes?.value;
 
     // Log delivery receipts / failure reports from Meta
-    if (value.statuses && value.statuses.length > 0) {
+    if (value?.statuses && value.statuses.length > 0) {
       const st = value.statuses[0];
       console.log(`[WhatsApp Webhook] Status: ${st.status} for recipient: ${st.recipient_id}. Errors:`, st.errors || "None");
       return NextResponse.json({ status: "status_acknowledged", detail: st.status }, { status: 200 });
     }
 
+    // Handle message echoes (when Mahir sends a message from WhatsApp Business App on his phone)
+    const echoes = value?.message_echoes;
+    if (echoes && echoes.length > 0) {
+      const echo = echoes[0];
+      const recipientPhone = echo.to; // The customer's phone number
+      const echoText = echo.text?.body || (echo.image ? "[Photo sent by Mahir]" : "[Message sent by Mahir]");
+      const echoWamId = echo.id;
+      const echoType = echo.type || "text";
+
+      console.log(`[WhatsApp Webhook] Captured echo sent by Mahir to ${recipientPhone}: "${echoText}"`);
+
+      let { data: conv } = await supabaseAdmin
+        .from("whatsapp_conversations")
+        .select("id")
+        .eq("phone_number", recipientPhone)
+        .maybeSingle();
+
+      if (!conv) {
+        const { data: newConv } = await supabaseAdmin
+          .from("whatsapp_conversations")
+          .insert({
+            phone_number: recipientPhone,
+            status: "in_discussion",
+            last_message_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+        conv = newConv;
+      } else {
+        await supabaseAdmin
+          .from("whatsapp_conversations")
+          .update({ last_message_at: new Date().toISOString() })
+          .eq("id", conv.id);
+      }
+
+      if (conv?.id) {
+        await supabaseAdmin.from("whatsapp_messages").insert({
+          conversation_id: conv.id,
+          wam_id: echoWamId,
+          sender_type: "agent_mahir",
+          message_type: echoType,
+          body: echoText,
+          raw_payload: echo,
+        });
+
+        // Trigger AI evaluation with updated conversation history
+        after(async () => {
+          try {
+            await evaluateConversationAndCreateTask(conv.id);
+          } catch (err) {
+            console.error("[WhatsApp Webhook] Async AI evaluation failed on echo:", err);
+          }
+        });
+      }
+
+      return NextResponse.json({ status: "echo_processed" }, { status: 200 });
+    }
+
     if (!value || !value.messages || value.messages.length === 0) {
-      // Acknowledge other event pings
+      console.log("[WhatsApp Webhook] Non-message event received:", changes?.field || "unknown");
       return NextResponse.json({ status: "ignored_non_message_event" }, { status: 200 });
     }
 

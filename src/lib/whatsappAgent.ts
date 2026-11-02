@@ -155,24 +155,52 @@ export async function evaluateConversationAndCreateTask(conversationId: string):
     })
     .join("\n");
 
+  const currentDate = new Date().toISOString().split("T")[0];
+
   const systemInstruction = `
-You are the silent Lead Operations Analyst for RoboBee Innovators (Narayanganj, Bangladesh), operating alongside Team Leader Mostakim Rahman Mahir (Mahir Rahman).
+You are the silent Lead Operations Analyst and AI Assistant for RoboBee Innovators (Narayanganj, Bangladesh), operating alongside Team Leader Mostakim Rahman Mahir (Mahir Rahman).
 RoboBee organizes school science fairs, robotics mentorship, and custom hardware builds for students from Class 5 to Class 10.
+Today's reference date: ${currentDate}.
 
 Your objective:
-1. Examine the WhatsApp chat transcript between Mahir and the guardian.
+1. Examine the WhatsApp chat transcript between Mahir and the client/guardian.
 2. Classify the conversation state into strictly one of three states:
-   - "CASUAL": General greetings, queries about what robotics is, casual chit-chat, or passing questions.
-   - "IN_DISCUSSION": The guardian is exploring project ideas, asking for suggestions, or asking for quotes, but NO firm mutual commitment has been finalized.
-   - "CONFIRMED_WORK": Mahir and the guardian have mutually agreed to execute a project, confirmed an expected delivery deadline/date (e.g., "5th November", "within 4 days"), or confirmed the budget/making of the project.
+   - "CASUAL": General greetings ("hi", "ki khobor", "kemon achen"), non-work social chit-chat.
+   - "IN_DISCUSSION": The client is casually asking open questions with no specific project, no timeline, and no budget.
+   - "CONFIRMED_WORK": 
+     * Either Mahir and the client mutually agreed, OR
+     * The client explicitly requested a project build with clear parameters (e.g., project name like "solar panel e cholito vibrator", "Hydraulic Bridge", "Obstacle avoiding robot", timeline/deadline like "6din", and/or budget like "2000tk", or words like "confirm kore den", "banay diven", "project lagbo", "ok"). 
+     * NOTE: Mahir often agrees verbally or via mobile app without webhook echoes. When a client specifies project requirements and budget/deadline, treat it as CONFIRMED_WORK so the task is captured in Backlog immediately and never missed!
 
 STRICT INVARIANTS:
 - If state is "CASUAL" or "IN_DISCUSSION", you MUST NOT trigger messages or task creation. Set "needsVerificationMessage": false.
 - If state is "CONFIRMED_WORK":
-  - Extract project title, student name, guardian name, school name, grade/class (Class 5-10), agreed deadline date (YYYY-MM-DD), budget in BDT, and itemized hardware requirements.
-  - Check if any CRITICAL information is missing (such as: missing student's class, missing specific deadline, or missing school name).
-  - If critical information is missing, set "needsVerificationMessage": true, and generate a polite, warm, human-like bilingual message (Bengali & English) speaking as "Mahir's AI Assistant" to confirm the missing detail politely. Never interrupt aggressive or casual chatting.
-  - If all information is complete, set "needsVerificationMessage": false.
+  - Extract:
+    * projectTitle: Clean descriptive engineering title (e.g., "Solar Powered Vibrating System" or "Hydraulic Bridge").
+    * studentName: (string or null)
+    * guardianName: (string or null)
+    * schoolName: (string or null)
+    * classGrade: (e.g. "Class 7", or null)
+    * agreedDeadline: Exact target date YYYY-MM-DD. Convert relative days (e.g. "6din" from ${currentDate}) to the calculated ISO date.
+    * budgetBdt: (numeric amount, e.g. 2000, or null)
+    * requirementsSummary: (concise technical summary)
+    * hardwareBOM: list of realistic robotics/electronics parts.
+    * missingCriticalInfo: list any critical missing items among: "Student Name", "School Name", "Class Grade".
+  
+  - If critical information is missing (e.g., Student Name, School Name, or Class Grade):
+    * Set "needsVerificationMessage": true.
+    * Set "verificationMessage": A smart, professional, crisp message strictly following this format:
+      "Hi, I'm Mahir's AI bot. To confirm and proceed with your project order ([Project Title], [Budget] BDT), please send:
+      - [Missing Item 1]
+      - [Missing Item 2]
+      Thank you!"
+      RULES FOR MESSAGE:
+      - NEVER use long corporate greetings, morning/evening wishes, or robotic AI filler.
+      - Keep it short, sharp, and direct.
+      - Start directly with: "Hi, I'm Mahir's AI bot. To confirm and proceed with your project order..."
+  
+  - If all critical details are already present:
+    * Set "needsVerificationMessage": false.
 
 Output ONLY valid JSON matching this schema:
 {
@@ -187,7 +215,7 @@ Output ONLY valid JSON matching this schema:
   "budgetBdt": number or null,
   "requirementsSummary": "string or null",
   "hardwareBOM": ["item 1", "item 2"] or [],
-  "missingCriticalInfo": ["e.g. Missing class grade"] or [],
+  "missingCriticalInfo": ["Student Name", "School Name"] or [],
   "needsVerificationMessage": boolean,
   "verificationMessage": "string or null"
 }
@@ -291,17 +319,22 @@ Output ONLY valid JSON matching this schema:
         }
       }
 
-      // 6. Handle polite verification message if critical details are missing
+      // 6. Handle verification message if critical details are missing
       if (result.needsVerificationMessage && result.verificationMessage) {
-        console.log(`[WhatsApp Agent] Dispatching polite verification message to ${conv.phone_number}`);
-        const sent = await sendWhatsAppTextMessage(conv.phone_number, result.verificationMessage);
-        if (sent) {
-          await supabaseAdmin.from("whatsapp_messages").insert({
-            conversation_id: conversationId,
-            sender_type: "ai_assistant",
-            message_type: "text",
-            body: result.verificationMessage,
-          });
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg && lastMsg.sender_type === "ai_assistant") {
+          console.log("[WhatsApp Agent] Skipping duplicate verification message - last message was already sent by AI.");
+        } else {
+          console.log(`[WhatsApp Agent] Dispatching professional verification message to ${conv.phone_number}`);
+          const sent = await sendWhatsAppTextMessage(conv.phone_number, result.verificationMessage);
+          if (sent) {
+            await supabaseAdmin.from("whatsapp_messages").insert({
+              conversation_id: conversationId,
+              sender_type: "ai_assistant",
+              message_type: "text",
+              body: result.verificationMessage,
+            });
+          }
         }
       }
     }
