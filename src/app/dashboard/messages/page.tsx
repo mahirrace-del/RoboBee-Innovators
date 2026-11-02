@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   MessageSquare,
   Send,
@@ -21,6 +23,7 @@ import {
   Users,
   Lock,
   Zap,
+  Shield,
 } from "lucide-react";
 
 type AIMode = "off" | "task_observer" | "auto_pilot";
@@ -68,6 +71,9 @@ interface LinkedTask {
 }
 
 export default function MessagingControlPanel() {
+  const { role, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -76,6 +82,13 @@ export default function MessagingControlPanel() {
   const [topViewTab, setTopViewTab] = useState<"chat" | "summary_panel">("chat");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Redirect non-admin members immediately
+  useEffect(() => {
+    if (!authLoading && role && role !== "admin") {
+      router.replace("/dashboard");
+    }
+  }, [authLoading, role, router]);
 
   // Filters
   const [channelFilter, setChannelFilter] = useState<"all" | "whatsapp" | "messenger" | "instagram">("all");
@@ -117,6 +130,7 @@ export default function MessagingControlPanel() {
 
   const fetchHubData = useCallback(
     async (targetConvId?: string | null, silent = false) => {
+      if (role !== "admin") return;
       if (!silent) setRefreshing(true);
       try {
         const query = targetConvId ? `?conversationId=${encodeURIComponent(targetConvId)}` : "";
@@ -137,7 +151,7 @@ export default function MessagingControlPanel() {
         setRefreshing(false);
       }
     },
-    []
+    [role]
   );
 
   useEffect(() => {
@@ -452,6 +466,54 @@ export default function MessagingControlPanel() {
   const summaryOnlyConvs = conversations.filter(
     (c) => !convIdsWithTasks.has(c.id) && (c.summary || c.status === "in_discussion" || c.ai_mode !== "off")
   );
+
+  // Strict Admin-Only Guard: Regular members can NEVER view WhatsApp messages or AI task controls
+  if (authLoading) {
+    return (
+      <div style={{ padding: "3rem", textAlign: "center", color: "#6f665e", fontWeight: 700 }}>
+        Verifying Admin Access...
+      </div>
+    );
+  }
+
+  if (role !== "admin") {
+    return (
+      <div
+        style={{
+          margin: "3rem auto",
+          maxWidth: "480px",
+          padding: "2.25rem",
+          borderRadius: "16px",
+          background: "#fff",
+          border: "1px solid #fca5a5",
+          textAlign: "center",
+        }}
+      >
+        <Shield size={36} color="#dc2626" style={{ marginBottom: "0.75rem" }} />
+        <h2 style={{ margin: "0 0 0.5rem", color: "#991b1b", fontSize: "1.2rem" }}>
+          Admin Access Only
+        </h2>
+        <p style={{ color: "#5c5149", fontSize: "0.88rem", lineHeight: 1.5, marginBottom: "1.25rem" }}>
+          The Omnichannel Messaging &amp; WhatsApp AI Task Control Panel is restricted to administrators. You can view and work on confirmed tasks on the Task &amp; Sprint Board.
+        </p>
+        <Link
+          href="/dashboard/tasks"
+          style={{
+            display: "inline-block",
+            padding: "0.6rem 1.2rem",
+            borderRadius: "9px",
+            background: "#7A1C24",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: "0.85rem",
+            textDecoration: "none",
+          }}
+        >
+          Go to Task &amp; Sprint Board
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 88px)", gap: "0.75rem" }}>

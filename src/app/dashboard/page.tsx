@@ -418,65 +418,67 @@ export default function DashboardOverview() {
         )}
       </div>
 
-      {/* Omnichannel Messaging & AI Control Quick Launch Banner */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "1rem",
-          padding: "1rem 1.25rem",
-          marginBottom: "1.25rem",
-          borderRadius: "14px",
-          background: "linear-gradient(135deg, #27211d 0%, #4a151b 100%)",
-          color: "#fff",
-          boxShadow: "0 6px 20px rgba(122, 28, 36, 0.14)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-          <div
-            style={{
-              width: "42px",
-              height: "42px",
-              borderRadius: "10px",
-              background: "rgba(255,255,255,0.12)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <MessageSquare size={22} color="#fbbf24" />
-          </div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: "0.98rem", color: "#fff" }}>
-              Omnichannel Messaging &amp; AI Control Center (WhatsApp • Messenger • Instagram)
-            </div>
-            <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.78)", marginTop: "0.15rem" }}>
-              View all WhatsApp chats, keep personal contacts on 0-token privacy, assign AI Task Observer or Auto-Pilot per contact, and broadcast to team members.
-            </div>
-          </div>
-        </div>
-        <Link
-          href="/dashboard/messages"
+      {/* Omnichannel Messaging & AI Control Quick Launch Banner (ADMIN ONLY) */}
+      {isAdmin && (
+        <div
           style={{
-            padding: "0.55rem 1.1rem",
-            borderRadius: "9px",
-            background: "#fbbf24",
-            color: "#1e1b18",
-            fontWeight: 800,
-            fontSize: "0.82rem",
-            textDecoration: "none",
-            display: "inline-flex",
+            display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
-            gap: "0.4rem",
-            whiteSpace: "nowrap",
+            justifyContent: "space-between",
+            gap: "1rem",
+            padding: "1rem 1.25rem",
+            marginBottom: "1.25rem",
+            borderRadius: "14px",
+            background: "linear-gradient(135deg, #27211d 0%, #4a151b 100%)",
+            color: "#fff",
+            boxShadow: "0 6px 20px rgba(122, 28, 36, 0.14)",
           }}
         >
-          <span>Open Messaging Control Panel</span>
-          <ArrowUpRight size={15} />
-        </Link>
-      </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+            <div
+              style={{
+                width: "42px",
+                height: "42px",
+                borderRadius: "10px",
+                background: "rgba(255,255,255,0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MessageSquare size={22} color="#fbbf24" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: "0.98rem", color: "#fff" }}>
+                Admin Only: Omnichannel Messaging &amp; AI Task Control (WhatsApp • Messenger • Instagram)
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.78)", marginTop: "0.15rem" }}>
+                View all WhatsApp chats, keep personal contacts on 0-token privacy, summarize ongoing projects, and finalize confirmed tasks to the Sprint Board.
+              </div>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/messages"
+            style={{
+              padding: "0.55rem 1.1rem",
+              borderRadius: "9px",
+              background: "#fbbf24",
+              color: "#1e1b18",
+              fontWeight: 800,
+              fontSize: "0.82rem",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span>Open Messaging Control Panel</span>
+            <ArrowUpRight size={15} />
+          </Link>
+        </div>
+      )}
 
       {/* =====================================================================
           VIEW 1: ADMIN COMMAND DASHBOARD

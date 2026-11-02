@@ -252,22 +252,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {!sidebarCollapsed && <span className={styles.navLabel}>Central Hub</span>}
         </Link>
         <Link
-          href="/dashboard/messages"
-          className={isAct("/dashboard/messages")}
-          onClick={closeSidebar}
-          title="Omnichannel Messaging & AI Control"
-        >
-          <MessageSquare size={18} className={styles.navIcon} color="#7A1C24" />
-          {!sidebarCollapsed && (
-            <>
-              <span className={styles.navLabel} style={{ fontWeight: 700, color: "#7A1C24" }}>
-                Messaging &amp; AI Hub
-              </span>
-              <span className={styles.navPill}>WA / IG</span>
-            </>
-          )}
-        </Link>
-        <Link
           href="/dashboard/curriculum"
           className={isAct("/dashboard/curriculum")}
           onClick={closeSidebar}
@@ -416,6 +400,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span><Shield size={15} /> {!sidebarCollapsed && "Administration"}</span>
               {!sidebarCollapsed && <ChevronDown size={15} className={styles.managementChevron} />}
             </summary>
+            <Link
+              href="/dashboard/messages"
+              className={isAct("/dashboard/messages")}
+              onClick={closeSidebar}
+              title="Omnichannel Messaging & AI Control (Admin Only)"
+              style={{ color: "#7A1C24", fontWeight: 800 }}
+            >
+              <MessageSquare size={18} className={styles.navIcon} color="#7A1C24" />
+              {!sidebarCollapsed && (
+                <>
+                  <span className={styles.navLabel}>Messaging &amp; AI Hub</span>
+                  <span className={styles.navPill}>Admin</span>
+                </>
+              )}
+            </Link>
             <Link
               href="/dashboard/admin/curriculum"
               className={isAct("/dashboard/admin/curriculum")}
@@ -655,7 +654,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className={styles.mainContent}>{children}</main>
       </div>
 
-      {/* Fixed Bottom Glassmorphic Navigation Bar (Dashboard, Messages, Tasks, Class, Profile) */}
+      {/* Fixed Bottom Glassmorphic Navigation Bar (Dashboard, Messages [Admin Only], Tasks, Class, Profile) */}
       <nav className={styles.mobileBottomNav} aria-label="Mobile Navigation">
         <Link
           href="/dashboard"
@@ -664,13 +663,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Home size={20} />
           <span>Dashboard</span>
         </Link>
-        <Link
-          href="/dashboard/messages"
-          className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/messages") ? styles.bottomNavItemActive : ""}`}
-        >
-          <MessageSquare size={20} />
-          <span>Messages</span>
-        </Link>
+        {role === "admin" && (
+          <Link
+            href="/dashboard/messages"
+            className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/messages") ? styles.bottomNavItemActive : ""}`}
+          >
+            <MessageSquare size={20} />
+            <span>Messages</span>
+          </Link>
+        )}
         <Link
           href="/dashboard/tasks"
           className={`${styles.bottomNavItem} ${pathname.startsWith("/dashboard/tasks") ? styles.bottomNavItemActive : ""}`}
