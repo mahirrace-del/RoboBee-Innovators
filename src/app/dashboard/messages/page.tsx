@@ -1155,7 +1155,7 @@ export default function MessagingControlPanel() {
                 }}
               >
                 <option value="personal">🔒 Personal / Friend</option>
-                <option value="client">🎓 Project Client / Guardian</option>
+                <option value="client">🎓 Teacher / Guardian / Student</option>
                 <option value="team_member">🐝 RoboBee Team Member</option>
                 <option value="school_partner">🏫 School Partner</option>
               </select>
@@ -1365,7 +1365,7 @@ export default function MessagingControlPanel() {
                 style={{ width: "100%", padding: "0.55rem", borderRadius: "8px", border: "1px solid #ccc", marginTop: "0.25rem" }}
               >
                 <option value="personal">🔒 Personal / Friend</option>
-                <option value="client">🎓 Project Client / Guardian</option>
+                <option value="client">🎓 Teacher / Guardian / Student</option>
                 <option value="team_member">🐝 RoboBee Team Member</option>
                 <option value="school_partner">🏫 School Partner</option>
               </select>
