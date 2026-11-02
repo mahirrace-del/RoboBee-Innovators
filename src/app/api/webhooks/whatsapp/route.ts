@@ -112,8 +112,14 @@ export async function POST(req: NextRequest) {
     const message = value.messages[0];
     const contact = value.contacts?.[0];
 
-    const senderPhone = message.from; // e.g. "8801902821018"
-    const profileName = contact?.profile?.name || "Guardian / Student";
+    const rawSenderPhone = message.from || "";
+    const isOutboundFromMahir =
+      rawSenderPhone.includes("1902821018") ||
+      (message.to && !message.to.includes("1902821018") && rawSenderPhone.endsWith("1902821018"));
+
+    const customerPhone = isOutboundFromMahir ? (message.to || rawSenderPhone) : rawSenderPhone;
+    const senderType = isOutboundFromMahir ? "agent_mahir" : "customer";
+    const profileName = isOutboundFromMahir ? "Mahir Rahman (RoboBee Leader)" : (contact?.profile?.name || "Guardian / Student");
     const wamId = message.id;
     const msgType = message.type; // "text", "image", "document", etc.
 
@@ -125,7 +131,7 @@ export async function POST(req: NextRequest) {
     if (msgType === "text") {
       bodyText = message.text?.body || "";
     } else if (msgType === "image") {
-      bodyText = message.image?.caption || "[Image sent]";
+      bodyText = message.image?.caption || (isOutboundFromMahir ? "[Photo sent by Mahir]" : "[Image sent]");
       mediaCaption = message.image?.caption || null;
       mediaMimeType = message.image?.mime_type || "image/jpeg";
       mediaUrl = message.image?.id || null; // Stores Meta Media ID for download
@@ -142,15 +148,15 @@ export async function POST(req: NextRequest) {
     let { data: conversation } = await supabaseAdmin
       .from("whatsapp_conversations")
       .select("id, status")
-      .eq("phone_number", senderPhone)
+      .eq("phone_number", customerPhone)
       .maybeSingle();
 
     if (!conversation) {
       const { data: newConv, error: createConvErr } = await supabaseAdmin
         .from("whatsapp_conversations")
         .insert({
-          phone_number: senderPhone,
-          contact_name: profileName,
+          phone_number: customerPhone,
+          contact_name: isOutboundFromMahir ? "Student / Client" : profileName,
           status: "casual",
           last_message_at: new Date().toISOString(),
         })
@@ -167,7 +173,7 @@ export async function POST(req: NextRequest) {
         .from("whatsapp_conversations")
         .update({
           last_message_at: new Date().toISOString(),
-          contact_name: profileName,
+          ...(!isOutboundFromMahir ? { contact_name: profileName } : {}),
         })
         .eq("id", conversation.id);
     }
@@ -178,7 +184,7 @@ export async function POST(req: NextRequest) {
       .insert({
         conversation_id: conversation.id,
         wam_id: wamId,
-        sender_type: "customer",
+        sender_type: senderType,
         message_type: msgType,
         body: bodyText,
         media_url: mediaUrl,

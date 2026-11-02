@@ -39,6 +39,7 @@ export interface AnalysisResult {
   missingCriticalInfo?: string[];
   needsVerificationMessage?: boolean;
   verificationMessage?: string;
+  confirmationMessage?: string;
 }
 
 /**
@@ -185,8 +186,9 @@ Conversation States:
    - Action: DO NOTHING. No tasks. No messages.
 
 2. "IN_DISCUSSION":
-   - Open-ended browsing or vague questions without a concrete project order or build instruction.
-   - Action: DO NOTHING.
+   - Client is asking questions, requesting ideas, inquiring about prices, or proposing their budget.
+   - If Mahir has not agreed/confirmed, or if discussion is open-ended without a final build agreement, stay in IN_DISCUSSION.
+   - Action: DO NOTHING. DO NOT ask for budget. DO NOT create tasks. DO NOT message.
 
 3. "CONFIRMED_WORK":
    - Triggered when:
@@ -207,19 +209,27 @@ WHEN "CONFIRMED_WORK" IS REACHED:
   * hardwareBOM: realistic component list
 - If critical details (Student Name, School Name, Class Grade) are missing:
   * Set "needsVerificationMessage": true.
-  * Set "verificationMessage": Professional, smart, and direct message sent ONLY AT THE END after Mahir's confirmation:
+  * Set "verificationMessage": Professional, smart, and direct message sent ONLY AT THE END after confirmation:
     For a single project:
-    "Hi, I'm Mahir's AI bot. To confirm and proceed with your project order ([Project Title], [Budget] BDT), please send:
+    "Hi, I'm Mahir's AI bot. To proceed with your project order ([Project Title]), please send:
     - Student Name
     - School Name & Class
     Thank you!"
+    (If Mahir confirmed a budget, include it: e.g. "[Project Title], [Budget] BDT").
     For multiple projects:
-    "Hi, I'm Mahir's AI bot. To confirm and proceed with your project orders ([Project 1 Title], [Project 2 Title]), please send:
+    "Hi, I'm Mahir's AI bot. To proceed with your project orders ([Project 1 Title], [Project 2 Title]), please send:
     - Student Name
     - School Name & Class
     Thank you!"
-- If all details are already present:
+  * Set "confirmationMessage": null.
+- If all details (Student Name, School Name, Class Grade) are already present:
   * Set "needsVerificationMessage": false.
+  * Set "verificationMessage": null.
+  * Set "confirmationMessage":
+    For single project:
+    "Hi, I'm Mahir's AI bot. Your project order for [Project Title] is confirmed and added to our build schedule. Thank you!"
+    For multiple projects:
+    "Hi, I'm Mahir's AI bot. Your project orders for [Project 1 Title] and [Project 2 Title] are confirmed and added to our build schedule. Thank you!"
 
 Output ONLY valid JSON matching this schema:
 {
@@ -248,7 +258,8 @@ Output ONLY valid JSON matching this schema:
   "hardwareBOM": ["item 1", "item 2"] or [],
   "missingCriticalInfo": ["Student Name", "School Name"] or [],
   "needsVerificationMessage": boolean,
-  "verificationMessage": "string or null"
+  "verificationMessage": "string or null",
+  "confirmationMessage": "string or null"
 }
 `;
 
@@ -339,9 +350,23 @@ Output ONLY valid JSON matching this schema:
           return tLower === projTitleLower || tLower.includes(projTitleLower) || projTitleLower.includes(tLower);
         });
 
+        const descParts: string[] = [];
+        if (proj.classGrade || proj.schoolName) {
+          descParts.push(`Class / School: ${[proj.classGrade, proj.schoolName].filter(Boolean).join(" | ")}`);
+        }
+        if (proj.studentName) {
+          descParts.push(`Student: ${proj.studentName}`);
+        }
+        if (proj.requirementsSummary) {
+          descParts.push(`Summary: ${proj.requirementsSummary}`);
+        }
+        if (proj.hardwareBOM && proj.hardwareBOM.length > 0) {
+          descParts.push(`Key Components:\n- ${proj.hardwareBOM.join('\n- ')}`);
+        }
+
         const taskPayload = {
           title: proj.projectTitle,
-          description: `${proj.requirementsSummary || 'Science Fair Project Build'}\n\nComponents:\n- ${(proj.hardwareBOM || []).join('\n- ')}`,
+          description: descParts.join("\n\n") || "Science Fair Project Build",
           assigned_to: "GENERAL",
           assigned_by: "WhatsApp AI Assistant",
           status: "pending",
@@ -377,20 +402,24 @@ Output ONLY valid JSON matching this schema:
         }
       }
 
-      // 6. Handle verification message if critical details are missing
-      if (result.needsVerificationMessage && result.verificationMessage) {
+      // 6. Handle outbound notification message at the end (verification or confirmation)
+      const messageToSend = result.needsVerificationMessage
+        ? result.verificationMessage
+        : result.confirmationMessage;
+
+      if (messageToSend) {
         const lastMsg = messages[messages.length - 1];
-        if (lastMsg && lastMsg.sender_type === "ai_assistant") {
-          console.log("[WhatsApp Agent] Skipping duplicate verification message - last message was already sent by AI.");
+        if (lastMsg && lastMsg.sender_type === "ai_assistant" && lastMsg.body?.trim() === messageToSend.trim()) {
+          console.log("[WhatsApp Agent] Skipping duplicate message - identical message was already sent by AI.");
         } else {
-          console.log(`[WhatsApp Agent] Dispatching professional verification message to ${conv.phone_number}`);
-          const sent = await sendWhatsAppTextMessage(conv.phone_number, result.verificationMessage);
+          console.log(`[WhatsApp Agent] Dispatching notification message to ${conv.phone_number}: "${messageToSend}"`);
+          const sent = await sendWhatsAppTextMessage(conv.phone_number, messageToSend);
           if (sent) {
             await supabaseAdmin.from("whatsapp_messages").insert({
               conversation_id: conversationId,
               sender_type: "ai_assistant",
               message_type: "text",
-              body: result.verificationMessage,
+              body: messageToSend,
             });
           }
         }
