@@ -256,7 +256,7 @@ Output ONLY valid JSON matching this schema:
 `;
 
   try {
-    const candidateModels = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash-lite"];
+    const candidateModels = ["gemini-3.5-flash-lite", "gemini-3.5-flash"];
     let response: any = null;
     let lastErr: any = null;
 
