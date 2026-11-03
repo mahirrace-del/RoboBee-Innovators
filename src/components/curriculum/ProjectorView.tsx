@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import styles from "./projectorView.module.css";
 import { RoboticsLesson } from "@/lib/curriculumData";
@@ -12,7 +12,6 @@ import {
 import {
   EditableClassDeck,
   getOrBuildDeckForLesson,
-  SEED_CLASS_01_DECK,
   normalizeDeckToFreeform,
 } from "@/lib/slideStudioStore";
 import { FreeformSlideStage } from "./freeform/FreeformSlideStage";
@@ -20,6 +19,7 @@ import { HardwareLabDrawer } from "./HardwareLabDrawer";
 import {
   downloadFrontendSlidesDeck,
   openFrontendSlidesInNewTab,
+  generateFrontendSlidesHtml,
 } from "@/lib/frontendSlidesExporter";
 import {
   Play,
@@ -142,6 +142,17 @@ export function ProjectorView({
   const [showSpeakerNotes, setShowSpeakerNotes] = useState<boolean>(false);
   const [showPresenterConsole, setShowPresenterConsole] = useState<boolean>(false);
 
+  // Presentation Stage Mode: Native 1920x1080 Interactive Deck vs Live Canva Embed vs Freeform Stage
+  const [stageMode, setStageMode] = useState<
+    "interactive-deck" | "canva-embed" | "freeform-editor"
+  >("interactive-deck");
+
+  // Memoized 1920x1080 HTML Presentation
+  const presentationHtml = useMemo(
+    () => generateFrontendSlidesHtml(activeDeck, lesson),
+    [activeDeck, lesson]
+  );
+
   // Touch swipe tracking for tablet/mobile
   const touchStartX = useRef<number | null>(null);
 
@@ -162,10 +173,23 @@ export function ProjectorView({
     setStepRevealCount(0);
   }, [currentSlide]);
 
-  const slides = activeDeck.slides.length > 0 ? activeDeck.slides : SEED_CLASS_01_DECK.slides;
+  const slides = activeDeck.slides && activeDeck.slides.length > 0 ? activeDeck.slides : [];
   const totalSlides = slides.length;
-  const safeSlideIndex = Math.min(Math.max(0, currentSlide), totalSlides - 1);
-  const activeSlide = slides[safeSlideIndex] || slides[0];
+  const safeSlideIndex = Math.min(Math.max(0, currentSlide), Math.max(0, totalSlides - 1));
+  const fallbackEmptySlide = {
+    id: "empty",
+    numberLabel: "01",
+    stagePill: "OVERVIEW",
+    title: activeDeck.title || lesson.title,
+    theme: "robobee-dark" as const,
+    elements: [],
+    speakerNotes: "",
+  };
+  const activeSlide = slides[safeSlideIndex] || slides[0] || fallbackEmptySlide;
+  const canvaDeckUrl =
+    (lesson as any)?.canvaEmbedUrl ||
+    (activeDeck as any)?.canvaEmbedUrl ||
+    "https://www.canva.com/design/DAHZ0ZWku3c/view?embed";
 
   const effectiveTheme: SlideColorTheme =
     themeOverride === "auto" ? activeSlide.theme : themeOverride;
@@ -577,6 +601,82 @@ export function ProjectorView({
             ))}
           </div>
 
+          {/* Presentation Stage Switcher: 1080p Interactive Presentation vs Canva Embed vs Slide Cards */}
+          <div
+            style={{
+              display: "flex",
+              background: "rgba(255,255,255,0.08)",
+              borderRadius: "8px",
+              padding: "2px",
+              border: "1px solid rgba(255,255,255,0.12)",
+              marginLeft: "4px",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setStageMode("interactive-deck")}
+              style={{
+                background: stageMode === "interactive-deck" ? "#00F5D4" : "transparent",
+                color: stageMode === "interactive-deck" ? "#0F172A" : "#E2E8F0",
+                border: "none",
+                padding: "3px 9px",
+                borderRadius: "6px",
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+              title="Interactive 1080p Master Presentation directly inside the website"
+            >
+              <Sparkles size={13} />
+              <span>Interactive Deck</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStageMode("canva-embed")}
+              style={{
+                background: stageMode === "canva-embed" ? "#F5B800" : "transparent",
+                color: stageMode === "canva-embed" ? "#0F172A" : "#E2E8F0",
+                border: "none",
+                padding: "3px 9px",
+                borderRadius: "6px",
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+              title="Canva Master Deck live embed"
+            >
+              <Layers size={13} />
+              <span>Canva Master Deck</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStageMode("freeform-editor")}
+              style={{
+                background: stageMode === "freeform-editor" ? "#38BDF8" : "transparent",
+                color: stageMode === "freeform-editor" ? "#0F172A" : "#E2E8F0",
+                border: "none",
+                padding: "3px 9px",
+                borderRadius: "6px",
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+              title="Slide Cards Stage"
+            >
+              <LayoutGrid size={13} />
+              <span>Slide Cards</span>
+            </button>
+          </div>
+
           {onEditDeck && (
             <button
               type="button"
@@ -603,10 +703,10 @@ export function ProjectorView({
               borderColor: "#F5B800",
               color: "#F5B800",
             }}
-            title="Open in Native 1920×1080 Frontend-Slides Interactive Web Player"
+            title="Open in Native 1920×1080 Frontend-Slides Interactive Web Player in New Tab"
           >
             <Sparkles size={14} />
-            <span>1920×1080 Web Deck</span>
+            <span>Open in Tab</span>
           </button>
 
           <button
@@ -680,7 +780,7 @@ export function ProjectorView({
           style={{
             width: "100%",
             height: "100%",
-            maxWidth: "1360px",
+            maxWidth: stageMode === "freeform-editor" ? "1360px" : "100%",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -688,16 +788,70 @@ export function ProjectorView({
             fontSize: `${fontScale}%`,
           }}
         >
-          <FreeformSlideStage
-            slide={activeSlide}
-            mode="presenter"
-            themeOverride={themeOverride}
-            onZoomImage={(src, caption) => setZoomedMedia({ src, caption })}
-            stepRevealCount={stepRevealCount}
-            soundEnabled={soundEnabled}
-            spotlightActive={spotlightActive}
-            spotlightPos={laserPos}
-          />
+          {stageMode === "interactive-deck" ? (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                padding: "4px 8px 12px 8px",
+              }}
+            >
+              <iframe
+                srcDoc={presentationHtml}
+                title={`${activeDeck.title} - Interactive Master Presentation`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  borderRadius: "16px",
+                  boxShadow: "0 25px 60px -12px rgba(0, 0, 0, 0.85)",
+                  background: "#080B11",
+                }}
+                allow="fullscreen; autoplay; clipboard-write"
+              />
+            </div>
+          ) : stageMode === "canva-embed" ? (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                padding: "4px 8px 12px 8px",
+              }}
+            >
+              <iframe
+                src={canvaDeckUrl}
+                title={`${activeDeck.title} - Canva Master Deck`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  borderRadius: "16px",
+                  boxShadow: "0 25px 60px -12px rgba(0, 0, 0, 0.85)",
+                  background: "#080B11",
+                }}
+                allow="fullscreen; autoplay"
+              />
+            </div>
+          ) : (
+            <FreeformSlideStage
+              slide={activeSlide}
+              mode="presenter"
+              themeOverride={themeOverride}
+              onZoomImage={(src, caption) => setZoomedMedia({ src, caption })}
+              stepRevealCount={stepRevealCount}
+              soundEnabled={soundEnabled}
+              spotlightActive={spotlightActive}
+              spotlightPos={laserPos}
+            />
+          )}
 
           {/* Collapsible Speaker Notes Drawer */}
           {showSpeakerNotes && (
