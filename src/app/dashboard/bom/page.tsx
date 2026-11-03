@@ -7,6 +7,7 @@ import {
   collection,
   onSnapshot,
   doc,
+  getDoc,
   addDoc,
   updateDoc,
 } from "firebase/firestore";
@@ -90,13 +91,41 @@ function BOMDashboardContent() {
   // 1. "task_member": Task & Science Project BOMs created by members for tasks & school projects
   // 2. "store_admin": Master Lab / Store BOM connected to store inventory & admin procurement
   const queryMode = searchParams.get("mode");
-  const initialMode = queryMode === "task" || queryMode === "task_member" ? "task_member" : "task_member";
-  const [bomViewMode, setBomViewMode] = useState<"task_member" | "store_admin">(initialMode);
+  const [bomViewMode, setBomViewMode] = useState<"task_member" | "store_admin">(() => {
+    if (queryMode === "store" || queryMode === "store_admin") return "store_admin";
+    if (queryMode === "task" || queryMode === "task_member") return "task_member";
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("robobee_last_bom_view_mode");
+      if (saved === "store_admin" || saved === "task_member") return saved;
+    }
+    return "task_member";
+  });
+
+  const handleSwitchBOMMode = (mode: "task_member" | "store_admin") => {
+    setBomViewMode(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("robobee_last_bom_view_mode", mode);
+    }
+  };
 
   const [projects, setProjects] = useState<ProjectDoc[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(() => {
+    const qProjectId = searchParams.get("projectId");
+    if (qProjectId) return qProjectId;
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("robobee_last_selected_bom_project") || "";
+    }
+    return "";
+  });
+
+  const handleSelectProject = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("robobee_last_selected_bom_project", projectId);
+    }
+  };
 
   // New Project Form
   const [newProjectName, setNewProjectName] = useState("");
@@ -146,21 +175,29 @@ function BOMDashboardContent() {
       }));
       setProjects(items);
 
-      // Check URL query parameters for preferred project or task
+      // Check URL query parameters for preferred project or task, fallback to localStorage
       const qProjectId = searchParams.get("projectId");
       const qTaskId = searchParams.get("taskId");
+      const savedProjectId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("robobee_last_selected_bom_project")
+          : null;
 
       if (qProjectId && items.some((p) => p.id === qProjectId)) {
-        setSelectedProjectId(qProjectId);
+        handleSelectProject(qProjectId);
       } else if (qTaskId) {
         const matchingProject = items.find((p) => p.taskId === qTaskId);
         if (matchingProject) {
-          setSelectedProjectId(matchingProject.id);
+          handleSelectProject(matchingProject.id);
+        } else if (savedProjectId && items.some((p) => p.id === savedProjectId)) {
+          handleSelectProject(savedProjectId);
         } else if (items.length > 0 && !selectedProjectId) {
-          setSelectedProjectId(items[0].id);
+          handleSelectProject(items[0].id);
         }
+      } else if (savedProjectId && items.some((p) => p.id === savedProjectId)) {
+        handleSelectProject(savedProjectId);
       } else if (items.length > 0 && !selectedProjectId) {
-        setSelectedProjectId(items[0].id);
+        handleSelectProject(items[0].id);
       }
     });
 
@@ -293,7 +330,7 @@ function BOMDashboardContent() {
 
       setNewProjectName("");
       setNewProjectTaskId("");
-      setSelectedProjectId(docRef.id);
+      handleSelectProject(docRef.id);
       setIsProjectCreateOpen(false);
       showToast(`Created project "${newProjectName.trim()}" successfully!`);
     } catch (err: any) {
@@ -401,7 +438,7 @@ function BOMDashboardContent() {
     }
   };
 
-  // 5. Add Item to BOM
+  // 5. Add Item to BOM (Atomic, fresh-fetching, optimistic state update)
   const handleAddItemToBOM = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProjectId || quantity < 1 || !activeProject) return;
@@ -443,18 +480,75 @@ function BOMDashboardContent() {
     }
 
     try {
-      const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
-      currentBOM.push(newItem);
+      const projRef = doc(db, "projects", selectedProjectId);
+      const projSnap = await getDoc(projRef);
 
-      await updateDoc(doc(db, "projects", selectedProjectId), {
-        bom: currentBOM,
-        updatedAt: new Date().toISOString(),
+      // Fetch fresh BOM from server to avoid overwriting previously added components
+      const freshBOM: BOMItem[] =
+        projSnap.exists() && Array.isArray(projSnap.data().bom)
+          ? [...projSnap.data().bom]
+          : Array.isArray(activeProject.bom)
+          ? [...activeProject.bom]
+          : [];
+
+      // Append new item ensuring no duplicates by id
+      const updatedBOM = [...freshBOM.filter((it) => it.id !== newItem.id), newItem];
+      const nowIso = new Date().toISOString();
+
+      await updateDoc(projRef, {
+        bom: updatedBOM,
+        updatedAt: nowIso,
       });
 
-      // Auto-sync to task if linked
-      if (activeProject.taskId) {
-        const total = currentBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
-        supabase.from("tasks").update({ budget_bdt: total }).eq("id", activeProject.taskId).then(() => {}, () => {});
+      // Optimistically update React state immediately so subsequent clicks don't race
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === selectedProjectId ? { ...p, bom: updatedBOM, updatedAt: nowIso } : p
+        )
+      );
+
+      // Auto-sync to linked task (both budget_bdt and full itemized attachments)
+      const targetTaskId = activeProject.taskId || (projSnap.exists() ? projSnap.data().taskId : null);
+      if (targetTaskId) {
+        const total = updatedBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
+
+        supabase
+          .from("tasks")
+          .select("attachments")
+          .eq("id", targetTaskId)
+          .single()
+          .then(({ data: taskData }) => {
+            const rawAttachments = Array.isArray(taskData?.attachments) ? taskData.attachments : [];
+            const newBomAttachment = {
+              type: "project_bom",
+              projectId: selectedProjectId,
+              projectName: activeProject.name || (projSnap.exists() ? projSnap.data().name : "Project"),
+              totalCost: total,
+              itemsCount: updatedBOM.length,
+              items: updatedBOM.map((i) => ({
+                name: i.name,
+                category: i.category || "General",
+                quantity: i.quantity,
+                price: i.price,
+                totalCost: i.totalCost,
+                source: i.source,
+                status: i.status,
+              })),
+              syncedAt: nowIso,
+              syncedBy: user?.displayName || user?.email || "Team Member",
+            };
+
+            const updatedAttachments = [
+              ...rawAttachments.filter((a: any) => a?.type !== "project_bom"),
+              newBomAttachment,
+            ];
+
+            supabase
+              .from("tasks")
+              .update({ budget_bdt: total, attachments: updatedAttachments })
+              .eq("id", targetTaskId)
+              .then(() => {}, () => {});
+          }, () => {});
       }
 
       showToast(`Added "${newItem.name}" to BOM!`);
@@ -481,7 +575,7 @@ function BOMDashboardContent() {
     setIsItemFormOpen(true);
   };
 
-  // 6. Edit & Save Item
+  // 6. Edit & Save Item (Atomic with fresh document fetch)
   const handleOpenEdit = (item: BOMItem) => {
     setEditingItem(item);
     setEditName(item.name || "");
@@ -497,11 +591,21 @@ function BOMDashboardContent() {
     if (!editingItem || !activeProject) return;
 
     try {
-      const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
-      const updatedBOM = currentBOM.map((item) => {
+      const projRef = doc(db, "projects", selectedProjectId);
+      const projSnap = await getDoc(projRef);
+
+      const freshBOM: BOMItem[] =
+        projSnap.exists() && Array.isArray(projSnap.data().bom)
+          ? [...projSnap.data().bom]
+          : Array.isArray(activeProject.bom)
+          ? [...activeProject.bom]
+          : [];
+
+      const p = Number(editPrice) || 0;
+      const q = Number(editQuantity) || 1;
+
+      const updatedBOM = freshBOM.map((item) => {
         if (item.id === editingItem.id) {
-          const p = Number(editPrice) || 0;
-          const q = Number(editQuantity) || 1;
           return {
             ...item,
             name: editName.trim(),
@@ -516,15 +620,24 @@ function BOMDashboardContent() {
         return item;
       });
 
-      await updateDoc(doc(db, "projects", selectedProjectId), {
+      const nowIso = new Date().toISOString();
+      await updateDoc(projRef, {
         bom: updatedBOM,
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
       });
 
+      // Optimistically update React state
+      setProjects((prev) =>
+        prev.map((pr) =>
+          pr.id === selectedProjectId ? { ...pr, bom: updatedBOM, updatedAt: nowIso } : pr
+        )
+      );
+
       // Auto-sync to task if linked
-      if (activeProject.taskId) {
+      const targetTaskId = activeProject.taskId || (projSnap.exists() ? projSnap.data().taskId : null);
+      if (targetTaskId) {
         const total = updatedBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
-        supabase.from("tasks").update({ budget_bdt: total }).eq("id", activeProject.taskId).then(() => {}, () => {});
+        supabase.from("tasks").update({ budget_bdt: total }).eq("id", targetTaskId).then(() => {}, () => {});
       }
 
       setEditingItem(null);
@@ -535,24 +648,42 @@ function BOMDashboardContent() {
     }
   };
 
-  // 7. Delete Item
+  // 7. Delete Item (Atomic with fresh document fetch)
   const handleDeleteItem = async (itemId: string, itemName: string) => {
     if (!confirm(`Remove "${itemName}" from this project's BOM?`)) return;
     if (!activeProject) return;
 
     try {
-      const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
-      const updatedBOM = currentBOM.filter((item) => item.id !== itemId);
+      const projRef = doc(db, "projects", selectedProjectId);
+      const projSnap = await getDoc(projRef);
 
-      await updateDoc(doc(db, "projects", selectedProjectId), {
+      const freshBOM: BOMItem[] =
+        projSnap.exists() && Array.isArray(projSnap.data().bom)
+          ? [...projSnap.data().bom]
+          : Array.isArray(activeProject.bom)
+          ? [...activeProject.bom]
+          : [];
+
+      const updatedBOM = freshBOM.filter((item) => item.id !== itemId);
+      const nowIso = new Date().toISOString();
+
+      await updateDoc(projRef, {
         bom: updatedBOM,
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
       });
 
+      // Optimistically update React state
+      setProjects((prev) =>
+        prev.map((pr) =>
+          pr.id === selectedProjectId ? { ...pr, bom: updatedBOM, updatedAt: nowIso } : pr
+        )
+      );
+
       // Auto-sync to task if linked
-      if (activeProject.taskId) {
+      const targetTaskId = activeProject.taskId || (projSnap.exists() ? projSnap.data().taskId : null);
+      if (targetTaskId) {
         const total = updatedBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
-        supabase.from("tasks").update({ budget_bdt: total }).eq("id", activeProject.taskId).then(() => {}, () => {});
+        supabase.from("tasks").update({ budget_bdt: total }).eq("id", targetTaskId).then(() => {}, () => {});
       }
 
       showToast(`Removed "${itemName}" from BOM.`);
@@ -562,7 +693,7 @@ function BOMDashboardContent() {
     }
   };
 
-  // 8. Submit Requisition to Admin
+  // 8. Submit Requisition to Admin (Preserving fresh BOM items)
   const handleSubmitRequisition = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProject || neededItems.length === 0) return;
@@ -597,18 +728,36 @@ function BOMDashboardContent() {
         status: "pending",
       });
 
-      const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
-      const updatedBOM = currentBOM.map((item) => {
-        const isRequested = itemsToRequest.some((reqItem: any) => reqItem.id === item.id);
+      const projRef = doc(db, "projects", activeProject.id);
+      const projSnap = await getDoc(projRef);
+      const freshBOM: BOMItem[] =
+        projSnap.exists() && Array.isArray(projSnap.data().bom)
+          ? [...projSnap.data().bom]
+          : Array.isArray(activeProject.bom)
+          ? [...activeProject.bom]
+          : [];
+
+      const updatedBOM = freshBOM.map((item) => {
+        const isRequested = itemsToRequest.some(
+          (reqItem: any) => reqItem.id === item.id || reqItem.name.toLowerCase() === item.name.toLowerCase()
+        );
         if (isRequested) {
           return { ...item, status: "Requested" };
         }
         return item;
       });
 
-      await updateDoc(doc(db, "projects", activeProject.id), {
+      const nowIso = new Date().toISOString();
+      await updateDoc(projRef, {
         bom: updatedBOM,
+        updatedAt: nowIso,
       });
+
+      setProjects((prev) =>
+        prev.map((pr) =>
+          pr.id === activeProject.id ? { ...pr, bom: updatedBOM, updatedAt: nowIso } : pr
+        )
+      );
 
       showToast(`Procurement requisition for ${itemsToRequest.length} part(s) submitted to Admin!`);
       setIsRequisitionOpen(false);
@@ -779,7 +928,7 @@ function BOMDashboardContent() {
         >
           <button
             type="button"
-            onClick={() => setBomViewMode("task_member")}
+            onClick={() => handleSwitchBOMMode("task_member")}
             style={{
               padding: "0.55rem 1.15rem",
               borderRadius: "9px",
@@ -811,7 +960,7 @@ function BOMDashboardContent() {
 
           <button
             type="button"
-            onClick={() => setBomViewMode("store_admin")}
+            onClick={() => handleSwitchBOMMode("store_admin")}
             style={{
               padding: "0.55rem 1.15rem",
               borderRadius: "9px",
@@ -893,7 +1042,7 @@ function BOMDashboardContent() {
           <select
             className={styles.select}
             value={selectedProjectId}
-            onChange={(e) => setSelectedProjectId(e.target.value)}
+            onChange={(e) => handleSelectProject(e.target.value)}
           >
             {filteredProjects.length === 0 && <option value="">No projects in this category yet</option>}
             {filteredProjects.map((p) => (
