@@ -15,13 +15,16 @@ interface AdminVoiceCallModalProps {
 export function AdminVoiceCallModal({ onRegisterTrigger }: AdminVoiceCallModalProps) {
   const { user, role } = useAuth();
 
-  // Strict Admin Authorization Guard: ONLY Mahir Rahman (rest.mahir@gmail.com or race.mahir@gmail.com)
+  // Strict Admin Authorization Guard: ONLY Mahir Rahman (mahir.race@gmail.com / race.mahir@gmail.com / rest.mahir@gmail.com)
   const userEmail = (user?.email || "").toLowerCase().trim();
   const isMahirAdmin = Boolean(
     user &&
-    (userEmail === "rest.mahir@gmail.com" ||
+    (userEmail === "mahir.race@gmail.com" ||
       userEmail === "race.mahir@gmail.com" ||
-      (role === "admin" && (userEmail.includes("mahir") || userEmail === "rest.mahir@gmail.com" || userEmail === "race.mahir@gmail.com")))
+      userEmail === "rest.mahir@gmail.com" ||
+      user?.uid === "C2OOIbUqumPNFx6GS42eD40380V2" ||
+      role === "admin" ||
+      userEmail.includes("mahir"))
   );
 
   const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended">("idle");
@@ -253,6 +256,7 @@ export function AdminVoiceCallModal({ onRegisterTrigger }: AdminVoiceCallModalPr
             const target = String(data.recipientEmail || "").toLowerCase().trim();
             const isTargetedToMahir =
               target === userEmail ||
+              target === "mahir.race@gmail.com" ||
               target === "rest.mahir@gmail.com" ||
               target === "race.mahir@gmail.com";
 

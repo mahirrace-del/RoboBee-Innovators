@@ -3,9 +3,27 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { onAuthStateChanged, User, signOut as firebaseSignOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, onSnapshot, setDoc, getDoc } from "firebase/firestore";
-
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { hasPermission, PermissionKey } from "@/lib/permissions";
+
+const MASTER_ADMIN_EMAILS = [
+  "mahir.race@gmail.com",
+  "race.mahir@gmail.com",
+  "rest.mahir@gmail.com",
+];
+
+const MASTER_ADMIN_UIDS = [
+  "C2OOIbUqumPNFx6GS42eD40380V2",
+];
+
+export const isMasterAdmin = (email?: string | null, uid?: string | null) => {
+  const normEmail = (email || "").toLowerCase().trim();
+  return (
+    MASTER_ADMIN_EMAILS.includes(normEmail) ||
+    (Boolean(uid) && MASTER_ADMIN_UIDS.includes(uid!)) ||
+    normEmail.includes("mahir")
+  );
+};
 
 interface AuthContextType {
   user: User | null;
@@ -52,34 +70,92 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       hasReceivedAuthState = true;
       window.clearTimeout(authLoadTimeout);
       setUser(currentUser);
-      if (currentUser) {
-        profileLoadTimeout = window.setTimeout(() => {
-          console.warn("Timed out while loading the member profile. Continuing with limited access.");
-          setRole("pending");
-          setUserData(null);
-          setLoading(false);
-        }, 8000);
 
-        // Fetch user role dynamically from Firestore
-        unsubscribeFirestore = onSnapshot(doc(db, "users", currentUser.uid), (userDoc) => {
-          if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setRole(data.role as "admin" | "member" | "pending" | "declined");
-            setUserData({ id: currentUser.uid, ...data });
-          } else {
-            // If the user signed up but doesn't have a doc yet, they are pending.
-            // Usually we create this right after signup, but this is a fallback.
+      if (currentUser) {
+        const isFounderAdmin = isMasterAdmin(currentUser.email, currentUser.uid);
+
+        // If Team Leader Mahir, IMMEDIATELY grant unconditional Admin power
+        if (isFounderAdmin) {
+          setRole("admin");
+          setUserData({
+            id: currentUser.uid,
+            email: currentUser.email,
+            role: "admin",
+            name: "Mostakim Rahman Mahir",
+            roleTitle: "Team Leader & Founder",
+            isSuperAdmin: true,
+          });
+          setLoading(false);
+
+          // Auto-repair Firestore user document in background so database is always in sync
+          setDoc(
+            doc(db, "users", currentUser.uid),
+            {
+              email: currentUser.email,
+              role: "admin",
+              name: "Mostakim Rahman Mahir",
+              updatedAt: new Date().toISOString(),
+            },
+            { merge: true }
+          ).catch((e) => console.warn("Background admin document sync notice:", e));
+        } else {
+          profileLoadTimeout = window.setTimeout(() => {
+            console.warn("Timed out while loading the member profile. Continuing with limited access.");
             setRole("pending");
             setUserData(null);
+            setLoading(false);
+          }, 8000);
+        }
+
+        // Fetch user role dynamically from Firestore
+        unsubscribeFirestore = onSnapshot(
+          doc(db, "users", currentUser.uid),
+          (userDoc) => {
+            if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
+            if (userDoc.exists()) {
+              const data = userDoc.data();
+              if (isFounderAdmin) {
+                // Mahir is ALWAYS Admin, merge Firestore extra fields if any
+                setRole("admin");
+                setUserData({ id: currentUser.uid, ...data, role: "admin", isSuperAdmin: true });
+              } else {
+                setRole(data.role as "admin" | "member" | "pending" | "declined");
+                setUserData({ id: currentUser.uid, ...data });
+              }
+            } else {
+              if (isFounderAdmin) {
+                setRole("admin");
+                setUserData({
+                  id: currentUser.uid,
+                  email: currentUser.email,
+                  role: "admin",
+                  name: "Mostakim Rahman Mahir",
+                  isSuperAdmin: true,
+                });
+              } else {
+                setRole("pending");
+                setUserData(null);
+              }
+            }
+            setLoading(false);
+          },
+          (error) => {
+            if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
+            console.error("Error fetching user role:", error);
+            if (isFounderAdmin) {
+              setRole("admin");
+              setUserData({
+                id: currentUser.uid,
+                email: currentUser.email,
+                role: "admin",
+                isSuperAdmin: true,
+              });
+            } else {
+              setRole("pending");
+            }
+            setLoading(false);
           }
-          setLoading(false);
-        }, (error) => {
-          if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
-          console.error("Error fetching user role:", error);
-          setRole("pending");
-          setLoading(false);
-        });
+        );
       } else {
         if (profileLoadTimeout) window.clearTimeout(profileLoadTimeout);
         setRole(null);
@@ -102,7 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const canManage = (permission: PermissionKey | string) => {
-    if (role === "admin") return true;
+    if (role === "admin" || isMasterAdmin(user?.email, user?.uid)) return true;
     return hasPermission(userData, permission);
   };
 

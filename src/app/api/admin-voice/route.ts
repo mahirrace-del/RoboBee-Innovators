@@ -6,6 +6,7 @@ import { notifyTaskAssigned } from "@/lib/notifications";
 export const dynamic = "force-dynamic";
 
 const AUTHORIZED_ADMIN_EMAILS = [
+  "mahir.race@gmail.com",
   "race.mahir@gmail.com",
   "rest.mahir@gmail.com",
 ];

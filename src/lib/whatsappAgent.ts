@@ -848,6 +848,15 @@ Output ONLY valid JSON matching this schema:
       if (isCallReq) {
         try {
           await createNotification({
+            recipientEmail: "mahir.race@gmail.com",
+            recipientName: "Mahir Rahman",
+            title: "Executive Voice Call Request",
+            message: "Incoming live executive call requested via Messenger",
+            type: "trigger_voice_call",
+            link: "/dashboard",
+            senderName: "Messenger Gateway",
+          });
+          await createNotification({
             recipientEmail: "rest.mahir@gmail.com",
             recipientName: "Mahir Rahman",
             title: "Executive Voice Call Request",

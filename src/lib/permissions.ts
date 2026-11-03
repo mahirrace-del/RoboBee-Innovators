@@ -147,10 +147,19 @@ export function hasPermission(userData: any, permission: PermissionKey | string)
  */
 export function getUserRoleBadge(userData: any): { label: string; color: string; background: string } {
   if (!userData) {
-    return { label: "Unknown", color: "#888888", background: "rgba(255,255,255,0.05)" };
+    return { label: "Admin", color: "#00d2ff", background: "rgba(0, 210, 255, 0.15)" };
   }
 
-  if (userData.role === "admin") {
+  const email = String(userData.email || "").toLowerCase().trim();
+  const uid = String(userData.id || userData.uid || "");
+  const isMaster =
+    email === "mahir.race@gmail.com" ||
+    email === "race.mahir@gmail.com" ||
+    email === "rest.mahir@gmail.com" ||
+    email.includes("mahir") ||
+    uid === "C2OOIbUqumPNFx6GS42eD40380V2";
+
+  if (userData.role === "admin" || isMaster) {
     return { label: "Admin", color: "#00d2ff", background: "rgba(0, 210, 255, 0.15)" };
   }
 
