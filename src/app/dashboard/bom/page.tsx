@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import {
   collection,
   onSnapshot,
@@ -9,7 +10,9 @@ import {
   addDoc,
   updateDoc,
 } from "firebase/firestore";
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import styles from "./bom.module.css";
 import { STANDARD_INVENTORY_CATEGORIES } from "@/lib/portalRelations";
 import {
@@ -24,6 +27,11 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  ExternalLink,
+  Sparkles,
+  Link as LinkIcon,
+  ShoppingBag,
+  RefreshCw,
 } from "lucide-react";
 
 interface BOMItem {
@@ -39,20 +47,66 @@ interface BOMItem {
   expectedArrivalDate?: string;
 }
 
-export default function BOMDashboard() {
+export interface ProjectDoc {
+  id: string;
+  name: string;
+  title?: string;
+  bom?: BOMItem[];
+  bomType?: "store_admin" | "task_member";
+  taskId?: string | null;
+  taskTitle?: string | null;
+  studentName?: string | null;
+  schoolName?: string | null;
+  classGrade?: string | null;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Bangladesh Robotics Presets with standard local market pricing (BDT)
+const BD_ROBOTICS_PRESETS = [
+  { name: "Arduino Uno R3 (CH340)", category: "Microcontrollers", price: 600, source: "RoboShop BD" },
+  { name: "Arduino Nano Type-C", category: "Microcontrollers", price: 350, source: "TechShop BD" },
+  { name: "ESP32 NodeMCU (WiFi+BT)", category: "Microcontrollers", price: 550, source: "RoboShop BD" },
+  { name: "HC-SR04 Ultrasonic Sensor", category: "Sensors", price: 100, source: "RoboShop BD" },
+  { name: "SG90 Micro Servo 9g", category: "Motors & Actuators", price: 140, source: "TechShop BD" },
+  { name: "MG996R Metal Gear Servo", category: "Motors & Actuators", price: 500, source: "RoboShop BD" },
+  { name: "BO Gear Motor + Rubber Wheel (Pair)", category: "Motors & Actuators", price: 220, source: "Local Market" },
+  { name: "L298N Dual Motor Driver", category: "Power & Drivers", price: 200, source: "TechShop BD" },
+  { name: "6V Mini USB Submersible Water Pump", category: "Motors & Actuators", price: 150, source: "Local Market" },
+  { name: "Small Solar Panel 5V/6V", category: "Power & Drivers", price: 220, source: "Daraz" },
+  { name: "18650 Li-ion Batteries (2x) + Holder", category: "Power & Drivers", price: 400, source: "Local Market" },
+  { name: "400-Pt Breadboard + 40-pc Jumpers", category: "Prototyping", price: 180, source: "TechShop BD" },
+  { name: "IR Obstacle / Tracking Sensor Module", category: "Sensors", price: 60, source: "RoboShop BD" },
+  { name: "Soil Moisture Sensor Module", category: "Sensors", price: 90, source: "TechShop BD" },
+  { name: "MQ-2 Gas / Smoke Sensor Module", category: "Sensors", price: 140, source: "RoboShop BD" },
+];
+
+function BOMDashboardContent() {
   const { user, role } = useAuth();
+  const searchParams = useSearchParams();
 
-  const [projects, setProjects] = useState<any[]>([]);
+  // Two BOM Modes:
+  // 1. "task_member": Task & Science Project BOMs created by members for tasks & school projects
+  // 2. "store_admin": Master Lab / Store BOM connected to store inventory & admin procurement
+  const queryMode = searchParams.get("mode");
+  const initialMode = queryMode === "task" || queryMode === "task_member" ? "task_member" : "task_member";
+  const [bomViewMode, setBomViewMode] = useState<"task_member" | "store_admin">(initialMode);
+
+  const [projects, setProjects] = useState<ProjectDoc[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
-
+  const [tasks, setTasks] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
 
   // New Project Form
   const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectTaskId, setNewProjectTaskId] = useState("");
   const [isProjectCreateOpen, setIsProjectCreateOpen] = useState(false);
   const [isItemFormOpen, setIsItemFormOpen] = useState(false);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [isSyncingTask, setIsSyncingTask] = useState(false);
 
-  // Add Item to BOM Form (Custom or Inventory)
+  // Add Item to BOM Form
   const [addMode, setAddMode] = useState<"custom" | "inventory">("custom");
   const [selectedItemId, setSelectedItemId] = useState("");
   const [customName, setCustomName] = useState("");
@@ -75,6 +129,15 @@ export default function BOMDashboard() {
   const [requisitionNotes, setRequisitionNotes] = useState("");
   const [isSubmittingRequisition, setIsSubmittingRequisition] = useState(false);
 
+  // Feedback Toast
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (text: string, type: "success" | "error" = "success") => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  // 1. Listen to Projects & Inventory in Firestore
   useEffect(() => {
     const unsubProjects = onSnapshot(collection(db, "projects"), (snapshot) => {
       const items = snapshot.docs.map((d) => ({
@@ -82,7 +145,21 @@ export default function BOMDashboard() {
         ...(d.data() as any),
       }));
       setProjects(items);
-      if (items.length > 0 && !selectedProjectId) {
+
+      // Check URL query parameters for preferred project or task
+      const qProjectId = searchParams.get("projectId");
+      const qTaskId = searchParams.get("taskId");
+
+      if (qProjectId && items.some((p) => p.id === qProjectId)) {
+        setSelectedProjectId(qProjectId);
+      } else if (qTaskId) {
+        const matchingProject = items.find((p) => p.taskId === qTaskId);
+        if (matchingProject) {
+          setSelectedProjectId(matchingProject.id);
+        } else if (items.length > 0 && !selectedProjectId) {
+          setSelectedProjectId(items[0].id);
+        }
+      } else if (items.length > 0 && !selectedProjectId) {
         setSelectedProjectId(items[0].id);
       }
     });
@@ -100,34 +177,245 @@ export default function BOMDashboard() {
       unsubProjects();
       unsubInventory();
     };
-  }, [selectedProjectId]);
+  }, [searchParams]);
+
+  // 2. Fetch Tasks from Supabase for linking
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const { data, error } = await supabase
+          .from("tasks")
+          .select("id, title, student_name, school_name, class_grade, budget_bdt, attachments, stage, status")
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setTasks(data);
+
+          // If URL had taskId and no matching project exists, pre-fill form
+          const qTaskId = searchParams.get("taskId");
+          const qTaskTitle = searchParams.get("taskTitle");
+          if (qTaskId) {
+            const foundTask = data.find((t) => t.id === qTaskId);
+            if (foundTask) {
+              setNewProjectTaskId(foundTask.id);
+              setNewProjectName(foundTask.title);
+              setBomViewMode("task_member");
+            } else if (qTaskTitle) {
+              setNewProjectTaskId(qTaskId);
+              setNewProjectName(decodeURIComponent(qTaskTitle));
+              setBomViewMode("task_member");
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load tasks for BOM linking:", err);
+      }
+    }
+    fetchTasks();
+  }, [searchParams]);
+
+  // Filtered projects based on active BOM View Mode
+  const filteredProjects = useMemo(() => {
+    if (bomViewMode === "store_admin") {
+      // Show store/admin projects (or those without a specific taskId)
+      return projects.filter((p) => p.bomType !== "task_member" || !p.taskId);
+    } else {
+      // Show task & member projects
+      return projects.filter((p) => p.bomType === "task_member" || p.taskId || p.bomType !== "store_admin");
+    }
+  }, [projects, bomViewMode]);
+
+  // Ensure selectedProjectId points to a valid project in current mode
+  useEffect(() => {
+    if (filteredProjects.length > 0) {
+      if (!filteredProjects.some((p) => p.id === selectedProjectId)) {
+        setSelectedProjectId(filteredProjects[0].id);
+      }
+    }
+  }, [filteredProjects, selectedProjectId]);
 
   const activeProject = projects.find((p) => p.id === selectedProjectId);
+  const activeLinkedTask = useMemo(() => {
+    if (!activeProject?.taskId) return null;
+    return tasks.find((t) => t.id === activeProject.taskId) || null;
+  }, [activeProject, tasks]);
 
+  // Calculate costs
+  const totalProjectCost = useMemo(() => {
+    return activeProject?.bom?.reduce((acc: number, item: any) => acc + (Number(item.totalCost) || 0), 0) || 0;
+  }, [activeProject]);
+
+  const neededCost = useMemo(() => {
+    return (
+      activeProject?.bom
+        ?.filter((b: any) => b.status !== "In Stock")
+        ?.reduce((acc: number, item: any) => acc + (Number(item.totalCost) || 0), 0) || 0
+    );
+  }, [activeProject]);
+
+  const neededItems = useMemo(() => {
+    if (!activeProject?.bom) return [];
+    return activeProject.bom.filter(
+      (b: BOMItem) => b.status === "Needed" && b.source !== "Lab Inventory"
+    );
+  }, [activeProject]);
+
+  // 3. Create Project Handler (Allowed for ALL authenticated members)
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProjectName.trim()) return;
+    if (!newProjectName.trim()) {
+      showToast("Please enter a project name.", "error");
+      return;
+    }
 
-    const docRef = await addDoc(collection(db, "projects"), {
-      name: newProjectName.trim(),
-      bom: [],
-    });
-    setNewProjectName("");
-    setSelectedProjectId(docRef.id);
-    setIsProjectCreateOpen(false);
+    setIsCreatingProject(true);
+    try {
+      let linkedTaskInfo: any = null;
+      if (newProjectTaskId) {
+        linkedTaskInfo = tasks.find((t) => t.id === newProjectTaskId) || null;
+      }
+
+      const docRef = await addDoc(collection(db, "projects"), {
+        name: newProjectName.trim(),
+        title: newProjectName.trim(),
+        bom: [],
+        bomType: bomViewMode,
+        taskId: linkedTaskInfo?.id || newProjectTaskId || null,
+        taskTitle: linkedTaskInfo?.title || null,
+        studentName: linkedTaskInfo?.student_name || null,
+        schoolName: linkedTaskInfo?.school_name || null,
+        classGrade: linkedTaskInfo?.class_grade || null,
+        createdBy: user?.email || "Team Member",
+        createdByName: user?.displayName || user?.email?.split("@")[0] || "Team Member",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      setNewProjectName("");
+      setNewProjectTaskId("");
+      setSelectedProjectId(docRef.id);
+      setIsProjectCreateOpen(false);
+      showToast(`Created project "${newProjectName.trim()}" successfully!`);
+    } catch (err: any) {
+      console.error("Error creating project:", err);
+      showToast(`Failed to create project: ${err.message || "Permission error"}`, "error");
+    } finally {
+      setIsCreatingProject(false);
+    }
   };
 
+  // 4. Attach & Sync BOM directly to Task in Supabase & Firestore
+  const handleSyncBOMToTask = async (customTaskId?: string) => {
+    const targetTaskId = customTaskId || activeProject?.taskId;
+    if (!targetTaskId || !activeProject) {
+      showToast("Please select a task to link this BOM with.", "error");
+      return;
+    }
+
+    setIsSyncingTask(true);
+    try {
+      const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
+      const computedTotal = currentBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
+
+      // Fetch latest task record from Supabase
+      const { data: currentTask, error: fetchErr } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("id", targetTaskId)
+        .single();
+
+      if (fetchErr || !currentTask) {
+        throw new Error("Target task not found in database.");
+      }
+
+      const bomAttachment = {
+        type: "project_bom",
+        projectId: activeProject.id,
+        projectName: activeProject.name,
+        totalCost: computedTotal,
+        itemsCount: currentBOM.length,
+        items: currentBOM.map((i) => ({
+          name: i.name,
+          category: i.category || "General",
+          quantity: i.quantity,
+          price: i.price,
+          totalCost: i.totalCost,
+          source: i.source,
+          status: i.status,
+        })),
+        syncedAt: new Date().toISOString(),
+        syncedBy: user?.displayName || user?.email || "Team Member",
+      };
+
+      // Filter out any older BOM attachment for this task and attach new one
+      const rawAttachments = Array.isArray(currentTask.attachments) ? currentTask.attachments : [];
+      const updatedAttachments = [
+        ...rawAttachments.filter((a: any) => a?.type !== "project_bom"),
+        bomAttachment,
+      ];
+
+      // Update Supabase task record
+      const { error: updateErr } = await supabase
+        .from("tasks")
+        .update({
+          budget_bdt: computedTotal,
+          attachments: updatedAttachments,
+        })
+        .eq("id", targetTaskId);
+
+      if (updateErr) {
+        console.warn("Supabase task budget update warning:", updateErr);
+      }
+
+      // Update Firestore task record if mirrored
+      try {
+        await updateDoc(doc(db, "tasks", targetTaskId), {
+          budget_bdt: computedTotal,
+          attachments: updatedAttachments,
+        });
+      } catch {}
+
+      // Update Firestore project doc with taskId link
+      await updateDoc(doc(db, "projects", activeProject.id), {
+        taskId: targetTaskId,
+        taskTitle: currentTask.title,
+        studentName: currentTask.student_name,
+        classGrade: currentTask.class_grade,
+        bomType: "task_member",
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Update local task state
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === targetTaskId ? { ...t, budget_bdt: computedTotal, attachments: updatedAttachments } : t
+        )
+      );
+
+      showToast(`Attached BOM (৳${computedTotal.toLocaleString()} BDT) to Task "${currentTask.title}"!`);
+    } catch (err: any) {
+      console.error("Error syncing BOM to task:", err);
+      showToast(`Sync error: ${err.message || "Failed to attach"}`, "error");
+    } finally {
+      setIsSyncingTask(false);
+    }
+  };
+
+  // 5. Add Item to BOM
   const handleAddItemToBOM = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProjectId || quantity < 1) return;
+    if (!selectedProjectId || quantity < 1 || !activeProject) return;
 
     let newItem: BOMItem | null = null;
 
     if (addMode === "inventory") {
       const item = inventory.find((i) => i.id === selectedItemId);
-      if (!item) return;
+      if (!item) {
+        showToast("Please choose an inventory item.", "error");
+        return;
+      }
       newItem = {
-        id: Date.now().toString(),
+        id: `bom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         itemId: item.id,
         name: item.name,
         category: item.category || "General",
@@ -138,9 +426,12 @@ export default function BOMDashboard() {
         status: "In Stock",
       };
     } else {
-      if (!customName.trim() || customPrice < 0) return;
+      if (!customName.trim()) {
+        showToast("Please enter a component name.", "error");
+        return;
+      }
       newItem = {
-        id: Date.now().toString(),
+        id: `bom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         name: customName.trim(),
         category: customCategory || "General",
         price: Number(customPrice) || 0,
@@ -151,23 +442,46 @@ export default function BOMDashboard() {
       };
     }
 
-    if (newItem && activeProject) {
+    try {
       const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
       currentBOM.push(newItem);
+
       await updateDoc(doc(db, "projects", selectedProjectId), {
         bom: currentBOM,
+        updatedAt: new Date().toISOString(),
       });
-    }
 
-    // Reset form
-    setCustomName("");
-    setCustomPrice(0);
-    setSelectedItemId("");
-    setQuantity(1);
-    setIsItemFormOpen(false);
+      // Auto-sync to task if linked
+      if (activeProject.taskId) {
+        const total = currentBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
+        supabase.from("tasks").update({ budget_bdt: total }).eq("id", activeProject.taskId).then(() => {}, () => {});
+      }
+
+      showToast(`Added "${newItem.name}" to BOM!`);
+
+      // Reset item form
+      setCustomName("");
+      setCustomPrice(0);
+      setSelectedItemId("");
+      setQuantity(1);
+      setIsItemFormOpen(false);
+    } catch (err: any) {
+      console.error("Error adding item to BOM:", err);
+      showToast(`Failed to add item: ${err.message || "Permission error"}`, "error");
+    }
   };
 
-  // Open Edit Modal
+  // Quick Preset Selection
+  const handleApplyPreset = (preset: (typeof BD_ROBOTICS_PRESETS)[0]) => {
+    setAddMode("custom");
+    setCustomName(preset.name);
+    setCustomCategory(preset.category);
+    setCustomPrice(preset.price);
+    setCustomSource(preset.source);
+    setIsItemFormOpen(true);
+  };
+
+  // 6. Edit & Save Item
   const handleOpenEdit = (item: BOMItem) => {
     setEditingItem(item);
     setEditName(item.name || "");
@@ -178,67 +492,77 @@ export default function BOMDashboard() {
     setEditStatus(item.status || "Needed");
   };
 
-  // Save Edited Item
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem || !activeProject) return;
 
-    const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
-    const updatedBOM = currentBOM.map((item) => {
-      if (item.id === editingItem.id) {
-        const p = Number(editPrice) || 0;
-        const q = Number(editQuantity) || 1;
-        return {
-          ...item,
-          name: editName.trim(),
-          category: editCategory,
-          source: editSource,
-          price: p,
-          quantity: q,
-          totalCost: p * q,
-          status: editStatus,
-        };
-      }
-      return item;
-    });
+    try {
+      const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
+      const updatedBOM = currentBOM.map((item) => {
+        if (item.id === editingItem.id) {
+          const p = Number(editPrice) || 0;
+          const q = Number(editQuantity) || 1;
+          return {
+            ...item,
+            name: editName.trim(),
+            category: editCategory,
+            source: editSource,
+            price: p,
+            quantity: q,
+            totalCost: p * q,
+            status: editStatus,
+          };
+        }
+        return item;
+      });
 
-    await updateDoc(doc(db, "projects", selectedProjectId), {
-      bom: updatedBOM,
-    });
-    setEditingItem(null);
+      await updateDoc(doc(db, "projects", selectedProjectId), {
+        bom: updatedBOM,
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Auto-sync to task if linked
+      if (activeProject.taskId) {
+        const total = updatedBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
+        supabase.from("tasks").update({ budget_bdt: total }).eq("id", activeProject.taskId).then(() => {}, () => {});
+      }
+
+      setEditingItem(null);
+      showToast("BOM item updated!");
+    } catch (err: any) {
+      console.error("Error saving edit:", err);
+      showToast(`Error updating item: ${err.message}`, "error");
+    }
   };
 
-  // Delete Item from BOM
+  // 7. Delete Item
   const handleDeleteItem = async (itemId: string, itemName: string) => {
     if (!confirm(`Remove "${itemName}" from this project's BOM?`)) return;
     if (!activeProject) return;
 
-    const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
-    const updatedBOM = currentBOM.filter((item) => item.id !== itemId);
+    try {
+      const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
+      const updatedBOM = currentBOM.filter((item) => item.id !== itemId);
 
-    await updateDoc(doc(db, "projects", selectedProjectId), {
-      bom: updatedBOM,
-    });
+      await updateDoc(doc(db, "projects", selectedProjectId), {
+        bom: updatedBOM,
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Auto-sync to task if linked
+      if (activeProject.taskId) {
+        const total = updatedBOM.reduce((acc, it) => acc + (Number(it.totalCost) || 0), 0);
+        supabase.from("tasks").update({ budget_bdt: total }).eq("id", activeProject.taskId).then(() => {}, () => {});
+      }
+
+      showToast(`Removed "${itemName}" from BOM.`);
+    } catch (err: any) {
+      console.error("Error removing item:", err);
+      showToast(`Error deleting item: ${err.message}`, "error");
+    }
   };
 
-  // Items needing procurement (status is Needed and not already from Lab Inventory)
-  const neededItems = useMemo(() => {
-    if (!activeProject?.bom) return [];
-    return activeProject.bom.filter(
-      (b: BOMItem) => b.status === "Needed" && b.source !== "Lab Inventory"
-    );
-  }, [activeProject]);
-
-  const totalProjectCost =
-    activeProject?.bom?.reduce((acc: number, item: any) => acc + (Number(item.totalCost) || 0), 0) || 0;
-
-  // New Funds Needed: all items that are NOT yet "In Stock"
-  const neededCost =
-    activeProject?.bom
-      ?.filter((b: any) => b.status !== "In Stock")
-      .reduce((acc: number, item: any) => acc + (Number(item.totalCost) || 0), 0) || 0;
-
-  // Submit Requisition to Admin
+  // 8. Submit Requisition to Admin
   const handleSubmitRequisition = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProject || neededItems.length === 0) return;
@@ -256,12 +580,8 @@ export default function BOMDashboard() {
         status: "Needed",
       }));
 
-      const reqTotal = itemsToRequest.reduce(
-        (sum: number, i: any) => sum + i.totalCost,
-        0
-      );
+      const reqTotal = itemsToRequest.reduce((sum: number, i: any) => sum + i.totalCost, 0);
 
-      // Add to partRequests collection
       await addDoc(collection(db, "partRequests"), {
         type: "bom_procurement",
         projectId: activeProject.id,
@@ -277,7 +597,6 @@ export default function BOMDashboard() {
         status: "pending",
       });
 
-      // Update BOM items in this project to "Requested"
       const currentBOM: BOMItem[] = Array.isArray(activeProject.bom) ? [...activeProject.bom] : [];
       const updatedBOM = currentBOM.map((item) => {
         const isRequested = itemsToRequest.some((reqItem: any) => reqItem.id === item.id);
@@ -291,14 +610,12 @@ export default function BOMDashboard() {
         bom: updatedBOM,
       });
 
-      alert(
-        `Procurement request for ${itemsToRequest.length} part(s) has been submitted to Admin!`
-      );
+      showToast(`Procurement requisition for ${itemsToRequest.length} part(s) submitted to Admin!`);
       setIsRequisitionOpen(false);
       setRequisitionNotes("");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error submitting requisition:", err);
-      alert("Failed to submit requisition. Please try again.");
+      showToast(`Failed to submit requisition: ${err.message || "Error"}`, "error");
     } finally {
       setIsSubmittingRequisition(false);
     }
@@ -371,7 +688,6 @@ export default function BOMDashboard() {
       );
     }
 
-    // Default "Needed" or other
     return (
       <span
         style={{
@@ -395,11 +711,171 @@ export default function BOMDashboard() {
 
   return (
     <div className={styles.container}>
+      {/* Toast Alert Notification */}
+      {toastMessage && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "1.5rem",
+            right: "1.5rem",
+            zIndex: 9999,
+            padding: "0.75rem 1.25rem",
+            borderRadius: "10px",
+            background: toastMessage.type === "success" ? "#065f46" : "#b91c1c",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: "0.86rem",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          {toastMessage.type === "success" ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+          <span>{toastMessage.text}</span>
+        </div>
+      )}
+
+      {/* Page Header */}
       <div className={styles.header}>
-        <h1>Project Budgets & BOM</h1>
-        <p>Plan robot builds, track required purchases, and estimate total competition costs.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+          <div>
+            <h1>Project Budgets & Bills of Material (BOM)</h1>
+            <p>Plan robot builds, calculate part costing in BDT, and attach itemized bills directly to assigned tasks.</p>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <Link
+              href="/dashboard/tasks"
+              style={{
+                padding: "0.45rem 0.85rem",
+                borderRadius: "8px",
+                border: "1px solid #dfd7cc",
+                background: "#fff",
+                color: "#4a4039",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+              }}
+            >
+              <span>View Tasks Board</span>
+              <ExternalLink size={13} />
+            </Link>
+          </div>
+        </div>
+
+        {/* Top Segmented Controls: Two BOM Options */}
+        <div
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            marginTop: "1.25rem",
+            borderBottom: "2px solid #e6dfd5",
+            paddingBottom: "0.75rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setBomViewMode("task_member")}
+            style={{
+              padding: "0.55rem 1.15rem",
+              borderRadius: "9px",
+              fontWeight: 700,
+              fontSize: "0.86rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.45rem",
+              background: bomViewMode === "task_member" ? "#7A1C24" : "#f8f6f2",
+              color: bomViewMode === "task_member" ? "#fff" : "#4a4039",
+              border: bomViewMode === "task_member" ? "1px solid #7A1C24" : "1px solid #dfd7cc",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <Layers size={16} />
+            <span>Task & Science Project BOM</span>
+            <span
+              style={{
+                fontSize: "0.7rem",
+                padding: "0.1rem 0.4rem",
+                borderRadius: "10px",
+                background: bomViewMode === "task_member" ? "rgba(255,255,255,0.25)" : "#e6dfd5",
+              }}
+            >
+              For Members & Tasks
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setBomViewMode("store_admin")}
+            style={{
+              padding: "0.55rem 1.15rem",
+              borderRadius: "9px",
+              fontWeight: 700,
+              fontSize: "0.86rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.45rem",
+              background: bomViewMode === "store_admin" ? "#7A1C24" : "#f8f6f2",
+              color: bomViewMode === "store_admin" ? "#fff" : "#4a4039",
+              border: bomViewMode === "store_admin" ? "1px solid #7A1C24" : "1px solid #dfd7cc",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <Package size={16} />
+            <span>Master Lab / Store BOM</span>
+            <span
+              style={{
+                fontSize: "0.7rem",
+                padding: "0.1rem 0.4rem",
+                borderRadius: "10px",
+                background: bomViewMode === "store_admin" ? "rgba(255,255,255,0.25)" : "#e6dfd5",
+              }}
+            >
+              Store & Admin Requisitions
+            </span>
+          </button>
+        </div>
       </div>
 
+      {/* Mode Sub-banner */}
+      <div
+        style={{
+          marginBottom: "1rem",
+          padding: "0.6rem 0.95rem",
+          borderRadius: "8px",
+          background: bomViewMode === "task_member" ? "#fef3c7" : "#ecfdf5",
+          border: bomViewMode === "task_member" ? "1px solid #fde68a" : "1px solid #a7f3d0",
+          fontSize: "0.82rem",
+          color: bomViewMode === "task_member" ? "#92400e" : "#065f46",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+        }}
+      >
+        {bomViewMode === "task_member" ? (
+          <>
+            <Layers size={15} />
+            <span>
+              <strong>Task & Science Project BOM Mode:</strong> Select or create a project bill, add components needed for the build, and attach it to the assigned Task so Mahir and mentors can review the bills upon completion.
+            </span>
+          </>
+        ) : (
+          <>
+            <ShoppingBag size={15} />
+            <span>
+              <strong>Master Lab Store BOM Mode:</strong> Manage standard lab builds, track in-stock inventory vs new parts required, and dispatch procurement requisitions directly to Admin.
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Project Selector & Creation Bar */}
       <div
         className={styles.panel}
         style={{
@@ -410,18 +886,19 @@ export default function BOMDashboard() {
           flexWrap: "wrap",
         }}
       >
-        <div style={{ flex: 1, minWidth: "240px" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)" }}>
-            Select Project
+        <div style={{ flex: 1, minWidth: "260px" }}>
+          <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 700, fontSize: "0.8rem", color: "#5c5149" }}>
+            Select Project ({filteredProjects.length} available)
           </label>
           <select
             className={styles.select}
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
           >
-            {projects.map((p) => (
+            {filteredProjects.length === 0 && <option value="">No projects in this category yet</option>}
+            {filteredProjects.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name || p.title || "Untitled Project"}
+                {p.name || p.title || "Untitled Project"} {p.taskId ? "• [Linked to Task]" : ""}
               </option>
             ))}
           </select>
@@ -434,33 +911,87 @@ export default function BOMDashboard() {
           onClick={() => setIsProjectCreateOpen((open) => !open)}
           aria-expanded={isProjectCreateOpen}
         >
-          {isProjectCreateOpen ? "Close Form" : "New Project"}
+          <Plus size={15} />
+          <span>{isProjectCreateOpen ? "Cancel" : "New Project BOM"}</span>
         </button>
 
+        {/* Project Create Drawer / Inline Form */}
         {isProjectCreateOpen && (
           <form
             onSubmit={handleCreateProject}
-            style={{ display: "flex", gap: "1rem", flex: "1 1 360px" }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.6rem",
+              flex: "1 1 100%",
+              background: "#fff",
+              padding: "1rem",
+              borderRadius: "10px",
+              border: "1px solid #dfd7cc",
+              marginTop: "0.5rem",
+            }}
           >
-            <div style={{ flex: 1 }}>
-              <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)" }}>
-                Create New Project
-              </label>
-              <input
-                className={styles.input}
-                style={{ marginBottom: 0 }}
-                placeholder="e.g. RoboCup 2026 Build"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-              />
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: "260px" }}>
+                <label style={{ display: "block", marginBottom: "0.35rem", fontWeight: 700, fontSize: "0.78rem", color: "#5c5149" }}>
+                  Project Name
+                </label>
+                <input
+                  className={styles.input}
+                  style={{ marginBottom: 0 }}
+                  placeholder="e.g. Smart House with Rain Sensor & Street Light"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  required
+                />
+              </div>
+
+              {bomViewMode === "task_member" && (
+                <div style={{ flex: 1, minWidth: "260px" }}>
+                  <label style={{ display: "block", marginBottom: "0.35rem", fontWeight: 700, fontSize: "0.78rem", color: "#5c5149" }}>
+                    Link to Assigned Task (Optional)
+                  </label>
+                  <select
+                    className={styles.select}
+                    value={newProjectTaskId}
+                    onChange={(e) => {
+                      const tId = e.target.value;
+                      setNewProjectTaskId(tId);
+                      if (tId && !newProjectName.trim()) {
+                        const t = tasks.find((item) => item.id === tId);
+                        if (t) setNewProjectName(t.title);
+                      }
+                    }}
+                  >
+                    <option value="">-- Standalone Science Project --</option>
+                    {tasks.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.title} {t.student_name ? `(${t.student_name})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
-            <button
-              type="submit"
-              className={styles.btn}
-              style={{ width: "auto", whiteSpace: "nowrap" }}
-            >
-              Create
-            </button>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", marginTop: "0.4rem" }}>
+              <button
+                type="button"
+                className={styles.btnSecondary}
+                onClick={() => setIsProjectCreateOpen(false)}
+                style={{ width: "auto" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className={styles.btn}
+                style={{ width: "auto" }}
+                disabled={isCreatingProject || !newProjectName.trim()}
+              >
+                {isCreatingProject ? "Creating..." : "Create Project"}
+              </button>
+            </div>
           </form>
         )}
       </div>
@@ -469,6 +1000,121 @@ export default function BOMDashboard() {
         <div className={styles.panels}>
           <div style={{ gridColumn: "span 2" }}>
             <div className={styles.panel}>
+              {/* Linked Task Metadata Banner */}
+              {activeProject.taskId ? (
+                <div
+                  style={{
+                    padding: "0.75rem 1rem",
+                    marginBottom: "1.25rem",
+                    borderRadius: "10px",
+                    background: "#f0fdf4",
+                    border: "1px solid #bbf7d0",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "0.6rem",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <LinkIcon size={16} color="#059669" />
+                    <div>
+                      <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#065f46" }}>
+                        Linked to Task: {activeProject.taskTitle || activeLinkedTask?.title || "Assigned Task"}
+                      </div>
+                      <div style={{ fontSize: "0.76rem", color: "#166534", marginTop: "0.15rem" }}>
+                        {activeProject.studentName && <span>Student: <strong>{activeProject.studentName}</strong> • </span>}
+                        {activeProject.classGrade && <span>Class: <strong>{activeProject.classGrade}</strong> • </span>}
+                        {activeProject.schoolName && <span>School: <strong>{activeProject.schoolName}</strong> • </span>}
+                        <span>Synced Budget: <strong>৳{totalProjectCost.toLocaleString()} BDT</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.45rem", alignItems: "center" }}>
+                    <button
+                      type="button"
+                      onClick={() => handleSyncBOMToTask()}
+                      disabled={isSyncingTask}
+                      style={{
+                        padding: "0.35rem 0.75rem",
+                        borderRadius: "7px",
+                        background: "#059669",
+                        color: "#fff",
+                        fontSize: "0.76rem",
+                        fontWeight: 700,
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
+                      }}
+                      title="Sync this BOM parts list and total BDT to the task"
+                    >
+                      <RefreshCw size={13} className={isSyncingTask ? "animate-spin" : ""} />
+                      <span>{isSyncingTask ? "Syncing..." : "Sync to Task"}</span>
+                    </button>
+
+                    <Link
+                      href="/dashboard/tasks"
+                      style={{
+                        padding: "0.35rem 0.65rem",
+                        borderRadius: "7px",
+                        background: "#fff",
+                        border: "1px solid #a7f3d0",
+                        color: "#065f46",
+                        fontSize: "0.76rem",
+                        fontWeight: 700,
+                        textDecoration: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
+                      }}
+                    >
+                      <span>Open Task</span>
+                      <ExternalLink size={12} />
+                    </Link>
+                  </div>
+                </div>
+              ) : bomViewMode === "task_member" ? (
+                <div
+                  style={{
+                    padding: "0.6rem 0.85rem",
+                    marginBottom: "1.25rem",
+                    borderRadius: "8px",
+                    background: "#f8f6f2",
+                    border: "1px dashed #d6cec2",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "0.6rem",
+                  }}
+                >
+                  <div style={{ fontSize: "0.8rem", color: "#5c5149" }}>
+                    This project is not currently attached to a task. You can link it to an assigned sprint task below:
+                  </div>
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                    <select
+                      className={styles.select}
+                      style={{ padding: "0.3rem 0.5rem", fontSize: "0.78rem" }}
+                      onChange={(e) => {
+                        if (e.target.value) handleSyncBOMToTask(e.target.value);
+                      }}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>-- Link to a Task --</option>
+                      {tasks.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.title} {t.student_name ? `(${t.student_name})` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Title & Cost Summary */}
               <div
                 style={{
                   display: "flex",
@@ -480,14 +1126,11 @@ export default function BOMDashboard() {
                 }}
               >
                 <div>
-                  <h2
-                    className={styles.sectionTitle}
-                    style={{ marginBottom: "0.25rem", color: "#27211d" }}
-                  >
-                    {activeProject.name || activeProject.title} - Bill of Materials
+                  <h2 className={styles.sectionTitle} style={{ marginBottom: "0.25rem", color: "#27211d" }}>
+                    {activeProject.name || activeProject.title} — Bill of Materials
                   </h2>
                   <div style={{ fontSize: "0.85rem", color: "#6f665e" }}>
-                    {activeProject.bom?.length || 0} total part(s) listed for this robot build.
+                    {activeProject.bom?.length || 0} component(s) listed • Created by: {activeProject.createdBy || "Team"}
                   </div>
                 </div>
 
@@ -502,7 +1145,7 @@ export default function BOMDashboard() {
                       }}
                     >
                       Total Est: <span style={{ marginRight: "0.2rem" }}>৳</span>
-                      {totalProjectCost.toLocaleString()}
+                      {totalProjectCost.toLocaleString()} BDT
                     </div>
                     <div
                       style={{
@@ -520,6 +1163,7 @@ export default function BOMDashboard() {
                     </div>
                   </div>
 
+                  {/* Requisition Button (for Store/Admin procurement) */}
                   {neededItems.length > 0 && (
                     <button
                       type="button"
@@ -534,6 +1178,40 @@ export default function BOMDashboard() {
                 </div>
               </div>
 
+              {/* Quick Preset Components Bar */}
+              <div style={{ marginBottom: "1.25rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.45rem", fontSize: "0.78rem", fontWeight: 700, color: "#5c5149" }}>
+                  <Sparkles size={13} color="#d97706" />
+                  <span>Quick Add Standard Bangladesh Robotics Parts:</span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+                  {BD_ROBOTICS_PRESETS.map((p, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleApplyPreset(p)}
+                      style={{
+                        padding: "0.25rem 0.55rem",
+                        borderRadius: "6px",
+                        border: "1px solid #dfd7cc",
+                        background: "#fdfbf7",
+                        fontSize: "0.74rem",
+                        color: "#4a4039",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
+                      }}
+                      title={`Quick add ${p.name} (৳${p.price} BDT)`}
+                    >
+                      <span>{p.name}</span>
+                      <span style={{ fontWeight: 700, color: "#7A1C24" }}>৳{p.price}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* BOM Table */}
               <div style={{ overflowX: "auto" }}>
                 <table
                   className={styles.table}
@@ -546,362 +1224,285 @@ export default function BOMDashboard() {
                 >
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--border-subtle, #dfd7cc)" }}>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem" }}>
+                      <th style={{ padding: "0.85rem 1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
                         Part Name
                       </th>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem" }}>
+                      <th style={{ padding: "0.85rem 1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
                         Category
                       </th>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem" }}>
-                        Source
+                      <th style={{ padding: "0.85rem 1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
+                        Source / Vendor
                       </th>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem" }}>
-                        Unit Cost
+                      <th style={{ padding: "0.85rem 1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
+                        Unit Cost (BDT)
                       </th>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem" }}>
-                        Qty
+                      <th style={{ padding: "0.85rem 1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
+                        Quantity
                       </th>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem" }}>
+                      <th style={{ padding: "0.85rem 1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
                         Total Cost
                       </th>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem" }}>
+                      <th style={{ padding: "0.85rem 1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
                         Status
                       </th>
-                      <th style={{ padding: "1rem", color: "#6f665e", fontWeight: 700, fontSize: "0.88rem", textAlign: "right" }}>
+                      <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#6f665e", fontWeight: 700, fontSize: "0.86rem" }}>
                         Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {activeProject.bom?.length > 0 ? (
-                      activeProject.bom.map((b: any, idx: number) => (
-                        <tr
-                          key={b.id || idx}
-                          style={{ borderBottom: "1px solid var(--border-subtle, #dfd7cc)" }}
-                        >
-                          <td
-                            className={styles.partName}
-                            style={{ padding: "1rem", fontWeight: "bold", color: "#27211d" }}
-                          >
-                            {b.name}
-                          </td>
-                          <td style={{ padding: "1rem", color: "#6f665e", fontSize: "0.85rem" }}>
-                            <span
-                              style={{
-                                background: "rgba(0, 0, 0, 0.04)",
-                                padding: "0.2rem 0.55rem",
-                                borderRadius: "4px",
-                                border: "1px solid var(--border-subtle, #dfd7cc)",
-                              }}
-                            >
-                              {b.category || "General"}
-                            </span>
-                          </td>
-                          <td
-                            className={styles.partSource}
-                            style={{ padding: "1rem", color: "#6f665e" }}
-                          >
-                            {b.source}
-                          </td>
-                          <td
-                            className={styles.partPrice}
-                            style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "#27211d" }}
-                          >
-                            <span style={{ marginRight: "0.2rem" }}>৳</span>
-                            {(Number(b.price) || 0).toLocaleString()}
-                          </td>
-                          <td
-                            className={styles.partQty}
-                            style={{ padding: "1rem", color: "#27211d", fontWeight: 600 }}
-                          >
-                            {b.quantity}
-                          </td>
-                          <td
-                            style={{
-                              padding: "1rem",
-                              color: "var(--brand-burgundy, #84243a)",
-                              fontWeight: "700",
-                              fontFamily: "var(--font-mono)",
-                            }}
-                          >
-                            <span style={{ marginRight: "0.2rem" }}>৳</span>
-                            {(Number(b.totalCost) || (Number(b.price) || 0) * (Number(b.quantity) || 1)).toLocaleString()}
-                          </td>
-                          <td style={{ padding: "1rem" }}>
-                            {renderStatusBadge(b.status, b.expectedArrivalDate)}
-                          </td>
-                          <td style={{ padding: "1rem", textAlign: "right", whiteSpace: "nowrap" }}>
-                            <div style={{ display: "inline-flex", gap: "0.4rem" }}>
-                              <button
-                                type="button"
-                                className={`${styles.actionBtn} ${styles.editBtn}`}
-                                onClick={() => handleOpenEdit(b)}
-                                title="Edit Part details"
-                              >
-                                <Pencil size={13} />
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                                onClick={() => handleDeleteItem(b.id, b.name)}
-                                title="Delete Part from BOM"
-                              >
-                                <Trash2 size={13} />
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
+                    {(!activeProject.bom || activeProject.bom.length === 0) && (
                       <tr>
-                        <td
-                          colSpan={8}
-                          style={{ padding: "2.5rem", textAlign: "center", color: "#6f665e" }}
-                        >
-                          No items added to this project&apos;s BOM yet. Use the form below to add components.
+                        <td colSpan={8} style={{ padding: "2.5rem 1rem", textAlign: "center", color: "#7c7067" }}>
+                          No components added yet. Use the quick presets above or the form on the right to add parts to this Bill of Materials.
                         </td>
                       </tr>
                     )}
+                    {activeProject.bom?.map((item: BOMItem) => (
+                      <tr
+                        key={item.id}
+                        style={{ borderBottom: "1px solid rgba(0,0,0,0.05)", transition: "background 0.15s ease" }}
+                      >
+                        <td style={{ padding: "0.85rem 1rem", fontWeight: 600 }}>{item.name}</td>
+                        <td style={{ padding: "0.85rem 1rem", color: "#6f665e" }}>{item.category || "General"}</td>
+                        <td style={{ padding: "0.85rem 1rem", color: "#6f665e" }}>{item.source}</td>
+                        <td style={{ padding: "0.85rem 1rem", fontFamily: "var(--font-mono)" }}>
+                          ৳{(Number(item.price) || 0).toLocaleString()}
+                        </td>
+                        <td style={{ padding: "0.85rem 1rem", fontWeight: 600 }}>{item.quantity}</td>
+                        <td
+                          style={{
+                            padding: "0.85rem 1rem",
+                            fontFamily: "var(--font-mono)",
+                            fontWeight: 700,
+                            color: "var(--brand-burgundy, #84243a)",
+                          }}
+                        >
+                          ৳{(Number(item.totalCost) || 0).toLocaleString()}
+                        </td>
+                        <td style={{ padding: "0.85rem 1rem" }}>
+                          {renderStatusBadge(item.status, item.expectedArrivalDate)}
+                        </td>
+                        <td style={{ padding: "0.85rem 1rem", textAlign: "right" }}>
+                          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
+                            <button
+                              type="button"
+                              className={styles.actionBtn}
+                              onClick={() => handleOpenEdit(item)}
+                              title="Edit Item"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.actionBtn}
+                              style={{ color: "#dc2626" }}
+                              onClick={() => handleDeleteItem(item.id, item.name)}
+                              title="Remove Item"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
 
-          <div style={{ gridColumn: "span 2" }}>
-            <div className={styles.bomActionHeader}>
-              <h2 className={styles.sectionTitle} style={{ color: "#27211d" }}>
-                Add Part to BOM
+          {/* Right Panel: Add Component Form */}
+          <div>
+            <div className={styles.panel}>
+              <h2 className={styles.sectionTitle} style={{ marginBottom: "1rem", color: "#27211d" }}>
+                Add Component to BOM
               </h2>
-              <button
-                type="button"
-                className={styles.btn}
-                style={{ width: "auto" }}
-                onClick={() => setIsItemFormOpen((open) => !open)}
-                aria-expanded={isItemFormOpen}
-                aria-controls="bom-item-form"
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.5rem",
+                  marginBottom: "1rem",
+                  background: "var(--bg-main, #f8f6f2)",
+                  padding: "0.25rem",
+                  borderRadius: "var(--radius-md)",
+                }}
               >
-                {isItemFormOpen ? "Close Form" : "+ Add Component"}
-              </button>
-            </div>
-
-            {isItemFormOpen && (
-              <div id="bom-item-form" className={styles.panel} style={{ marginTop: "1rem" }}>
-                <div
+                <button
+                  type="button"
                   style={{
-                    display: "flex",
-                    gap: "1rem",
-                    marginBottom: "1.5rem",
-                    flexWrap: "wrap",
+                    flex: 1,
+                    padding: "0.45rem",
+                    border: "none",
+                    borderRadius: "var(--radius-sm)",
+                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                    background: addMode === "custom" ? "#fff" : "transparent",
+                    color: addMode === "custom" ? "#27211d" : "#6f665e",
+                    boxShadow: addMode === "custom" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                    cursor: "pointer",
                   }}
+                  onClick={() => setAddMode("custom")}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setAddMode("custom")}
-                    className={styles.btn}
-                    style={{
-                      background: addMode === "custom" ? "var(--accent-primary)" : "var(--bg-elevated)",
-                      color: addMode === "custom" ? "#fff" : "#27211d",
-                      width: "auto",
-                      border: addMode === "custom" ? "none" : "1px solid var(--border-subtle)",
-                    }}
-                  >
-                    Add Custom Part (To Procure)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAddMode("inventory")}
-                    className={styles.btn}
-                    style={{
-                      background: addMode === "inventory" ? "var(--accent-primary)" : "var(--bg-elevated)",
-                      color: addMode === "inventory" ? "#fff" : "#27211d",
-                      width: "auto",
-                      border: addMode === "inventory" ? "none" : "1px solid var(--border-subtle)",
-                    }}
-                  >
-                    Add from Lab Inventory (In Stock)
-                  </button>
-                </div>
-
-                <form
-                  onSubmit={handleAddItemToBOM}
+                  Custom Market Part
+                </button>
+                <button
+                  type="button"
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                    gap: "1rem",
-                    alignItems: "end",
+                    flex: 1,
+                    padding: "0.45rem",
+                    border: "none",
+                    borderRadius: "var(--radius-sm)",
+                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                    background: addMode === "inventory" ? "#fff" : "transparent",
+                    color: addMode === "inventory" ? "#27211d" : "#6f665e",
+                    boxShadow: addMode === "inventory" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                    cursor: "pointer",
                   }}
+                  onClick={() => setAddMode("inventory")}
                 >
-                  {addMode === "inventory" ? (
-                    <div className={styles.formGroup} style={{ marginBottom: 0, gridColumn: "span 2" }}>
-                      <label
-                        style={{
-                          display: "block",
-                          marginBottom: "0.5rem",
-                          color: "#6f665e",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Select Part from Inventory
+                  From Lab Inventory
+                </button>
+              </div>
+
+              <form onSubmit={handleAddItemToBOM}>
+                {addMode === "inventory" ? (
+                  <div style={{ marginBottom: "1rem" }}>
+                    <label style={{ display: "block", marginBottom: "0.4rem", color: "#6f665e", fontWeight: 600 }}>
+                      Choose Inventory Part
+                    </label>
+                    <select
+                      className={styles.select}
+                      value={selectedItemId}
+                      onChange={(e) => setSelectedItemId(e.target.value)}
+                      required
+                    >
+                      <option value="">-- Select Lab Component --</option>
+                      {inventory.map((inv) => (
+                        <option key={inv.id} value={inv.id}>
+                          {inv.name} (Stock: {inv.quantity || 0}) — ৳{inv.price || 150}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: "0.85rem" }}>
+                      <label style={{ display: "block", marginBottom: "0.35rem", color: "#6f665e", fontWeight: 600 }}>
+                        Component Name
+                      </label>
+                      <input
+                        className={styles.input}
+                        placeholder="e.g. 6V Mini USB Water Pump"
+                        value={customName}
+                        onChange={(e) => setCustomName(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: "0.85rem" }}>
+                      <label style={{ display: "block", marginBottom: "0.35rem", color: "#6f665e", fontWeight: 600 }}>
+                        Category
                       </label>
                       <select
                         className={styles.select}
-                        value={selectedItemId}
-                        onChange={(e) => setSelectedItemId(e.target.value)}
-                        required
-                        style={{ color: "#27211d" }}
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
                       >
-                        <option value="">-- Choose In-Stock Component --</option>
-                        {inventory.map((i) => (
-                          <option key={i.id} value={i.id}>
-                            {i.name} [{i.category || "General"}] (Qty: {i.quantity} in lab • Est. ৳{i.price})
+                        {STANDARD_INVENTORY_CATEGORIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
                           </option>
                         ))}
                       </select>
                     </div>
-                  ) : (
-                    <>
-                      <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                        <label
-                          style={{
-                            display: "block",
-                            marginBottom: "0.5rem",
-                            color: "#6f665e",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Part Name
-                        </label>
-                        <input
-                          type="text"
-                          className={styles.input}
-                          style={{ marginBottom: 0, color: "#27211d" }}
-                          value={customName}
-                          onChange={(e) => setCustomName(e.target.value)}
-                          required
-                          placeholder="e.g. ESP32-WROOM-32D"
-                        />
-                      </div>
 
-                      <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                        <label
-                          style={{
-                            display: "block",
-                            marginBottom: "0.5rem",
-                            color: "#6f665e",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Category
-                        </label>
-                        <select
-                          className={styles.select}
-                          value={customCategory}
-                          onChange={(e) => setCustomCategory(e.target.value)}
-                          style={{ color: "#27211d" }}
-                        >
-                          {STANDARD_INVENTORY_CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                        <label
-                          style={{
-                            display: "block",
-                            marginBottom: "0.5rem",
-                            color: "#6f665e",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Est. Unit Cost (৳)
+                    <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.85rem" }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: "block", marginBottom: "0.35rem", color: "#6f665e", fontWeight: 600 }}>
+                          Unit Price (BDT)
                         </label>
                         <input
                           type="number"
-                          className={styles.input}
-                          style={{ marginBottom: 0, color: "#27211d" }}
                           min="0"
+                          className={styles.input}
                           value={customPrice}
-                          onChange={(e) => setCustomPrice(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => setCustomPrice(Number(e.target.value))}
                           required
                         />
                       </div>
-
-                      <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                        <label
-                          style={{
-                            display: "block",
-                            marginBottom: "0.5rem",
-                            color: "#6f665e",
-                            fontWeight: 600,
-                          }}
-                        >
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: "block", marginBottom: "0.35rem", color: "#6f665e", fontWeight: 600 }}>
                           Vendor / Source
                         </label>
-                        <select
-                          className={styles.select}
+                        <input
+                          className={styles.input}
                           value={customSource}
                           onChange={(e) => setCustomSource(e.target.value)}
-                          style={{ color: "#27211d" }}
-                        >
-                          <option value="RoboShop BD">RoboShop BD</option>
-                          <option value="TechShop BD">TechShop BD</option>
-                          <option value="Daraz">Daraz</option>
-                          <option value="AliExpress">AliExpress</option>
-                          <option value="Local Market (Patuatuli / Stadium)">Local Market (Patuatuli / Stadium)</option>
-                          <option value="Direct Supplier">Direct Supplier</option>
-                        </select>
+                          placeholder="e.g. RoboShop BD"
+                        />
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </>
+                )}
 
-                  <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "0.5rem",
-                        color: "#6f665e",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Quantity
-                    </label>
-                    <input
-                      type="number"
-                      className={styles.input}
-                      style={{ marginBottom: 0, color: "#27211d" }}
-                      min="1"
-                      value={quantity}
-                      onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                      required
-                    />
-                  </div>
+                <div style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ display: "block", marginBottom: "0.35rem", color: "#6f665e", fontWeight: 600 }}>
+                    Quantity Required
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    className={styles.input}
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    required
+                  />
+                </div>
 
-                  <button type="submit" className={styles.btn} style={{ height: "46px" }}>
-                    Add to BOM
-                  </button>
-                </form>
-              </div>
-            )}
+                <button type="submit" className={styles.btn}>
+                  <Plus size={16} />
+                  <span>Add Component to BOM</span>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       ) : (
-        <div style={{ textAlign: "center", padding: "3rem", color: "#6f665e" }}>
-          Select or create a project to start planning the budget.
+        <div
+          style={{
+            padding: "3rem 1rem",
+            textAlign: "center",
+            background: "#fff",
+            borderRadius: "12px",
+            border: "1px dashed #dfd7cc",
+          }}
+        >
+          <Layers size={36} color="#7A1C24" style={{ marginBottom: "0.75rem" }} />
+          <h3 style={{ margin: "0 0 0.4rem", color: "#27211d" }}>No Projects Selected</h3>
+          <p style={{ margin: "0 0 1rem", color: "#7c7067", fontSize: "0.88rem" }}>
+            Create a new Bill of Materials project or select an existing build from the dropdown above.
+          </p>
+          <button
+            type="button"
+            className={styles.btn}
+            style={{ width: "auto", margin: "0 auto" }}
+            onClick={() => setIsProjectCreateOpen(true)}
+          >
+            <Plus size={15} />
+            <span>Create New Project</span>
+          </button>
         </div>
       )}
 
-      {/* EDIT BOM ITEM MODAL */}
+      {/* EDIT ITEM MODAL */}
       {editingItem && (
         <div className={styles.modalOverlay} onClick={() => setEditingItem(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Edit Component: {editingItem.name}</h3>
+              <h3 className={styles.modalTitle}>Edit Component</h3>
               <button
                 type="button"
                 className={styles.modalCloseBtn}
@@ -910,6 +1511,7 @@ export default function BOMDashboard() {
                 <X size={20} />
               </button>
             </div>
+
             <form onSubmit={handleSaveEdit}>
               <div className={styles.modalBody}>
                 <div>
@@ -917,64 +1519,45 @@ export default function BOMDashboard() {
                     Part Name
                   </label>
                   <input
-                    type="text"
                     className={styles.input}
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     required
-                    style={{ color: "#27211d" }}
                   />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600, color: "#6f665e" }}>
-                      Category
-                    </label>
-                    <select
-                      className={styles.select}
-                      value={editCategory}
-                      onChange={(e) => setEditCategory(e.target.value)}
-                      style={{ color: "#27211d" }}
-                    >
-                      {STANDARD_INVENTORY_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600, color: "#6f665e" }}>
-                      Vendor / Source
-                    </label>
-                    <input
-                      type="text"
-                      className={styles.input}
-                      value={editSource}
-                      onChange={(e) => setEditSource(e.target.value)}
-                      required
-                      style={{ color: "#27211d" }}
-                    />
-                  </div>
+                <div>
+                  <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600, color: "#6f665e" }}>
+                    Category
+                  </label>
+                  <select
+                    className={styles.select}
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                  >
+                    {STANDARD_INVENTORY_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                  <div>
+                <div style={{ display: "flex", gap: "1rem" }}>
+                  <div style={{ flex: 1 }}>
                     <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600, color: "#6f665e" }}>
-                      Unit Cost (৳)
+                      Unit Price (BDT)
                     </label>
                     <input
                       type="number"
                       min="0"
                       className={styles.input}
                       value={editPrice}
-                      onChange={(e) => setEditPrice(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => setEditPrice(Number(e.target.value))}
                       required
-                      style={{ color: "#27211d" }}
                     />
                   </div>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600, color: "#6f665e" }}>
                       Quantity
                     </label>
@@ -983,22 +1566,31 @@ export default function BOMDashboard() {
                       min="1"
                       className={styles.input}
                       value={editQuantity}
-                      onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
+                      onChange={(e) => setEditQuantity(Number(e.target.value))}
                       required
-                      style={{ color: "#27211d" }}
                     />
                   </div>
                 </div>
 
                 <div>
                   <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600, color: "#6f665e" }}>
-                    Status
+                    Source / Vendor
+                  </label>
+                  <input
+                    className={styles.input}
+                    value={editSource}
+                    onChange={(e) => setEditSource(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600, color: "#6f665e" }}>
+                    Procurement Status
                   </label>
                   <select
                     className={styles.select}
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value)}
-                    style={{ color: "#27211d" }}
                   >
                     <option value="Needed">Needed (To Procure)</option>
                     <option value="Requested">Requested (Pending Admin)</option>
@@ -1020,7 +1612,7 @@ export default function BOMDashboard() {
                 >
                   <span style={{ color: "#6f665e" }}>Total Calculated Cost:</span>
                   <span style={{ color: "#84243a", fontFamily: "var(--font-mono)" }}>
-                    ৳{(editPrice * editQuantity).toLocaleString()}
+                    ৳{(editPrice * editQuantity).toLocaleString()} BDT
                   </span>
                 </div>
               </div>
@@ -1033,11 +1625,7 @@ export default function BOMDashboard() {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className={styles.btn}
-                  style={{ width: "auto" }}
-                >
+                <button type="submit" className={styles.btn} style={{ width: "auto" }}>
                   Save Changes
                 </button>
               </div>
@@ -1069,7 +1657,7 @@ export default function BOMDashboard() {
             <form onSubmit={handleSubmitRequisition}>
               <div className={styles.modalBody}>
                 <p style={{ fontSize: "0.9rem", color: "#6f665e", margin: 0 }}>
-                  The following <strong>{neededItems.length}</strong> part(s) are currently needed and not in lab storage. They will be submitted to the Admin Parts Queue for review, approval, and procurement.
+                  The following <strong>{neededItems.length}</strong> part(s) are needed and not in lab storage. They will be submitted to the Admin Parts Queue for review, approval, and procurement.
                 </p>
 
                 <div
@@ -1157,5 +1745,19 @@ export default function BOMDashboard() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BOMDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ padding: "3rem", textAlign: "center", color: "#7c7067" }}>
+          Loading Project Budgets & Bills of Material...
+        </div>
+      }
+    >
+      <BOMDashboardContent />
+    </Suspense>
   );
 }

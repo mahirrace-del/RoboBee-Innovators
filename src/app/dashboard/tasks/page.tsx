@@ -16,6 +16,7 @@ import {
   increment,
 } from "firebase/firestore";
 import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import styles from "./tasks.module.css";
 import {
   CheckSquare,
@@ -38,6 +39,8 @@ import {
   Pencil,
   Trash2,
   Bell,
+  Layers,
+  ExternalLink,
 } from "lucide-react";
 import {
   normalizeTask,
@@ -1862,6 +1865,132 @@ export default function TasksPage() {
                   )}
                 </div>
               </div>
+
+              {/* Attached Project BOM (Bills of Material) Section */}
+              {(() => {
+                const bomAttachment = (viewingTask.attachments || []).find((a: any) => a && a.type === "project_bom");
+                return (
+                  <div style={{ borderTop: "1px solid #eee7de", paddingTop: "0.75rem", marginBottom: "0.85rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.45rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                      <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#27211d", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                        <Layers size={14} color="#7A1C24" />
+                        <span>📋 Project Bill of Materials (BOM)</span>
+                      </div>
+                      <Link
+                        href={
+                          bomAttachment?.projectId
+                            ? `/dashboard/bom?mode=task&projectId=${encodeURIComponent(bomAttachment.projectId)}`
+                            : `/dashboard/bom?mode=task&taskId=${encodeURIComponent(viewingTask.id)}&taskTitle=${encodeURIComponent(viewingTask.title)}`
+                        }
+                        style={{
+                          fontSize: "0.74rem",
+                          fontWeight: 700,
+                          color: "#7A1C24",
+                          textDecoration: "none",
+                          padding: "0.22rem 0.55rem",
+                          borderRadius: "6px",
+                          border: "1px solid #7A1C24",
+                          background: "#fff",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.3rem",
+                        }}
+                      >
+                        <span>{bomAttachment ? "Edit in BOM →" : "+ Create & Attach BOM"}</span>
+                        <ExternalLink size={12} />
+                      </Link>
+                    </div>
+
+                    {!bomAttachment ? (
+                      <div
+                        style={{
+                          padding: "0.6rem 0.85rem",
+                          borderRadius: "8px",
+                          background: "#faf8f5",
+                          border: "1px dashed #dfd7cc",
+                          fontSize: "0.76rem",
+                          color: "#7c7067",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>No component bill attached yet. Members can calculate and attach parts in the BOM.</span>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          borderRadius: "8px",
+                          border: "1px solid #e6dfd5",
+                          background: "#fff",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            padding: "0.45rem 0.75rem",
+                            background: "#fdfbf7",
+                            borderBottom: "1px solid #eee7de",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            fontSize: "0.76rem",
+                            flexWrap: "wrap",
+                            gap: "0.5rem",
+                          }}
+                        >
+                          <div>
+                            <strong>{bomAttachment.projectName || "Project BOM"}</strong> ({bomAttachment.itemsCount || bomAttachment.items?.length || 0} parts)
+                          </div>
+                          <div style={{ fontWeight: 800, color: "#065f46" }}>
+                            Total Budget: ৳{Number(bomAttachment.totalCost || viewingTask.budgetBdt || 0).toLocaleString()} BDT
+                          </div>
+                        </div>
+
+                        <div style={{ maxHeight: "150px", overflowY: "auto" }}>
+                          <table style={{ width: "100%", fontSize: "0.75rem", borderCollapse: "collapse", textAlign: "left" }}>
+                            <thead style={{ background: "#f8f6f2", color: "#6f665e" }}>
+                              <tr>
+                                <th style={{ padding: "0.35rem 0.6rem" }}>Component</th>
+                                <th style={{ padding: "0.35rem 0.6rem" }}>Category</th>
+                                <th style={{ padding: "0.35rem 0.6rem" }}>Qty</th>
+                                <th style={{ padding: "0.35rem 0.6rem" }}>Unit (৳)</th>
+                                <th style={{ padding: "0.35rem 0.6rem" }}>Total (৳)</th>
+                                <th style={{ padding: "0.35rem 0.6rem" }}>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(bomAttachment.items || []).map((it: any, i: number) => (
+                                <tr key={i} style={{ borderBottom: "1px solid #f2ede4" }}>
+                                  <td style={{ padding: "0.35rem 0.6rem", fontWeight: 600 }}>{it.name}</td>
+                                  <td style={{ padding: "0.35rem 0.6rem", color: "#6f665e" }}>{it.category || "General"}</td>
+                                  <td style={{ padding: "0.35rem 0.6rem" }}>{it.quantity}</td>
+                                  <td style={{ padding: "0.35rem 0.6rem" }}>৳{it.price}</td>
+                                  <td style={{ padding: "0.35rem 0.6rem", fontWeight: 700, color: "#7A1C24" }}>৳{it.totalCost}</td>
+                                  <td style={{ padding: "0.35rem 0.6rem" }}>
+                                    <span
+                                      style={{
+                                        fontSize: "0.68rem",
+                                        fontWeight: 600,
+                                        padding: "0.1rem 0.35rem",
+                                        borderRadius: "4px",
+                                        background: it.status === "In Stock" ? "#d1fae5" : "#fee2e2",
+                                        color: it.status === "In Stock" ? "#065f46" : "#b91c1c",
+                                      }}
+                                    >
+                                      {it.status || "Needed"}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Task Queries & Updated Instructions Thread */}
               <div style={{ borderTop: "1px solid #eee7de", paddingTop: "0.75rem" }}>

@@ -103,7 +103,8 @@ service cloud.firestore {
     // Public Robot & Showcase Projects
     match /projects/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAuthenticated();
+      allow delete: if isAdmin();
     }
 
     // Tournaments & Competitions Catalog
@@ -164,7 +165,8 @@ service cloud.firestore {
     // Requisition & Component Requests
     match /partRequests/{id} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
     }
 
     // Hardware Tool & Sensor Checkouts
