@@ -62,23 +62,35 @@ export async function POST(req: NextRequest) {
         }
 
         // 2. Handle Message Echoes (messages sent by Mahir from WhatsApp Business mobile app)
-        const echoes =
+        const rawEchoes =
           value.message_echoes ||
           value.smb_message_echoes ||
-          (change.field === "smb_message_echoes" ? value.message_echoes : null) ||
+          (change.field === "smb_message_echoes" ? value.message_echoes || value.messages : null) ||
           [];
 
-        if (Array.isArray(echoes) && echoes.length > 0) {
+        const echoes = Array.isArray(rawEchoes) ? rawEchoes : [rawEchoes].filter(Boolean);
+
+        if (echoes.length > 0) {
           for (const echo of echoes) {
-            const recipientPhone = echo.to || echo.to_user_id || echo.recipient_id || "";
+            const recipientPhone =
+              echo.to ||
+              echo.to_user_id ||
+              echo.recipient_id ||
+              echo.recipient?.id ||
+              echo.wa_id ||
+              "";
+
             const echoText =
               echo.text?.body ||
+              echo.body ||
+              echo.message?.text?.body ||
+              echo.message?.text ||
               (echo.image
                 ? "[Photo sent by Mahir]"
                 : echo.document
                 ? `[Document: ${echo.document?.filename || "file.pdf"}]`
                 : "[Message sent by Mahir]");
-            const echoWamId = echo.id;
+            const echoWamId = echo.id || echo.mid;
             const echoType = echo.type || "text";
 
             console.log(
@@ -154,15 +166,20 @@ export async function POST(req: NextRequest) {
               contact?.user_id ||
               "";
 
+            const metaPhoneNumberId = value.metadata?.phone_number_id || "1480815671771528";
+            const metaDisplayPhone = (value.metadata?.display_phone_number || "").replace(/\D/g, "");
+
             const isOutboundFromMahir =
               Boolean(message.is_echo) ||
               rawSenderPhone.includes("1902821018") ||
+              rawSenderPhone === metaPhoneNumberId ||
+              (metaDisplayPhone && rawSenderPhone.includes(metaDisplayPhone)) ||
               (message.to &&
                 !message.to.includes("1902821018") &&
                 rawSenderPhone.endsWith("1902821018"));
 
             const targetPhone = isOutboundFromMahir
-              ? message.to || message.to_user_id || rawSenderPhone
+              ? message.to || message.to_user_id || message.recipient_id || contact?.wa_id || rawSenderPhone
               : rawSenderPhone;
 
             const senderType = isOutboundFromMahir ? "agent_mahir" : "customer";
