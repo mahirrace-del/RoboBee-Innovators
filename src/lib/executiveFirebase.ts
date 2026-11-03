@@ -16,6 +16,7 @@ import {
   serverTimestamp,
   Firestore,
 } from "firebase/firestore";
+import { supabaseAdmin } from "./supabase";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyBHM3w-jOVtKWcgjFNny5ucCn4pYLfOR_w",
@@ -393,5 +394,323 @@ export async function opGetPlatformStatusSummary() {
     totalRegisteredMembers: usersSnap.size,
     pendingPartRequestsCount: pendingPartRequests.length,
     pendingPartRequests: pendingPartRequests.slice(0, 5),
+  };
+}
+
+// ============================================================================
+// 7. PROJECT BOM & PROCUREMENT OPERATIONS (AUTONOMOUS WEBSITE OPERATOR)
+// ============================================================================
+
+export interface BOMComponentInput {
+  id?: string;
+  itemId?: string;
+  name: string;
+  category?: string;
+  price: number;
+  quantity: number;
+  source?: string;
+  status?: string;
+}
+
+export interface CreateProjectBOMInput {
+  name: string;
+  taskId?: string | null;
+  taskTitle?: string | null;
+  studentName?: string | null;
+  schoolName?: string | null;
+  classGrade?: string | null;
+  bomType?: "task_member" | "store_admin";
+  items: BOMComponentInput[];
+  submitAdminRequisition?: boolean;
+  requisitionNotes?: string;
+  requestedByName?: string;
+  requestedByEmail?: string;
+}
+
+/**
+ * Creates a Project BOM in Firestore ('projects' on 'robobee-db'),
+ * syncs attachments and budget to the Supabase task (if linked),
+ * and optionally submits an admin requisition to 'partRequests'.
+ */
+export async function opCreateProjectBOM(input: CreateProjectBOMInput) {
+  await ensureAgentAdminAuth();
+
+  const formattedItems = input.items.map((it, idx) => {
+    const p = Math.max(0, Number(it.price) || 0);
+    const q = Math.max(1, Number(it.quantity) || 1);
+    return {
+      id: it.id || `bom_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+      ...(it.itemId ? { itemId: it.itemId } : {}),
+      name: it.name.trim(),
+      category: it.category || "General",
+      price: p,
+      quantity: q,
+      totalCost: p * q,
+      source: it.source || "Local Market",
+      status: it.status || (input.submitAdminRequisition ? "Requested" : "Needed"),
+    };
+  });
+
+  const totalBudget = formattedItems.reduce((acc, it) => acc + it.totalCost, 0);
+
+  // 1. Insert Project into Firestore `projects`
+  const projectData = {
+    name: input.name.trim(),
+    bom: formattedItems,
+    bomType: input.bomType || "task_member",
+    taskId: input.taskId || null,
+    taskTitle: input.taskTitle || null,
+    studentName: input.studentName || null,
+    schoolName: input.schoolName || null,
+    classGrade: input.classGrade || null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    createdBy: "RoboBee AI Autonomous Operator",
+    createdByName: input.requestedByName || "RoboBee AI Operator",
+  };
+
+  const projColl = collection(db, "projects");
+  const docRef = await addDoc(projColl, projectData);
+  const projectId = docRef.id;
+
+  // 2. Sync to Supabase `tasks` if taskId is supplied
+  if (input.taskId) {
+    const attachments = [
+      {
+        type: "project_bom",
+        projectId: projectId,
+        projectName: input.name.trim(),
+        totalCost: totalBudget,
+        itemsCount: formattedItems.length,
+        items: formattedItems,
+      },
+    ];
+
+    try {
+      await supabaseAdmin
+        .from("tasks")
+        .update({
+          budget_bdt: totalBudget,
+          attachments: attachments,
+          project_id: projectId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", input.taskId);
+    } catch (tErr) {
+      console.warn("[ExecutiveFirebase] Supabase task sync warning:", tErr);
+    }
+
+    // Mirror to Firestore tasks if exists
+    try {
+      await updateDoc(doc(db, "tasks", input.taskId), {
+        budget_bdt: totalBudget,
+        attachments: attachments,
+        projectId: projectId,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch {}
+  }
+
+  // 3. Submit Requisition to Admin `partRequests` if enabled
+  let requisitionId: string | null = null;
+  if (input.submitAdminRequisition !== false && formattedItems.length > 0) {
+    const reqData = {
+      type: "bom_procurement",
+      projectId: projectId,
+      projectName: input.name.trim(),
+      items: formattedItems,
+      itemsCount: formattedItems.length,
+      totalCost: totalBudget,
+      notes: input.requisitionNotes || `Autonomous requisition for ${input.name}`,
+      requestedBy: input.requestedByName || "RoboBee AI Operations Agent",
+      requestedByEmail: input.requestedByEmail || "robobee.agent@robobeeinnovators.org",
+      requestedByUid: "agent_admin",
+      requestedAt: new Date().toISOString(),
+      status: "pending",
+    };
+
+    const reqColl = collection(db, "partRequests");
+    const reqRef = await addDoc(reqColl, reqData);
+    requisitionId = reqRef.id;
+  }
+
+  return {
+    projectId,
+    name: input.name.trim(),
+    bomType: input.bomType || "task_member",
+    totalBudget,
+    itemsCount: formattedItems.length,
+    items: formattedItems,
+    taskId: input.taskId || null,
+    taskTitle: input.taskTitle || null,
+    requisitionId,
+  };
+}
+
+/**
+ * Appends components to an existing project BOM and synchronizes task attachments.
+ */
+export async function opAddComponentsToProjectBOM(
+  projectId: string,
+  newItems: BOMComponentInput[],
+  autoSubmitRequisition: boolean = true
+) {
+  await ensureAgentAdminAuth();
+  const projRef = doc(db, "projects", projectId);
+  const snap = await getDoc(projRef);
+  if (!snap.exists()) {
+    throw new Error(`Project #${projectId} not found.`);
+  }
+
+  const existingBOM: any[] = Array.isArray(snap.data()?.bom) ? snap.data().bom : [];
+  const formattedNew = newItems.map((it, idx) => {
+    const p = Math.max(0, Number(it.price) || 0);
+    const q = Math.max(1, Number(it.quantity) || 1);
+    return {
+      id: it.id || `bom_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+      ...(it.itemId ? { itemId: it.itemId } : {}),
+      name: it.name.trim(),
+      category: it.category || "General",
+      price: p,
+      quantity: q,
+      totalCost: p * q,
+      source: it.source || "Local Market",
+      status: autoSubmitRequisition ? "Requested" : "Needed",
+    };
+  });
+
+  const updatedBOM = [...existingBOM, ...formattedNew];
+  const newTotal = updatedBOM.reduce((sum, it) => sum + (Number(it.totalCost) || 0), 0);
+
+  await updateDoc(projRef, {
+    bom: updatedBOM,
+    updatedAt: new Date().toISOString(),
+  });
+
+  const taskId = snap.data()?.taskId;
+  if (taskId) {
+    const attachments = [
+      {
+        type: "project_bom",
+        projectId: projectId,
+        projectName: snap.data()?.name || "Project BOM",
+        totalCost: newTotal,
+        itemsCount: updatedBOM.length,
+        items: updatedBOM,
+      },
+    ];
+    await supabaseAdmin
+      .from("tasks")
+      .update({
+        budget_bdt: newTotal,
+        attachments,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", taskId);
+  }
+
+  let requisitionId = null;
+  if (autoSubmitRequisition && formattedNew.length > 0) {
+    const reqTotal = formattedNew.reduce((sum, it) => sum + (Number(it.totalCost) || 0), 0);
+    const reqRef = await addDoc(collection(db, "partRequests"), {
+      type: "bom_procurement",
+      projectId,
+      projectName: snap.data()?.name || "Project",
+      items: formattedNew,
+      itemsCount: formattedNew.length,
+      totalCost: reqTotal,
+      notes: `Autonomous addition of ${formattedNew.length} parts to ${snap.data()?.name}`,
+      requestedBy: "RoboBee AI Operations Agent",
+      requestedByEmail: "robobee.agent@robobeeinnovators.org",
+      requestedByUid: "agent_admin",
+      requestedAt: new Date().toISOString(),
+      status: "pending",
+    });
+    requisitionId = reqRef.id;
+  }
+
+  return {
+    projectId,
+    projectName: snap.data()?.name,
+    addedItemsCount: formattedNew.length,
+    totalItemsCount: updatedBOM.length,
+    newTotalCost: newTotal,
+    requisitionId,
+  };
+}
+
+/**
+ * Retrieves a single project BOM from Firestore.
+ */
+export async function opGetProjectBOM(projectId: string) {
+  await ensureAgentAdminAuth();
+  const projRef = doc(db, "projects", projectId);
+  const snap = await getDoc(projRef);
+  if (!snap.exists()) {
+    throw new Error(`Project #${projectId} not found.`);
+  }
+  return { id: snap.id, ...snap.data() };
+}
+
+/**
+ * Searches conversations, messages, and sprint tasks across channels.
+ */
+export async function opFindConversationAndTask(queryStr: string) {
+  const cleanQ = queryStr.trim().replace(/^[@+]/, "");
+  const numericOnly = cleanQ.replace(/\D/g, "");
+
+  let conv: any = null;
+  if (numericOnly.length >= 7) {
+    const { data } = await supabaseAdmin
+      .from("whatsapp_conversations")
+      .select("*")
+      .or(`phone_number.ilike.%${numericOnly}%,phone_number.ilike.%${cleanQ}%`)
+      .limit(1)
+      .maybeSingle();
+    conv = data;
+  }
+
+  if (!conv && cleanQ) {
+    const { data } = await supabaseAdmin
+      .from("whatsapp_conversations")
+      .select("*")
+      .or(`contact_name.ilike.%${cleanQ}%,school_name.ilike.%${cleanQ}%`)
+      .limit(1)
+      .maybeSingle();
+    conv = data;
+  }
+
+  let messages: any[] = [];
+  if (conv?.id) {
+    const { data: msgs } = await supabaseAdmin
+      .from("whatsapp_messages")
+      .select("*")
+      .eq("conversation_id", conv.id)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    messages = (msgs || []).reverse();
+  }
+
+  let tasks: any[] = [];
+  if (conv?.id) {
+    const { data: tList } = await supabaseAdmin
+      .from("tasks")
+      .select("*")
+      .eq("conversation_id", conv.id)
+      .order("created_at", { ascending: false });
+    tasks = tList || [];
+  } else if (cleanQ) {
+    const { data: tList } = await supabaseAdmin
+      .from("tasks")
+      .select("*")
+      .or(`title.ilike.%${cleanQ}%,student_name.ilike.%${cleanQ}%,guardian_phone.ilike.%${numericOnly || cleanQ}%`)
+      .limit(5);
+    tasks = tList || [];
+  }
+
+  return {
+    conversation: conv,
+    messages,
+    tasks,
   };
 }

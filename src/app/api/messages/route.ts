@@ -379,7 +379,7 @@ export async function POST(req: NextRequest) {
 
     // 6. Finalize an Ongoing Project Discussion into a Confirmed Task (Moves to Sprint Board Backlog)
     if (action === "finalize_project_task") {
-      const { taskId, conversationId, title, description, student_name, school_name, class_grade, due_date, budget_bdt } = body;
+      const { taskId, duplicateTaskIds, conversationId, title, description, student_name, school_name, class_grade, due_date, budget_bdt } = body;
 
       if (taskId) {
         const updateData: Record<string, unknown> = {
@@ -403,6 +403,11 @@ export async function POST(req: NextRequest) {
 
         if (taskErr) {
           return NextResponse.json({ error: taskErr.message }, { status: 500 });
+        }
+
+        // Clean up redundant duplicate tasks for this conversation
+        if (Array.isArray(duplicateTaskIds) && duplicateTaskIds.length > 0) {
+          await supabaseAdmin.from("tasks").delete().in("id", duplicateTaskIds);
         }
 
         if (updatedTask?.conversation_id) {
@@ -483,7 +488,7 @@ export async function POST(req: NextRequest) {
 
     // 8. Delete / Dismiss a Project Summary or Task
     if (action === "dismiss_project_summary") {
-      const { taskId, conversationId } = body;
+      const { taskId, duplicateTaskIds, conversationId } = body;
       let targetConvId: string | null = conversationId || null;
 
       if (taskId) {
@@ -501,6 +506,10 @@ export async function POST(req: NextRequest) {
         if (delErr) {
           return NextResponse.json({ error: delErr.message }, { status: 500 });
         }
+      }
+
+      if (Array.isArray(duplicateTaskIds) && duplicateTaskIds.length > 0) {
+        await supabaseAdmin.from("tasks").delete().in("id", duplicateTaskIds);
       }
 
       if (targetConvId) {

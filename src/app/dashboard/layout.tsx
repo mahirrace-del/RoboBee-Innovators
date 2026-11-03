@@ -37,6 +37,7 @@ import {
 import { getUserRoleBadge } from "@/lib/permissions";
 import { normalizeCheckout, normalizeInventoryItem } from "@/lib/portalRelations";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import { AICopilotDrawer } from "@/components/AICopilotDrawer";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, role, signOut, userData, canManage } = useAuth();
@@ -653,6 +654,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <main className={styles.mainContent}>{children}</main>
       </div>
+
+      {/* Autonomous Website Operations AI Copilot Drawer */}
+      <AICopilotDrawer />
 
       {/* Fixed Bottom Glassmorphic Navigation Bar (Dashboard, Messages [Admin Only], Tasks, Class, Profile) */}
       <nav className={styles.mobileBottomNav} aria-label="Mobile Navigation">

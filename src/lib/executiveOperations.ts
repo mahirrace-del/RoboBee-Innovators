@@ -10,11 +10,17 @@ import {
   opRecordTreasuryEntry,
   opUpdateMemberRole,
   opGetPlatformStatusSummary,
+  opCreateProjectBOM,
+  opAddComponentsToProjectBOM,
+  opGetProjectBOM,
+  opFindConversationAndTask,
   NewAchievementInput,
   LaunchCompetitionInput,
   NewLeaderInput,
   NewProjectInput,
   TreasuryEntryInput,
+  CreateProjectBOMInput,
+  BOMComponentInput,
 } from "./executiveFirebase";
 import { opAssignTask, opUpdateTaskStage, AssignTaskInput } from "./executiveTaskOperations";
 import { GoogleGenAI } from "@google/genai";
@@ -390,6 +396,380 @@ export async function executeGetPlatformStatus(): Promise<OperationResult> {
       success: false,
       action: "platform_status",
       message: `Failed to fetch status: ${error.message}`,
+    };
+  }
+}
+
+// ============================================================================
+// 12. PROJECT BOM & PROCUREMENT AUTONOMOUS OPERATIONS
+// ============================================================================
+
+/**
+ * 12. Create Project BOM directly from explicit inputs
+ */
+export async function executeCreateProjectBOM(input: CreateProjectBOMInput): Promise<OperationResult> {
+  try {
+    const result = await opCreateProjectBOM(input);
+    const itemsTable = result.items
+      .map((it: any, i: number) => `  ${i + 1}. ${it.name} (${it.quantity}x @ ৳${it.price} = ৳${it.totalCost}) [${it.source}]`)
+      .join("\n");
+
+    const msg =
+      `📦 PROJECT BOM CREATED IN WEBSITE DATABASE!\n` +
+      `• Project: "${result.name}"\n` +
+      `• Mode: ${result.bomType === "task_member" ? "Task & School Project BOM" : "Master Store BOM"}\n` +
+      `• Total Components: ${result.itemsCount} items\n` +
+      `• Total Estimated Budget: ৳${result.totalBudget.toLocaleString()} BDT\n` +
+      `${result.taskId ? `• Linked Sprint Task: #${result.taskId}\n` : ""}` +
+      `${result.requisitionId ? `• Admin Requisition: Submitted (#${result.requisitionId}) [Awaiting Admin Review]\n` : ""}` +
+      `\nBOM Component List:\n${itemsTable}`;
+
+    return {
+      success: true,
+      action: "create_project_bom",
+      message: msg,
+      details: result,
+      liveLink: `https://www.robobeeinnovators.org/dashboard/bom?projectId=${result.projectId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      action: "create_project_bom",
+      message: `Failed to create Project BOM: ${error.message}`,
+    };
+  }
+}
+
+/**
+ * 13. AI Hardware Architect: Suggest & Build BOM for a Project Topic
+ * Analyzes the project concept & class grade using RoboBee Bangladesh hardware standards,
+ * creates the BOM in Firestore ('projects'), links to the task in Supabase, and submits
+ * the admin requisition automatically.
+ */
+export async function executeSuggestAndBuildBOM(params: {
+  projectTopic: string;
+  classGrade?: string;
+  studentName?: string;
+  schoolName?: string;
+  targetDeadline?: string;
+  existingTaskId?: string;
+  autoSubmitRequisition?: boolean;
+}): Promise<OperationResult> {
+  try {
+    const candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-2.5-flash"];
+    const grade = params.classGrade || "Class 6-8";
+
+    const prompt = `
+You are the Lead Hardware Systems Architect for RoboBee Innovators (Narayanganj, Bangladesh).
+Design an authentic, practical, age-appropriate Bill of Materials (BOM) for this project:
+
+Project Concept: "${params.projectTopic}"
+Target Class / Grade: "${grade}"
+
+ROBOBEE BANGLADESH HARDWARE STANDARDS & LOCAL PRICING REFERENCE (BDT):
+- Microcontrollers: Arduino Uno R3 (CH340) ~600 BDT, Arduino Nano Type-C ~350 BDT, ESP32 NodeMCU ~550 BDT
+- Sensors: Ultrasonic HC-SR04 ~100 BDT, IR Obstacle / Tracking ~60 BDT, Soil Moisture ~90 BDT, MQ-2 Gas ~140 BDT, PIR Motion ~110 BDT
+- Actuators & Motors: SG90 Micro Servo 9g ~140 BDT, MG996R Metal Servo ~500 BDT, BO Dual Gear Motor + Wheel Pair ~220 BDT, 6V Mini Submersible Water Pump ~150 BDT
+- Drivers & Power: L298N Dual Motor Driver ~200 BDT, Small Solar Panel 5V/6V ~220 BDT, 18650 Li-ion Batteries (2x) + Holder ~400 BDT, 9V Battery + Snap ~80 BDT
+- Prototyping: 400-Point Breadboard + 40-pc Jumpers ~180 BDT, 2WD Robot Chassis Kit ~400 BDT
+
+Output ONLY valid JSON matching this schema:
+{
+  "projectName": "Clean, descriptive engineering title (e.g. Smart Sun-Tracking Solar Water Pump)",
+  "rationale": "1-2 sentence engineering justification for why these parts fit this grade level",
+  "items": [
+    {
+      "name": "Component Name (Standard Model)",
+      "category": "Microcontrollers" | "Sensors" | "Motors & Actuators" | "Power & Drivers" | "Prototyping" | "Chassis & Mechanical",
+      "price": 0,
+      "quantity": 1,
+      "source": "RoboShop BD" | "TechShop BD" | "Local Market" | "Daraz"
+    }
+  ]
+}
+`;
+
+    let rawJson = "{}";
+    for (const m of candidateModels) {
+      try {
+        const res = await ai.models.generateContent({
+          model: m,
+          contents: prompt,
+          config: { responseMimeType: "application/json" },
+        });
+        if (res.text) {
+          rawJson = res.text;
+          break;
+        }
+      } catch (e) {
+        console.warn(`[ExecutiveOperations] Model ${m} fallback:`, e);
+      }
+    }
+
+    const parsed = JSON.parse(rawJson || "{}");
+    const projectName = parsed.projectName || params.projectTopic;
+    const items: BOMComponentInput[] = Array.isArray(parsed.items) && parsed.items.length > 0
+      ? parsed.items
+      : [
+          { name: "Arduino Uno R3 (CH340)", category: "Microcontrollers", price: 600, quantity: 1, source: "RoboShop BD" },
+          { name: "HC-SR04 Ultrasonic Sensor", category: "Sensors", price: 100, quantity: 1, source: "RoboShop BD" },
+          { name: "SG90 Micro Servo 9g", category: "Motors & Actuators", price: 140, quantity: 1, source: "TechShop BD" },
+          { name: "400-Pt Breadboard + 40-pc Jumpers", category: "Prototyping", price: 180, quantity: 1, source: "TechShop BD" },
+        ];
+
+    // Determine or create task
+    let targetTaskId = params.existingTaskId || null;
+    let targetTaskTitle = projectName;
+
+    if (!targetTaskId) {
+      const task = await opAssignTask({
+        title: projectName,
+        studentName: params.studentName,
+        schoolName: params.schoolName,
+        classGrade: params.classGrade,
+        dueDate: params.targetDeadline,
+        priority: "High",
+        stage: "in_progress",
+        description: `Project BOM auto-architected by RoboBee AI: ${parsed.rationale || params.projectTopic}`,
+      });
+      targetTaskId = task.id;
+      targetTaskTitle = task.title;
+    }
+
+    const bomResult = await opCreateProjectBOM({
+      name: projectName,
+      taskId: targetTaskId,
+      taskTitle: targetTaskTitle,
+      studentName: params.studentName,
+      schoolName: params.schoolName,
+      classGrade: params.classGrade,
+      bomType: "task_member",
+      items,
+      submitAdminRequisition: params.autoSubmitRequisition !== false,
+      requisitionNotes: `Autonomous BOM submission for ${projectName} (${grade})`,
+    });
+
+    const itemsSummary = bomResult.items
+      .map((it: any, i: number) => `  ${i + 1}. ${it.name} (${it.quantity}x @ ৳${it.price} = ৳${it.totalCost}) [${it.source}]`)
+      .join("\n");
+
+    const msg =
+      `🧠 AI HARDWARE ARCHITECT & BOM GENERATOR COMPLETE!\n` +
+      `• Project: "${bomResult.name}"\n` +
+      `• Target Grade: ${params.classGrade || "Class 6-8"}${params.studentName ? ` (Student: ${params.studentName})` : ""}\n` +
+      `• Total Estimated Budget: ৳${bomResult.totalBudget.toLocaleString()} BDT (${bomResult.itemsCount} parts)\n` +
+      `• Linked Sprint Task: #${bomResult.taskId} ("${targetTaskTitle}")\n` +
+      `${bomResult.requisitionId ? `• Admin Procurement Requisition: Submitted (#${bomResult.requisitionId}) [Pending]\n` : ""}` +
+      `\nHardware Bill of Materials:\n${itemsSummary}\n\n` +
+      `Rationale: ${parsed.rationale || "Configured for optimal student learning & competition readiness."}`;
+
+    return {
+      success: true,
+      action: "suggest_and_build_bom",
+      message: msg,
+      details: { ...bomResult, rationale: parsed.rationale },
+      liveLink: `https://www.robobeeinnovators.org/dashboard/bom?projectId=${bomResult.projectId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      action: "suggest_and_build_bom",
+      message: `Failed to suggest and build BOM: ${error.message}`,
+    };
+  }
+}
+
+/**
+ * 14. Convert Conversation / WhatsApp Chat to Website BOM & Admin Requisition
+ * Reads messages from a student/customer conversation, extracts requested hardware,
+ * creates the Project BOM in Firestore, links to the task in Supabase, and submits
+ * the admin requisition automatically.
+ */
+export async function executeCreateBOMFromConversation(params: {
+  query: string;
+  projectTitle?: string;
+  autoSubmitRequisition?: boolean;
+}): Promise<OperationResult> {
+  try {
+    const { conversation, messages, tasks } = await opFindConversationAndTask(params.query);
+
+    if (!conversation && (!tasks || tasks.length === 0)) {
+      return {
+        success: false,
+        action: "create_bom_from_conversation",
+        message: `Could not find any conversation or task matching "${params.query}". Please check the phone number or name.`,
+      };
+    }
+
+    // Build transcript
+    let transcriptText = "";
+    if (messages && messages.length > 0) {
+      transcriptText = messages
+        .map((m) => `[${m.sender_type}]: ${m.body || ""}`)
+        .join("\n");
+    } else if (tasks && tasks.length > 0 && tasks[0].description) {
+      transcriptText = `Task Description:\n${tasks[0].description}`;
+    }
+
+    const linkedTask = tasks && tasks.length > 0 ? tasks[0] : null;
+
+    const prompt = `
+You are the RoboBee Autonomous Operations Agent.
+A student/client sent the following conversation messages or project requirements:
+
+"""
+${transcriptText}
+"""
+
+Contact Name: "${conversation?.contact_name || linkedTask?.student_name || "Student"}"
+Phone: "${conversation?.phone_number || linkedTask?.guardian_phone || params.query}"
+Known School: "${conversation?.school_name || linkedTask?.school_name || ""}"
+Known Grade: "${conversation?.class_grade || linkedTask?.class_grade || ""}"
+
+Extract ALL requested hardware components, quantities, student name, class grade, and deadline.
+Map each component to realistic Bangladesh market prices (BDT), categories, and sources.
+
+Output ONLY valid JSON matching this schema:
+{
+  "projectName": "Descriptive title (e.g. 6V USB Water Pump & Solar Station)",
+  "studentName": "string or null",
+  "schoolName": "string or null",
+  "classGrade": "string or null",
+  "targetDeadline": "YYYY-MM-DD or null",
+  "items": [
+    {
+      "name": "Component name (standard model)",
+      "category": "Microcontrollers" | "Sensors" | "Motors & Actuators" | "Power & Drivers" | "Prototyping" | "Chassis & Mechanical",
+      "price": 0,
+      "quantity": 1,
+      "source": "RoboShop BD" | "TechShop BD" | "Local Market" | "Daraz"
+    }
+  ]
+}
+`;
+
+    const candidateModels = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-2.5-flash"];
+    let rawJson = "{}";
+    for (const m of candidateModels) {
+      try {
+        const res = await ai.models.generateContent({
+          model: m,
+          contents: prompt,
+          config: { responseMimeType: "application/json" },
+        });
+        if (res.text) {
+          rawJson = res.text;
+          break;
+        }
+      } catch (e) {
+        console.warn(`[ExecutiveOperations] Model ${m} fallback:`, e);
+      }
+    }
+
+    const parsed = JSON.parse(rawJson || "{}");
+    const projectName = params.projectTitle || parsed.projectName || linkedTask?.title || "Project BOM";
+    const studentName = parsed.studentName || conversation?.contact_name || linkedTask?.student_name || "Student";
+    const schoolName = parsed.schoolName || conversation?.school_name || linkedTask?.school_name || null;
+    const classGrade = parsed.classGrade || conversation?.class_grade || linkedTask?.class_grade || null;
+    const targetDeadline = parsed.targetDeadline || linkedTask?.due_date || null;
+
+    const items: BOMComponentInput[] = Array.isArray(parsed.items) && parsed.items.length > 0
+      ? parsed.items
+      : [
+          { name: "6V Mini USB Submersible Water Pump", category: "Motors & Actuators", price: 150, quantity: 2, source: "Local Market" },
+          { name: "18650 Li-ion Batteries (2x) + Holder", category: "Power & Drivers", price: 400, quantity: 1, source: "Local Market" },
+          { name: "Small Solar Panel 5V/6V", category: "Power & Drivers", price: 220, quantity: 1, source: "Daraz" },
+        ];
+
+    // Use existing task or assign new task
+    let targetTaskId = linkedTask?.id || null;
+    if (!targetTaskId) {
+      const task = await opAssignTask({
+        title: projectName,
+        studentName,
+        schoolName,
+        classGrade,
+        dueDate: targetDeadline,
+        priority: "High",
+        stage: "in_progress",
+        description: `Project BOM created from conversation with ${studentName} (${conversation?.phone_number || params.query})`,
+      });
+      targetTaskId = task.id;
+    } else {
+      // Move existing discussion task to in_progress / confirmed
+      await opUpdateTaskStage(targetTaskId, "in_progress", `BOM generated from conversation`);
+    }
+
+    const bomResult = await opCreateProjectBOM({
+      name: projectName,
+      taskId: targetTaskId,
+      taskTitle: projectName,
+      studentName,
+      schoolName,
+      classGrade,
+      bomType: "task_member",
+      items,
+      submitAdminRequisition: params.autoSubmitRequisition !== false,
+      requisitionNotes: `Autonomous BOM generated from chat with ${studentName} (${params.query})`,
+    });
+
+    const itemsSummary = bomResult.items
+      .map((it: any, i: number) => `  ${i + 1}. ${it.name} (${it.quantity}x @ ৳${it.price} = ৳${it.totalCost}) [${it.source}]`)
+      .join("\n");
+
+    const msg =
+      `💬 CONVERSATION SUCCESSFULLY CONVERTED TO WEBSITE BOM!\n` +
+      `• Source: Conversation with ${studentName} (${conversation?.phone_number || params.query})\n` +
+      `• Project: "${bomResult.name}"\n` +
+      `• Total Components: ${bomResult.itemsCount} items\n` +
+      `• Estimated Total: ৳${bomResult.totalBudget.toLocaleString()} BDT\n` +
+      `• Linked Sprint Task: #${bomResult.taskId} (Moved to In Progress)\n` +
+      `${bomResult.requisitionId ? `• Admin Requisition: Submitted (#${bomResult.requisitionId}) [Pending Admin Approval]\n` : ""}` +
+      `\nHardware Requisition Items:\n${itemsSummary}`;
+
+    return {
+      success: true,
+      action: "create_bom_from_conversation",
+      message: msg,
+      details: bomResult,
+      liveLink: `https://www.robobeeinnovators.org/dashboard/bom?projectId=${bomResult.projectId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      action: "create_bom_from_conversation",
+      message: `Failed to create BOM from conversation: ${error.message}`,
+    };
+  }
+}
+
+/**
+ * 15. Add Components to Existing Project BOM
+ */
+export async function executeAddComponentsToBOM(params: {
+  projectId: string;
+  components: BOMComponentInput[];
+  autoSubmitRequisition?: boolean;
+}): Promise<OperationResult> {
+  try {
+    const updated = await opAddComponentsToProjectBOM(
+      params.projectId,
+      params.components,
+      params.autoSubmitRequisition !== false
+    );
+
+    return {
+      success: true,
+      action: "add_components_to_bom",
+      message: `🔧 Added ${updated.addedItemsCount} new components to "${updated.projectName}"!\n- New BOM Total: ৳${updated.newTotalCost.toLocaleString()} BDT (${updated.totalItemsCount} parts)\n${updated.requisitionId ? `- Admin Requisition: #${updated.requisitionId} submitted` : ""}`,
+      details: updated,
+      liveLink: `https://www.robobeeinnovators.org/dashboard/bom?projectId=${params.projectId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      action: "add_components_to_bom",
+      message: `Failed to add components to BOM: ${error.message}`,
     };
   }
 }

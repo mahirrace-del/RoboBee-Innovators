@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -445,7 +445,7 @@ export default function MessagingControlPanel() {
   };
 
   // Finalize an Ongoing Project Discussion into a Confirmed Task (Moves to Sprint Board Backlog)
-  const handleFinalizeTask = async (params: { taskId?: string; conversationId?: string; title?: string }) => {
+  const handleFinalizeTask = async (params: { taskId?: string; duplicateTaskIds?: string[]; conversationId?: string; title?: string }) => {
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
@@ -496,15 +496,16 @@ export default function MessagingControlPanel() {
   };
 
   // Dismiss / Remove from Summary Panel
-  const handleDismissSummary = async (params: { taskId?: string; conversationId?: string }) => {
+  const handleDismissSummary = async (params: { taskId?: string; duplicateTaskIds?: string[]; conversationId?: string }) => {
     // Optimistically remove from UI immediately so the item disappears on first click
-    if (params.taskId) {
-      setAllProjectTasks((prev) => prev.filter((t) => t.id !== params.taskId));
-      setLinkedTasks((prev) => prev.filter((t) => t.id !== params.taskId));
+    const idsToRemove = new Set([params.taskId, ...(params.duplicateTaskIds || [])].filter(Boolean));
+    if (idsToRemove.size > 0) {
+      setAllProjectTasks((prev) => prev.filter((t) => !idsToRemove.has(t.id)));
+      setLinkedTasks((prev) => prev.filter((t) => !idsToRemove.has(t.id)));
     }
     if (params.conversationId) {
       const remainingForConv = allProjectTasks.filter(
-        (t) => t.conversation_id === params.conversationId && t.id !== params.taskId
+        (t) => t.conversation_id === params.conversationId && !idsToRemove.has(t.id)
       );
       if (!params.taskId || remainingForConv.length === 0) {
         setConversations((prev) =>
@@ -538,7 +539,44 @@ export default function MessagingControlPanel() {
   };
 
   // Compute Ongoing Discussions vs Confirmed Tasks for the Summary & Task Staging Panel
-  const ongoingProjectItems = allProjectTasks.filter((t) => t.stage === "in_discussion" || t.status === "in_discussion");
+  // Deduplicate and consolidate ongoing discussion tasks by conversation / phone so fragmented messages don't create multiple cards
+  const ongoingProjectItems = useMemo(() => {
+    const raw = allProjectTasks.filter(
+      (t) => t.stage === "in_discussion" || t.status === "in_discussion"
+    );
+    const map = new Map<string, any>();
+
+    for (const item of raw) {
+      const key = item.conversation_id || item.guardian_phone || item.student_name || item.id;
+      if (!map.has(key)) {
+        map.set(key, { ...item, duplicateTaskIds: [] as string[] });
+      } else {
+        const primary = map.get(key);
+        primary.duplicateTaskIds.push(item.id);
+
+        // Merge title if distinct
+        if (item.title && primary.title !== item.title && !primary.title.includes(item.title)) {
+          primary.title = `${primary.title} & ${item.title}`;
+        }
+        // Merge Key Components and summary lines without duplicate lines
+        if (item.description) {
+          const itemLines = item.description.split("\n");
+          const existingDesc = primary.description || "";
+          const newLines = itemLines.filter(
+            (l: string) => l.trim() && !existingDesc.includes(l.trim())
+          );
+          if (newLines.length > 0) {
+            primary.description = `${existingDesc}\n${newLines.join("\n")}`.trim();
+          }
+        }
+        if (!primary.due_date && item.due_date) primary.due_date = item.due_date;
+        if (!primary.class_grade && item.class_grade) primary.class_grade = item.class_grade;
+        if (!primary.student_name && item.student_name) primary.student_name = item.student_name;
+      }
+    }
+    return Array.from(map.values());
+  }, [allProjectTasks]);
+
   const confirmedProjectItems = allProjectTasks.filter((t) => t.stage !== "in_discussion" && t.status !== "in_discussion");
 
   // Also include conversations that have an active project summary but no task row yet
@@ -887,7 +925,7 @@ export default function MessagingControlPanel() {
                 </div>
               ) : (
                 <>
-                  {ongoingProjectItems.map((item) => {
+                  {ongoingProjectItems.map((item: any) => {
                     const convObj = conversations.find((c) => c.id === item.conversation_id);
                     return (
                       <div
@@ -969,7 +1007,13 @@ export default function MessagingControlPanel() {
                         <div style={{ display: "flex", gap: "0.45rem", marginTop: "0.25rem", flexWrap: "wrap" }}>
                           <button
                             type="button"
-                            onClick={() => handleFinalizeTask({ taskId: item.id })}
+                            onClick={() =>
+                              handleFinalizeTask({
+                                taskId: item.id,
+                                duplicateTaskIds: item.duplicateTaskIds,
+                                title: item.title,
+                              })
+                            }
                             style={{
                               padding: "0.4rem 0.75rem",
                               borderRadius: "8px",
@@ -1010,6 +1054,7 @@ export default function MessagingControlPanel() {
                             onClick={() =>
                               handleDismissSummary({
                                 taskId: item.id,
+                                duplicateTaskIds: item.duplicateTaskIds,
                                 conversationId: item.conversation_id || undefined,
                               })
                             }
