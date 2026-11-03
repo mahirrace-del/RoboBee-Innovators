@@ -22,6 +22,10 @@ import {
   createBlankSlide,
   normalizeDeckToFreeform,
 } from "@/lib/slideStudioStore";
+import {
+  openFrontendSlidesInNewTab,
+  downloadFrontendSlidesDeck,
+} from "@/lib/frontendSlidesExporter";
 import { SlideStudioEditor } from "@/components/curriculum/SlideStudioEditor";
 import { HardwareLabDrawer } from "@/components/curriculum/HardwareLabDrawer";
 import { AttendanceQuickModal } from "@/components/curriculum/AttendanceQuickModal";
@@ -82,8 +86,8 @@ export default function AdminCurriculumPage() {
   // All Canonical Lessons + Any Custom Created Decks
   const [decks, setDecks] = useState<EditableClassDeck[]>([]);
 
-  // Course Pathway Filter ('ALL' by default so instructors immediately see all 36 classes across all 4 pathways)
-  const [courseFilter, setCourseFilter] = useState<"ALL" | CourseTier>("ALL");
+  // Course Pathway Filter ('ALL' by default so instructors immediately see all classes across all 4 pathways + Supportive Labs)
+  const [courseFilter, setCourseFilter] = useState<"ALL" | "SUPPORT" | CourseTier>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Header "Data & Backup" Dropdown & Per-Card "•••" Menu State
@@ -472,7 +476,13 @@ export default function AdminCurriculumPage() {
   // Filtered Decks for Grid View
   const filteredDecks = decks.filter((d) => {
     const cId = resolveDeckCourseId(d);
-    const matchesCourse = courseFilter === "ALL" || cId === courseFilter;
+    const isSupport = !!d.isSupportLab || d.id.startsWith("sup-");
+    const matchesCourse =
+      courseFilter === "ALL"
+        ? true
+        : courseFilter === "SUPPORT"
+        ? isSupport
+        : cId === courseFilter;
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch =
       !q ||
@@ -530,6 +540,30 @@ export default function AdminCurriculumPage() {
 
         {/* Clean Top Header Actions */}
         <div className={styles.headerActions} onClick={(e) => e.stopPropagation()}>
+          {/* Canva Master Deck Link */}
+          <a
+            href="https://canva.link/ou5cdalj1jml62y"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.actionBtn}
+            style={{ textDecoration: "none", borderColor: "rgba(16, 185, 129, 0.45)", color: "#10B981" }}
+          >
+            <ExternalLink size={15} color="#10B981" />
+            Canva Master Deck
+          </a>
+
+          {/* Flagship 1920x1080 Frontend-Slides Deck */}
+          <a
+            href="/presentations/class-01-frontend-slides.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.actionBtn}
+            style={{ textDecoration: "none", borderColor: "rgba(56, 189, 248, 0.45)", color: "#38BDF8" }}
+          >
+            <Tv size={15} color="#38BDF8" />
+            Flagship 1080p Deck
+          </a>
+
           {/* Quick Attendance Modal Button */}
           <button
             type="button"
@@ -616,20 +650,20 @@ export default function AdminCurriculumPage() {
         {/* 1. Total Lessons */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>Total Curriculum Scope</div>
-          <div className={styles.kpiValue}>{decks.length} Total Lessons</div>
+          <div className={styles.kpiValue}>{decks.length} Total Modules</div>
           <div className={styles.kpiSub}>
-            4 Explorers + 10 Beginner + 10 Intermediate + 12 Advanced
+            4 Levels (Class 3–12) + 8 Supportive Catch-Up Labs (S1–S8)
           </div>
         </div>
 
         {/* 2. 120-Minute Session Pacing */}
         <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Standard Session Pacing</div>
+          <div className={styles.kpiLabel}>Friday Lab Schedule</div>
           <div className={styles.kpiValue} style={{ color: "#9c6f18" }}>
-            120 Min / Class
+            Fri 4:00–6:00 PM
           </div>
           <div className={styles.kpiSub}>
-            72 Total Workshop Hours (60m compact supported)
+            120 Min (2-Hour) Practical Workshop Standard
           </div>
         </div>
 
@@ -771,6 +805,25 @@ export default function AdminCurriculumPage() {
                   </button>
                 );
               })}
+
+              <button
+                type="button"
+                onClick={() => setCourseFilter("SUPPORT")}
+                className={`${styles.pathwayBtn} ${
+                  courseFilter === "SUPPORT" ? styles.pathwayBtnActive : ""
+                }`}
+              >
+                <span>Supportive Labs (S1–S8)</span>
+                <span
+                  className={styles.pathwayBadgePill}
+                  style={{
+                    background: courseFilter === "SUPPORT" ? "rgba(16, 185, 129, 0.2)" : "#1E2533",
+                    color: courseFilter === "SUPPORT" ? "#10B981" : "#6f665e",
+                  }}
+                >
+                  {decks.filter((d) => d.isSupportLab || d.id.startsWith("sup-")).length}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -821,9 +874,9 @@ export default function AdminCurriculumPage() {
       {viewMode === "roadmap" && (
         <ClassProgressionRoadmap
           decks={decks}
-          courseFilter={courseFilter}
+          courseFilter={courseFilter === "SUPPORT" ? "ALL" : courseFilter}
           classStatuses={classStatuses}
-          searchQuery={searchQuery}
+          searchQuery={courseFilter === "SUPPORT" ? "SUPPORT" : searchQuery}
           onOpenProjector={(deck) => {
             setProjectorInitialSlide(0);
             setProjectorDeck(normalizeDeckToFreeform(deck));
@@ -1077,6 +1130,62 @@ export default function AdminCurriculumPage() {
                           gap: "0.2rem",
                         }}
                       >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenCardMenuId(null);
+                            openFrontendSlidesInNewTab(
+                              deck,
+                              resolveLessonForDeck(deck)
+                            );
+                          }}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.48rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#38BDF8",
+                            fontSize: "0.76rem",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Tv size={13} color="#38BDF8" /> Launch 1920×1080 Web Deck
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenCardMenuId(null);
+                            downloadFrontendSlidesDeck(
+                              deck,
+                              resolveLessonForDeck(deck)
+                            );
+                          }}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "0.48rem 0.6rem",
+                            borderRadius: "6px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#10B981",
+                            fontSize: "0.76rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.45rem",
+                          }}
+                        >
+                          <Download size={13} color="#10B981" /> Export HTML Slides
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => {

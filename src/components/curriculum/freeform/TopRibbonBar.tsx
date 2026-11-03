@@ -62,10 +62,13 @@ interface TopRibbonBarProps {
   onInsertTextBox: () => void;
   onInsertImages: (files: FileList) => void;
   onInsertImageUrl?: () => void;
+  onOpenHardwareLibrary?: () => void;
   onInsertCodeBlock: () => void;
   onInsertDiagram?: () => void;
   onInsertShape: (shapeType: "rectangle" | "circle" | "arrow-right") => void;
   onInsertVideo: () => void;
+  onExportFrontendSlidesHtml?: () => void;
+  onOpenFrontendSlidesPlayer?: () => void;
   // Selected Element formatting
   selectedElement?: SlideElement | null;
   onUpdateSelectedElement?: (patch: Partial<SlideElement>) => void;
@@ -99,10 +102,13 @@ export function TopRibbonBar({
   onInsertTextBox,
   onInsertImages,
   onInsertImageUrl,
+  onOpenHardwareLibrary,
   onInsertCodeBlock,
   onInsertDiagram,
   onInsertShape,
   onInsertVideo,
+  onExportFrontendSlidesHtml,
+  onOpenFrontendSlidesPlayer,
   selectedElement,
   onUpdateSelectedElement,
   onBringForward,
@@ -297,14 +303,30 @@ export function TopRibbonBar({
             <FileText size={14} color="#FBBF24" />
             <span>Text</span>
           </button>
+          {onOpenHardwareLibrary && (
+            <button
+              type="button"
+              onClick={onOpenHardwareLibrary}
+              style={{
+                ...ribbonBtnStyle,
+                background: "rgba(245, 184, 0, 0.14)",
+                border: "1px solid rgba(245, 184, 0, 0.4)",
+                color: "#FDE047",
+              }}
+              title="Open Robotics Hardware Diagrams, Schematics & Lab Photo Library"
+            >
+              <ImageIcon size={14} color="#F5B800" />
+              <span>Hardware &amp; Photos</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             style={ribbonBtnStyle}
-            title="Upload 1 or Multiple Images"
+            title="Upload 1 or Multiple Images from Computer (or Ctrl+V Paste)"
           >
-            <ImageIcon size={14} color="#F43F5E" />
-            <span>Image(s)</span>
+            <Upload size={14} color="#F43F5E" />
+            <span>Upload</span>
           </button>
           {onInsertImageUrl && (
             <button
@@ -721,6 +743,55 @@ export function TopRibbonBar({
         >
           <RotateCcw size={13} />
         </button>
+
+        {/* Frontend-Slides 1920x1080 Web Deck Player & HTML Export */}
+        {onOpenFrontendSlidesPlayer && (
+          <button
+            type="button"
+            onClick={onOpenFrontendSlidesPlayer}
+            style={{
+              background: "rgba(107, 15, 36, 0.7)",
+              border: "1px solid #F5B800",
+              borderRadius: "8px",
+              padding: "7px 11px",
+              color: "#FFFFFF",
+              fontWeight: 800,
+              fontSize: "11px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+            title="Launch in Native 1920×1080 Frontend-Slides Interactive Web Player"
+          >
+            <PlaySquare size={14} color="#F5B800" />
+            <span>1920×1080 Web Deck</span>
+          </button>
+        )}
+
+        {onExportFrontendSlidesHtml && (
+          <button
+            type="button"
+            onClick={onExportFrontendSlidesHtml}
+            style={{
+              background: "rgba(0, 245, 212, 0.12)",
+              border: "1px solid rgba(0, 245, 212, 0.4)",
+              borderRadius: "8px",
+              padding: "7px 11px",
+              color: "#00F5D4",
+              fontWeight: 800,
+              fontSize: "11px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+            title="Export Standalone Interactive Frontend-Slides (.html) Presentation"
+          >
+            <Download size={14} color="#00F5D4" />
+            <span>Export HTML</span>
+          </button>
+        )}
 
         {/* Primary Golden CTA Button: GO LIVE / PRESENT */}
         <button

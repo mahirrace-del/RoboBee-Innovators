@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoboBee Innovators — Master 44-Module Curriculum & Class 01 Frontend Slides</title>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" />
+  <style>
+    /* ==========================================================================
+       ROBOBEE INNOVATORS × FRONTEND-SLIDES (1920×1080 FIXED 16:9 STAGE)
+       ========================================================================== */
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #131926;
+      --burgundy: #6B0F24;
+      --burgundy-glow: rgba(107, 15, 36, 0.55);
+      --gold: #F5B800;
+      --gold-glow: rgba(245, 184, 0, 0.28);
+      --cyan: #00F5D4;
+      --blue: #38BDF8;
+      --emerald: #10B981;
+      --rose: #F43F5E;
+      --text-primary: #FFFFFF;
+      --text-secondary: #CBD5E1;
+      --font-display: 'Clash Display', system-ui, sans-serif;
+      --font-body: 'Satoshi', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --slide-padding: 64px;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration-normal: 0.55s;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* --- viewport-base.css (Fixed 16:9 1920×1080 Stage) --- */
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #060911;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      user-select: none;
+    }
+
+    .deck-viewport {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 20%, #171f32 0%, #060911 100%);
+    }
+
+    .deck-stage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      transform-origin: top left;
+      will-change: transform;
+      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.8);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      padding: var(--slide-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0b0f19 0%, #171024 55%, #2a0a16 100%);
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s var(--ease-out-expo), visibility 0.45s ease;
+    }
+
+    .slide.active {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    .slide-bg-mesh {
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 88% 14%, rgba(245, 184, 0, 0.14) 0%, transparent 38%),
+        radial-gradient(circle at 12% 86%, rgba(107, 15, 36, 0.38) 0%, transparent 42%),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+      pointer-events: none;
+    }
+
+    .slide-inner {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+    }
+
+    /* Staggered Reveal Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity var(--duration-normal) var(--ease-out-expo),
+                  transform var(--duration-normal) var(--ease-out-expo);
+    }
+    .slide.visible .reveal {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal:nth-child(1) { transition-delay: 0.08s; }
+    .reveal:nth-child(2) { transition-delay: 0.16s; }
+    .reveal:nth-child(3) { transition-delay: 0.24s; }
+    .reveal:nth-child(4) { transition-delay: 0.32s; }
+
+    /* Header */
+    .slide-header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .badge-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .pill-burgundy {
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: var(--burgundy);
+      border: 1.5px solid var(--gold);
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .pill-gold {
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: rgba(245, 184, 0, 0.14);
+      border: 1px solid rgba(245, 184, 0, 0.45);
+      color: #FDE047;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .pill-cyan {
+      margin-left: auto;
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: rgba(0, 245, 212, 0.12);
+      border: 1px solid rgba(0, 245, 212, 0.38);
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .slide-title {
+      font-family: var(--font-display);
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+    }
+    .slide-subtitle {
+      font-size: 23px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      max-width: 1580px;
+    }
+
+    /* Grids & Cards */
+    .grid-2col {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 28px;
+      min-height: 0;
+    }
+    .grid-4col {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      min-height: 0;
+    }
+    .grid-3col {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      min-height: 0;
+    }
+    .stack-col {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      justify-content: center;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.86);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      border-left: 6px solid var(--card-accent, var(--gold));
+      border-radius: 22px;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(12px);
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--gold);
+    }
+    .card-tag {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .card h3 {
+      font-family: var(--font-display);
+      font-size: 27px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .card p {
+      font-size: 19px;
+      line-height: 1.5;
+      color: #E2E8F0;
+    }
+    .card-meta {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.16);
+      font-size: 16px;
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    /* Visual Showcase Box */
+    .visual-stage {
+      background: rgba(9, 13, 24, 0.88);
+      border: 2px solid rgba(245, 184, 0, 0.35);
+      border-radius: 24px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 24px 56px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Interactive Simulator Panel */
+    .sim-controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .sim-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .sim-btn.active {
+      background: var(--burgundy);
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 18px var(--gold-glow);
+    }
+
+    /* Code Window */
+    .code-window {
+      background: #090D16;
+      border: 2px solid var(--blue);
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+    }
+    .code-bar {
+      padding: 12px 20px;
+      background: #111827;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--blue);
+      font-weight: 700;
+    }
+    .code-pre {
+      padding: 24px;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      line-height: 1.52;
+      color: #F8FAFC;
+      overflow: auto;
+      flex: 1;
+    }
+
+    /* Quiz Flip Card */
+    .quiz-card { cursor: pointer; }
+    .quiz-answer-box {
+      margin-top: 10px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34D399;
+      font-size: 17px;
+      display: none;
+    }
+    .quiz-hint-box {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(245, 184, 0, 0.14);
+      border: 1px solid rgba(245, 184, 0, 0.38);
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .quiz-card.flipped .quiz-hint-box { display: none; }
+    .quiz-card.flipped .quiz-answer-box { display: block; }
+
+    /* Footer */
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 16px;
+      color: #94A3B8;
+    }
+
+    /* Inline Editing Hotzone (frontend-slides standard) */
+    .edit-hotzone {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 90px;
+      height: 90px;
+      z-index: 10000;
+      cursor: pointer;
+    }
+    .edit-toggle {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10001;
+      background: var(--burgundy);
+      border: 2px solid var(--gold);
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .edit-toggle.show,
+    .edit-toggle.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* HUD Navigation Dock */
+    .hud-dock {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(245, 184, 0, 0.45);
+      border-radius: 999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+    }
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #FFFFFF;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .hud-btn:hover {
+      background: var(--burgundy);
+      border-color: var(--gold);
+    }
+    [contenteditable="true"] {
+      outline: 2px dashed var(--gold) !important;
+      outline-offset: 4px;
+      background: rgba(245, 184, 0, 0.08);
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="edit-hotzone" id="editHotzone"></div>
+  <button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏️ Edit Slides (E)</button>
+
+  <div class="deck-viewport">
+    <main class="deck-stage" id="deckStage">
+      <!-- ==================================================================
+           SLIDE 01: HERO WELCOME & FRIDAY LAB MISSION
+           ================================================================== -->
+      <section class="slide active visible">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 01 / 08</span>
+              <span class="pill-gold editable-text">ROBOBEE INNOVATORS • LEVEL 1 • CLASS 01</span>
+              <span class="pill-cyan">FRIDAY 4:00 PM – 6:00 PM • 120-MIN LAB</span>
+            </div>
+            <h1 class="slide-title editable-text">Electricity, LEDs &amp; The Breadboard X-Ray</h1>
+            <p class="slide-subtitle editable-text">&ldquo;Dream. Invent. Experiment. Inspire.&rdquo; — Master electron flow, decode the hidden spring clips inside a 400-point breadboard, and wire your first protected LED circuit.</p>
+          </header>
+
+          <div class="grid-2col">
+            <div class="stack-col">
+              <article class="card reveal" style="--card-accent: #F5B800;">
+                <div class="card-tag editable-text">01 • THE MINDSET SHIFT</div>
+                <h3 class="editable-text">From Tech Consumer to Robot Creator</h3>
+                <p class="editable-text">Every Friday from 4:00 PM to 6:00 PM, you step out of textbook theory and build working electronics, microcontrollers, and autonomous machines with your own hands.</p>
+                <div class="card-meta editable-text">Target Cohort: Class 3 to Class 12 (3-Band Differentiated)</div>
+              </article>
+              <article class="card reveal" style="--card-accent: #00F5D4;">
+                <div class="card-tag editable-text">02 • TODAY'S PHYSICAL DELIVERABLE</div>
+                <h3 class="editable-text">Protected LED Beacon + Breadboard Mastery</h3>
+                <p class="editable-text">By 6:00 PM today, every bench team will trace horizontal power rails vs. vertical terminal strips, calculate current-limiting resistance, and pass the 3-Trial Bench Inspection.</p>
+                <div class="card-meta editable-text">Hardware Kit: 400-Pt Breadboard, 5V Supply, 5mm LEDs, 220Ω Resistors</div>
+              </article>
+            </div>
+
+            <div class="visual-stage reveal">
+              <!-- High-Contrast Vector Schematic of Arduino + Breadboard + Glowing LED -->
+              <svg viewBox="0 0 680 420" width="100%" height="360">
+                <rect x="20" y="20" width="640" height="380" rx="20" fill="#0B1324" stroke="#334155" stroke-width="2"/>
+                <!-- Arduino 5V Source Box -->
+                <rect x="50" y="90" width="180" height="240" rx="14" fill="#006D77" stroke="#00F5D4" stroke-width="3"/>
+                <text x="140" y="135" fill="#FFFFFF" font-family="Clash Display, sans-serif" font-size="22" font-weight="bold" text-anchor="middle">ARDUINO UNO</text>
+                <text x="140" y="165" fill="#99F6E4" font-family="JetBrains Mono, monospace" font-size="14" text-anchor="middle">ATmega328P MCU</text>
+                <circle cx="205" cy="220" r="9" fill="#EF4444"/><text x="175" y="225" fill="#FFF" font-size="14" font-weight="bold" text-anchor="end">5V / D8</text>
+                <circle cx="205" cy="275" r="9" fill="#38BDF8"/><text x="175" y="280" fill="#FFF" font-size="14" font-weight="bold" text-anchor="end">GND</text>
+                <!-- Breadboard -->
+                <rect x="310" y="70" width="310" height="280" rx="14" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3"/>
+                <line x1="330" y1="100" x2="600" y2="100" stroke="#EF4444" stroke-width="4"/>
+                <line x1="330" y1="320" x2="600" y2="320" stroke="#2563EB" stroke-width="4"/>
+                <text x="465" y="92" fill="#EF4444" font-size="13" font-weight="bold" text-anchor="middle">RED RAIL (+5V HORIZONTAL)</text>
+                <text x="465" y="340" fill="#2563EB" font-size="13" font-weight="bold" text-anchor="middle">BLUE RAIL (GND HORIZONTAL)</text>
+                <!-- 220 Ohm Resistor -->
+                <line x1="205" y1="220" x2="365" y2="185" stroke="#EF4444" stroke-width="5"/>
+                <rect x="365" y="173" width="90" height="24" rx="6" fill="#D97706" stroke="#78350F" stroke-width="2"/>
+                <text x="410" y="190" fill="#FFF" font-family="JetBrains Mono" font-size="13" font-weight="bold" text-anchor="middle">220Ω</text>
+                <!-- Glowing Red LED -->
+                <line x1="455" y1="185" x2="520" y2="185" stroke="#F59E0B" stroke-width="4"/>
+                <circle cx="535" cy="185" r="32" fill="rgba(239,68,68,0.28)"/>
+                <circle cx="535" cy="185" r="18" fill="#EF4444" stroke="#FCA5A5" stroke-width="3"/>
+                <text x="535" y="142" fill="#EF4444" font-size="14" font-weight="bold" text-anchor="middle">LED ANODE (+)</text>
+                <!-- Return GND Wire -->
+                <line x1="535" y1="203" x2="535" y2="320" stroke="#1E293B" stroke-width="4"/>
+                <line x1="330" y1="320" x2="205" y2="275" stroke="#2563EB" stroke-width="5"/>
+              </svg>
+              <div style="font-size: 16px; color: #F5B800; font-weight: 700;" class="editable-text">Closed Loop: Pin D8 (+5V) ➔ 220Ω Resistor ➔ LED Anode (+) ➔ LED Cathode (-) ➔ GND</div>
+            </div>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • Flat 2, 75 North Chashara, Narayanganj • Lead: Mahir Rahman</div>
+            <div class="editable-text">🎙️ Welcome students! Hold up a real 400-point breadboard and ask: "What is hiding underneath this white plastic?"</div>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SLIDE 02: THE 44-MODULE MASTER CURRICULUM ROADMAP
+           ================================================================== -->
+      <section class="slide">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 02 / 08</span>
+              <span class="pill-gold editable-text">MASTER ROADMAP • 36 CORE CLASSES + 8 SUPPORT LABS</span>
+              <span class="pill-cyan">88 HOURS TOTAL HANDS-ON TRAINING</span>
+            </div>
+            <h1 class="slide-title editable-text">The 4-Level Master Robotics Pathway (44 Modules)</h1>
+            <p class="slide-subtitle editable-text">Engineered so every student from Class 3 to Class 12 progresses step-by-step from basic circuits to national tournament combat &amp; AI robots—with Supportive Catch-Up Labs built in.</p>
+          </header>
+
+          <div class="grid-4col">
+            <article class="card reveal" style="--card-accent: #F5B800;">
+              <div class="card-tag editable-text">LEVEL 1 • 13 MODULES</div>
+              <h3 class="editable-text">Foundations, Electronics &amp; Smart Gadgets</h3>
+              <p class="editable-text"><strong>Classes 01–10 + Support S1–S3:</strong> Breadboard X-Ray, Arduino Uno, Traffic Lights, Pushbuttons, LDR Alarms, Potentiometer ADC, Ultrasonic Sonar, SG90 Servo, I2C LCD &amp; Smart Dustbin Capstone.</p>
+              <div class="card-meta editable-text">Includes Support Labs S1, S2 &amp; S3</div>
+            </article>
+
+            <article class="card reveal" style="--card-accent: #00F5D4;">
+              <div class="card-tag editable-text">LEVEL 2 • 12 MODULES</div>
+              <h3 class="editable-text">Mobile Robotics, Motors &amp; Autonomous Rovers</h3>
+              <p class="editable-text"><strong>Classes 11–20 + Support S4–S5:</strong> L298N H-Bridge Driver, PWM Speed Control, 2WD Differential Drive, Bluetooth Smartphone Rover, IR Line Follower, Servo Radar &amp; Fire-Fighter Bot.</p>
+              <div class="card-meta editable-text">Includes Support Labs S4 &amp; S5</div>
+            </article>
+
+            <article class="card reveal" style="--card-accent: #38BDF8;">
+              <div class="card-tag editable-text">LEVEL 3 • 10 MODULES</div>
+              <h3 class="editable-text">3D CAD, Robotic Arms &amp; IoT Smart Systems</h3>
+              <p class="editable-text"><strong>Classes 21–28 + Support S6–S7:</strong> 3D CAD Enclosures, Multi-Servo Power Distribution, 3-DOF Pick-and-Place Robotic Arm, Non-Blocking millis(), ESP32 Wi-Fi Web Server &amp; Smart Agriculture.</p>
+              <div class="card-meta editable-text">Includes Support Labs S6 &amp; S7</div>
+            </article>
+
+            <article class="card reveal" style="--card-accent: #F43F5E;">
+              <div class="card-tag editable-text">LEVEL 4 • 9 MODULES</div>
+              <h3 class="editable-text">Competitive Robotics, PID, AI Vision &amp; Combat</h3>
+              <p class="editable-text"><strong>Classes 29–36 + Support S8:</strong> 5-Channel IR Array, Full PID Control ($K_p, K_i, K_d$), Wheel Encoders, MPU-6050 IMU Sensor Fusion, HuskyLens AI Vision, Mini-Sumo &amp; Robo Soccer.</p>
+              <div class="card-meta editable-text">Includes Support Lab S8 + NRC/FIRSO Prep</div>
+            </article>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • Zero Student Left Behind Architecture</div>
+            <div class="editable-text">🎙️ Show students how today's Class 01 circuit is the exact foundation for Level 4 tournament robots!</div>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SLIDE 03: FRIDAY 4:00–6:00 PM 5-STAGE RHYTHM & 3-BAND SYSTEM
+           ================================================================== -->
+      <section class="slide">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 03 / 08</span>
+              <span class="pill-gold editable-text">PEDAGOGICAL ARCHITECTURE • ZERO BOREDOM, ZERO OVERWHELM</span>
+              <span class="pill-cyan">EVERY FRIDAY • 4:00 PM TO 6:00 PM</span>
+            </div>
+            <h1 class="slide-title editable-text">How Our 2-Hour Friday Lab Works (4:00 – 6:00 PM)</h1>
+            <p class="slide-subtitle editable-text">No long boring lectures! Every 120-minute Friday session follows 5 high-energy stages with 3-Band Age Differentiation.</p>
+          </header>
+
+          <div class="grid-3col">
+            <article class="card reveal" style="--card-accent: #F5B800;">
+              <div class="card-tag editable-text">4:00 – 4:40 PM (40 MINS)</div>
+              <h3 class="editable-text">Stage 1 &amp; 2: Hook + Hardware Anatomy</h3>
+              <p class="editable-text"><strong>4:00–4:15 PM (15m):</strong> Live mystery demo &amp; mission hook.<br/><br/><strong>4:15–4:40 PM (25m):</strong> Interactive pinout anatomy, voltage/current physics, and safety rules before touching power.</p>
+              <div class="card-meta editable-text">1 Core Concept Per Class Rule</div>
+            </article>
+
+            <article class="card reveal" style="--card-accent: #00F5D4;">
+              <div class="card-tag editable-text">4:40 – 5:45 PM (65 MINS)</div>
+              <h3 class="editable-text">Stage 3 &amp; 4: Guided Build + 3-Band Sprint</h3>
+              <p class="editable-text"><strong>4:40–5:15 PM (35m):</strong> Step-by-step power-off breadboard wiring &amp; baseline test.<br/><br/><strong>5:15–5:45 PM (30m):</strong> Age-tiered challenge for <strong>Band A (Class 3–5)</strong>, <strong>Band B (Class 6–8)</strong> &amp; <strong>Band C (Class 9–12)</strong>.</p>
+              <div class="card-meta editable-text">65 Minutes of Pure Hands-On Building!</div>
+            </article>
+
+            <article class="card reveal" style="--card-accent: #10B981;">
+              <div class="card-tag editable-text">5:45 – 6:00 PM (15 MINS)</div>
+              <h3 class="editable-text">Stage 5: Arena Demo, Exit Check &amp; Support Flag</h3>
+              <p class="editable-text"><strong>5:45–6:00 PM (15m):</strong> Bench showcase, 4-question Exit Ticket, and kit sorting.<br/><br/>Anyone who missed a class or needs extra practice gets invited to our <strong>Supportive Mastery Labs (S1–S8)</strong>!</p>
+              <div class="card-meta editable-text">100% Practical Mastery Before Advancing</div>
+            </article>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • 120-Minute Pacing Engine</div>
+            <div class="editable-text">🎙️ Explain that whether a student is in Class 3 or Class 12, they build the same core hardware and then unlock their Band A, B, or C mission!</div>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SLIDE 04: INSIDE THE BREADBOARD X-RAY & LED POLARITY
+           ================================================================== -->
+      <section class="slide">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 04 / 08</span>
+              <span class="pill-gold editable-text">STAGE 2 (4:15–4:40 PM) • HARDWARE ANATOMY</span>
+              <span class="pill-cyan">SAFETY FIRST: WIRE WITH POWER OFF</span>
+            </div>
+            <h1 class="slide-title editable-text">Inside the 400-Point Breadboard &amp; LED Polarity</h1>
+            <p class="slide-subtitle editable-text">If you place both legs of an LED into the same 5-hole vertical column, the hidden metal clip creates a dead short! Here is how the clips actually run:</p>
+          </header>
+
+          <div class="grid-2col">
+            <div class="stack-col">
+              <article class="card reveal" style="--card-accent: #EF4444;">
+                <div class="card-tag editable-text">RULE 01 • POWER RAILS (+ AND -)</div>
+                <h3 class="editable-text">Horizontal Power Highways</h3>
+                <p class="editable-text">The long top and bottom strips marked with <strong>Red (+)</strong> and <strong>Blue (-)</strong> lines are connected <strong>HORIZONTALLY</strong> all the way across the board to distribute +5V and GND.</p>
+              </article>
+              <article class="card reveal" style="--card-accent: #38BDF8;">
+                <div class="card-tag editable-text">RULE 02 • TERMINAL COLUMNS (A–E &amp; F–J)</div>
+                <h3 class="editable-text">5-Hole Vertical Groups &amp; The Center Trench</h3>
+                <p class="editable-text">Each numbered column (1 to 30) is connected <strong>VERTICALLY in groups of 5 holes</strong> (a-b-c-d-e and f-g-h-i-j). The center ravine completely isolates the top half from the bottom half.</p>
+              </article>
+              <article class="card reveal" style="--card-accent: #10B981;">
+                <div class="card-tag editable-text">RULE 03 • LED ONE-WAY VALVE</div>
+                <h3 class="editable-text">Anode (+) Long Leg vs. Cathode (-) Short Leg</h3>
+                <p class="editable-text">An LED is a diode—current only flows one way! Connect the <strong>Long Leg (Anode +)</strong> toward +5V (via 220Ω resistor) and the <strong>Short Leg / Flat Rim (Cathode -)</strong> to Ground (GND).</p>
+              </article>
+            </div>
+
+            <div class="visual-stage reveal">
+              <svg viewBox="0 0 640 420" width="100%" height="360">
+                <rect x="20" y="20" width="600" height="380" rx="18" fill="#0F172A" stroke="#475569" stroke-width="2"/>
+                <text x="320" y="55" fill="#F5B800" font-family="Clash Display" font-size="22" font-weight="bold" text-anchor="middle">BREADBOARD X-RAY VIEW (INTERNAL METAL CLIPS)</text>
+                <!-- Top Power Rails -->
+                <rect x="60" y="75" width="520" height="16" rx="6" fill="rgba(239,68,68,0.25)" stroke="#EF4444" stroke-width="2"/>
+                <text x="320" y="88" fill="#FCA5A5" font-size="12" font-weight="bold" text-anchor="middle">+5V HORIZONTAL METAL CLIP</text>
+                <rect x="60" y="100" width="520" height="16" rx="6" fill="rgba(59,130,246,0.25)" stroke="#3B82F6" stroke-width="2"/>
+                <text x="320" y="113" fill="#93C5FD" font-size="12" font-weight="bold" text-anchor="middle">GND (-) HORIZONTAL METAL CLIP</text>
+                <!-- Vertical 5-Hole Strips Top -->
+                <g fill="rgba(56,189,248,0.2)" stroke="#38BDF8" stroke-width="2">
+                  <rect x="80" y="135" width="24" height="85" rx="6"/>
+                  <rect x="125" y="135" width="24" height="85" rx="6"/>
+                  <rect x="170" y="135" width="24" height="85" rx="6"/>
+                  <rect x="215" y="135" width="24" height="85" rx="6"/>
+                  <rect x="260" y="135" width="24" height="85" rx="6"/>
+                </g>
+                <!-- Center Trench -->
+                <rect x="60" y="230" width="250" height="26" rx="6" fill="#1E293B" stroke="#64748B" stroke-dasharray="6 4"/>
+                <text x="185" y="248" fill="#CBD5E1" font-size="12" font-weight="bold" text-anchor="middle">CENTER ISOLATION TRENCH</text>
+                <!-- Vertical 5-Hole Strips Bottom -->
+                <g fill="rgba(56,189,248,0.2)" stroke="#38BDF8" stroke-width="2">
+                  <rect x="80" y="268" width="24" height="85" rx="6"/>
+                  <rect x="125" y="268" width="24" height="85" rx="6"/>
+                  <rect x="170" y="268" width="24" height="85" rx="6"/>
+                  <rect x="215" y="268" width="24" height="85" rx="6"/>
+                  <rect x="260" y="268" width="24" height="85" rx="6"/>
+                </g>
+                <!-- LED Polarity Diagram on Right Side -->
+                <rect x="345" y="135" width="235" height="220" rx="14" fill="#1E293B" stroke="#F5B800" stroke-width="2"/>
+                <text x="462" y="165" fill="#F5B800" font-size="16" font-weight="bold" text-anchor="middle">LED POLARITY CHECK</text>
+                <path d="M432 230 A30 30 0 0 1 492 230 L492 260 L432 260 Z" fill="#EF4444" stroke="#FCA5A5" stroke-width="2"/>
+                <line x1="445" y1="260" x2="445" y2="335" stroke="#E2E8F0" stroke-width="4"/>
+                <line x1="478" y1="260" x2="478" y2="305" stroke="#94A3B8" stroke-width="4"/>
+                <text x="415" y="330" fill="#10B981" font-size="13" font-weight="bold" text-anchor="end">LONG (+)</text>
+                <text x="500" y="305" fill="#38BDF8" font-size="13" font-weight="bold" text-anchor="start">SHORT (-)</text>
+              </svg>
+              <div style="font-size: 15px; color: #94A3B8;" class="editable-text">Always place the two legs of an LED or resistor into TWO DIFFERENT numbered columns!</div>
+            </div>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • Hardware Anatomy &amp; Safety</div>
+            <div class="editable-text">🎙️ Ask students: "What happens if both legs of our LED go into Column 10?" (Answer: They touch the same metal clip and won't light up!)</div>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SLIDE 05: INTERACTIVE BREADBOARD & OHM'S LAW SIMULATOR
+           ================================================================== -->
+      <section class="slide">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 05 / 08</span>
+              <span class="pill-gold editable-text">STAGE 3 (4:40–5:15 PM) • INTERACTIVE CIRCUIT SIMULATOR</span>
+              <span class="pill-cyan">LIVE CLASSROOM INTERACTION</span>
+            </div>
+            <h1 class="slide-title editable-text">Interactive Ohm's Law &amp; Resistor Lab Simulator</h1>
+            <p class="slide-subtitle editable-text">Click the resistor buttons below on the projector to test what happens to LED current ($I = \frac{V_s - V_f}{R}$) before wiring your physical board!</p>
+          </header>
+
+          <div class="grid-2col">
+            <div class="stack-col">
+              <article class="card reveal" style="--card-accent: #F5B800;">
+                <div class="card-tag editable-text">POINT-TO-POINT WIRING TABLE</div>
+                <h3 class="editable-text">4-Step Power-Off Wiring Checklist</h3>
+                <p class="editable-text">
+                  <strong>Wire 1:</strong> Arduino <code>5V</code> (or <code>Pin D8</code>) ➔ Breadboard Red Rail (<code>+</code>)<br/>
+                  <strong>Wire 2:</strong> Arduino <code>GND</code> ➔ Breadboard Blue Rail (<code>-</code>)<br/>
+                  <strong>Wire 3:</strong> <code>220Ω Resistor</code> (Red-Red-Brown) from Red Rail (<code>+</code>) to <code>Row 10a</code><br/>
+                  <strong>Wire 4:</strong> <code>LED Long Leg (+)</code> in <code>Row 10c</code>, <code>Short Leg (-)</code> in Blue Rail (<code>-</code>)
+                </p>
+              </article>
+
+              <article class="card reveal" style="--card-accent: #00F5D4;">
+                <div class="card-tag editable-text">WHY WE NEED THE 220Ω RESISTOR</div>
+                <h3 class="editable-text">Protecting the Semiconductor Junction</h3>
+                <p class="editable-text">A Red LED drops $V_f = 2.0\text{V}$ and wants $\sim 15\text{mA}$. With a $5.0\text{V}$ supply:<br/>
+                <code>R = (5.0V - 2.0V) / 0.0136A = 220 Ω</code></p>
+              </article>
+            </div>
+
+            <div class="visual-stage reveal">
+              <div style="font-family: var(--font-display); font-size: 24px; font-weight: 700; color: #FFFFFF;">
+                Live Circuit Bench Test — Click to Change Resistor:
+              </div>
+              <div class="sim-controls">
+                <button class="sim-btn active" onclick="setSimResistor(220, this)">220 Ω (Ideal • 13.6 mA)</button>
+                <button class="sim-btn" onclick="setSimResistor(1000, this)">1 kΩ (Medium • 3.0 mA)</button>
+                <button class="sim-btn" onclick="setSimResistor(10000, this)">10 kΩ (Dim • 0.3 mA)</button>
+                <button class="sim-btn" onclick="setSimResistor(0, this)">0 Ω Direct Wire (DANGER!)</button>
+              </div>
+
+              <div id="simDisplayBox" style="width: 100%; background: #111827; border: 2px solid #10B981; border-radius: 18px; padding: 24px; display: flex; align-items: center; justify-content: space-around;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                  <div id="simLedBulb" style="width: 84px; height: 84px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 48px #EF4444; border: 4px solid #FCA5A5; transition: all 0.3s ease;"></div>
+                  <span id="simLedLabel" style="font-weight: 800; color: #10B981; font-size: 16px;">BRIGHT &amp; SAFE (100%)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 18px;">
+                  <div>Supply Voltage (Vs): <strong style="color:#F5B800;">5.0 V</strong></div>
+                  <div>LED Forward Drop (Vf): <strong style="color:#38BDF8;">2.0 V</strong></div>
+                  <div>Selected Resistor (R): <strong id="simRVal" style="color:#00F5D4;">220 Ω</strong></div>
+                  <div>Measured Current (I): <strong id="simIVal" style="color:#10B981;">13.6 mA (SAFE)</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • Interactive Classroom Simulation</div>
+            <div class="editable-text">🎙️ Click each resistor button on the screen and have students predict whether the LED gets dimmer or burns out!</div>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SLIDE 06: FIRST ARDUINO C++ BLINK FIRMWARE LAB
+           ================================================================== -->
+      <section class="slide">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 06 / 08</span>
+              <span class="pill-gold editable-text">ARDUINO C++ FIRMWARE WALKTHROUGH</span>
+              <span class="pill-cyan">PIN D8 OUTPUT CONTROL</span>
+            </div>
+            <h1 class="slide-title editable-text">Commanding Electricity with C++ Code</h1>
+            <p class="slide-subtitle editable-text">Once your steady 5V LED circuit passes inspection, move the positive jumper wire from <code>5V</code> to <code>Digital Pin 8</code> so your code can switch it ON and OFF!</p>
+          </header>
+
+          <div class="grid-2col">
+            <div class="stack-col">
+              <article class="card reveal" style="--card-accent: #38BDF8;">
+                <div class="card-tag editable-text">01 • VOID SETUP() — RUNS ONCE</div>
+                <h3 class="editable-text"><code>pinMode(8, OUTPUT);</code></h3>
+                <p class="editable-text">Configures Digital Pin 8 inside the ATmega328P chip as a power-supplying output pin ready to drive 5V or 0V.</p>
+              </article>
+              <article class="card reveal" style="--card-accent: #10B981;">
+                <div class="card-tag editable-text">02 • VOID LOOP() — RUNS FOREVER</div>
+                <h3 class="editable-text"><code>digitalWrite(8, HIGH);</code> &amp; <code>LOW</code></h3>
+                <p class="editable-text"><code>HIGH</code> switches Pin 8 to <strong>+5.0 Volts</strong> (turning the LED ON). <code>LOW</code> switches Pin 8 to <strong>0 Volts</strong> (turning the LED OFF).</p>
+              </article>
+              <article class="card reveal" style="--card-accent: #F5B800;">
+                <div class="card-tag editable-text">03 • MILLISECOND TIMING</div>
+                <h3 class="editable-text"><code>delay(500);</code> (1000 ms = 1 Second)</h3>
+                <p class="editable-text">Pauses the microcontroller for 500 milliseconds (half a second) so the human eye can clearly see each flash.</p>
+              </article>
+            </div>
+
+            <div class="code-window reveal">
+              <div class="code-bar">
+                <span>ROBOBEE_CLASS_01_EXTERNAL_LED_BLINK.INO</span>
+                <button class="hud-btn" onclick="navigator.clipboard.writeText(document.getElementById('c1Code').innerText); this.innerText='✓ Copied!';">Copy C++</button>
+              </div>
+              <pre class="code-pre" id="c1Code"><code class="editable-text">// RoboBee Innovators — Class 01: External LED Beacon
+const int LED_PIN = 8; // Digital Pin 8 connected via 220Ω resistor
+
+void setup() {
+  // 1. Configure Pin 8 as an electrical OUTPUT once at boot
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  // 2. Turn LED ON (+5.0V) and wait 500 milliseconds
+  digitalWrite(LED_PIN, HIGH);
+  delay(500);
+
+  // 3. Turn LED OFF (0.0V) and wait 500 milliseconds
+  digitalWrite(LED_PIN, LOW);
+  delay(500);
+}</code></pre>
+            </div>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • Firmware Engineering Lab</div>
+            <div class="editable-text">🎙️ Challenge students: "What happens if we change delay(500) to delay(50)? What about delay(5)?"</div>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SLIDE 07: 3-BAND DIFFERENTIATED FRIDAY CHALLENGE (CLASS 3 TO 12)
+           ================================================================== -->
+      <section class="slide">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 07 / 08</span>
+              <span class="pill-gold editable-text">STAGE 4 (5:15–5:45 PM) • 3-BAND DIFFERENTIATED SPRINT</span>
+              <span class="pill-cyan">30-MINUTE HANDS-ON CHALLENGE</span>
+            </div>
+            <h1 class="slide-title editable-text">Choose Your Cohort Band Challenge (Class 3–12)</h1>
+            <p class="slide-subtitle editable-text">Every student builds the core LED circuit first, then tackles the engineering sprint designed for their grade band:</p>
+          </header>
+
+          <div class="grid-3col">
+            <article class="card reveal" style="--card-accent: #F5B800;">
+              <div class="card-tag editable-text">BAND A • CLASS 3–5 (WONDER BUILDERS)</div>
+              <h3 class="editable-text">Dual Red &amp; Green Alternating Beacon</h3>
+              <p class="editable-text">Wire a <strong>Red LED</strong> and a <strong>Green LED</strong> in parallel on your breadboard, each with its own <code>220Ω</code> resistor! Make both LEDs light up together, or alternate them on Pins 8 and 9 like an emergency rescue vehicle.</p>
+              <div class="card-meta editable-text">Goal: Zero polarity mistakes &amp; clean parallel wiring</div>
+            </article>
+
+            <article class="card reveal" style="--card-accent: #00F5D4;">
+              <div class="card-tag editable-text">BAND B • CLASS 6–8 (TACTICAL MAKERS)</div>
+              <h3 class="editable-text">SOS Morse Code Distress Transmitter</h3>
+              <p class="editable-text">Add a tactile pushbutton in series or program Pin 8 to transmit the international <strong>SOS Morse Code</strong> pattern: <strong>3 Short Flashes (200ms)</strong>, <strong>3 Long Flashes (600ms)</strong>, and <strong>3 Short Flashes (200ms)</strong>!</p>
+              <div class="card-meta editable-text">Goal: Accurate timing loop &amp; series switch test</div>
+            </article>
+
+            <article class="card reveal" style="--card-accent: #F43F5E;">
+              <div class="card-tag editable-text">BAND C • CLASS 9–12 (SYSTEMS ENGINEERS)</div>
+              <h3 class="editable-text">Ohm's Law Verification &amp; Voltage Drop Audit</h3>
+              <p class="editable-text">Calculate theoretical current $I = \frac{5.0\text{V} - 2.0\text{V}}{220\,\Omega} = 13.6\text{mA}$, then use a <strong>Digital Multimeter (DMM)</strong> to measure the exact voltage drop across the resistor ($V_R$) and LED ($V_f$) across $220\,\Omega$, $1\text{k}\Omega$, and $10\text{k}\Omega$.</p>
+              <div class="card-meta editable-text">Goal: Empirical KVL verification ($V_s = V_R + V_f$)</div>
+            </article>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • Multi-Age Cohort Differentiation</div>
+            <div class="editable-text">🎙️ Start the 30-minute sprint timer! Walk around benches checking Band A, Band B, and Band C progress.</div>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SLIDE 08: TROUBLESHOOTING CLINIC & INTERACTIVE EXIT CHECK
+           ================================================================== -->
+      <section class="slide">
+        <div class="slide-bg-mesh"></div>
+        <div class="slide-inner">
+          <header class="slide-header reveal">
+            <div class="badge-row">
+              <span class="pill-burgundy">SLIDE 08 / 08</span>
+              <span class="pill-gold editable-text">STAGE 5 (5:45–6:00 PM) • SHOWCASE &amp; EXIT TICKET</span>
+              <span class="pill-cyan">CLICK CARDS TO REVEAL ANSWERS</span>
+            </div>
+            <h1 class="slide-title editable-text">Troubleshooting Clinic &amp; 3-Question Exit Check</h1>
+            <p class="slide-subtitle editable-text">Click each card on the screen after students answer to reveal the engineering verdict! Up Next: <strong>Class 02 — Programmable 3-LED Traffic Intersection</strong>.</p>
+          </header>
+
+          <div class="grid-3col">
+            <article class="card quiz-card reveal" style="--card-accent: #F5B800;" onclick="this.classList.toggle('flipped')">
+              <div class="card-tag editable-text">EXIT CHECK QUESTION 01</div>
+              <h3 class="editable-text">How are the holes connected inside a breadboard?</h3>
+              <p class="editable-text">Compare the long top/bottom power rails (+ / -) to the numbered terminal columns (a–e and f–j).</p>
+              <div class="quiz-hint-box">👆 Click Card to Reveal Answer</div>
+              <div class="quiz-answer-box editable-text"><strong>Answer:</strong> Power rails (+ and -) are connected <strong>HORIZONTALLY</strong> along the edges, while terminal rows (a–e and f–j) are connected <strong>VERTICALLY in 5-hole groups</strong> separated by the center trench.</div>
+            </article>
+
+            <article class="card quiz-card reveal" style="--card-accent: #00F5D4;" onclick="this.classList.toggle('flipped')">
+              <div class="card-tag editable-text">EXIT CHECK QUESTION 02</div>
+              <h3 class="editable-text">How do you identify the Anode (+) and Cathode (-) of an LED?</h3>
+              <p class="editable-text">And why does the LED stay completely dark if you plug it in backward?</p>
+              <div class="quiz-hint-box">👆 Click Card to Reveal Answer</div>
+              <div class="quiz-answer-box editable-text"><strong>Answer:</strong> The <strong>Anode (+) is the LONGER leg</strong> and connects toward +5V; the <strong>Cathode (-) is the SHORTER leg</strong> (with the flat plastic rim) and connects to GND. An LED is a one-way semiconductor diode!</div>
+            </article>
+
+            <article class="card quiz-card reveal" style="--card-accent: #10B981;" onclick="this.classList.toggle('flipped')">
+              <div class="card-tag editable-text">EXIT CHECK QUESTION 03</div>
+              <h3 class="editable-text">What happens if you connect an LED to 5V without a 220Ω resistor?</h3>
+              <p class="editable-text">Use Ohm's Law ($I = V / R$) to explain why the resistor is mandatory.</p>
+              <div class="quiz-hint-box">👆 Click Card to Reveal Answer</div>
+              <div class="quiz-answer-box editable-text"><strong>Answer:</strong> Without a current-limiting resistor, resistance $R \approx 0$, causing a massive current spike ($>100\text{mA}$) that instantly overheats and burns out the microscopic LED junction!</div>
+            </article>
+          </div>
+
+          <footer class="slide-footer">
+            <div><strong>RoboBee Innovators</strong> • Up Next: Class 02 — Meet the Arduino Brain &amp; 3-LED Traffic Controller!</div>
+            <div class="editable-text">🎙️ Congratulate all teams! Flag any student who missed today or needs extra breadboard practice for Supportive Lab S1.</div>
+          </footer>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Floating HUD Dock -->
+  <nav class="hud-dock">
+    <button class="hud-btn" onclick="deckApp.prev()">◀ Prev</button>
+    <span id="hudCounter" style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: #F5B800;">01 / 08</span>
+    <button class="hud-btn" onclick="deckApp.next()">Next ▶</button>
+    <button class="hud-btn" onclick="deckApp.toggleEdit()" id="dockEditBtn">✏️ Inline Edit (E)</button>
+    <button class="hud-btn" onclick="deckApp.downloadHtml()">💾 Save HTML</button>
+    <button class="hud-btn" onclick="deckApp.toggleFullscreen()">⛶ Fullscreen (F)</button>
+  </nav>
+
+  <script>
+    function setSimResistor(rOhm, btnEl) {
+      document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      const bulb = document.getElementById('simLedBulb');
+      const label = document.getElementById('simLedLabel');
+      const rVal = document.getElementById('simRVal');
+      const iVal = document.getElementById('simIVal');
+      const box = document.getElementById('simDisplayBox');
+
+      if (rOhm === 220) {
+        bulb.style.background = '#EF4444';
+        bulb.style.boxShadow = '0 0 48px #EF4444';
+        bulb.style.opacity = '1';
+        label.textContent = 'BRIGHT & SAFE (100%)';
+        label.style.color = '#10B981';
+        rVal.textContent = '220 Ω (Red-Red-Brown)';
+        iVal.textContent = '13.6 mA (IDEAL)';
+        iVal.style.color = '#10B981';
+        box.style.borderColor = '#10B981';
+      } else if (rOhm === 1000) {
+        bulb.style.background = '#DC2626';
+        bulb.style.boxShadow = '0 0 22px #EF4444';
+        bulb.style.opacity = '0.72';
+        label.textContent = 'MEDIUM GLOW (45%)';
+        label.style.color = '#38BDF8';
+        rVal.textContent = '1,000 Ω (1 kΩ)';
+        iVal.textContent = '3.0 mA (SAFE)';
+        iVal.style.color = '#38BDF8';
+        box.style.borderColor = '#38BDF8';
+      } else if (rOhm === 10000) {
+        bulb.style.background = '#7F1D1D';
+        bulb.style.boxShadow = '0 0 6px #EF4444';
+        bulb.style.opacity = '0.35';
+        label.textContent = 'VERY DIM GLOW (10%)';
+        label.style.color = '#F5B800';
+        rVal.textContent = '10,000 Ω (10 kΩ)';
+        iVal.textContent = '0.3 mA (TOO DIM)';
+        iVal.style.color = '#F5B800';
+        box.style.borderColor = '#F5B800';
+      } else {
+        bulb.style.background = '#1F2937';
+        bulb.style.boxShadow = '0 0 30px #F43F5E';
+        bulb.style.opacity = '0.9';
+        label.textContent = '💥 BURNED OUT! (THERMAL RUNAWAY)';
+        label.style.color = '#F43F5E';
+        rVal.textContent = '0 Ω (NO RESISTOR)';
+        iVal.textContent = '> 180 mA (DESTROYED!)';
+        iVal.style.color = '#F43F5E';
+        box.style.borderColor = '#F43F5E';
+      }
+    }
+
+    class SlidePresentation {
+      constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.currentSlide = 0;
+        this.isEditing = false;
+        this.stage = document.getElementById('deckStage');
+        this.counter = document.getElementById('hudCounter');
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupInlineEdit();
+        this.showSlide(0);
+      }
+
+      setupStageScale() {
+        const scale = () => {
+          const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+          const x = (window.innerWidth - 1920 * factor) / 2;
+          const y = (window.innerHeight - 1080 * factor) / 2;
+          this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+      }
+
+      showSlide(index) {
+        this.currentSlide = Math.max(0, Math.min(index, this.slides.length - 1));
+        this.slides.forEach((slide, i) => {
+          slide.classList.toggle('active', i === this.currentSlide);
+          slide.classList.toggle('visible', i === this.currentSlide);
+        });
+        if (this.counter) {
+          this.counter.textContent =
+            String(this.currentSlide + 1).padStart(2, '0') +
+            ' / ' +
+            String(this.slides.length).padStart(2, '0');
+        }
+      }
+
+      next() { this.showSlide(this.currentSlide + 1); }
+      prev() { this.showSlide(this.currentSlide - 1); }
+
+      setupKeyboardNav() {
+        window.addEventListener('keydown', (e) => {
+          if (e.target && e.target.getAttribute && e.target.getAttribute('contenteditable') === 'true') {
+            if (e.key === 'Escape') e.target.blur();
+            return;
+          }
+          if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+            e.preventDefault();
+            this.next();
+          } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            this.prev();
+          } else if (e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+            this.toggleEdit();
+          } else if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            this.toggleFullscreen();
+          }
+        });
+      }
+
+      setupTouchNav() {
+        let startX = null;
+        window.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
+        window.addEventListener('touchend', (e) => {
+          if (startX === null) return;
+          const dx = e.changedTouches[0].clientX - startX;
+          if (dx < -50) this.next();
+          if (dx > 50) this.prev();
+          startX = null;
+        });
+      }
+
+      setupInlineEdit() {
+        const hotzone = document.getElementById('editHotzone');
+        const editToggle = document.getElementById('editToggle');
+        let hideTimeout = null;
+
+        hotzone.addEventListener('mouseenter', () => {
+          clearTimeout(hideTimeout);
+          editToggle.classList.add('show');
+        });
+        hotzone.addEventListener('mouseleave', () => {
+          hideTimeout = setTimeout(() => {
+            if (!this.isEditing) editToggle.classList.remove('show');
+          }, 400);
+        });
+        editToggle.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+        editToggle.addEventListener('mouseleave', () => {
+          hideTimeout = setTimeout(() => {
+            if (!this.isEditing) editToggle.classList.remove('show');
+          }, 400);
+        });
+        hotzone.addEventListener('click', () => this.toggleEdit());
+        editToggle.addEventListener('click', () => this.toggleEdit());
+      }
+
+      toggleEdit() {
+        this.isEditing = !this.isEditing;
+        const editToggle = document.getElementById('editToggle');
+        const dockBtn = document.getElementById('dockEditBtn');
+        editToggle.classList.toggle('active', this.isEditing);
+        editToggle.textContent = this.isEditing ? '✓ Editing Active (E)' : '✏️ Edit Slides (E)';
+        if (dockBtn) dockBtn.textContent = this.isEditing ? '✓ Done Editing' : '✏️ Inline Edit (E)';
+        document.querySelectorAll('.editable-text').forEach((el) => {
+          el.setAttribute('contenteditable', this.isEditing ? 'true' : 'false');
+        });
+      }
+
+      downloadHtml() {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RoboBee_Class01_FrontendSlides.html';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+
+    const deckApp = new SlidePresentation();
+  </script>
+</body>
+</html>

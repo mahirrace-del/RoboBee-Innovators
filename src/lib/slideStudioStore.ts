@@ -178,6 +178,12 @@ export interface EditableClassDeck {
     | "motor_driver_pwm_sim"
     | "led_blink_sim";
   kitComponents: { name: string; spec: string; qty: number }[];
+  isSupportLab?: boolean;
+  bandChallenges?: {
+    bandA: string;
+    bandB: string;
+    bandC: string;
+  };
   slides: EditableSlide[];
 }
 
@@ -2183,48 +2189,57 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       speakerNotes: `Have students test each test case one by one before proceeding to the game challenge. Use the interactive diagram slider to demonstrate expected physical responses!`,
     },
 
-    // Slide 08 — Embedded Bangla Tutorial Video & Video Guide
+    // Slide 08 — 3-Band Differentiated Friday Lab Sprint (Class 3–5, Class 6–8, Class 9–12)
     {
       id: `${lesson.id}-s08`,
       numberLabel: "08",
-      title: `Bangla Video Guide: ${videoInfo.title}`,
-      subtitle: videoInfo.guide,
-      badge: `${lesson.code} • BANGLA VIDEO TUTORIAL & LAB GUIDE`,
+      title: `3-Band Differentiated Lab Sprint (Class 3 to Class 12)`,
+      subtitle: `Stage 4 (5:15–5:45 PM • 30 Mins): Every student builds the core hardware first, then tackles their age-band challenge!`,
+      badge: `${lesson.code} • 3-BAND DIFFERENTIATION (ZERO BOREDOM, ZERO OVERWHELM)`,
       theme: "robobee-dark",
-      layout: "split-media",
+      layout: "interactive-grid",
       fontFamily: "sans",
       titleSize: "standard",
       textAlign: "left",
       animation: "fade-up",
-      heroImage: videoInfo.url,
-      imageCaption: `Bangla Lab Video Demonstration • ${videoInfo.title}`,
+      heroImage: heroSvg,
+      imageCaption: `3-Band Multi-Age Differentiation • ${lesson.title}`,
       fallbackVariant: "arduino",
       galleryImages: [],
       cards: [
         {
-          id: `${lesson.id}-s08-v`,
-          badge: "DEMO VIDEO",
-          title: videoInfo.title,
-          body: `Embedded YouTube Link: ${videoInfo.url}`,
-          accentColor: "#EF4444",
-        },
-        {
-          id: `${lesson.id}-s08-ts`,
-          badge: "VIDEO CHAPTERS & TIMESTAMPS",
-          title: "Lab Bench Key Timestamps",
-          body: videoInfo.timestamps,
-          accentColor: "#38BDF8",
-        },
-        {
-          id: `${lesson.id}-s08-tip`,
-          badge: "INSTRUCTOR BENCH TIP",
-          title: "Hardware Inspection Before Power-Up",
-          body: "Always verify USB COM Port in Arduino IDE Tools menu and ensure no jumper wire touches another bare pin before uploading.",
+          id: `${lesson.id}-s08-ba`,
+          badge: "BAND A • CLASS 3–5 (WONDER BUILDERS)",
+          title: "Guided Tactile & Visual Challenge",
+          body:
+            lesson.bandChallenges?.bandA ||
+            lesson.differentiation.support[0] ||
+            `Complete the guided ${lesson.project.name} wiring and pass 3 bench test trials with zero polarity errors.`,
           accentColor: "#F5B800",
+        },
+        {
+          id: `${lesson.id}-s08-bb`,
+          badge: "BAND B • CLASS 6–8 (TACTICAL MAKERS)",
+          title: "Core Logic & Parameter Tuning Sprint",
+          body:
+            lesson.bandChallenges?.bandB ||
+            `Complete ${lesson.activity.title}, customize timing/threshold parameters in C++ code, and verify on the arena bench.`,
+          accentColor: "#00F5D4",
+        },
+        {
+          id: `${lesson.id}-s08-bc`,
+          badge: "BAND C • CLASS 9–12 (SYSTEMS ENGINEERS)",
+          title: "Advanced Algorithm & Telemetry Challenge",
+          body:
+            lesson.bandChallenges?.bandC ||
+            lesson.differentiation.extension[0] ||
+            lesson.activity.extension ||
+            `Extend ${lesson.project.name} with custom C++ functions, empirical measurement logging, and edge-case protection.`,
+          accentColor: "#F43F5E",
         },
       ],
       hotspots: [],
-      speakerNotes: `Play the Bangla video demonstration on the projector for the class. Review the key timestamps (${videoInfo.timestamps}) before students begin their guided trials!`,
+      speakerNotes: `Project this 3-Band Challenge slide during the 30-minute sprint (5:15–5:45 PM). Point Class 3–5 students to Band A, Class 6–8 to Band B, and Class 9–12 to Band C!`,
     },
 
     // Slide 09 — Troubleshooting Clinic & Fast-Finisher Challenge
@@ -2327,6 +2342,8 @@ export function buildStructured12SlideDeckFromLesson(lesson: RoboticsLesson): Ed
       spec: c.exactVariant,
       qty: c.quantity,
     })),
+    isSupportLab: lesson.isSupportLab,
+    bandChallenges: lesson.bandChallenges,
     slides,
   };
 }

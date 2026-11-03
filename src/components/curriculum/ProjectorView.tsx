@@ -18,6 +18,10 @@ import {
 import { FreeformSlideStage } from "./freeform/FreeformSlideStage";
 import { HardwareLabDrawer } from "./HardwareLabDrawer";
 import {
+  downloadFrontendSlidesDeck,
+  openFrontendSlidesInNewTab,
+} from "@/lib/frontendSlidesExporter";
+import {
   Play,
   Pause,
   RotateCcw,
@@ -589,6 +593,36 @@ export function ProjectorView({
               <span>Edit Slide</span>
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={() => openFrontendSlidesInNewTab(activeDeck, lesson)}
+            className={styles.actionBtn}
+            style={{
+              background: "rgba(245, 184, 0, 0.16)",
+              borderColor: "#F5B800",
+              color: "#F5B800",
+            }}
+            title="Open in Native 1920×1080 Frontend-Slides Interactive Web Player"
+          >
+            <Sparkles size={14} />
+            <span>1920×1080 Web Deck</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => downloadFrontendSlidesDeck(activeDeck, lesson)}
+            className={styles.actionBtn}
+            style={{
+              background: "rgba(0, 245, 212, 0.14)",
+              borderColor: "#00F5D4",
+              color: "#00F5D4",
+            }}
+            title="Download Standalone Frontend-Slides (.html) Deck"
+          >
+            <BookOpen size={14} />
+            <span>Export HTML</span>
+          </button>
 
           <button
             type="button"

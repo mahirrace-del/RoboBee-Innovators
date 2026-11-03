@@ -16,6 +16,14 @@ import { SlideFilmstrip } from "./freeform/SlideFilmstrip";
 import { FreeformSlideStage } from "./freeform/FreeformSlideStage";
 import { InspectorPanel } from "./freeform/InspectorPanel";
 import { useCanvasHistory } from "./freeform/useCanvasHistory";
+import {
+  ROBOBEE_HARDWARE_ASSET_LIBRARY,
+  HardwareVisualAsset,
+} from "@/lib/hardwareAssetLibrary";
+import {
+  downloadFrontendSlidesDeck,
+  openFrontendSlidesInNewTab,
+} from "@/lib/frontendSlidesExporter";
 
 interface SlideStudioEditorProps {
   initialDeck: EditableClassDeck;
@@ -40,6 +48,10 @@ export function SlideStudioEditor({
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [savedToast, setSavedToast] = useState<boolean>(false);
+  const [showHardwareLibrary, setShowHardwareLibrary] = useState<boolean>(false);
+  const [hwCategoryFilter, setHwCategoryFilter] = useState<
+    "ALL" | HardwareVisualAsset["category"]
+  >("ALL");
 
   const currentSlide: EditableSlide =
     deck.slides[activeSlideIdx] || deck.slides[0];
@@ -793,7 +805,196 @@ export function SlideStudioEditor({
           style: { borderRadius: 14, objectFit: "cover" },
         },
       ];
+    } else if (presetKey === "3band-challenge") {
+      targetSlide.elements = [
+        {
+          id: `el-badge-${Date.now()}`,
+          type: "callout",
+          x: 60,
+          y: 38,
+          width: 480,
+          height: 32,
+          zIndex: 1,
+          content: `${deck.classCode} • 3-BAND DIFFERENTIATED SPRINT (CLASS 3–12)`,
+          style: {
+            fontSize: 12,
+            fontWeight: 800,
+            color: pal.badgeText,
+            backgroundColor: pal.badgeBg,
+            borderColor: pal.accentPrimary,
+            borderWidth: 1,
+            borderRadius: 999,
+            padding: "6px 14px",
+            textAlign: "center",
+          },
+        },
+        {
+          id: `el-title-${Date.now()}`,
+          type: "heading",
+          x: 60,
+          y: 78,
+          width: 1160,
+          height: 54,
+          zIndex: 2,
+          content: "3-Band Differentiated Friday Lab Sprint (Class 3 to Class 12)",
+          style: { fontSize: 32, fontWeight: 900, color: pal.headingColor },
+        },
+        {
+          id: `el-sub-${Date.now()}`,
+          type: "subheading",
+          x: 60,
+          y: 138,
+          width: 1160,
+          height: 38,
+          zIndex: 3,
+          content:
+            "Stage 4 (5:15–5:45 PM • 30 Mins): Every student builds the core hardware first, then tackles their age-band challenge!",
+          style: { fontSize: 16, color: pal.mutedColor },
+        },
+        {
+          id: `el-band-a-${Date.now()}`,
+          type: "callout",
+          x: 60,
+          y: 195,
+          width: 370,
+          height: 465,
+          zIndex: 4,
+          badgeText: "BAND A • CLASS 3–5 (WONDER BUILDERS)",
+          content: `### Guided Tactile & Visual Challenge\n\n${
+            deck.bandChallenges?.bandA ||
+            "Complete the core breadboard wiring with color-coded jumpers and pass 3 bench trials."
+          }`,
+          style: {
+            backgroundColor: pal.cardBg,
+            borderColor: "#F5B800",
+            borderWidth: 2,
+            borderRadius: 18,
+            padding: "22px",
+            color: pal.bodyColor,
+            boxShadow: pal.cardShadow,
+          },
+        },
+        {
+          id: `el-band-b-${Date.now()}`,
+          type: "callout",
+          x: 455,
+          y: 195,
+          width: 370,
+          height: 465,
+          zIndex: 5,
+          badgeText: "BAND B • CLASS 6–8 (TACTICAL MAKERS)",
+          content: `### Core Logic & Parameter Tuning\n\n${
+            deck.bandChallenges?.bandB ||
+            "Customize C++ timing/threshold constants and complete the timed arena challenge."
+          }`,
+          style: {
+            backgroundColor: pal.cardBg,
+            borderColor: "#00F5D4",
+            borderWidth: 2,
+            borderRadius: 18,
+            padding: "22px",
+            color: pal.bodyColor,
+            boxShadow: pal.cardShadow,
+          },
+        },
+        {
+          id: `el-band-c-${Date.now()}`,
+          type: "callout",
+          x: 850,
+          y: 195,
+          width: 370,
+          height: 465,
+          zIndex: 6,
+          badgeText: "BAND C • CLASS 9–12 (SYSTEMS ENGINEERS)",
+          content: `### Advanced Algorithm & Telemetry\n\n${
+            deck.bandChallenges?.bandC ||
+            "Implement custom C++ helper functions, log empirical multimeter/serial measurements, and defend your design."
+          }`,
+          style: {
+            backgroundColor: pal.cardBg,
+            borderColor: "#F43F5E",
+            borderWidth: 2,
+            borderRadius: 18,
+            padding: "22px",
+            color: pal.bodyColor,
+            boxShadow: pal.cardShadow,
+          },
+        },
+      ];
     }
+  };
+
+  const handleInsertHardwareAsset = (
+    asset: HardwareVisualAsset,
+    replaceSelected: boolean = false
+  ) => {
+    if (replaceSelected && selectedElement && selectedElement.type === "image") {
+      handleUpdateElement(selectedElement.id, {
+        content: asset.url,
+        caption: asset.caption,
+        style: {
+          ...selectedElement.style,
+          objectFit: asset.url.endsWith(".svg") ? "contain" : "cover",
+        },
+      });
+      setShowHardwareLibrary(false);
+      return;
+    }
+
+    const newEl: SlideElement = {
+      id: `el-hw-${Date.now()}`,
+      type: "image",
+      x: 620,
+      y: 195,
+      width: 580,
+      height: 450,
+      zIndex: elements.length + 1,
+      content: asset.url,
+      caption: asset.caption,
+      style: {
+        borderRadius: 18,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        boxShadow: palette.cardShadow,
+        objectFit: asset.url.endsWith(".svg") ? "contain" : "cover",
+        backgroundColor: asset.url.endsWith(".svg")
+          ? "rgba(10, 15, 28, 0.75)"
+          : "transparent",
+        padding: asset.url.endsWith(".svg") ? "12px" : 0,
+      },
+    };
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+    setShowHardwareLibrary(false);
+  };
+
+  const handleInsertPinoutFromAsset = (asset: HardwareVisualAsset) => {
+    const newEl: SlideElement = {
+      id: `el-pinout-${Date.now()}`,
+      type: "pinout-card",
+      x: 600,
+      y: 195,
+      width: 620,
+      height: 460,
+      zIndex: elements.length + 1,
+      content: "",
+      caption: `${asset.name.toUpperCase()} PINOUT MAP`,
+      pinItems: asset.defaultPins || [
+        { number: 1, label: "VCC / Power", pinName: "5V / VCC", note: asset.pinSummary || "Power supply" },
+        { number: 2, label: "GND", pinName: "Common GND", note: "0V common reference" },
+      ],
+      style: {
+        backgroundColor: palette.cardBg,
+        borderColor: palette.cardBorder,
+        borderWidth: 1.5,
+        borderRadius: 18,
+        boxShadow: palette.cardShadow,
+        padding: "16px 18px",
+      },
+    };
+    handleUpdateElements([...elements, newEl]);
+    setSelectedElementId(newEl.id);
+    setShowHardwareLibrary(false);
   };
 
   const handleApplyLayoutPreset = (presetKey: string) => {
@@ -837,10 +1038,13 @@ export function SlideStudioEditor({
         onInsertTextBox={handleInsertTextBox}
         onInsertImages={handleInsertImages}
         onInsertImageUrl={handleInsertImageUrl}
+        onOpenHardwareLibrary={() => setShowHardwareLibrary(true)}
         onInsertCodeBlock={handleInsertCodeBlock}
         onInsertDiagram={handleInsertDiagram}
         onInsertShape={handleInsertShape}
         onInsertVideo={handleInsertVideo}
+        onExportFrontendSlidesHtml={() => downloadFrontendSlidesDeck(deck)}
+        onOpenFrontendSlidesPlayer={() => openFrontendSlidesInNewTab(deck)}
         selectedElement={selectedElement}
         onUpdateSelectedElement={(patch) => {
           if (selectedElement) handleUpdateElement(selectedElement.id, patch);
@@ -906,6 +1110,293 @@ export function SlideStudioEditor({
           onApplyLayoutPreset={handleApplyLayoutPreset}
         />
       </div>
+
+      {/* HARDWARE, SCHEMATICS & LAB PHOTO LIBRARY MODAL */}
+      {showHardwareLibrary && (
+        <div
+          onClick={() => setShowHardwareLibrary(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(7, 10, 18, 0.85)",
+            backdropFilter: "blur(10px)",
+            zIndex: 10050,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "1080px",
+              maxHeight: "86vh",
+              backgroundColor: "#111622",
+              border: "1.5px solid #F5B800",
+              borderRadius: "18px",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              boxShadow: "0 28px 80px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: "16px 22px",
+                backgroundColor: "#0B0E17",
+                borderBottom: "1px solid #1E293B",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 900,
+                    color: "#F5B800",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  ROBOBEE SLIDE STUDIO • HARDWARE &amp; VISUAL ASSET LIBRARY
+                </div>
+                <h3 style={{ margin: "2px 0 0 0", fontSize: "18px", fontWeight: 900, color: "#FFFFFF" }}>
+                  Insert Robotics Components, Wiring Diagrams, Pinouts &amp; Lab Photos
+                </h3>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => handleApplyLayoutPreset("3band-challenge")}
+                  style={{
+                    background: "rgba(0, 245, 212, 0.14)",
+                    border: "1px solid #00F5D4",
+                    color: "#00F5D4",
+                    padding: "7px 12px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  + Apply 3-Band Challenge Layout (Class 3–12)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowHardwareLibrary(false)}
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.16)",
+                    color: "#E2E8F0",
+                    padding: "7px 12px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+
+            {/* Category Filter Tabs */}
+            <div
+              style={{
+                padding: "12px 22px",
+                backgroundColor: "#141A29",
+                borderBottom: "1px solid #1E293B",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flexWrap: "wrap",
+              }}
+            >
+              {[
+                { id: "ALL", label: "All Visuals (23)" },
+                { id: "wiring_schematics", label: "Wiring Schematics" },
+                { id: "microcontrollers", label: "Arduino / ESP32 / Power" },
+                { id: "sensors", label: "Sensors & Sonar" },
+                { id: "motors", label: "Motors, Servos & Rovers" },
+                { id: "robotics_photos", label: "Lab & Robot Photos" },
+              ].map((tab) => {
+                const active = hwCategoryFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setHwCategoryFilter(tab.id as any)}
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: "999px",
+                      border: `1px solid ${active ? "#F5B800" : "#2E374B"}`,
+                      backgroundColor: active ? "#6B0F24" : "#0F1420",
+                      color: active ? "#FFFFFF" : "#94A3B8",
+                      fontSize: "12px",
+                      fontWeight: 800,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Grid of Assets */}
+            <div
+              style={{
+                padding: "20px 22px",
+                overflowY: "auto",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              {ROBOBEE_HARDWARE_ASSET_LIBRARY.filter(
+                (a) => hwCategoryFilter === "ALL" || a.category === hwCategoryFilter
+              ).map((asset) => (
+                <div
+                  key={asset.id}
+                  style={{
+                    backgroundColor: "#182032",
+                    border: "1px solid #2E374B",
+                    borderRadius: "14px",
+                    padding: "12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: "10px",
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        height: "145px",
+                        backgroundColor: "#0B0F19",
+                        borderRadius: "10px",
+                        border: "1px solid #1E293B",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        marginBottom: "10px",
+                        padding: asset.url.endsWith(".svg") ? "8px" : "0",
+                      }}
+                    >
+                      <img
+                        src={asset.url}
+                        alt={asset.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: asset.url.endsWith(".svg") ? "contain" : "cover",
+                        }}
+                      />
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: "#F5B800",
+                        backgroundColor: "rgba(245, 184, 0, 0.14)",
+                        padding: "2px 8px",
+                        borderRadius: "999px",
+                      }}
+                    >
+                      {asset.specBadge}
+                    </span>
+                    <h4
+                      style={{
+                        margin: "6px 0 4px 0",
+                        fontSize: "14px",
+                        fontWeight: 800,
+                        color: "#FFFFFF",
+                      }}
+                    >
+                      {asset.name}
+                    </h4>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "11px",
+                        color: "#94A3B8",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {asset.caption}
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertHardwareAsset(asset, false)}
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#6B0F24",
+                        border: "1px solid #F5B800",
+                        color: "#FFFFFF",
+                        padding: "7px 10px",
+                        borderRadius: "8px",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                      }}
+                    >
+                      + Insert on Slide
+                    </button>
+                    {selectedElement && selectedElement.type === "image" && (
+                      <button
+                        type="button"
+                        onClick={() => handleInsertHardwareAsset(asset, true)}
+                        style={{
+                          backgroundColor: "rgba(56, 189, 248, 0.18)",
+                          border: "1px solid #38BDF8",
+                          color: "#38BDF8",
+                          padding: "7px 10px",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Replace Selected
+                      </button>
+                    )}
+                    {asset.defaultPins && (
+                      <button
+                        type="button"
+                        onClick={() => handleInsertPinoutFromAsset(asset)}
+                        style={{
+                          backgroundColor: "rgba(16, 185, 129, 0.16)",
+                          border: "1px solid #10B981",
+                          color: "#10B981",
+                          padding: "7px 10px",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        + Pinout Card
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

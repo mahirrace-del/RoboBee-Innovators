@@ -21,6 +21,10 @@ import {
   loadDecksFromStorage,
   syncDecksFromFirestore,
 } from "@/lib/slideStudioStore";
+import {
+  openFrontendSlidesInNewTab,
+  downloadFrontendSlidesDeck,
+} from "@/lib/frontendSlidesExporter";
 import { HardwareLabDrawer } from "@/components/curriculum/HardwareLabDrawer";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
@@ -50,8 +54,8 @@ export default function MemberCurriculumPage() {
   // All 36 Canonical Lessons + Any Custom Instructor Decks
   const [decks, setDecks] = useState<EditableClassDeck[]>([]);
 
-  // Course Pathway Filter ('beginner' default so students immediately see Beginner 01–10, or switch across all 4 courses)
-  const [courseFilter, setCourseFilter] = useState<"ALL" | CourseTier>("beginner");
+  // Course Pathway Filter ('beginner' default so students immediately see Beginner 01–10, or switch across all 4 courses + Supportive Labs)
+  const [courseFilter, setCourseFilter] = useState<"ALL" | "SUPPORT" | CourseTier>("beginner");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Class status tracking
@@ -178,7 +182,13 @@ export default function MemberCurriculumPage() {
 
   const filteredDecks = decks.filter((d) => {
     const cId = resolveDeckCourseId(d);
-    const matchesCourse = courseFilter === "ALL" || cId === courseFilter;
+    const isSupport = !!d.isSupportLab || d.id.startsWith("sup-");
+    const matchesCourse =
+      courseFilter === "ALL"
+        ? true
+        : courseFilter === "SUPPORT"
+        ? isSupport
+        : cId === courseFilter;
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch =
       !q ||
@@ -302,13 +312,13 @@ export default function MemberCurriculumPage() {
         </div>
 
         <h1 style={{ margin: "0 0 0.4rem 0", fontSize: "1.65rem", fontWeight: 800, color: "#FFFFFF" }}>
-          Robotics &amp; Engineering Curriculum Hub
+          Robotics &amp; Engineering Master Curriculum Hub (Class 3 to Class 12)
         </h1>
-        <p style={{ margin: "0 0 1.15rem 0", color: "#94A3B8", fontSize: "0.9rem", lineHeight: 1.55, maxWidth: "820px" }}>
-          <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em> — Explore 38 proposed 120-minute (2-hour) hands-on lessons across 4 progressive courses. Click <strong style={{ color: "#FFFFFF" }}>Start Lesson</strong> on any unlocked class to open its 12-slide presentation, wiring guide, C++ code lab, interactive circuit simulator, and 4-question Exit Check.
+        <p style={{ margin: "0 0 1.15rem 0", color: "#94A3B8", fontSize: "0.9rem", lineHeight: 1.55, maxWidth: "880px" }}>
+          <em>&ldquo;Dream. Invent. Experiment. Inspire.&rdquo;</em> — Complete 4-Level Friday Practical Curriculum (<strong style={{ color: "#FFFFFF" }}>Every Friday 4:00 PM – 6:00 PM • 120 Mins</strong>) with <strong style={{ color: "#9c6f18" }}>3-Band Differentiated Challenges (Band A: Class 3–5, Band B: Class 6–8, Band C: Class 9–12)</strong> and <strong style={{ color: "#10B981" }}>8 Supportive Catch-Up &amp; Mastery Labs (S1–S8)</strong>.
         </p>
 
-        {/* Accurate 38-Lesson Student Stats Row */}
+        {/* Accurate Student Stats Row */}
         <div
           style={{
             display: "grid",
@@ -317,12 +327,16 @@ export default function MemberCurriculumPage() {
           }}
         >
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
-            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF" }}>38 Total Lessons</div>
-            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>4 Comprehensive Courses (4 + 12 + 10 + 12)</div>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#FFFFFF" }}>{decks.length} Total Modules</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>4 Progressive Levels + 8 Supportive Catch-Up Labs (S1–S8)</div>
           </div>
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
-            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#9c6f18" }}>120 Min / Class</div>
-            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>2-Hour Workshop Standard (76h Total)</div>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#9c6f18" }}>Friday 4:00–6:00 PM</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>120-Minute (2-Hour) Practical Build Standard</div>
+          </div>
+          <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
+            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#38BDF8" }}>Class 3 – Class 12</div>
+            <div style={{ fontSize: "0.74rem", color: "#94A3B8" }}>Band A (3–5) • Band B (6–8) • Band C (9–12)</div>
           </div>
           <div style={{ background: "#161B26", border: "1px solid #2E374B", borderRadius: "10px", padding: "0.8rem 1rem" }}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#10B981" }}>{completedCount} Completed</div>
@@ -479,6 +493,37 @@ export default function MemberCurriculumPage() {
 
           <button
             type="button"
+            onClick={() => setCourseFilter("SUPPORT")}
+            style={{
+              padding: "0.48rem 0.85rem",
+              borderRadius: "8px",
+              border: `1px solid ${courseFilter === "SUPPORT" ? "#10B981" : "#2E374B"}`,
+              background: courseFilter === "SUPPORT" ? "rgba(16, 185, 129, 0.22)" : "#161B26",
+              color: courseFilter === "SUPPORT" ? "#10B981" : "#94A3B8",
+              fontSize: "0.78rem",
+              fontWeight: 800,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
+          >
+            <span>Supportive Catch-Up Labs (S1–S8)</span>
+            <span
+              style={{
+                padding: "0.1rem 0.4rem",
+                borderRadius: "999px",
+                background: courseFilter === "SUPPORT" ? "rgba(16, 185, 129, 0.25)" : "#1E2533",
+                color: courseFilter === "SUPPORT" ? "#10B981" : "#94A3B8",
+                fontSize: "0.7rem",
+              }}
+            >
+              {decks.filter((d) => d.isSupportLab || d.id.startsWith("sup-")).length}
+            </span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setCourseFilter("ALL")}
             style={{
               padding: "0.48rem 0.85rem",
@@ -491,7 +536,7 @@ export default function MemberCurriculumPage() {
               cursor: "pointer",
             }}
           >
-            All 38 Classes
+            All {decks.length} Modules
           </button>
         </div>
 
@@ -867,6 +912,52 @@ export default function MemberCurriculumPage() {
 
                 <button
                   type="button"
+                  onClick={() =>
+                    openFrontendSlidesInNewTab(
+                      activeLessonDeck,
+                      activeLessonRecord
+                    )
+                  }
+                  style={{
+                    padding: "0.52rem 0.95rem",
+                    borderRadius: "8px",
+                    border: "1px solid rgba(56, 189, 248, 0.45)",
+                    background: "rgba(14, 165, 233, 0.16)",
+                    color: "#38BDF8",
+                    fontSize: "0.8rem",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  <Tv size={14} color="#38BDF8" /> 1920×1080 Frontend-Slides Deck
+                </button>
+
+                <a
+                  href="https://canva.link/ou5cdalj1jml62y"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: "0.52rem 0.95rem",
+                    borderRadius: "8px",
+                    border: "1px solid rgba(16, 185, 129, 0.45)",
+                    background: "rgba(16, 185, 129, 0.14)",
+                    color: "#10B981",
+                    fontSize: "0.8rem",
+                    fontWeight: 800,
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                  }}
+                >
+                  Canva Deck
+                </a>
+
+                <button
+                  type="button"
                   onClick={() => setHardwareLabDeck(activeLessonDeck)}
                   style={{
                     padding: "0.52rem 0.95rem",
@@ -931,6 +1022,35 @@ export default function MemberCurriculumPage() {
                     </div>
                   ))}
                 </div>
+
+                {/* 3-Band Differentiated Challenges (Class 3 to Class 12) */}
+                {(activeLessonDeck.bandChallenges || activeLessonRecord.bandChallenges) && (
+                  <div style={{ marginTop: "1rem", paddingTop: "0.9rem", borderTop: "1px solid #2E374B" }}>
+                    <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#38BDF8", textTransform: "uppercase", marginBottom: "0.55rem" }}>
+                      3-Band Differentiated Build Challenges (Class 3 to Class 12)
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0.65rem" }}>
+                      <div style={{ background: "#1E2533", border: "1px solid rgba(16, 185, 129, 0.35)", borderRadius: "8px", padding: "0.7rem" }}>
+                        <div style={{ fontSize: "0.7rem", fontWeight: 800, color: "#10B981" }}>BAND A • CLASS 3–5 (WONDER BUILDERS)</div>
+                        <div style={{ fontSize: "0.78rem", color: "#E2E8F0", marginTop: "0.25rem", lineHeight: 1.45 }}>
+                          {(activeLessonDeck.bandChallenges || activeLessonRecord.bandChallenges)?.bandA}
+                        </div>
+                      </div>
+                      <div style={{ background: "#1E2533", border: "1px solid rgba(245, 184, 0, 0.35)", borderRadius: "8px", padding: "0.7rem" }}>
+                        <div style={{ fontSize: "0.7rem", fontWeight: 800, color: "#F5B800" }}>BAND B • CLASS 6–8 (TACTICAL MAKERS)</div>
+                        <div style={{ fontSize: "0.78rem", color: "#E2E8F0", marginTop: "0.25rem", lineHeight: 1.45 }}>
+                          {(activeLessonDeck.bandChallenges || activeLessonRecord.bandChallenges)?.bandB}
+                        </div>
+                      </div>
+                      <div style={{ background: "#1E2533", border: "1px solid rgba(56, 189, 248, 0.35)", borderRadius: "8px", padding: "0.7rem" }}>
+                        <div style={{ fontSize: "0.7rem", fontWeight: 800, color: "#38BDF8" }}>BAND C • CLASS 9–12 (SYSTEMS ENGINEERS)</div>
+                        <div style={{ fontSize: "0.78rem", color: "#E2E8F0", marginTop: "0.25rem", lineHeight: 1.45 }}>
+                          {(activeLessonDeck.bandChallenges || activeLessonRecord.bandChallenges)?.bandC}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Wiring Diagram & Point-to-Point Wire Table */}

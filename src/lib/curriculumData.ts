@@ -122,6 +122,12 @@ export interface RoboticsLesson {
     extension: string[];
     offlineOption?: string[];
   };
+  isSupportLab?: boolean;
+  bandChallenges?: {
+    bandA: string;
+    bandB: string;
+    bandC: string;
+  };
   robotOrNotChallenge?: {
     item: string;
     senses: string;
@@ -182,51 +188,51 @@ export interface CourseSpace {
 export const COURSE_SPACES: CourseSpace[] = [
   {
     id: 'explorer',
-    title: 'Free Robo Explorers',
-    codeName: 'EXPLORER',
-    badge: 'Proposed for Classes 3–4',
-    proposedBand: 'Classes 3–4 (Ages 8–10)',
+    title: 'Level 1: Foundations & Smart Gadgets',
+    codeName: 'LEVEL 1',
+    badge: 'Class 3–12 (3-Band Differentiated)',
+    proposedBand: 'Band A (Class 3–5) • Band B (Class 6–8) • Band C (Class 9–12)',
     accentColor: '#F5B800', // RoboBEE Golden Yellow
-    statusNotice: 'Proposed Website Structure (Free Sampler — No account required for public simulations)',
-    description: 'A playful, visual, low-barrier introduction to robot systems, circuits, and movement for young learners under teacher supervision.',
-    totalClasses: 4,
-    recommendedHardware: 'Paper circuits, low-voltage 3V coin cells, or web simulation mode'
+    statusNotice: 'Friday 4:00–6:00 PM (120m) • Includes Supportive Mastery Labs S1–S2',
+    description: 'Master robot sense-think-act systems, breadboard circuits, LEDs, switches, and smart gadget foundations with built-in Supportive Catch-Up Labs.',
+    totalClasses: 6,
+    recommendedHardware: 'Breadboard 400-Pt, LEDs, 220Ω Resistors, Tactile Switches, Arduino Uno R3'
   },
   {
     id: 'beginner',
-    title: 'Beginner Robotics & Arduino',
-    codeName: 'BEGINNER',
-    badge: 'Proposed for Classes 5–8',
-    proposedBand: 'Classes 5–8 (Ages 10–14)',
+    title: 'Level 2: Arduino Sensors & Mobile Rovers',
+    codeName: 'LEVEL 2',
+    badge: 'Class 3–12 (3-Band Differentiated)',
+    proposedBand: 'Band A (Class 3–5) • Band B (Class 6–8) • Band C (Class 9–12)',
     accentColor: '#6B0F24', // RoboBEE Burgundy
-    statusNotice: 'Core Academy Track (12 Classes — From Breadboard X-Ray to Autonomous Maze Explorer)',
-    description: 'Master circuits, breadboards, C++ code logic, sensors, motor drivers, Bluetooth wireless, and autonomous robotics integration across 12 hands-on Friday labs.',
-    totalClasses: 12,
-    recommendedHardware: 'Arduino Uno R3 / Nano, Breadboard, LEDs, Sonar HC-SR04, L298N/TB6612FNG Driver, 2WD Rover Chassis'
+    statusNotice: 'Friday 4:00–6:00 PM (120m) • Includes Supportive Mastery Labs S3–S5',
+    description: 'Master Arduino C++ coding, ultrasonic sonar, SG90 servos, L298N motor drivers, Bluetooth control, and autonomous obstacle-avoiding rovers.',
+    totalClasses: 15,
+    recommendedHardware: 'Arduino Uno R3, Breadboard, HC-SR04 Sonar, SG90 Servo, L298N Driver, 2WD Rover Chassis'
   },
   {
     id: 'intermediate',
-    title: 'Intermediate Robotics & Systems',
-    codeName: 'INTERMEDIATE',
-    badge: 'Proposed for Classes 7–10',
-    proposedBand: 'Classes 7–10 (Ages 12–16)',
+    title: 'Level 3: 3D CAD, Robotic Arms & IoT',
+    codeName: 'LEVEL 3',
+    badge: 'Class 5–12 (3-Band Differentiated)',
+    proposedBand: 'Band A (Class 3–5) • Band B (Class 6–8) • Band C (Class 9–12)',
     accentColor: '#8B1A35', // RoboBEE Burgundy Tint
-    statusNotice: 'Proposed Website Structure (10 Classes — State Machines, Reflectance IR, Servos & Telemetry)',
-    description: 'Engineering workflow, sensor calibration station, state machines, line-following algorithms, servo grippers, and maze navigation.',
-    totalClasses: 10,
-    recommendedHardware: 'Dual/Multi-channel IR Sensor Array, SG90/MG996R Servos, Calibrated Test Track, Bluetooth/ESP32 Module'
+    statusNotice: 'Friday 4:00–6:00 PM (120m) • Includes Supportive Mastery Labs S6–S7',
+    description: 'Engineering 3D CAD brackets, sensor calibration, Finite State Machines, multi-servo robotic arm grippers, and wireless telemetry.',
+    totalClasses: 12,
+    recommendedHardware: 'Dual/Multi-channel IR Sensor Array, 3-DOF Servo Arm Kit, Calibrated Test Track, ESP32 / Bluetooth'
   },
   {
     id: 'advanced',
-    title: 'Advanced Robotics & Competition',
-    codeName: 'ADVANCED',
-    badge: 'Proposed for Classes 9–12',
-    proposedBand: 'Classes 9–12 (Ages 14–18+)',
+    title: 'Level 4: Competitive Robotics, PID & AI',
+    codeName: 'LEVEL 4',
+    badge: 'Class 6–12 (Tournament Squad)',
+    proposedBand: 'Band B (Class 6–8) • Band C (Class 9–12)',
     accentColor: '#C4920A', // RoboBEE Golden Amber
-    statusNotice: 'Proposed Website Structure (12 Classes — Non-Blocking C++, Encoders, PID Control & Mini-Sumo)',
-    description: 'Competition engineering brief, electrical power budgets, non-blocking C++ architecture, PID tuning, telemetry, and Mini-Sumo robot build.',
-    totalClasses: 12,
-    recommendedHardware: 'Encoder Gear Motors, IMU (reference: MPU-6050), ESP32/STM32 (instructor-confirmed), Mini-Sumo Dohyo Ring, regulated battery pack'
+    statusNotice: 'Friday 4:00–6:00 PM (120m) • Includes Supportive Mastery Lab S8',
+    description: 'Tournament engineering for NRC & FIRSO: dual-rail power budgets, non-blocking C++, optical encoders, PID line following, MPU-6050 IMU, and Mini-Sumo.',
+    totalClasses: 13,
+    recommendedHardware: 'Encoder Gear Motors, MPU-6050 6-DOF IMU, 5-Ch IR Array, ESP32, Mini-Sumo Dohyo Ring'
   }
 ];
 
@@ -13824,11 +13830,590 @@ void loop() {
   }
 };
 
-// Populate universal 120-minute standard, complete build/code packs, and backward-compatibility aliases
+// =========================================================================
+// 8 SUPPORTIVE CATCH-UP & MASTERY LABS (S1 - S8) FOR ZERO-STUDENT-LEFT-BEHIND
+// =========================================================================
+export const SUPPORTIVE_MASTERY_LABS: RoboticsLesson[] = [
+  {
+    id: 'sup-s1',
+    isSupportLab: true,
+    courseId: 'explorer',
+    sequence: 101,
+    code: 'SUPPORT LAB S1',
+    title: 'Breadboard Wiring, LED Polarity & C++ Syntax Clinic',
+    promise: 'Hands-on supportive mastery clinic for students who missed or struggled with breadboard rows/columns, LED polarity, 220Ω resistor placement, or basic Arduino digitalWrite() syntax.',
+    status: 'published',
+    proposedAudience: 'Class 3–12 (Catch-Up + Olympiad Extension)',
+    durationMinutes: 120,
+    prerequisites: ['Level 1 Classes 01–03'],
+    outcomes: [
+      'Independently wire a 3-LED array on a 400-point breadboard with zero short-circuit or same-row errors.',
+      'Fix common C++ compilation errors (missing semicolons, mismatched braces, case sensitivity in digitalWrite).',
+      'Pass the 1-on-1 Breadboard & Traffic Light Mastery Check before advancing.'
+    ],
+    vocabulary: [
+      { term: 'Continuity Trace', plainMeaning: 'Following the metal path from 5V through the resistor and LED back to GND.', technicalMeaning: 'Verifying an unbroken low-impedance electrical path from source to ground.' },
+      { term: 'Syntax Error', plainMeaning: 'A spelling or punctuation typo in C++ code that stops the compiler.', technicalMeaning: 'A violation of the formal grammar rules of the C++ language detected at compile time.' }
+    ],
+    teacherPrep: ['Prepare 5 intentionally bugged breadboards ("Bug Hunt Boards") and syntax fix worksheets.'],
+    verifiedMaterials: ['Arduino Uno R3', '400-Point Breadboard', '3x 5mm LEDs (Red, Yellow, Green)', '3x 220Ω Resistors', 'Jumper Wires'],
+    safetyNotes: ['Always disconnect USB power before moving breadboard components.'],
+    classRhythm: [],
+    concepts: [
+      { title: 'The 3-Finger Breadboard Trace Method', explanation: 'Place one finger on the Arduino pin, trace the jumper wire to the breadboard column, verify the resistor bridges to a new column, and trace the LED cathode to the blue GND rail.' },
+      { title: 'Fixing Top 5 Arduino C++ Compiler Bugs', explanation: '1. Missing semicolon ; at end of line. 2. Writing digitalwrite instead of digitalWrite (capital W). 3. Forgetting pinMode(pin, OUTPUT) inside setup().' }
+    ],
+    visualizerId: 'breadboard_circuit_sim',
+    project: { name: 'Bug-Free 3-LED Sequencer Certification', deliverableType: 'physical_build', successEvidence: ['Student finds and fixes all 3 planted hardware bugs in under 10 minutes.'] },
+    activity: { title: 'Hardware Bug Hunt & Traffic Light Sprint', steps: ['Inspect Bug Board #1', 'Identify short circuit', 'Rewire cleanly and upload 3-LED sequence'], successCriteria: ['All 3 LEDs cycle cleanly without dimness or shorts'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3', '400-Point Breadboard'],
+      componentList: [{ name: 'Arduino Uno R3', exactVariant: 'ATmega328P DIP', quantity: 1 }, { name: '5mm LEDs', exactVariant: 'Red, Yellow, Green', quantity: 3 }, { name: 'Resistors', exactVariant: '220Ω', quantity: 3 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/class1-breadboard-anatomy.svg',
+      schematic: 'D8 -> 220Ω -> Red LED -> GND | D9 -> 220Ω -> Yellow LED -> GND | D10 -> 220Ω -> Green LED -> GND',
+      wireTable: [{ from: 'Arduino D8, D9, D10', to: '220Ω Resistors -> LED Anodes (+)', wireOrPolarityNote: 'Use separate vertical columns for each leg' }, { from: 'All LED Cathodes (-)', to: 'Breadboard Blue GND Rail -> Arduino GND', wireOrPolarityNote: 'Common Ground return' }],
+      assemblyAndPowerUpSteps: ['1. Remove all wires and start with a clean breadboard.', '2. Connect Arduino GND to Blue (-) rail.', '3. Wire Red, Yellow, and Green LEDs with 220Ω resistors.', '4. Upload and verify sequence.'],
+      powerAndSafetyChecks: ['Verify no component has both legs in the same 5-hole vertical column.'],
+      testCases: [{ action: 'Upload diagnostic sketch', expectedResult: 'Red, Yellow, and Green LEDs flash sequentially at 500ms intervals.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S1: 3-LED DIAGNOSTIC & SYNTAX MASTERY
+void setup() {
+  pinMode(8, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);
+}
+void loop() {
+  digitalWrite(8, HIGH); delay(400); digitalWrite(8, LOW);
+  digitalWrite(9, HIGH); delay(400); digitalWrite(9, LOW);
+  digitalWrite(10, HIGH); delay(400); digitalWrite(10, LOW);
+}`,
+      pinMap: { 'D8': 'Red LED', 'D9': 'Yellow LED', 'D10': 'Green LED' },
+      setupAndUpload: ['Select Arduino Uno and COM port, then click Upload.'],
+      explanations: ['Each pin is configured as OUTPUT in setup() and toggled HIGH/LOW in loop().'],
+      expectedResult: 'Clean sequential chaser across all 3 LEDs.',
+      caveats: ['Check LED flat rim (Cathode -) if one LED stays dark.']
+    },
+    troubleshooting: [{ symptom: 'One LED does not light up', checks: ['Flip LED 180 degrees to fix reversed Anode/Cathode polarity.'], explanation: 'LEDs are one-way diodes.' }],
+    checksForUnderstanding: ['Why can two legs of a resistor never share the same 5-hole vertical strip?'],
+    exitTicket: [{ question: 'How do you fix an LED that is plugged into the right row but stays dark?', rubricOrSampleReasoning: 'Check that the long leg (Anode +) faces the signal pin and short leg (Cathode -) connects to GND.' }],
+    differentiation: { support: ['1-on-1 guided color-coded jumper wiring'], extension: ['6-LED Knight Rider scanner using for-loops and arrays'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Wire 3 LEDs cleanly from scratch in under 8 minutes with zero polarity errors.',
+      bandB: 'Band B (Class 6–8): Fix 3 broken C++ sketches with syntax errors and build a 4-way crosswalk flasher.',
+      bandC: 'Band C (Class 9–12): Refactor 6-LED chaser code using C++ arrays and nested for-loops.'
+    },
+    nextLessonTeaser: 'Return to core pathway with 100% breadboard confidence!',
+    sources: [{ title: 'RoboBee Innovators Lab Manual', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: 'Breadboard X-Ray', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+  {
+    id: 'sup-s2',
+    isSupportLab: true,
+    courseId: 'explorer',
+    sequence: 102,
+    code: 'SUPPORT LAB S2',
+    title: 'Sensors, Serial Monitor & If/Else Logic Clinic',
+    promise: 'Supportive catch-up lab for reading Analog/Digital sensors (Pushbutton, LDR, Potentiometer), using the Serial Monitor at 9600 baud, and writing clean if/else threshold conditions.',
+    status: 'published',
+    proposedAudience: 'Class 3–12 (Catch-Up + Olympiad Extension)',
+    durationMinutes: 120,
+    prerequisites: ['Level 1 Classes 04–06'],
+    outcomes: ['Read live sensor values in Serial Monitor and calibrate stable if/else threshold triggers.'],
+    vocabulary: [{ term: 'Threshold Value', plainMeaning: 'The trigger number where our robot switches from OFF to ON.', technicalMeaning: 'A numerical decision boundary comparing analogRead() output against a setpoint.' }],
+    teacherPrep: ['Set up Serial Plotter live projection on smartboard.'],
+    verifiedMaterials: ['Arduino Uno R3', '10kΩ Potentiometer', 'LDR Light Sensor', 'Pushbutton', 'Piezo Buzzer'],
+    safetyNotes: ['Ensure potentiometer outer legs connect to 5V and GND, and center wiper goes to A0.'],
+    classRhythm: [],
+    concepts: [{ title: 'Visualizing Sensor Numbers with Serial.println()', explanation: 'Never guess what a sensor sees! Print raw 0–1023 ADC values to the Serial Monitor first, record the min and max, and pick the midpoint as your threshold.' }],
+    visualizerId: 'sensor_serial_sim',
+    project: { name: 'Calibrated Multi-Sensor Alarm Station', deliverableType: 'physical_build', successEvidence: ['Student calibrates LDR & Potentiometer thresholds using live Serial Monitor readings.'] },
+    activity: { title: 'Serial Monitor Detective & Threshold Tuning', steps: ['Open Serial Monitor at 9600 baud', 'Record bright vs dark ADC numbers', 'Write if (val < threshold) alarm trigger'], successCriteria: ['Zero false triggers under room light'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3', '10kΩ Potentiometer', 'LDR'],
+      componentList: [{ name: 'Potentiometer', exactVariant: '10kΩ Linear', quantity: 1 }, { name: 'Piezo Buzzer', exactVariant: '5V Active', quantity: 1 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/potentiometer_analog_a0.svg',
+      schematic: 'Potentiometer Wiper -> A0 | Buzzer (+) -> D8 | LED -> D9',
+      wireTable: [{ from: 'Potentiometer Center Pin', to: 'Arduino Analog Pin A0', wireOrPolarityNote: '0–1023 ADC input' }, { from: 'Buzzer (+)', to: 'Arduino Pin D8', wireOrPolarityNote: 'Alarm actuator output' }],
+      assemblyAndPowerUpSteps: ['1. Wire Potentiometer to 5V, A0, and GND.', '2. Open Serial Monitor at 9600 baud.', '3. Tune threshold in if/else statement.'],
+      powerAndSafetyChecks: ['Never short 5V directly to GND on the potentiometer outer legs.'],
+      testCases: [{ action: 'Turn knob past 512 midpoint', expectedResult: 'LED and buzzer activate cleanly.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S2: SERIAL MONITOR & IF/ELSE CLINIC
+void setup() {
+  Serial.begin(9600);
+  pinMode(8, OUTPUT);
+}
+void loop() {
+  int sensorVal = analogRead(A0);
+  Serial.println(sensorVal);
+  if (sensorVal > 512) {
+    digitalWrite(8, HIGH);
+  } else {
+    digitalWrite(8, LOW);
+  }
+  delay(100);
+}`,
+      pinMap: { 'A0': 'Sensor Input', 'D8': 'Alarm Output' },
+      setupAndUpload: ['Upload and open Serial Monitor (Ctrl+Shift+M) at 9600 baud.'],
+      explanations: ['analogRead(A0) returns 0 to 1023; if/else compares it to 512.'],
+      expectedResult: 'Live numbers stream on screen and D8 triggers above 512.',
+      caveats: ['Match Serial.begin(9600) with 9600 baud in the Serial Monitor dropdown.']
+    },
+    troubleshooting: [{ symptom: 'Serial Monitor shows garbled symbols', checks: ['Set baud rate dropdown in Serial Monitor to 9600 baud.'], explanation: 'Mismatched baud rates corrupt UART character decoding.' }],
+    checksForUnderstanding: ['What range of numbers does analogRead(A0) return on an Arduino Uno?'],
+    exitTicket: [{ question: 'Why do we print sensor values to the Serial Monitor before writing our if/else threshold?', rubricOrSampleReasoning: 'Because ambient lighting and component tolerances vary; measuring real values lets us pick an accurate midpoint threshold.' }],
+    differentiation: { support: ['Guided if/else flowchart cards'], extension: ['Hysteresis deadband (upper & lower threshold) to eliminate relay chatter'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Turn knob to steer numbers on screen and trigger a 2-tone buzzer alarm.',
+      bandB: 'Band B (Class 6–8): Combine Pushbutton + LDR using logical AND (&&) for an armed night alarm.',
+      bandC: 'Band C (Class 9–12): Implement a 5-sample moving average filter + hysteresis band.'
+    },
+    nextLessonTeaser: 'Ready for Ultrasonic Sonar & Servo Actuators!',
+    sources: [{ title: 'RoboBee Innovators Lab Manual', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: 'Analog ADC Diagram', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+  {
+    id: 'sup-s3',
+    isSupportLab: true,
+    courseId: 'beginner',
+    sequence: 103,
+    code: 'SUPPORT LAB S3',
+    title: 'Level 1 Capstone Catch-Up, Soldering & Multimeter Lab',
+    promise: 'Complete and polish your Smart Dustbin / Automatic Gate project, learn Digital Multimeter (DMM) continuity & voltage testing, and fix any loose jumper wires before Level 2 Mobile Robotics.',
+    status: 'published',
+    proposedAudience: 'Class 3–12 (Catch-Up + Multimeter Skills)',
+    durationMinutes: 120,
+    prerequisites: ['Level 1 Classes 07–10'],
+    outcomes: ['Use a Digital Multimeter in Continuity Beep mode and DC Voltage mode to diagnose circuits, and complete Level 1 Capstone certification.'],
+    vocabulary: [{ term: 'Continuity Beep Mode', plainMeaning: 'A multimeter setting that beeps when two points are electrically connected.', technicalMeaning: 'Ohmic resistance test (< 30Ω) verifying an unbroken conductive path.' }],
+    teacherPrep: ['Provide Digital Multimeters on every bench.'],
+    verifiedMaterials: ['Digital Multimeter', 'HC-SR04 Ultrasonic Sensor', 'SG90 Servo Motor', 'Arduino Uno R3'],
+    safetyNotes: ['Never measure resistance/continuity while a circuit is powered ON.'],
+    classRhythm: [],
+    concepts: [{ title: 'How Engineers Diagnose Circuits with a Multimeter', explanation: 'Instead of guessing whether a jumper wire is broken inside its insulation, touch the two multimeter probes to both ends in Continuity Mode—a beep proves the wire is good!' }],
+    visualizerId: 'ultrasonic_sonar_sim',
+    project: { name: 'Certified Smart Dustbin & Multimeter Badge', deliverableType: 'physical_build', successEvidence: ['Smart Dustbin opens reliably at <20cm and closes smoothly after 3 seconds.'] },
+    activity: { title: 'Multimeter Continuity Audit & Servo Calibration', steps: ['Test 5 jumper wires with multimeter', 'Verify 5.0V rail', 'Calibrate SG90 0° and 90° horn angles'], successCriteria: ['Zero servo stalling or jitter'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3', 'HC-SR04', 'SG90 Servo'],
+      componentList: [{ name: 'HC-SR04 Sonar', exactVariant: '5V Ultrasonic', quantity: 1 }, { name: 'SG90 Servo', exactVariant: '9g Micro Servo', quantity: 1 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/cad_ultrasonic_bracket_blueprint.svg',
+      schematic: 'TRIG -> D9 | ECHO -> D10 | Servo Signal -> D6 | 5V & GND',
+      wireTable: [{ from: 'HC-SR04 TRIG / ECHO', to: 'Arduino D9 / D10', wireOrPolarityNote: 'Distance sensing' }, { from: 'SG90 Orange Wire', to: 'Arduino Pin D6', wireOrPolarityNote: 'Servo PWM control' }],
+      assemblyAndPowerUpSteps: ['1. Attach servo horn at 0° closed position first.', '2. Wire HC-SR04 and SG90.', '3. Test hand wave at 15cm.'],
+      powerAndSafetyChecks: ['Do not force the plastic servo horn by hand while powered.'],
+      testCases: [{ action: 'Wave hand within 20cm', expectedResult: 'Lid opens to 90° for 3 seconds, then closes smoothly.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S3: SMART DUSTBIN CAPSTONE VERIFICATION
+#include <Servo.h>
+Servo lidServo;
+void setup() {
+  pinMode(9, OUTPUT);
+  pinMode(10, INPUT);
+  lidServo.attach(6);
+  lidServo.write(0);
+}
+void loop() {
+  digitalWrite(9, LOW); delayMicroseconds(2);
+  digitalWrite(9, HIGH); delayMicroseconds(10);
+  digitalWrite(9, LOW);
+  long dur = pulseIn(10, HIGH, 25000);
+  int cm = dur * 0.034 / 2;
+  if (cm > 0 && cm < 20) {
+    lidServo.write(90);
+    delay(3000);
+    lidServo.write(0);
+  }
+  delay(100);
+}`,
+      pinMap: { 'D9/D10': 'HC-SR04 TRIG/ECHO', 'D6': 'SG90 Servo' },
+      setupAndUpload: ['Install Servo.h (built-in) and upload to Arduino Uno.'],
+      explanations: ['pulseIn measures ultrasonic echo time; if < 20cm, lidServo opens to 90 degrees.'],
+      expectedResult: 'Reliable automatic lid actuation.',
+      caveats: ['Align servo horn mechanically at 0 degrees before screwing it down.']
+    },
+    troubleshooting: [{ symptom: 'Servo buzzes continuously at closed position', checks: ['Change closed angle from 0° to 10° so the horn does not hit the mechanical hard stop.'], explanation: 'Mechanical binding causes continuous stall current.' }],
+    checksForUnderstanding: ['Why must you align the servo horn at 0° in software before tightening the screw?'],
+    exitTicket: [{ question: 'What happens if your Arduino and external battery pack do not share a Common Ground (GND)?', rubricOrSampleReasoning: 'PWM signals have no 0V reference voltage, causing the servo or motor driver to twitch erratically or ignore commands.' }],
+    differentiation: { support: ['Step-by-step servo horn alignment coaching'], extension: ['Add I2C 16x2 LCD usage counter showing total trash drops'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Decorate and calibrate Smart Dustbin lid so it opens and closes smoothly 5 times in a row.',
+      bandB: 'Band B (Class 6–8): Add Green (Ready) and Red (Open/Full) status LEDs + buzzer beep on open.',
+      bandC: 'Band C (Class 9–12): Perform full DMM current & voltage drop audit under idle vs. servo stall load.'
+    },
+    nextLessonTeaser: 'Welcome to Level 2: Mobile Robotics, L298N Motor Drivers & Autonomous Rovers!',
+    sources: [{ title: 'RoboBee Innovators Lab Manual', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: 'Smart Dustbin Schematic', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+  {
+    id: 'sup-s4',
+    isSupportLab: true,
+    courseId: 'beginner',
+    sequence: 104,
+    code: 'SUPPORT LAB S4',
+    title: 'Rover Drivetrain, L298N Wiring & Battery Safety Clinic',
+    promise: 'Hands-on mechanical and electrical clinic for fixing rover wheel spin directions, L298N H-Bridge IN1–IN4 truth tables, Common Ground wiring, and straight-line PWM trim.',
+    status: 'published',
+    proposedAudience: 'Class 3–12 (Rover Catch-Up Clinic)',
+    durationMinutes: 120,
+    prerequisites: ['Level 2 Classes 11–14'],
+    outcomes: ['Diagnose and fix backward-spinning motors, missing Common Ground wires, and curved driving drift on a 2WD robot chassis.'],
+    vocabulary: [{ term: 'Differential Trim', plainMeaning: 'Slightly adjusting left vs right wheel PWM speed so the robot drives dead straight.', technicalMeaning: 'Software PWM duty-cycle offset compensating for DC gear-motor manufacturing variance.' }],
+    teacherPrep: ['Set up a 2-meter straight tape lane on the classroom floor.'],
+    verifiedMaterials: ['2WD Robot Chassis', 'L298N Motor Driver', '2S 7.4V Li-Ion Battery Pack', 'Arduino Uno R3'],
+    safetyNotes: ['Elevate wheels off the table during initial power-up test.'],
+    classRhythm: [],
+    concepts: [{ title: 'The 3 Golden Rules of L298N Rover Debugging', explanation: '1. Battery (-), L298N GND, and Arduino GND MUST connect together. 2. Remove ENA/ENB jumpers to use analogWrite() PWM speed control. 3. If one wheel spins backward, swap its OUT1/OUT2 wires or flip IN1/IN2 in code.' }],
+    visualizerId: 'motor_driver_pwm_sim',
+    project: { name: 'Straight-Line Calibrated 2WD Rover', deliverableType: 'physical_build', successEvidence: ['Rover drives 2 meters forward staying within a 15cm lane.'] },
+    activity: { title: 'Drivetrain Alignment & Straight-Line Trim', steps: ['Elevate chassis on test block', 'Verify both wheels spin forward', 'Tune LEFT_PWM and RIGHT_PWM on 2m floor lane'], successCriteria: ['Zero spin-outs or backward wheels'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3', 'L298N Motor Driver', '2WD Chassis'],
+      componentList: [{ name: 'L298N Driver', exactVariant: 'Dual H-Bridge', quantity: 1 }, { name: 'BO Gear Motors', exactVariant: 'Dual Shaft + Wheels', quantity: 2 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/2wd_rover_wiring_plan.svg',
+      schematic: 'ENA->D5, IN1->D7, IN2->D8, IN3->D4, IN4->D2, ENB->D3 | Common GND',
+      wireTable: [{ from: 'Battery (-) & Arduino GND', to: 'L298N Center GND Terminal', wireOrPolarityNote: 'Mandatory Star Common Ground' }, { from: 'L298N ENA & ENB', to: 'Arduino PWM Pins D5 & D3', wireOrPolarityNote: 'Independent left/right speed trim' }],
+      assemblyAndPowerUpSteps: ['1. Verify Common Ground terminal.', '2. Upload forward test sketch with wheels lifted.', '3. Place on floor and adjust PWM trim.'],
+      powerAndSafetyChecks: ['Never short 7.4V Li-Ion positive red wire to GND.'],
+      testCases: [{ action: 'Run 2-second forward burst', expectedResult: 'Rover drives straight forward 1.5m and stops cleanly.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S4: ROVER STRAIGHT-LINE PWM TRIM
+const int ENA = 5, IN1 = 7, IN2 = 8;
+const int ENB = 3, IN3 = 4, IN4 = 2;
+const int TRIM_LEFT = 180;  // Adjust 0-255 to match wheels
+const int TRIM_RIGHT = 175;
+void setup() {
+  pinMode(ENA, OUTPUT); pinMode(IN1, OUTPUT); pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT); pinMode(IN3, OUTPUT); pinMode(IN4, OUTPUT);
+  digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
+  analogWrite(ENA, TRIM_LEFT);
+  analogWrite(ENB, TRIM_RIGHT);
+  delay(2000);
+  analogWrite(ENA, 0); analogWrite(ENB, 0);
+}
+void loop() {}`,
+      pinMap: { 'D5/D7/D8': 'Left Motor PWM & Dir', 'D3/D4/D2': 'Right Motor PWM & Dir' },
+      setupAndUpload: ['Upload with switch OFF, unplug USB, place on floor, switch ON.'],
+      explanations: ['Adjust TRIM_LEFT and TRIM_RIGHT by 3–5 points if the rover curves slightly left or right.'],
+      expectedResult: 'Dead-straight 2-second forward run.',
+      caveats: ['Check caster wheel screws if the rover wobbles.']
+    },
+    troubleshooting: [{ symptom: 'Rover spins in a circle instead of driving forward', checks: ['Swap the two motor wires on the side that is spinning backward.'], explanation: 'Opposite DC motor polarity reverses rotation direction.' }],
+    checksForUnderstanding: ['How do you fix a rover that curves slightly to the right during a straight drive?'],
+    exitTicket: [{ question: 'Why must the Arduino GND and 7.4V Battery (-) share the L298N GND terminal?', rubricOrSampleReasoning: 'Without a common 0V reference, the L298N logic gates cannot read the Arduino 5V HIGH/LOW direction signals.' }],
+    differentiation: { support: ['Hands-on terminal block screw tightening & wire stripping'], extension: ['Program an exact 90-degree square figure-8 floor routine'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Fix wheel directions and drive straight through a 2-meter cardboard tunnel.',
+      bandB: 'Band B (Class 6–8): Calibrate TRIM_LEFT/RIGHT and execute an exact L-shaped parking maneuver.',
+      bandC: 'Band C (Class 9–12): Write reusable drive(leftSpeed, rightSpeed, durationMs) functions with active H-Bridge braking.'
+    },
+    nextLessonTeaser: 'Ready for Bluetooth Soccer, IR Line Following & Autonomous Sonar Rovers!',
+    sources: [{ title: 'RoboBee Innovators Lab Manual', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: '2WD Rover Wiring Plan', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+  {
+    id: 'sup-s5',
+    isSupportLab: true,
+    courseId: 'beginner',
+    sequence: 105,
+    code: 'SUPPORT LAB S5',
+    title: 'Level 2 Autonomous Rover Tuning & Tournament Trial Clinic',
+    promise: 'Supportive clinic to debug and tune your Bluetooth Rover, IR Line Follower, or Obstacle-Avoiding Sonar Rover so every student earns Level 2 Autonomous Rover Certification.',
+    status: 'published',
+    proposedAudience: 'Class 3–12 (Autonomous Rover Clinic)',
+    durationMinutes: 120,
+    prerequisites: ['Level 2 Classes 15–20'],
+    outcomes: ['Calibrate TCRT5000 IR comparators, eliminate ultrasonic 0cm timeout glitches, and pass the Level 2 Autonomous Arena Trial.'],
+    vocabulary: [{ term: 'Echo Timeout Filter', plainMeaning: 'Ignoring 0cm false readings when no wall is in front of the ultrasonic sensor.', technicalMeaning: 'Filtering out pulseIn() timeout zeroes by requiring dist > 2 && dist < 25 before triggering obstacle evasion.' }],
+    teacherPrep: ['Set up both the black-tape Line Follower loop and the cardboard Obstacle Maze arena.'],
+    verifiedMaterials: ['Complete 2WD Autonomous Rover', 'HC-SR04 + SG90 Turret', '2x TCRT5000 IR Sensors'],
+    safetyNotes: ['Unplug HC-05 RX/TX jumper wires before uploading new code via USB.'],
+    classRhythm: [],
+    concepts: [{ title: 'Eliminating the #1 Autonomous Rover Bug (0cm False Stops)', explanation: 'When an open hallway is ahead, pulseIn() times out and returns 0. If your code only checks if (dist < 25), then 0 counts as less than 25! Always write: if (dist > 2 && dist < 25).' }],
+    visualizerId: 'obstacle_avoiding_rover_sim',
+    project: { name: 'Certified Autonomous Rover Arena Run', deliverableType: 'physical_build', successEvidence: ['Rover completes a 60-second autonomous arena run without human touch.'] },
+    activity: { title: 'Arena Calibration & 3-Trial Certification', steps: ['Calibrate IR trimpots with screwdriver', 'Verify sonar >2cm filter', 'Complete 3 timed arena runs'], successCriteria: ['Zero corner traps or false stops'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['2WD Autonomous Rover', 'HC-SR04', 'L298N'],
+      componentList: [{ name: 'Autonomous 2WD Rover', exactVariant: 'Complete Level 2 Build', quantity: 1 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/obstacle_avoiding_rover_complete_wiring.svg',
+      schematic: 'HC-SR04 (D9/D10) + Servo (D11) + L298N (D5,D7,D8,D4,D2,D3)',
+      wireTable: [{ from: 'HC-SR04 TRIG / ECHO', to: 'Arduino D9 / D10', wireOrPolarityNote: 'Forward obstacle detection' }],
+      assemblyAndPowerUpSteps: ['1. Check battery voltage > 7.4V.', '2. Verify sensor bracket faces 90° straight ahead.', '3. Run 60-second arena trial.'],
+      powerAndSafetyChecks: ['Secure loose battery wires away from spinning tires.'],
+      testCases: [{ action: 'Approach wall at 20cm', expectedResult: 'Rover stops, scans left/right, and turns toward open path.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S5: ZERO-GLITCH SONAR FILTER
+int getCleanDistanceCm() {
+  digitalWrite(9, LOW); delayMicroseconds(2);
+  digitalWrite(9, HIGH); delayMicroseconds(10);
+  digitalWrite(9, LOW);
+  long dur = pulseIn(10, HIGH, 25000);
+  if (dur == 0) return 999; // Open space (no echo timeout)
+  return dur * 0.034 / 2;
+}
+void setup() { pinMode(9, OUTPUT); pinMode(10, INPUT); Serial.begin(9600); }
+void loop() { Serial.println(getCleanDistanceCm()); delay(100); }`,
+      pinMap: { 'D9': 'TRIG', 'D10': 'ECHO' },
+      setupAndUpload: ['Upload and verify open-air reading reports 999 instead of 0.'],
+      explanations: ['Returning 999 when dur == 0 prevents open-space timeouts from triggering false obstacle stops.'],
+      expectedResult: 'Rock-solid autonomous driving in wide rooms.',
+      caveats: ['Soft cloth obstacles absorb ultrasound; use hard cardboard or wooden arena walls.']
+    },
+    troubleshooting: [{ symptom: 'Rover stops randomly in the middle of an empty room', checks: ['Add if (dur == 0) return 999; so timeouts are treated as clear path.'], explanation: 'pulseIn returns 0 on timeout.' }],
+    checksForUnderstanding: ['Why does pulseIn() return 0 in a wide-open room, and how do we handle it in code?'],
+    exitTicket: [{ question: 'Why must you unplug HC-05 Bluetooth pins D0/D1 while uploading code over USB?', rubricOrSampleReasoning: 'Because Arduino USB programming uses the exact same UART serial pins (D0 RX / D1 TX).' }],
+    differentiation: { support: ['1-on-1 arena coaching and trimpot tuning'], extension: ['Combine Line Following + Obstacle Avoidance into one hybrid state machine'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Complete a 60-second obstacle-free autonomous room exploration.',
+      bandB: 'Band B (Class 6–8): Escape a 3-wall dead-end U-trap using reverse + 135° pivot.',
+      bandC: 'Band C (Class 9–12): Log 3-sample median-filtered sonar telemetry while navigating a tight chicane.'
+    },
+    nextLessonTeaser: 'Advance to Level 3: 3D CAD, Robotic Arms & ESP32 IoT Systems!',
+    sources: [{ title: 'RoboBee Innovators Lab Manual', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: 'Obstacle Avoiding Rover Blueprint', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+  {
+    id: 'sup-s6',
+    isSupportLab: true,
+    courseId: 'intermediate',
+    sequence: 106,
+    code: 'SUPPORT LAB S6',
+    title: '3-DOF Robotic Arm Kinematics, Servo Power & Gripper Clinic',
+    promise: 'Supportive mechanical and power clinic to eliminate multi-servo voltage brownouts, align Waist/Shoulder/Gripper horn zero points, and master smooth pick-and-place interpolation.',
+    status: 'published',
+    proposedAudience: 'Class 5–12 (Robotic Arm Clinic)',
+    durationMinutes: 120,
+    prerequisites: ['Level 3 Classes 21–24'],
+    outcomes: ['Wire an external 5V/3A buck power rail for 3–4 servos, eliminate jitter with incremental degree stepping, and complete a 3-cube pick-and-place cycle.'],
+    vocabulary: [{ term: 'Servo Slew Interpolation', plainMeaning: 'Moving a robotic arm 1 degree every 15ms so it glides smoothly instead of jerking.', technicalMeaning: 'Incremental trajectory stepping that bounds angular velocity and peak current draw.' }],
+    teacherPrep: ['Prepare 5V 3A Buck converters and foam target cubes.'],
+    verifiedMaterials: ['3-DOF / 4-DOF Robotic Arm Kit', 'External 5V Buck Supply', 'Arduino Uno R3'],
+    safetyNotes: ['Never power 3+ servos from the Arduino 5V pin—always use the external 5V rail with Common GND.'],
+    classRhythm: [],
+    concepts: [{ title: 'Why Robotic Arms Shake (And How Slew-Rate Stepping Fixes It)', explanation: 'Jumping directly from servo.write(10) to servo.write(150) commands maximum stall current and violent mechanical whip. Stepping 1° every 15ms produces silky-smooth industrial arm motion!' }],
+    visualizerId: 'servo_arm_sim',
+    project: { name: 'Smooth 3-Cube Pick-and-Place Arm', deliverableType: 'physical_build', successEvidence: ['Robotic arm picks and stacks 3 foam cubes without dropping or resetting.'] },
+    activity: { title: 'Horn Zeroing & Smooth Trajectory Tuning', steps: ['Zero all servos to 90° before mounting horns', 'Wire external 5V rail + Common GND', 'Program smoothMove() pick-and-place'], successCriteria: ['Zero MCU brownout resets'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Arduino Uno R3', '3x Servo Motors', 'External 5V Buck Converter'],
+      componentList: [{ name: 'Robotic Arm Kit', exactVariant: '3-DOF Acrylic + Servos', quantity: 1 }, { name: 'Buck Converter', exactVariant: 'LM2596 5.0V Output', quantity: 1 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/servo_gripper_wiring.svg',
+      schematic: 'Base->D9, Shoulder->D10, Gripper->D11 | Servo V+ -> External 5V | Common GND',
+      wireTable: [{ from: 'All Servo Red (V+) Wires', to: 'External 5.0V Buck Output (+)', wireOrPolarityNote: 'Isolated high-current servo rail' }, { from: 'All Servo Brown (GND) Wires', to: 'Common GND (Buck - and Arduino GND)', wireOrPolarityNote: 'Shared 0V reference' }],
+      assemblyAndPowerUpSteps: ['1. Verify Buck output is 5.0V with multimeter.', '2. Connect Common GND.', '3. Upload smoothMove sketch.'],
+      powerAndSafetyChecks: ['Keep fingers clear of gripper gears during closing limits.'],
+      testCases: [{ action: 'Execute pick-and-place loop', expectedResult: 'Arm glides smoothly, grips cube at 65°, lifts, rotates, and releases at 20°.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S6: SMOOTH SLEW-RATE ROBOTIC ARM MOVER
+#include <Servo.h>
+Servo joint;
+int currentPos = 90;
+void smoothMove(int targetDeg, int stepDelayMs) {
+  while (currentPos != targetDeg) {
+    currentPos += (targetDeg > currentPos) ? 1 : -1;
+    joint.write(currentPos);
+    delay(stepDelayMs);
+  }
+}
+void setup() { joint.attach(9); joint.write(90); }
+void loop() {
+  smoothMove(140, 15);
+  delay(500);
+  smoothMove(40, 15);
+  delay(500);
+}`,
+      pinMap: { 'D9': 'Base Servo', 'D10': 'Shoulder Servo', 'D11': 'Gripper Servo' },
+      setupAndUpload: ['Upload and watch how stepDelayMs=15 eliminates mechanical whip.'],
+      explanations: ['smoothMove steps 1 degree at a time toward targetDeg, keeping current draw low and motion smooth.'],
+      expectedResult: 'Industrial-grade smooth robotic arm motion.',
+      caveats: ['Never command a gripper past its physical closed limit or the servo will overheat.']
+    },
+    troubleshooting: [{ symptom: 'Arduino resets every time the arm lifts', checks: ['Move servo red power wires from Arduino 5V to the external 5V buck rail.'], explanation: 'Multi-servo inrush current causes 5V rail brownout.' }],
+    checksForUnderstanding: ['Why do we use a while/for loop to step 1° every 15ms instead of jumping directly to the target angle?'],
+    exitTicket: [{ question: 'What causes a robotic arm to violently jerk at power-up, and how do we reduce it?', rubricOrSampleReasoning: 'The servo jumps from its resting physical pose to the initial write() angle at full speed; parking the arm at a known home pose before power-off prevents startup whip.' }],
+    differentiation: { support: ['Mechanical linkage & screw tension adjustment'], extension: ['Record and replay 5 waypoints using EEPROM or button teach-pendant'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Control Waist and Gripper smoothly with two knobs to move 3 blocks into a cup.',
+      bandB: 'Band B (Class 6–8): Program an automated 4-step pick-and-place assembly line with smoothMove().',
+      bandC: 'Band C (Class 9–12): Implement synchronized multi-axis stepping where Base, Shoulder, and Elbow reach targets simultaneously.'
+    },
+    nextLessonTeaser: 'Next up: ESP32 Wi-Fi IoT & Smart Automation Systems!',
+    sources: [{ title: 'RoboBee Innovators Lab Manual', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: 'Servo Gripper Wiring', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+  {
+    id: 'sup-s7',
+    isSupportLab: true,
+    courseId: 'intermediate',
+    sequence: 107,
+    code: 'SUPPORT LAB S7',
+    title: 'ESP32 Wi-Fi Troubleshooting, 3.3V Logic & IoT Capstone Clinic',
+    promise: 'Supportive clinic for ESP32 CP2102/CH340 USB drivers, BOOT button upload mode, 3.3V ADC scaling, Wi-Fi hotspot connection debugging, and Level 3 Smart Agriculture/IoT project completion.',
+    status: 'published',
+    proposedAudience: 'Class 5–12 (ESP32 & IoT Clinic)',
+    durationMinutes: 120,
+    prerequisites: ['Level 3 Classes 25–28'],
+    outcomes: ['Resolve ESP32 upload & Wi-Fi connection errors, interface 3.3V sensors safely, and certify your Level 3 Smart IoT Capstone.'],
+    vocabulary: [{ term: '3.3V Logic Level', plainMeaning: 'ESP32 pins run at 3.3 Volts instead of Arduino’s 5.0 Volts.', technicalMeaning: 'CMOS 3.3V I/O architecture with 12-bit ADC (0–4095 across 0–3.3V).' }],
+    teacherPrep: ['Configure classroom 2.4GHz Wi-Fi hotspot (`RoboBee_Lab_2.4G`).'],
+    verifiedMaterials: ['ESP32 NodeMCU Board', 'Micro-USB / Type-C Data Cable', 'DHT11 / Soil Moisture Sensor', '5V Relay Module'],
+    safetyNotes: ['ESP32 only connects to 2.4GHz Wi-Fi networks (not 5GHz-only bands).'],
+    classRhythm: [],
+    concepts: [{ title: 'Top 3 ESP32 Gotchas Fixed in 5 Minutes', explanation: '1. Use a real DATA USB cable (charge-only cables have no COM port). 2. Hold the BOOT button if the IDE says Connecting.... 3. Connect Wi-Fi to a 2.4GHz SSID and set Serial Monitor to 115200 baud!' }],
+    visualizerId: 'iot_dashboard_sim',
+    project: { name: 'Certified ESP32 Wi-Fi Telemetry & Relay Node', deliverableType: 'physical_build', successEvidence: ['Smartphone browser loads live ESP32 IP dashboard and toggles relay in <200ms.'] },
+    activity: { title: 'ESP32 Upload & Web Dashboard Clinic', steps: ['Verify COM port & 115200 baud', 'Connect to 2.4GHz hotspot and print IP', 'Open IP in phone browser and test relay'], successCriteria: ['Stable Wi-Fi connection and live sensor readout'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['ESP32 NodeMCU', 'DHT11 / Soil Sensor', 'Relay Module'],
+      componentList: [{ name: 'ESP32 NodeMCU', exactVariant: 'ESP-WROOM-32', quantity: 1 }, { name: 'Relay Module', exactVariant: '1-Ch Opto-Isolated', quantity: 1 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/esp32_telemetry_wiring.svg',
+      schematic: 'Sensor -> GPIO 34 (ADC1) | Relay IN -> GPIO 26 | 3V3 & GND',
+      wireTable: [{ from: 'Analog Sensor Signal', to: 'ESP32 GPIO 34 (ADC1)', wireOrPolarityNote: 'Use ADC1 pins (32–39) when Wi-Fi is active!' }, { from: 'Relay IN', to: 'ESP32 GPIO 26', wireOrPolarityNote: 'Digital output control' }],
+      assemblyAndPowerUpSteps: ['1. Wire sensor to GPIO 34 (never ADC2 pins while Wi-Fi is on).', '2. Upload sketch and press EN/RST.', '3. Copy IP address from Serial Monitor (115200 baud).'],
+      powerAndSafetyChecks: ['Never feed raw 5V signals directly into an ESP32 GPIO pin.'],
+      testCases: [{ action: 'Tap /on and /off buttons on phone web page', expectedResult: 'Relay clicks ON/OFF and live sensor value updates.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S7: ESP32 WI-FI DIAGNOSTIC & ADC1 CHECK
+#include <WiFi.h>
+void setup() {
+  Serial.begin(115200);
+  pinMode(2, OUTPUT); // Onboard Blue LED
+  Serial.println("ESP32 Diagnostic Ready! ADC1 GPIO34 Reading:");
+}
+void loop() {
+  int raw12Bit = analogRead(34); // 0 to 4095
+  Serial.print("ADC1 (GPIO34): "); Serial.println(raw12Bit);
+  digitalWrite(2, !digitalRead(2));
+  delay(500);
+}`,
+      pinMap: { 'GPIO 34': '12-Bit Analog Input (ADC1)', 'GPIO 2': 'Onboard Status LED' },
+      setupAndUpload: ['Select DOIT ESP32 DEVKIT V1, upload, and set Serial Monitor to 115200 baud.'],
+      explanations: ['ADC1 pins (GPIO 32–39) work reliably alongside Wi-Fi, whereas ADC2 pins conflict with the Wi-Fi radio driver.'],
+      expectedResult: 'Clean 0–4095 12-bit analog telemetry at 115200 baud.',
+      caveats: ['Always use ADC1 (GPIO 32–39) for analog sensors when Wi-Fi is enabled!']
+    },
+    troubleshooting: [{ symptom: 'analogRead() fails or returns random values when Wi-Fi turns on', checks: ['Move the analog sensor wire to an ADC1 pin (GPIO 32, 33, 34, 35, 36, or 39).'], explanation: 'ESP32 ADC2 hardware is shared with the internal Wi-Fi radio.' }],
+    checksForUnderstanding: ['Why must you use ADC1 pins (GPIO 32–39) instead of ADC2 pins on an ESP32 when Wi-Fi is active?'],
+    exitTicket: [{ question: 'What is the maximum digital number returned by ESP32’s 12-bit analogRead(), compared to Arduino Uno’s 10-bit analogRead()?', rubricOrSampleReasoning: 'ESP32 12-bit ADC returns 0 to 4095 (2^12 - 1), whereas Arduino Uno 10-bit ADC returns 0 to 1023 (2^10 - 1).' }],
+    differentiation: { support: ['USB driver installation & Wi-Fi SoftAP fallback mode (no router needed)'], extension: ['JSON REST API endpoint (/api/telemetry) with auto-refreshing chart'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Host an ESP32 Wi-Fi Hotspot directly from the board and toggle LEDs from a tablet.',
+      bandB: 'Band B (Class 6–8): Complete Smart Plant Watering dashboard with Automatic vs. Manual override buttons.',
+      bandC: 'Band C (Class 9–12): Serve a non-blocking JSON telemetry endpoint + hysteresis pump protection.'
+    },
+    nextLessonTeaser: 'Welcome to Level 4: Competitive Robotics, PID Control, AI Vision & Combat!',
+    sources: [{ title: 'RoboBee Innovators Lab Manual', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: 'ESP32 Telemetry Wiring', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  },
+  {
+    id: 'sup-s8',
+    isSupportLab: true,
+    courseId: 'advanced',
+    sequence: 108,
+    code: 'SUPPORT LAB S8',
+    title: 'Pre-Tournament PID Tuning, Dohyo Ring & Pit-Crew Scrimmage Lab',
+    promise: 'Official pre-tournament pit-crew clinic to tune PID ($K_p, K_d$) constants on competition tracks, verify 5.00s Mini-Sumo safety start delays, pass size/weight tech inspection, and practice 3-minute emergency repairs.',
+    status: 'published',
+    proposedAudience: 'Class 6–12 (Tournament Squad Clinic)',
+    durationMinutes: 120,
+    prerequisites: ['Level 4 Classes 29–35'],
+    outcomes: ['Complete Ziegler-Nichols empirical PID gain tuning, pass official 20x20cm / 1.5kg tech inspection, and execute a 3-minute pit-crew repair drill.'],
+    vocabulary: [{ term: 'Derivative Damping (Kd)', plainMeaning: 'The electronic shock absorber in PID that stops the robot from wobbling side-to-side.', technicalMeaning: 'Control term proportional to rate of change of error (Kd * dError/dt) that suppresses overshoot.' }],
+    teacherPrep: ['Set up the Competition Line Follower track and the Mini-Sumo Dohyo ring + digital scale.'],
+    verifiedMaterials: ['PID Line Follower or Mini-Sumo Robot', '200x200mm Sizing Box', 'Digital Scale', 'Stopwatch'],
+    safetyNotes: ['Always activate the Master Kill-Switch before picking up a Mini-Sumo robot from the ring.'],
+    classRhythm: [],
+    concepts: [{ title: 'The 3-Step Arena PID Tuning Protocol', explanation: '1. Set Ki=0, Kd=0 and raise Kp until the robot follows curves but wobbles slightly. 2. Increase Kd until the side-to-side wobble disappears. 3. Slowly raise base speed and verify 90-degree corner recovery!' }],
+    visualizerId: 'pid_tuning_sim',
+    project: { name: 'Tournament-Ready Inspected Competition Robot', deliverableType: 'physical_build', successEvidence: ['Robot passes tech inspection and completes 3 consecutive zero-fault arena rounds.'] },
+    activity: { title: 'Tech Inspection & Pit-Crew Scrimmage', steps: ['Pass 20x20cm box & weight check', 'Verify 5.00s start delay', 'Run 3 timed PID laps and log Kp/Kd'], successCriteria: ['100% tournament rulebook compliance'] },
+    physicalBuildPack: {
+      verifiedBoardAndModules: ['Competition Robot Chassis', '5-Ch IR Array / Sonar', 'Regulated Buck Power Rail'],
+      componentList: [{ name: 'Competition Robot', exactVariant: 'PID LFR or Mini-Sumo', quantity: 1 }],
+      connectionPhotoOrClearlyLabeledIllustration: '/illustrations/3_trial_arena_test_setup.svg',
+      schematic: 'Battery -> Master Kill Switch -> Driver VMS + 5V Buck -> MCU & Sensors',
+      wireTable: [{ from: 'Battery (+) Main Lead', to: 'Master Toggle Kill-Switch', wireOrPolarityNote: 'Mandatory tournament safety cutoff' }],
+      assemblyAndPowerUpSteps: ['1. Weigh robot and test in 20x20cm sizing box.', '2. Clean rubber tires with isopropyl alcohol.', '3. Run 3 official timed trials.'],
+      powerAndSafetyChecks: ['Verify 5.00-second countdown completes before wheels move.'],
+      testCases: [{ action: 'Press Start button on Dohyo or LFR start line', expectedResult: 'Waits 5.0s (Sumo) or launches smoothly (LFR) with zero oscillation.' }]
+    },
+    codeLab: {
+      language: 'cpp',
+      code: `// SUPPORT LAB S8: CORE PID STEERING ENGINE
+float Kp = 28.0, Kd = 14.0;
+float lastError = 0;
+int computePidTurn(float error) {
+  float derivative = error - lastError;
+  lastError = error;
+  return (int)(Kp * error + Kd * derivative);
+}
+void setup() { Serial.begin(115200); }
+void loop() {}`,
+      pinMap: { 'A0–A4': '5-Channel IR Array', 'D3/D5': 'Left/Right Motor PWM' },
+      setupAndUpload: ['Tune Kp first, then Kd, logging lap times in your engineering notebook.'],
+      explanations: ['derivative = error - lastError provides counter-steering damping as the robot crosses the centerline.'],
+      expectedResult: 'High-speed, oscillation-free trajectory tracking.',
+      caveats: ['Freshly charged Li-Ion batteries increase motor RPM—re-verify Kd before finals!']
+    },
+    troubleshooting: [{ symptom: 'Robot shudders rapidly on straight lines', checks: ['Lower Kd by 25–40% to reduce high-frequency derivative kick.'], explanation: 'Excessive Kd amplifies optical sensor noise.' }],
+    checksForUnderstanding: ['If your PID Line Follower weaves lazily left and right across the line, should you increase Kp or increase Kd?'],
+    exitTicket: [{ question: 'Why do tournament teams clean their robot’s silicone/rubber tires before every match?', rubricOrSampleReasoning: 'Dust on tires drastically reduces the coefficient of static friction, causing wheel slip during high-G PID cornering or Sumo pushing.' }],
+    differentiation: { support: ['Guided Kp/Kd tuning table and tire traction prep'], extension: ['Dynamic speed scheduling: full speed on straights, automatic braking before sharp turns'] },
+    bandChallenges: {
+      bandA: 'Band A (Class 3–5): Serve as Official Timekeeper & Tech Inspector while testing 5-second start delays.',
+      bandB: 'Band B (Class 6–8): Tune Kp and Kd to shave 1.5 seconds off your baseline lap time.',
+      bandC: 'Band C (Class 9–12): Pass a blind 3-minute Pit-Crew Emergency Repair challenge under tournament clock pressure.'
+    },
+    nextLessonTeaser: 'Ready for Class 36 Grand RoboBee Championship & Graduation Showcase!',
+    sources: [{ title: 'NRC & FIRSO Official Rulebook', url: 'https://robobee.bd' }],
+    assetCredits: [{ asset: '3-Trial Arena Setup', creator: 'RoboBee Innovators', license: 'Proprietary', sourceUrl: 'team_info' }],
+    ipNotice: TRUSTED_ORG_INFO.ipStatement
+  }
+];
+
+SUPPORTIVE_MASTERY_LABS.forEach(sLab => {
+  if (!ALL_ROBOTICS_LESSONS.some(l => l.id === sLab.id)) {
+    ALL_ROBOTICS_LESSONS.push(sLab);
+  }
+});
+
+// Populate universal 120-minute standard, complete build/code packs, 3-Band Challenges, and backward-compatibility aliases
 ALL_ROBOTICS_LESSONS.forEach(lesson => {
-  // 1. Enforce 120-minute (2-hour) standard across all 36 classes with 60-minute compact option
+  // 1. Enforce 120-minute (2-hour Friday 4:00-6:00 PM) standard across all classes with 60-minute compact option
   lesson.durationMinutes = 120;
   lesson.compactDurationMinutes = 60;
+
+  // 1b. Populate 3-Band Age Differentiation (Band A: Class 3-5, Band B: Class 6-8, Band C: Class 9-12)
+  if (!lesson.bandChallenges) {
+    lesson.bandChallenges = {
+      bandA: `Band A (Class 3–5 Wonder Builders): ${lesson.differentiation?.support?.[0] || `Complete the guided ${lesson.project.name} build and demonstrate 3 successful bench trials.`}`,
+      bandB: `Band B (Class 6–8 Tactical Makers): Complete ${lesson.activity.title} and customize timing/threshold parameters in code.`,
+      bandC: `Band C (Class 9–12 Systems Engineers): ${lesson.differentiation?.extension?.[0] || lesson.activity.extension || `Optimize ${lesson.project.name} firmware, log empirical test data, and defend circuit architecture.`}`
+    };
+  }
 
   // 2. Enforce 5-segment 120-minute Class Rhythm (15 + 25 + 35 + 30 + 15 = 120m)
   const rhythmSum = lesson.classRhythm.reduce((acc, r) => acc + r.minutes, 0);

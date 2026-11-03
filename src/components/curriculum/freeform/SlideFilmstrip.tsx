@@ -198,6 +198,7 @@ export function SlideFilmstrip({
             { id: "title", name: "Title & Hook Hero", desc: "Large bold title with hero visual" },
             { id: "hardware-2col", name: "2-Column Hardware", desc: "Component breakdown cards + wiring" },
             { id: "code-split", name: "Circuit + Code Split", desc: "Schematic left, Arduino C++ right" },
+            { id: "3band-challenge", name: "3-Band Challenge (Class 3–12)", desc: "Band A (3–5) • Band B (6–8) • Band C (9–12)" },
             { id: "gallery", name: "3-Image Lab Gallery", desc: "Multiple photos for robot showcase" },
             { id: "friday-task", name: "Friday Lab Challenge", desc: "Sprint goal, timer, rules" },
             { id: "quiz", name: "Concept Check / Quiz", desc: "Interactive question + 2 verdict cards" },
