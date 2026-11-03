@@ -25,6 +25,13 @@ import { ProjectHardwareCard } from "@/components/public/ProjectHardwareCard";
 import { CompetitionCard, CompetitionCardItem, Segment } from "@/components/public/CompetitionCard";
 import { AchievementBentoCard } from "@/components/public/AchievementBentoCard";
 import { MemberOrbitShowcase, MarqueeItem } from "@/components/public/MemberOrbitShowcase";
+import {
+  DEFAULT_ACHIEVEMENTS,
+  DEFAULT_LEADERS,
+  DEFAULT_PROJECTS,
+  DEFAULT_COMPETITIONS,
+  DEFAULT_MARQUEES,
+} from "@/lib/publicSiteDefaults";
 
 const InteractiveRobotScene = dynamic(
   () => import("@/components/public/InteractiveRobotScene"),
@@ -61,12 +68,12 @@ interface AchievementData {
 }
 
 export default function Home() {
-  // Live Firestore Real-Time Subscriptions
-  const [projects, setProjects] = useState<ProjectData[]>([]);
-  const [competitions, setCompetitions] = useState<CompetitionCardItem[]>([]);
-  const [achievements, setAchievements] = useState<AchievementData[]>([]);
-  const [marquees, setMarquees] = useState<MarqueeItem[]>([]);
-  const [leaders, setLeaders] = useState<LeaderData[]>([]);
+  // Live Firestore Real-Time Subscriptions with Resilient Default Fallbacks
+  const [projects, setProjects] = useState<ProjectData[]>(DEFAULT_PROJECTS);
+  const [competitions, setCompetitions] = useState<CompetitionCardItem[]>(DEFAULT_COMPETITIONS);
+  const [achievements, setAchievements] = useState<AchievementData[]>(DEFAULT_ACHIEVEMENTS);
+  const [marquees, setMarquees] = useState<MarqueeItem[]>(DEFAULT_MARQUEES);
+  const [leaders, setLeaders] = useState<LeaderData[]>(DEFAULT_LEADERS);
 
   // Project Category Filter
   const [projectFilter, setProjectFilter] = useState<string>("all");
@@ -90,10 +97,12 @@ export default function Home() {
     const unsubProjects = onSnapshot(
       collection(db, "projects"),
       (snap) => {
-        setProjects(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ProjectData)));
+        if (!snap.empty) {
+          setProjects(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ProjectData)));
+        }
       },
       (err) => {
-        console.warn("Could not read projects from Firestore:", err);
+        console.warn("Could not read projects from Firestore (using built-in defaults):", err);
       }
     );
 
@@ -101,18 +110,20 @@ export default function Home() {
     const unsubCompetitions = onSnapshot(
       collection(db, "competitions"),
       (snap) => {
-        const publicComps = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() } as CompetitionCardItem))
-          .filter((c) => c.visibility !== "members_only" && c.status !== "Completed");
-        publicComps.sort((a, b) => {
-          const timeA = a.date ? new Date(a.date).getTime() : 0;
-          const timeB = b.date ? new Date(b.date).getTime() : 0;
-          return timeA - timeB;
-        });
-        setCompetitions(publicComps);
+        if (!snap.empty) {
+          const publicComps = snap.docs
+            .map((d) => ({ id: d.id, ...d.data() } as CompetitionCardItem))
+            .filter((c) => c.visibility !== "members_only" && c.status !== "Completed");
+          publicComps.sort((a, b) => {
+            const timeA = a.date ? new Date(a.date).getTime() : 0;
+            const timeB = b.date ? new Date(b.date).getTime() : 0;
+            return timeA - timeB;
+          });
+          setCompetitions(publicComps);
+        }
       },
       (err) => {
-        console.warn("Could not read competitions from Firestore:", err);
+        console.warn("Could not read competitions from Firestore (using built-in defaults):", err);
       }
     );
 
@@ -120,12 +131,14 @@ export default function Home() {
     const unsubAchievements = onSnapshot(
       collection(db, "achievements"),
       (snap) => {
-        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() } as AchievementData));
-        items.sort((a, b) => String(b.year || "").localeCompare(String(a.year || "")));
-        setAchievements(items);
+        if (!snap.empty) {
+          const items = snap.docs.map((d) => ({ id: d.id, ...d.data() } as AchievementData));
+          items.sort((a, b) => String(b.year || "").localeCompare(String(a.year || "")));
+          setAchievements(items);
+        }
       },
       (err) => {
-        console.warn("Could not read achievements from Firestore:", err);
+        console.warn("Could not read achievements from Firestore (using built-in defaults):", err);
       }
     );
 
@@ -133,10 +146,12 @@ export default function Home() {
     const unsubMarquee = onSnapshot(
       collection(db, "marquee"),
       (snap) => {
-        setMarquees(snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarqueeItem)));
+        if (!snap.empty) {
+          setMarquees(snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarqueeItem)));
+        }
       },
       (err) => {
-        console.warn("Could not read marquee items from Firestore:", err);
+        console.warn("Could not read marquee items from Firestore (using built-in defaults):", err);
       }
     );
 
@@ -144,10 +159,12 @@ export default function Home() {
     const unsubLeaders = onSnapshot(
       collection(db, "leaders"),
       (snap) => {
-        setLeaders(snap.docs.map((d) => ({ id: d.id, ...d.data() } as LeaderData)));
+        if (!snap.empty) {
+          setLeaders(snap.docs.map((d) => ({ id: d.id, ...d.data() } as LeaderData)));
+        }
       },
       (err) => {
-        console.warn("Could not read leaders from Firestore:", err);
+        console.warn("Could not read leaders from Firestore (using built-in defaults):", err);
       }
     );
 

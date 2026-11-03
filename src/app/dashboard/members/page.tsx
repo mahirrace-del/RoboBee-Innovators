@@ -46,10 +46,47 @@ export default function MembersDashboard() {
     if (!canAccess) return;
     
     // Listen to all users in the system
-    const unsubUsers = onSnapshot(collection(db, "users"), (snapshot) => {
-      const allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUsers(allUsers);
-    });
+    const unsubUsers = onSnapshot(
+      collection(db, "users"),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          // Ensure Team Leader Mahir is always listed in members
+          if (!allUsers.some(u => (u.email || "").toLowerCase() === "mahir.race@gmail.com" || u.id === "C2OOIbUqumPNFx6GS42eD40380V2")) {
+            allUsers.unshift({
+              id: currentUser?.uid || "C2OOIbUqumPNFx6GS42eD40380V2",
+              name: "Mostakim Rahman Mahir",
+              email: currentUser?.email || "mahir.race@gmail.com",
+              role: "admin",
+              roleTitle: "Team Leader & Founder",
+            });
+          }
+          setUsers(allUsers);
+        } else {
+          setUsers([
+            {
+              id: currentUser?.uid || "C2OOIbUqumPNFx6GS42eD40380V2",
+              name: "Mostakim Rahman Mahir",
+              email: currentUser?.email || "mahir.race@gmail.com",
+              role: "admin",
+              roleTitle: "Team Leader & Founder",
+            }
+          ]);
+        }
+      },
+      (err) => {
+        console.warn("Could not read users from Firestore:", err);
+        setUsers([
+          {
+            id: currentUser?.uid || "C2OOIbUqumPNFx6GS42eD40380V2",
+            name: "Mostakim Rahman Mahir",
+            email: currentUser?.email || "mahir.race@gmail.com",
+            role: "admin",
+            roleTitle: "Team Leader & Founder",
+          }
+        ]);
+      }
+    );
 
     // Listen to recruitment applications
     const qRecruit = query(collection(db, "recruitment"), orderBy("submittedAt", "desc"));
