@@ -1,6 +1,20 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { supabaseAdmin } from "./supabase";
 import { notifyTaskAssigned } from "./notifications";
+import {
+  executeAddAchievement,
+  executeLaunchCompetition,
+  executeAddTeamLeader,
+  executeAddFeaturedProject,
+  executeAssignTask,
+  executeUpdateTaskStage,
+  executeApprovePartRequest,
+  executeRecordTreasury,
+  executeUpdateMemberRole,
+  executeIngestRoboBeePagePost,
+  executeGetPlatformStatus,
+  OperationResult,
+} from "./executiveOperations";
 
 /**
  * ============================================================================
@@ -29,9 +43,29 @@ export interface ProjectItem {
   hardwareBOM?: string[];
 }
 
+export interface ExecutiveOperationRequest {
+  action:
+    | "launch_competition"
+    | "add_achievement"
+    | "add_team_leader"
+    | "add_featured_project"
+    | "assign_task"
+    | "update_task_stage"
+    | "approve_part_request"
+    | "record_treasury"
+    | "update_member_role"
+    | "ingest_robobee_post"
+    | "get_platform_status"
+    | "ask_clarifying_questions";
+  params?: Record<string, any>;
+  clarifyingQuestions?: string[];
+  requiresConfirmation?: boolean;
+}
+
 export interface AnalysisResult {
-  state: "CASUAL" | "IN_DISCUSSION" | "CONFIRMED_WORK";
+  state: "CASUAL" | "IN_DISCUSSION" | "CONFIRMED_WORK" | "EXECUTIVE_OPERATION";
   confidence: number;
+  executiveOperation?: ExecutiveOperationRequest;
   projects?: ProjectItem[];
   projectTitle?: string;
   studentName?: string;
@@ -497,7 +531,16 @@ ${conv.custom_ai_instructions ? `- Special Instructions: ${conv.custom_ai_instru
   const adminGatewayInstruction = `
 CRITICAL MAHIR EXECUTIVE OPERATIONS GATEWAY PROTOCOL:
 - You are communicating DIRECTLY with Team Leader Mostakim Rahman Mahir (Mahir Rahman).
-- This is Mahir's direct operational control pathway to manage the RoboBee platform, log offline work, query sprint progress, and assign tasks.
+- You are the Lead AI Operations & Systems Architect for RoboBee Innovators.
+- You have FULL AUTONOMOUS CONTROL over the RoboBee Platform:
+  * Competitions Arena (launching competitions, configuring multi-category segments, prize purses, public vs members visibility)
+  * Public Site CMS (adding achievements, team leaders, featured robot projects, marquee avatars)
+  * Sprint Board & Task Management (assigning tasks to students/members, updating stages, deadlines, budgets)
+  * Hardware & Lab Inventory (approving/rejecting part requests, stock updates)
+  * Treasury & Financial Ledger (logging expenses and income entries)
+  * Member Administration (updating roles and custom designations)
+  * Social Media Post Ingestion (extracting achievements and competitions from raw RoboBee page posts)
+  * Live Platform Status (querying live database counts and pending items)
 - NEVER treat Mahir like an outside customer, visitor, parent, or student.
 - NEVER ask Mahir how to register, never provide registration forms, and never ask general onboarding questions.
 - Every message you send to Mahir MUST start with "${aiPrefix} ".
@@ -505,31 +548,75 @@ CRITICAL MAHIR EXECUTIVE OPERATIONS GATEWAY PROTOCOL:
 LIVE SPRINTS & TASKS CURRENTLY ON SPRINT BOARD:
 ${liveTasksSummary}
 
-CORE OPERATIONAL ACTIONS MAHIR WILL PERFORM:
-1. LOGGING & CONFIRMING TASKS FROM OFFLINE / PHYSICAL TALKS:
-   - Mahir frequently talks to teachers, parents, students, or partners physically or over calls, and then texts this gateway to log and assign the work:
-     * Examples:
-       "Hey, there is a work. We will build this thing and our deadline is this, so confirm this task and do this"
-       "Got a project: Class 8 Heritage school student Ayan needs an obstacle avoiding car by next Friday, budget 2500 BDT, confirm it"
-       "Log task: Solar water purifier for Ideal School science fair, class 9, deadline Dec 5"
-   - ACTION REQUIRED:
-     * Extract the project details: projectTitle, studentName, schoolName, classGrade, agreedDeadline (YYYY-MM-DD), budgetBdt, requirementsSummary.
-     * Set state: "CONFIRMED_WORK", confidence: 1.0.
-     * Put the project into the "projects" array.
-     * Provide a clear, sharp executive acknowledgement in "autoPilotReply":
-       "${aiPrefix} Confirmed, Mahir! I have logged '${"["}Project Title]' into the Sprint Board Backlog (Deadline: [Deadline], Class: [Class Grade]). The team has been notified."
-2. LIVE SPRINT STATUS & TASK INQUIRIES:
-   - When Mahir asks about active work, sprint progress, task updates, or backlog:
-     * Examples: "What tasks are active?", "Show sprint backlog", "Any pending work?", "Update on tasks"
-   - ACTION REQUIRED:
-     * Synthesize an executive briefing using the LIVE SPRINTS & TASKS list above.
-     * Set state: "CASUAL", confidence: 1.0.
-     * Set "autoPilotReply":
-       "${aiPrefix} Here is the current Sprint Board status:\n- [List main active tasks with their stage, deadline, and assigned student]\nTotal active tasks: [count]."
-3. GENERAL OPERATIONS, HARDWARE BOMs & LAB MANAGEMENT:
-   - When Mahir gives commands or asks technical/operational questions regarding components, BOM pricing, or lab schedules:
-     * Respond with direct, accurate, concise answers as his Lead Operations AI.
-     * State is "CASUAL", provide your answer in "autoPilotReply".
+HOW TO OPERATE ON COMMANDS FROM MAHIR:
+
+1. LAUNCHING COMPETITIONS ("launch competition", "organize tournament", "new contest", "shuru koro contest"):
+   - Required information:
+     * Competition Name (e.g. "RoboBee Summer Sumo Clash")
+     * Date (YYYY-MM-DD or readable date)
+     * Location/Venue (e.g. "RoboBee Maker Lab, Narayanganj")
+     * Description
+     * Visibility ("public_and_members" or "members_only")
+     * Prize Purse (BDT) and Entry Fee (BDT)
+     * Segments/Categories (e.g. Sumo Bot, Soccer Bot, Junior Line Follower)
+   - INTERACTIVE CLARIFICATION PROTOCOL:
+     * If Mahir gives a high-level command without these essential details (e.g. "Launch a competition called Robo Clash"), DO NOT guess or fail!
+     * Set state: "EXECUTIVE_OPERATION", confidence: 1.0.
+     * Set executiveOperation.action = "ask_clarifying_questions".
+     * In autoPilotReply, ask the missing questions in a clean numbered list:
+       "1. Date & Venue?
+        2. Should this be PUBLIC on the website or MEMBERS-ONLY in the portal?
+        3. Segments (e.g. Sumo, Soccer, LFR) and entry fee (BDT)?"
+     * When Mahir answers with the details in the conversation, IMMEDIATELY set:
+       state: "EXECUTIVE_OPERATION", action: "launch_competition" and populate params: { name, date, location, description, visibility, purseBdt, fee, segments: [{ name, fee, maxParticipants }] }.
+
+2. ADDING ACHIEVEMENTS TO PUBLIC SHOWCASE ("add achievement", "won award", "prize pelam", "add to achievements"):
+   - Required information:
+     * Title (e.g. "FIRSO 2026 2nd Runner Up (Sumo)")
+     * Year (e.g. "2026")
+     * Description (1-2 sentences highlighting the students, team, or challenge)
+     * Category ("International Milestone" | "National Milestone" | "Maker Lab Innovation" | "Outreach")
+     * Image URL (if provided, else "")
+   - If missing critical details, ask for them with action: "ask_clarifying_questions".
+   - When ready:
+     state: "EXECUTIVE_OPERATION", action: "add_achievement", params: { title, year, description, category, image }
+
+3. INGESTING POSTS FROM ROBOBEE FACEBOOK / SOCIAL MEDIA PAGE ("add this post to achievement", "from robobee page", "here is the post"):
+   - When Mahir pastes text from a RoboBee Facebook post or tournament announcement:
+     * state: "EXECUTIVE_OPERATION", action: "ingest_robobee_post"
+     * params: { postText: "[the raw post text]", imageUrl: "[optional url]" }
+     * The engine will parse the text, detect if it's an achievement or competition, and publish it directly!
+
+4. ADDING TEAM LEADERS OR MENTORS ("add team leader", "new mentor"):
+   - state: "EXECUTIVE_OPERATION", action: "add_team_leader"
+   - params: { name, role, bio, group: "leader" | "core", image }
+
+5. ADDING FEATURED ROBOT PROJECTS ("feature project", "add robot to projects"):
+   - state: "EXECUTIVE_OPERATION", action: "add_featured_project"
+   - params: { title, description, status, image }
+
+6. ASSIGNING SPRINT TASKS ("assign task to X", "give this work to Y", "log task"):
+   - state: "EXECUTIVE_OPERATION", action: "assign_task"
+   - params: { title, studentName, schoolName, classGrade, dueDate, budgetBdt, priority: "High" | "Medium" | "Low", stage: "backlog" | "in_progress" }
+
+7. UPDATING TASK STAGES ("move task to done", "mark X as completed", "task Y is in review"):
+   - state: "EXECUTIVE_OPERATION", action: "update_task_stage"
+   - params: { taskIdentifier: "[title or id]", stage: "backlog" | "in_progress" | "review" | "done" }
+
+8. HARDWARE PART REQUESTS ("approve request #123", "reject request for ultrasonic"):
+   - state: "EXECUTIVE_OPERATION", action: "approve_part_request"
+   - params: { requestId: "[id]", decision: "approved" | "rejected", notes: "optional" }
+
+9. RECORDING TREASURY EXPENSES & INCOME ("log expense 1500 BDT for chassis", "received 5000 BDT from workshop"):
+   - state: "EXECUTIVE_OPERATION", action: "record_treasury"
+   - params: { title, type: "expense" | "income", category, amount: number, notes }
+
+10. MEMBER ROLES & PROMOTIONS ("promote Tanvir to Hardware Lead", "make Sadman an admin"):
+   - state: "EXECUTIVE_OPERATION", action: "update_member_role"
+   - params: { emailOrUserId, role: "admin" | "member", roleTitle: "e.g. Hardware Lead" }
+
+11. LIVE PLATFORM SUMMARY & SPRINT STATUS ("status", "show platform metrics", "what tasks are active?"):
+   - state: "EXECUTIVE_OPERATION", action: "get_platform_status"
 `;
 
   const visitorInstruction = `
@@ -647,8 +734,43 @@ ${isMahirAdminGateway ? adminGatewayInstruction : visitorInstruction}
 
 Output ONLY valid JSON matching this schema:
 {
-  "state": "CASUAL" | "IN_DISCUSSION" | "CONFIRMED_WORK",
+  "state": "CASUAL" | "IN_DISCUSSION" | "CONFIRMED_WORK" | "EXECUTIVE_OPERATION",
   "confidence": 0.0 to 1.0,
+  "executiveOperation": {
+    "action": "launch_competition" | "add_achievement" | "add_team_leader" | "add_featured_project" | "assign_task" | "update_task_stage" | "approve_part_request" | "record_treasury" | "update_member_role" | "ingest_robobee_post" | "get_platform_status" | "ask_clarifying_questions" | null,
+    "params": {
+      "name": "string",
+      "date": "YYYY-MM-DD",
+      "location": "string",
+      "description": "string",
+      "visibility": "public_and_members" or "members_only",
+      "purseBdt": number,
+      "fee": number,
+      "segments": [{ "name": "string", "fee": number, "maxParticipants": number }],
+      "title": "string",
+      "year": "2026",
+      "category": "International Milestone" or "National Milestone" or "Maker Lab Innovation" or "Outreach",
+      "role": "string",
+      "bio": "string",
+      "studentName": "string",
+      "schoolName": "string",
+      "classGrade": "string",
+      "dueDate": "YYYY-MM-DD",
+      "budgetBdt": number,
+      "priority": "High" or "Medium" or "Low",
+      "stage": "backlog" or "in_progress" or "review" or "done",
+      "taskIdentifier": "string",
+      "requestId": "string",
+      "decision": "approved" or "rejected",
+      "type": "expense" or "income",
+      "amount": number,
+      "emailOrUserId": "string",
+      "roleTitle": "string",
+      "postText": "string",
+      "imageUrl": "string"
+    },
+    "clarifyingQuestions": ["Question 1", "Question 2"]
+  },
   "projects": [
     {
       "projectTitle": "Clean descriptive project title",
@@ -838,22 +960,169 @@ Output ONLY valid JSON matching this schema:
       }
     }
 
+    // 4. AUTONOMOUS EXECUTIVE OPERATIONS DISPATCH (Mahir Admin Gateway)
+    let executiveOpMessage: string | null = null;
+    if (isMahirAdminGateway && result.executiveOperation && result.executiveOperation.action) {
+      const op = result.executiveOperation;
+      console.log(`[AI Agent] Dispatching Executive Action: ${op.action}`, op.params);
+
+      try {
+        let opRes: OperationResult | null = null;
+        switch (op.action) {
+          case "launch_competition":
+            if (op.params?.name) {
+              opRes = await executeLaunchCompetition({
+                name: op.params.name,
+                date: op.params.date || new Date().toISOString().split("T")[0],
+                location: op.params.location || "RoboBee Maker Lab, Narayanganj",
+                description: op.params.description || "Official robotics tournament hosted by RoboBee Innovators",
+                visibility: op.params.visibility || "public_and_members",
+                purseBdt: Number(op.params.purseBdt) || 0,
+                fee: Number(op.params.fee) || 500,
+                segments: op.params.segments || [{ name: "Sumo Bot", fee: 500, maxParticipants: 20 }],
+              });
+            }
+            break;
+
+          case "add_achievement":
+            if (op.params?.title) {
+              opRes = await executeAddAchievement({
+                title: op.params.title,
+                year: op.params.year || "2026",
+                description: op.params.description || "Milestone achieved by RoboBee Innovators",
+                category: op.params.category || "National Milestone",
+                image: op.params.image || "",
+                imageFit: op.params.imageFit || "contain",
+              });
+            }
+            break;
+
+          case "add_team_leader":
+            if (op.params?.name && op.params?.role) {
+              opRes = await executeAddTeamLeader({
+                name: op.params.name,
+                role: op.params.role,
+                bio: op.params.bio || "",
+                group: op.params.group || "core",
+                image: op.params.image || "",
+              });
+            }
+            break;
+
+          case "add_featured_project":
+            if (op.params?.title) {
+              opRes = await executeAddFeaturedProject({
+                title: op.params.title,
+                description: op.params.description || "Featured robot build developed at RoboBee Maker Lab",
+                status: op.params.status || "Building in the lab",
+                image: op.params.image || "",
+              });
+            }
+            break;
+
+          case "assign_task":
+            if (op.params?.title) {
+              opRes = await executeAssignTask({
+                title: op.params.title,
+                description: op.params.description,
+                studentName: op.params.studentName,
+                schoolName: op.params.schoolName,
+                classGrade: op.params.classGrade,
+                dueDate: op.params.dueDate,
+                budgetBdt: op.params.budgetBdt,
+                priority: op.params.priority || "High",
+                stage: op.params.stage || "in_progress",
+                source: "messenger_executive_gateway",
+              });
+            }
+            break;
+
+          case "update_task_stage":
+            if (op.params?.taskIdentifier && op.params?.stage) {
+              opRes = await executeUpdateTaskStage(op.params.taskIdentifier, op.params.stage);
+            }
+            break;
+
+          case "approve_part_request":
+            if (op.params?.requestId) {
+              opRes = await executeApprovePartRequest(
+                op.params.requestId,
+                op.params.decision || "approved",
+                op.params.notes
+              );
+            }
+            break;
+
+          case "record_treasury":
+            if (op.params?.title && op.params?.amount) {
+              opRes = await executeRecordTreasury({
+                title: op.params.title,
+                type: op.params.type || "expense",
+                category: op.params.category || "Lab Operations",
+                amount: Number(op.params.amount),
+                notes: op.params.notes,
+              });
+            }
+            break;
+
+          case "update_member_role":
+            if (op.params?.emailOrUserId && op.params?.role) {
+              opRes = await executeUpdateMemberRole({
+                emailOrUserId: op.params.emailOrUserId,
+                role: op.params.role,
+                roleTitle: op.params.roleTitle,
+              });
+            }
+            break;
+
+          case "ingest_robobee_post":
+            if (op.params?.postText) {
+              opRes = await executeIngestRoboBeePagePost(op.params.postText, op.params.imageUrl);
+            }
+            break;
+
+          case "get_platform_status":
+            opRes = await executeGetPlatformStatus();
+            break;
+
+          case "ask_clarifying_questions":
+            // Clarifying questions will be formulated in autoPilotReply
+            break;
+        }
+
+        if (opRes) {
+          if (opRes.success) {
+            executiveOpMessage = `${opRes.message}${opRes.liveLink ? `\n🔗 ${opRes.liveLink}` : ""}`;
+          } else {
+            executiveOpMessage = `⚠️ Notice: ${opRes.message}`;
+          }
+        }
+      } catch (err: any) {
+        console.error(`[AI Agent] Executive Operation execution error:`, err);
+        executiveOpMessage = `⚠️ Error executing operation: ${err.message}`;
+      }
+    }
+
     // Determine outbound reply to send
     const lastMsg = messages[messages.length - 1];
     let outboundText: string | null = null;
 
-    const shouldAutoReply =
-      isAutoPilot &&
-      (lastMsg?.sender_type === "customer" || (isMahirAdminGateway && lastMsg?.sender_type === "agent_mahir"));
+    if (executiveOpMessage) {
+      outboundText = executiveOpMessage;
+    } else {
+      const shouldAutoReply =
+        isAutoPilot &&
+        (lastMsg?.sender_type === "customer" || (isMahirAdminGateway && lastMsg?.sender_type === "agent_mahir"));
 
-    if (shouldAutoReply && !outboundText) {
-      outboundText =
-        result.autoPilotReply ||
-        (result.needsVerificationMessage ? result.verificationMessage || null : result.confirmationMessage || null);
-    } else if (!isAutoPilot && !outboundText && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION" || projectsToProcess.length > 0)) {
-      outboundText = result.needsVerificationMessage
-        ? result.verificationMessage || null
-        : result.confirmationMessage || null;
+      if (shouldAutoReply && !outboundText) {
+        outboundText =
+          result.autoPilotReply ||
+          (result.needsVerificationMessage ? result.verificationMessage || null : result.confirmationMessage || null);
+      } else if (!isAutoPilot && !outboundText && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION" || projectsToProcess.length > 0)) {
+        outboundText = result.needsVerificationMessage
+          ? result.verificationMessage || null
+          : result.confirmationMessage || null;
+      }
     }
 
     if (outboundText) {

@@ -64,8 +64,8 @@ service cloud.firestore {
     // or has the 'admin' role recorded in their Firestore user profile document.
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email in ['mahir.race@gmail.com', 'race.mahir@gmail.com', 'rest.mahir@gmail.com'] ||
-        request.auth.uid == 'C2OOIbUqumPNFx6GS42eD40380V2' ||
+        request.auth.token.email in ['mahir.race@gmail.com', 'race.mahir@gmail.com', 'rest.mahir@gmail.com', 'robobee.agent@robobeeinnovators.org'] ||
+        request.auth.uid in ['C2OOIbUqumPNFx6GS42eD40380V2', 'LFfKFwMtLlOME2g39Foevsiq4c93'] ||
         (
           exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
