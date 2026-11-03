@@ -31,8 +31,11 @@ import {
   ChevronUp,
   Receipt,
   Layers,
+  FileDown,
+  Printer,
 } from "lucide-react";
 import { RelationalInventoryItem, normalizeInventoryItem } from "@/lib/portalRelations";
+import { generateProcurementPDF, ProcurementItem } from "@/lib/procurementPdf";
 
 interface PartRequestItem {
   id: string;
@@ -433,6 +436,108 @@ export default function AdminPartRequestsPage() {
     }
   };
 
+  // Download Individual Store Procurement PDF (Without estimated prices, blank for store pricing)
+  const handleDownloadSinglePdf = async (req: PartRequestDoc) => {
+    try {
+      const items: ProcurementItem[] = [];
+      if (req.items && req.items.length > 0) {
+        req.items.forEach((it) => {
+          items.push({
+            id: it.id,
+            name: it.name,
+            quantity: it.quantity || 1,
+            category: it.category || "General",
+            source: it.source || "Local Market",
+            projectName: req.projectName || "Robot Build",
+            notes: req.notes || undefined,
+          });
+        });
+      } else if (req.partName) {
+        items.push({
+          name: req.partName,
+          quantity: 1,
+          category: "Hardware",
+          projectName: req.projectName || "Parts Request",
+          notes: req.reason || req.notes || undefined,
+        });
+      }
+
+      if (items.length === 0) {
+        alert("No items found in this requisition to export.");
+        return;
+      }
+
+      const dateStr = req.requestedAt
+        ? new Date(
+            req.requestedAt.seconds ? req.requestedAt.seconds * 1000 : req.requestedAt
+          ).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+        : undefined;
+
+      await generateProcurementPDF({
+        title: req.projectName || req.partName || "Parts Procurement",
+        projectName: req.projectName || req.partName || "Lab Prototyping Build",
+        requisitionId: req.id ? `RB-REQ-${req.id.slice(0, 8).toUpperCase()}` : undefined,
+        requestedBy: req.requestedBy,
+        purchaseDate: req.expectedArrivalDate || dateStr,
+        notes: req.notes || req.reason || undefined,
+        items,
+      });
+    } catch (err: any) {
+      console.error("Failed to generate PDF:", err);
+      alert("Could not generate PDF: " + (err.message || "Unknown error"));
+    }
+  };
+
+  // Download Batch Store Procurement PDF across all filtered requests
+  const handleDownloadBatchPdf = async () => {
+    try {
+      const allItems: ProcurementItem[] = [];
+      filteredRequests.forEach((req) => {
+        if (req.items && req.items.length > 0) {
+          req.items.forEach((it) => {
+            allItems.push({
+              id: it.id,
+              name: it.name,
+              quantity: it.quantity || 1,
+              category: it.category || "General",
+              source: it.source || "Local Market",
+              projectName: req.projectName || "Robot Build",
+              notes: req.notes || undefined,
+            });
+          });
+        } else if (req.partName) {
+          allItems.push({
+            name: req.partName,
+            quantity: 1,
+            category: "Hardware",
+            projectName: req.projectName || "Quick Request",
+            notes: req.reason || req.notes || undefined,
+          });
+        }
+      });
+
+      if (allItems.length === 0) {
+        alert("No components found in the current filter to export.");
+        return;
+      }
+
+      const filterLabel =
+        filterStatus === "all"
+          ? "Master Requisition Queue"
+          : `${filterStatus.toUpperCase()} Requests`;
+
+      await generateProcurementPDF({
+        title: `Consolidated Procurement (${filterLabel})`,
+        projectName: `Consolidated Procurement — ${allItems.length} Components`,
+        requestedBy: `${user?.displayName || "Mahir Rahman"} (Admin)`,
+        items: allItems,
+      });
+    } catch (err: any) {
+      console.error("Failed to generate batch PDF:", err);
+      alert("Could not generate batch PDF: " + (err.message || "Unknown error"));
+    }
+  };
+
   const filteredRequests = useMemo(() => {
     if (filterStatus === "all") return requests;
     return requests.filter((r) => r.status === filterStatus);
@@ -448,9 +553,46 @@ export default function AdminPartRequestsPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Parts Requests & Requisition Queue</h1>
-        <p>Review project bills of materials, approve procurement dates, and stock received components into lab storage.</p>
+      <div
+        className={styles.header}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+          gap: "1rem",
+        }}
+      >
+        <div>
+          <h1>Parts Requests & Requisition Queue</h1>
+          <p>Review project bills of materials, approve procurement dates, and stock received components into lab storage.</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleDownloadBatchPdf}
+          disabled={filteredRequests.length === 0}
+          style={{
+            background: "#7A1C24",
+            color: "#ffffff",
+            border: "none",
+            padding: "0.55rem 1.15rem",
+            borderRadius: "8px",
+            fontSize: "0.84rem",
+            fontWeight: 700,
+            cursor: filteredRequests.length === 0 ? "not-allowed" : "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.45rem",
+            boxShadow: "0 2px 4px rgba(122, 28, 36, 0.2)",
+            opacity: filteredRequests.length === 0 ? 0.6 : 1,
+            transition: "all 0.15s ease",
+          }}
+          title="Download printable shopping list of parts without prices for local store procurement"
+        >
+          <FileDown size={16} />
+          <span>Download Procurement PDF ({filteredRequests.length})</span>
+        </button>
       </div>
 
       {/* FILTER TABS */}
@@ -660,6 +802,29 @@ export default function AdminPartRequestsPage() {
 
                 {/* CARD ACTIONS */}
                 <div className={styles.cardActions}>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSinglePdf(req)}
+                    style={{
+                      background: "#fdfbf7",
+                      color: "#7A1C24",
+                      border: "1px solid #7A1C24",
+                      padding: "0.45rem 0.8rem",
+                      borderRadius: "6px",
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.35rem",
+                      transition: "all 0.15s ease",
+                    }}
+                    title="Download printable store slip without prices for local electronics shop purchases"
+                  >
+                    <Printer size={13} />
+                    <span>Download Store Slip (PDF)</span>
+                  </button>
+
                   {req.status === "pending" && (
                     <>
                       <button

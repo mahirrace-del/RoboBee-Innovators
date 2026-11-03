@@ -33,7 +33,9 @@ import {
   Link as LinkIcon,
   ShoppingBag,
   RefreshCw,
+  FileDown,
 } from "lucide-react";
+import { generateProcurementPDF, ProcurementItem } from "@/lib/procurementPdf";
 
 interface BOMItem {
   id: string;
@@ -60,6 +62,7 @@ export interface ProjectDoc {
   schoolName?: string | null;
   classGrade?: string | null;
   createdBy?: string;
+  createdByName?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -770,6 +773,40 @@ function BOMDashboardContent() {
     }
   };
 
+  // Download Store Procurement Slip for Active Project BOM (No estimated prices printed)
+  const handleDownloadProjectPDF = async () => {
+    if (!activeProject || !activeProject.bom || activeProject.bom.length === 0) {
+      showToast("No components in this project BOM to export.", "error");
+      return;
+    }
+
+    try {
+      const items: ProcurementItem[] = activeProject.bom.map((b) => ({
+        id: b.id,
+        name: b.name,
+        quantity: b.quantity || 1,
+        category: b.category || "General",
+        source: b.source || "Local Market",
+        projectName: activeProject.name || activeProject.title || "RoboBee Project",
+        notes: b.status === "In Stock" ? "In Stock" : undefined,
+      }));
+
+      await generateProcurementPDF({
+        title: `${activeProject.name || activeProject.title} — Procurement Slip`,
+        projectName: activeProject.name || activeProject.title || "Maker Lab Project",
+        studentName: activeProject.studentName || undefined,
+        classGrade: activeProject.classGrade || undefined,
+        requestedBy: `${activeProject.createdByName || activeProject.createdBy || user?.displayName || "Mahir Rahman"}`,
+        items,
+      });
+
+      showToast("Store procurement PDF downloaded successfully!");
+    } catch (err: any) {
+      console.error("Failed to generate project BOM PDF:", err);
+      showToast(`Failed to generate PDF: ${err.message || "Error"}`, "error");
+    }
+  };
+
   const renderStatusBadge = (status: string, expectedArrivalDate?: string) => {
     if (status === "In Stock") {
       return (
@@ -1311,6 +1348,25 @@ function BOMDashboardContent() {
                       )}
                     </div>
                   </div>
+
+                  {/* Download Procurement PDF Button (Shop-ready, no prices) */}
+                  {activeProject.bom && activeProject.bom.length > 0 && (
+                    <button
+                      type="button"
+                      className={styles.btnSecondary}
+                      onClick={handleDownloadProjectPDF}
+                      title="Download printable store procurement slip without estimated prices for local electronics shop purchases"
+                      style={{
+                        background: "#fffdfa",
+                        borderColor: "#7A1C24",
+                        color: "#7A1C24",
+                        fontWeight: 700,
+                      }}
+                    >
+                      <FileDown size={15} />
+                      Download Store PDF
+                    </button>
+                  )}
 
                   {/* Requisition Button (for Store/Admin procurement) */}
                   {neededItems.length > 0 && (
