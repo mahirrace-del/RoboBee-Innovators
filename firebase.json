@@ -1,0 +1,8 @@
+{
+  "firestore": [
+    {
+      "database": "robobee-db",
+      "rules": "firestore.rules"
+    }
+  ]
+}

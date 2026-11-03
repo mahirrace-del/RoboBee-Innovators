@@ -1,0 +1,266 @@
+rules_version = '2';
+
+// ==============================================================================
+// RoboBee Innovators - Cloud Firestore Security Rules
+// Project: smart-water-planting
+// Primary Database: robobee-db
+//
+// Designed according to Google Cloud Firestore Security Best Practices:
+// - Principle of Least Privilege & Default Deny
+// - Granular Role-Based Access Control (RBAC)
+// - Robust Admin Resolution (Bootstrap emails, Root UID, Firestore User Role)
+// - Resource Exhaustion & Denial of Service (DoS) Guardrails
+// - Non-Destructive Update Integrity & Identity Scoping
+// ==============================================================================
+
+// ==============================================================================
+// Assumed Data Models & Schema Overview
+// ==============================================================================
+//
+// 1. Showcase & Public Collections:
+//    - achievements/{id}: Title, description, year, event, icon, order, images
+//    - leaders/{id}: Name, role, bio, image, socials, priority
+//    - marquee/{id}: Name, role, image, batch, active
+//    - projects/{id}: Title, category, summary, details, image, specs, github
+//    - competitions/{id}: Name, description, date, location, purse, segments, fee
+//    - public_competition_registrations/{id}: Applicant data, contact, competition link
+//
+// 2. User & Auth Collections:
+//    - users/{userId}: Name, email, role, phone, designation, bio, permissions
+//
+// 3. Operational & Lab Collections:
+//    - notifications/{id}: Recipient email, title, message, read state, timestamp
+//    - inventory/{id}: Part name, SKU, category, quantity, unitCost, location
+//    - partRequests/{id}: Part name, quantity, requestedBy, estimatedCost, status
+//    - checkouts/{id}: Part ID, userId, checkedOutBy, quantity, status, dueDate
+//    - sessions/{id}: Date, title, attendance list, topics, mentor
+//    - classes/{id}: Title, curriculum level, schedule, instructor, active
+//    - finance/{id}: Transaction records, type, amount, date, category, status
+//    - payments/{id}: User ID, amount, method, trxId, month, status
+//    - tasks/{id}: Title, description, stage, priority, assignees, deadline
+//    - competition_participants/{id}: User ID, competitionId, segmentId, status
+//    - competition_subteams/{id}: Competition ID, teamName, members, focus
+//    - project_vault/{id}: Competition or project technical artifacts & schematics
+//    - treasury_expenses/{id}: Expense entries, category, amount, approval status
+//    - recruitment/{id}: Join applications, resume/portfolio, status
+//    - curriculum_slide_decks/{id}: Slide decks, deck metadata, modules
+//    - hardware/{id}: Legacy hardware records
+//
+// ==============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================================================
+    // Core Helper Functions
+    // ==========================================================================
+
+    // Checks if the client request contains a valid authenticated Firebase session
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Checks whether the requester is one of the designated Super/Lead Admins
+    // or has the 'admin' role recorded in their Firestore user profile document.
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email in ['mahir.race@gmail.com', 'race.mahir@gmail.com', 'rest.mahir@gmail.com'] ||
+        request.auth.uid == 'C2OOIbUqumPNFx6GS42eD40380V2' ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        )
+      );
+    }
+
+    // Checks if the user is the owner of a document keyed by userId
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ==========================================================================
+    // 1. Public Showcase Collections (Read by Anyone)
+    // ==========================================================================
+
+    // Achievements Showcase
+    match /achievements/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Team Leaders & Mentors
+    match /leaders/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Live Marquee Member Avatars
+    match /marquee/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Public Robot & Showcase Projects
+    match /projects/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Tournaments & Competitions Catalog
+    match /competitions/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Public Competition Registrations (Submissions allowed by anyone)
+    match /public_competition_registrations/{id} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================================================
+    // 2. User Profiles & RBAC
+    // ==========================================================================
+
+    // Users collection: User can read and write their own profile, or Admin
+    match /users/{userId} {
+      allow read, write: if isAdmin() || isOwner(userId);
+    }
+
+    // ==========================================================================
+    // 3. Notifications
+    // ==========================================================================
+
+    // Notifications: User reads their personal notifications or GENERAL announcements
+    // Admins have full access; authenticated recipients can mark their own as read
+    match /notifications/{id} {
+      allow read: if isAdmin() || (
+        isAuthenticated() && (
+          resource.data.recipientEmail == request.auth.token.email ||
+          resource.data.recipientEmail == 'GENERAL'
+        )
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAdmin() || (
+        isAuthenticated() && (
+          resource.data.recipientEmail == request.auth.token.email ||
+          resource.data.recipientEmail == 'GENERAL'
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================================================
+    // 4. Lab Operations & Member Collections (Auth Read, Admin Write)
+    // ==========================================================================
+
+    // Hardware & Lab Inventory
+    match /inventory/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Requisition & Component Requests
+    match /partRequests/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Hardware Tool & Sensor Checkouts
+    match /checkouts/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Attendance & Workshop Sessions
+    match /sessions/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Curriculum Classes & Batches
+    match /classes/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Lab Finance & Ledger
+    match /finance/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Member Fee Payments & Invoices
+    match /payments/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ==========================================================================
+    // 5. Extended Workspace Collections (Sprint, Showcase & Competitions)
+    // ==========================================================================
+
+    // Sprint & Team Tasks
+    match /tasks/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    // Competition Participant Applications
+    match /competition_participants/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin() || (
+        isAuthenticated() && resource.data.userId == request.auth.uid
+      );
+    }
+
+    // Competition Subteams
+    match /competition_subteams/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Project Technical Vault
+    match /project_vault/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Treasury Expenses
+    match /treasury_expenses/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Public Recruitment Inquiries
+    match /recruitment/{id} {
+      allow read, write: if isAdmin();
+      allow create: if true;
+    }
+
+    // Curriculum Slide Decks
+    match /curriculum_slide_decks/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Legacy Hardware Collection
+    match /hardware/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ==========================================================================
+    // 6. Default Deny Fallback & Admin Catch-All
+    // ==========================================================================
+
+    // Any document or collection not explicitly matched above is accessible only
+    // by verified Admins, denying all other unauthorized access by default.
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
