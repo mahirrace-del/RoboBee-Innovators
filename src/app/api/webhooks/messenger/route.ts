@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { evaluateConversationAndCreateTask, sendMessengerTextMessage } from "@/lib/whatsappAgent";
+import {
+  evaluateConversationAndCreateTask,
+  findConversationByPhoneNumber,
+  processPendingConfirmations,
+  sendMessengerTextMessage,
+} from "@/lib/whatsappAgent";
 
 export const dynamic = "force-dynamic";
 
@@ -110,12 +115,8 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // 1. Locate or create conversation in Supabase
-        let { data: conversation } = await supabaseAdmin
-          .from("whatsapp_conversations")
-          .select("id, status, ai_mode, contact_name")
-          .eq("phone_number", phoneIdentifier)
-          .maybeSingle();
+        // 1. Locate or create conversation in Supabase with robust matching
+        let conversation = await findConversationByPhoneNumber(phoneIdentifier);
 
         if (!conversation) {
           const { data: newConv, error: createErr } = await supabaseAdmin
@@ -129,7 +130,7 @@ export async function POST(req: NextRequest) {
               status: "casual",
               last_message_at: new Date().toISOString(),
             })
-            .select("id, status, ai_mode, contact_name")
+            .select("id, status, ai_mode, contact_name, pending_confirmation_due_at")
             .single();
 
           if (createErr) {
@@ -138,6 +139,11 @@ export async function POST(req: NextRequest) {
           }
           conversation = newConv;
         } else {
+          // Reset debounce timer on ongoing activity
+          const resetDue = conversation.pending_confirmation_due_at
+            ? new Date(Date.now() + 150 * 1000).toISOString()
+            : null;
+
           await supabaseAdmin
             .from("whatsapp_conversations")
             .update({
@@ -146,6 +152,7 @@ export async function POST(req: NextRequest) {
               ...(!isEcho && (!conversation.contact_name || conversation.contact_name === "Facebook User")
                 ? { contact_name: contactName }
                 : {}),
+              ...(resetDue ? { pending_confirmation_due_at: resetDue } : {}),
             })
             .eq("id", conversation.id);
         }
@@ -175,6 +182,15 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+
+    // Process any pending confirmations for settled conversations
+    after(async () => {
+      try {
+        await processPendingConfirmations();
+      } catch (e) {
+        console.error("[Messenger Webhook] Background processPendingConfirmations error:", e);
+      }
+    });
 
     return NextResponse.json({ status: "success", received: true }, { status: 200 });
   } catch (err) {

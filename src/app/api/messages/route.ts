@@ -4,6 +4,7 @@ import {
   AIMode,
   evaluateConversationAndCreateTask,
   executeAICommandOrBroadcast,
+  processPendingConfirmations,
   sendWhatsAppTextMessage,
   sendMessengerTextMessage,
 } from "@/lib/whatsappAgent";
@@ -12,6 +13,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    // Process any settled conversations waiting for Task Observer confirmation
+    await processPendingConfirmations().catch((e) =>
+      console.error("[Messages API] processPendingConfirmations error in GET:", e)
+    );
+
     const { searchParams } = new URL(req.url);
     const requestedConvId = searchParams.get("conversationId");
 
@@ -234,7 +240,80 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: "ok", ...result });
     }
 
-    // 5. Add a New Contact / Team Member manually
+    // 5. Send Staged Task Observer Confirmation Immediately
+    if (action === "send_pending_confirmation_now") {
+      const { conversationId } = body;
+      if (!conversationId) {
+        return NextResponse.json({ error: "Missing conversationId" }, { status: 400 });
+      }
+
+      const { data: conv } = await supabaseAdmin
+        .from("whatsapp_conversations")
+        .select("*")
+        .eq("id", conversationId)
+        .single();
+
+      if (!conv || !conv.pending_confirmation_text) {
+        return NextResponse.json(
+          { error: "No pending confirmation found for this conversation." },
+          { status: 400 }
+        );
+      }
+
+      const text = conv.pending_confirmation_text;
+      const isMessenger =
+        conv.platform === "messenger" ||
+        conv.phone_number?.startsWith("messenger_") ||
+        conv.phone_number?.startsWith("psid_");
+
+      const sentId = isMessenger
+        ? await sendMessengerTextMessage(conv.phone_number, text)
+        : await sendWhatsAppTextMessage(conv.phone_number, text);
+
+      if (sentId) {
+        await supabaseAdmin.from("whatsapp_messages").insert({
+          conversation_id: conv.id,
+          wam_id: sentId !== "sent" ? sentId : null,
+          sender_type: "ai_assistant",
+          message_type: "text",
+          body: text,
+        });
+
+        await supabaseAdmin
+          .from("whatsapp_conversations")
+          .update({
+            pending_confirmation_text: null,
+            pending_confirmation_due_at: null,
+            last_confirmation_sent_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString(),
+          })
+          .eq("id", conv.id);
+
+        return NextResponse.json({ status: "ok", sent: true, text });
+      } else {
+        return NextResponse.json({ error: "Failed to dispatch message to Meta API." }, { status: 500 });
+      }
+    }
+
+    // 6. Dismiss/Cancel Staged Task Observer Confirmation
+    if (action === "cancel_pending_confirmation") {
+      const { conversationId } = body;
+      if (!conversationId) {
+        return NextResponse.json({ error: "Missing conversationId" }, { status: 400 });
+      }
+
+      await supabaseAdmin
+        .from("whatsapp_conversations")
+        .update({
+          pending_confirmation_text: null,
+          pending_confirmation_due_at: null,
+        })
+        .eq("id", conversationId);
+
+      return NextResponse.json({ status: "ok", cancelled: true });
+    }
+
+    // 7. Add a New Contact / Team Member manually
     if (action === "create_contact") {
       const {
         phone_number,

@@ -25,6 +25,7 @@ import {
   Lock,
   Zap,
   Shield,
+  Clock,
 } from "lucide-react";
 
 type AIMode = "off" | "task_observer" | "auto_pilot";
@@ -43,6 +44,9 @@ interface Conversation {
   contact_category: ContactCategory;
   custom_ai_instructions: string | null;
   last_message_at: string;
+  pending_confirmation_text?: string | null;
+  pending_confirmation_due_at?: string | null;
+  last_confirmation_sent_at?: string | null;
 }
 
 interface ChatMessage {
@@ -371,6 +375,49 @@ export default function MessagingControlPanel() {
       }
     } finally {
       setBroadcastSending(false);
+    }
+  };
+
+  const handleSendPendingConfirmationNow = async () => {
+    if (!activeConv) return;
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send_pending_confirmation_now",
+          conversationId: activeConv.id,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Confirmation message dispatched to contact.");
+        await fetchHubData(activeConv.id, true);
+      } else {
+        showToast(`Could not send: ${data.error || "Error"}`);
+      }
+    } catch (e) {
+      console.error("Error sending pending confirmation:", e);
+    }
+  };
+
+  const handleCancelPendingConfirmation = async () => {
+    if (!activeConv) return;
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "cancel_pending_confirmation",
+          conversationId: activeConv.id,
+        }),
+      });
+      if (res.ok) {
+        showToast("Dismissed pending confirmation.");
+        await fetchHubData(activeConv.id, true);
+      }
+    } catch (e) {
+      console.error("Error cancelling pending confirmation:", e);
     }
   };
 
@@ -1800,6 +1847,71 @@ export default function MessagingControlPanel() {
                     </button>
                   </div>
                 </div>
+
+                {/* Task Observer Cooldown & Pending Confirmation Banner */}
+                {activeConv?.pending_confirmation_text && activeConv?.pending_confirmation_due_at && (
+                  <div
+                    style={{
+                      padding: "0.55rem 0.85rem",
+                      marginBottom: "0.6rem",
+                      borderRadius: "10px",
+                      background: "#fffbeb",
+                      border: "1px solid #fde68a",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "0.6rem",
+                      fontSize: "0.78rem",
+                      color: "#92400e",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flex: 1 }}>
+                      <Clock size={15} style={{ flexShrink: 0, color: "#d97706" }} />
+                      <div>
+                        <strong>Task Observer Cooldown:</strong> Conversation is settling. AI will send final project confirmation after chat quiet period.
+                        <div style={{ fontSize: "0.72rem", opacity: 0.85, marginTop: "0.15rem" }}>
+                          &ldquo;{activeConv.pending_confirmation_text}&rdquo;
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: "0.35rem", flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={handleSendPendingConfirmationNow}
+                        style={{
+                          padding: "0.3rem 0.65rem",
+                          borderRadius: "6px",
+                          border: "none",
+                          background: "#d97706",
+                          color: "#fff",
+                          fontSize: "0.73rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                        title="Send confirmation summary to contact immediately"
+                      >
+                        Send Now
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelPendingConfirmation}
+                        style={{
+                          padding: "0.3rem 0.6rem",
+                          borderRadius: "6px",
+                          border: "1px solid #d97706",
+                          background: "transparent",
+                          color: "#92400e",
+                          fontSize: "0.73rem",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                        title="Dismiss and do not send this confirmation"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <input

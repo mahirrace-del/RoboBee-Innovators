@@ -84,6 +84,80 @@ export interface AnalysisResult {
 }
 
 /**
+ * Strip prefix and non-digit characters to get comparable digits.
+ * E.g., "+BD.2508598799668729" -> "2508598799668729"
+ * "+8801939426670" -> "8801939426670"
+ * "01939426670" -> "8801939426670" (normalized to 880 prefix for local BD numbers)
+ */
+export function normalizePhoneDigits(phone: string): string {
+  if (!phone) return "";
+  let digits = phone.replace(/^(\+|messenger_|psid_|BD\.)/i, "").replace(/\D/g, "");
+  // Normalize local Bangladesh numbers: e.g. 017... -> 88017...
+  if (digits.startsWith("01") && digits.length === 11) {
+    digits = "88" + digits;
+  }
+  return digits;
+}
+
+/**
+ * Robust conversation lookup by phone number, BSUID, or Messenger PSID.
+ * Handles exact matches, stripped prefixes (+, BD., messenger_), and normalized digit comparisons.
+ */
+export async function findConversationByPhoneNumber(identifier: string): Promise<any | null> {
+  if (!identifier) return null;
+  const cleanId = identifier.trim();
+
+  // 1. Direct exact match
+  const { data: exactConv } = await supabaseAdmin
+    .from("whatsapp_conversations")
+    .select("*")
+    .eq("phone_number", cleanId)
+    .maybeSingle();
+
+  if (exactConv) return exactConv;
+
+  // 2. Exact match without or with 'messenger_' prefix
+  if (cleanId.startsWith("messenger_")) {
+    const rawPsid = cleanId.replace("messenger_", "");
+    const { data: psidConv } = await supabaseAdmin
+      .from("whatsapp_conversations")
+      .select("*")
+      .or(`phone_number.eq.${rawPsid},phone_number.eq.psid_${rawPsid}`)
+      .maybeSingle();
+    if (psidConv) return psidConv;
+  } else {
+    const { data: prefixedConv } = await supabaseAdmin
+      .from("whatsapp_conversations")
+      .select("*")
+      .eq("phone_number", `messenger_${cleanId}`)
+      .maybeSingle();
+    if (prefixedConv) return prefixedConv;
+  }
+
+  // 3. Normalized digits match across all conversations
+  const targetDigits = normalizePhoneDigits(cleanId);
+  if (!targetDigits || targetDigits.length < 5) return null;
+
+  const { data: allConvs } = await supabaseAdmin
+    .from("whatsapp_conversations")
+    .select("*");
+
+  if (!allConvs || allConvs.length === 0) return null;
+
+  const matched = allConvs.find((c) => {
+    const cDigits = normalizePhoneDigits(c.phone_number);
+    if (!cDigits) return false;
+    return (
+      targetDigits === cDigits ||
+      targetDigits.endsWith(cDigits) ||
+      cDigits.endsWith(targetDigits)
+    );
+  });
+
+  return matched || null;
+}
+
+/**
  * Send an outbound text message via Meta WhatsApp Cloud API
  */
 export async function sendWhatsAppTextMessage(toPhone: string, textBody: string): Promise<string | null> {
@@ -621,6 +695,19 @@ HOW TO OPERATE ON COMMANDS FROM MAHIR:
 
   const visitorInstruction = `
 CRITICAL IDENTITY & CHANNEL PROTOCOL:
+0. STRICT AI MODE PROTOCOL (OBSERVATION VS AUTO_PILOT):
+   - IN TASK_OBSERVER MODE:
+     * You are a completely SILENT SPECTATOR observing the conversation between Mahir and the customer.
+     * STRICTLY ZERO MESSAGES must be sent while the conversation is active!
+     * NEVER ask questions or verify information (needsVerificationMessage MUST BE false, verificationMessage MUST BE null, autoPilotReply MUST BE null).
+     * DO NOT interrupt or talk between Mahir and the customer!
+     * Silently extract the project title, class grade, student name, deadline, and hardware BOM into the database.
+     * When the project requirements or components are confirmed in the conversation, supply a clean summary in "confirmationMessage":
+       "${aiPrefix} Thank you! I have noted your [Consolidated parts/project] details for Class [Class] with the [Deadline] deadline. Mahir has this on our workshop schedule and will review and reply shortly."
+     * NOTE: The system will NEVER send confirmationMessage immediately. It will be staged and sent ONLY after the conversation has completely ended and gone quiet for 2 to 3 minutes!
+   - IN AUTO_PILOT MODE:
+     * Mahir is away. You actively reply on Mahir's behalf to guide the visitor and record tasks.
+
 1. CHANNEL IDENTITY (MUST FOLLOW STRICTLY):
    - Every single outbound message you generate MUST start with "${aiPrefix} " so the contact knows they are communicating with an AI assistant.
    - On Messenger (Facebook Page):
@@ -1202,18 +1289,64 @@ Output ONLY valid JSON matching this schema:
         }
       }
 
-      const shouldAutoReply =
-        isAutoPilot &&
-        (lastMsg?.sender_type === "customer" || (isMahirAdminGateway && lastMsg?.sender_type === "agent_mahir"));
+      if (!isAutoPilot) {
+        // In TASK_OBSERVER mode:
+        // STRICT RULE: ZERO immediate outbound messages to WhatsApp/Messenger!
+        // The AI is a silent observer while Mahir and the customer are chatting.
+        outboundText = null;
 
-      if (shouldAutoReply && !outboundText) {
-        outboundText =
-          result.autoPilotReply ||
-          (result.needsVerificationMessage ? result.verificationMessage || null : result.confirmationMessage || null);
-      } else if (!isAutoPilot && !outboundText && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION" || projectsToProcess.length > 0)) {
-        outboundText = result.needsVerificationMessage
-          ? result.verificationMessage || null
-          : result.confirmationMessage || null;
+        // Check if there is a confirmed project or clear list of parts discussed
+        const hasConfirmedProject =
+          result.confirmationMessage ||
+          result.state === "CONFIRMED_WORK" ||
+          projectsToProcess.length > 0;
+
+        if (hasConfirmedProject) {
+          const classText = result.classGrade ? ` for ${result.classGrade}` : "";
+          const deadlineText = result.agreedDeadline ? ` with the ${result.agreedDeadline} deadline` : "";
+          const projTitle = result.projectTitle || "your project requirements";
+
+          let rawConfirmText =
+            result.confirmationMessage ||
+            `Thank you! I have noted your ${projTitle} details${classText}${deadlineText}. All items have been recorded on our workshop schedule, and Mahir will review this and get back to you shortly!`;
+
+          rawConfirmText = rawConfirmText.replace(/^\[(Mahir's AI|RoboBee AI|RoboBee Admin)\]:\s*/i, "").trim();
+          const cleanConfirmText = `${aiPrefix} ${rawConfirmText}`;
+
+          // Check if an AI confirmation message was already sent previously for this conversation
+          const prevAiMsg = [...messages].reverse().find((m) => m.sender_type === "ai_assistant");
+          const alreadyConfirmed =
+            prevAiMsg?.body &&
+            (prevAiMsg.body.includes("noted your") ||
+              prevAiMsg.body.includes("recorded") ||
+              prevAiMsg.body.includes("workshop schedule"));
+
+          if (!alreadyConfirmed) {
+            // Stage confirmation to send after 2.5 minutes (150 seconds) of quiet/settled time
+            const dueAt = new Date(Date.now() + 150 * 1000).toISOString();
+            await supabaseAdmin
+              .from("whatsapp_conversations")
+              .update({
+                pending_confirmation_text: cleanConfirmText,
+                pending_confirmation_due_at: dueAt,
+              })
+              .eq("id", conversationId);
+
+            console.log(
+              `[Task Observer] Staged delayed confirmation for conv ${conversationId} due at ${dueAt}: "${cleanConfirmText}"`
+            );
+          }
+        }
+      } else {
+        // In AUTO_PILOT mode:
+        const shouldAutoReply =
+          lastMsg?.sender_type === "customer" || (isMahirAdminGateway && lastMsg?.sender_type === "agent_mahir");
+
+        if (shouldAutoReply && !outboundText) {
+          outboundText =
+            result.autoPilotReply ||
+            (result.needsVerificationMessage ? result.verificationMessage || null : result.confirmationMessage || null);
+        }
       }
     }
 
@@ -1334,4 +1467,103 @@ Convert Mahir's raw command/instruction into a warm, respectful, natural WhatsAp
     generatedMessage: finalMessage,
     results,
   };
+}
+
+/**
+ * Processes queued confirmations for conversations that have been quiet for at least 2 minutes.
+ * Ensures the AI never interrupts ongoing conversations and only sends a single closing summary
+ * after the discussion between Mahir and the customer has finished.
+ */
+export async function processPendingConfirmations(): Promise<number> {
+  const now = new Date();
+  const nowIso = now.toISOString();
+
+  // Find conversations with pending confirmations that have reached their due timestamp
+  const { data: pendingConvs, error } = await supabaseAdmin
+    .from("whatsapp_conversations")
+    .select("id, phone_number, platform, ai_mode, last_message_at, pending_confirmation_text, pending_confirmation_due_at, last_confirmation_sent_at")
+    .not("pending_confirmation_text", "is", null)
+    .lte("pending_confirmation_due_at", nowIso);
+
+  if (error || !pendingConvs || pendingConvs.length === 0) {
+    return 0;
+  }
+
+  let sentCount = 0;
+
+  for (const conv of pendingConvs) {
+    // If AI mode was turned OFF (Personal), cancel the pending confirmation
+    if (conv.ai_mode === "off") {
+      await supabaseAdmin
+        .from("whatsapp_conversations")
+        .update({
+          pending_confirmation_text: null,
+          pending_confirmation_due_at: null,
+        })
+        .eq("id", conv.id);
+      continue;
+    }
+
+    // Ensure at least 110 seconds have elapsed since the last recorded message in this conversation
+    const lastMsgTime = conv.last_message_at ? new Date(conv.last_message_at).getTime() : 0;
+    const elapsedSeconds = (now.getTime() - lastMsgTime) / 1000;
+    if (elapsedSeconds < 110) {
+      // The chat is still active; push due time out to allow the conversation to finish
+      const pushDue = new Date(Date.now() + 60 * 1000).toISOString();
+      await supabaseAdmin
+        .from("whatsapp_conversations")
+        .update({ pending_confirmation_due_at: pushDue })
+        .eq("id", conv.id);
+      continue;
+    }
+
+    const confirmationText = conv.pending_confirmation_text;
+    if (!confirmationText) continue;
+
+    const isMessenger =
+      conv.platform === "messenger" ||
+      conv.phone_number?.startsWith("messenger_") ||
+      conv.phone_number?.startsWith("psid_");
+
+    console.log(
+      `[Pending Confirmation] Dispatching settled confirmation to ${conv.phone_number}: "${confirmationText}"`
+    );
+
+    const sentId = isMessenger
+      ? await sendMessengerTextMessage(conv.phone_number, confirmationText)
+      : await sendWhatsAppTextMessage(conv.phone_number, confirmationText);
+
+    if (sentId) {
+      await supabaseAdmin.from("whatsapp_messages").insert({
+        conversation_id: conv.id,
+        wam_id: sentId !== "sent" ? sentId : null,
+        sender_type: "ai_assistant",
+        message_type: "text",
+        body: confirmationText,
+      });
+
+      await supabaseAdmin
+        .from("whatsapp_conversations")
+        .update({
+          pending_confirmation_text: null,
+          pending_confirmation_due_at: null,
+          last_confirmation_sent_at: nowIso,
+          last_message_at: nowIso,
+        })
+        .eq("id", conv.id);
+
+      sentCount++;
+    } else {
+      // Clear pending text so we don't spam errors
+      await supabaseAdmin
+        .from("whatsapp_conversations")
+        .update({
+          pending_confirmation_text: null,
+          pending_confirmation_due_at: null,
+        })
+        .eq("id", conv.id);
+    }
+  }
+
+  return sentCount;
 }
