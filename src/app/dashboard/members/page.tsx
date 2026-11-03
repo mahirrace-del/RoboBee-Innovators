@@ -50,7 +50,7 @@ export default function MembersDashboard() {
       collection(db, "users"),
       (snapshot) => {
         if (!snapshot.empty) {
-          const allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const allUsers: any[] = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
           // Ensure Team Leader Mahir is always listed in members
           if (!allUsers.some(u => (u.email || "").toLowerCase() === "mahir.race@gmail.com" || u.id === "C2OOIbUqumPNFx6GS42eD40380V2")) {
             allUsers.unshift({
