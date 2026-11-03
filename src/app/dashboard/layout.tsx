@@ -37,7 +37,6 @@ import {
 import { getUserRoleBadge } from "@/lib/permissions";
 import { normalizeCheckout, normalizeInventoryItem } from "@/lib/portalRelations";
 import { NotificationCenter } from "@/components/NotificationCenter";
-import { AdminVoiceCallModal } from "@/components/AdminVoiceCallModal";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, role, signOut, userData, canManage } = useAuth();
@@ -633,7 +632,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span>{lowStockCount} Low Stock</span>
               </Link>
             )}
-            <AdminVoiceCallModal />
             <NotificationCenter />
             <span
               style={{

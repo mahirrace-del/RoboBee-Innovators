@@ -17,8 +17,7 @@ export type NotificationType =
   | "task_completed"
   | "task_deleted"
   | "schedule_alert"
-  | "general_broadcast"
-  | "trigger_voice_call";
+  | "general_broadcast";
 
 export interface PortalNotification {
   id: string;
