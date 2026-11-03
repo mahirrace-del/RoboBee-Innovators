@@ -630,11 +630,15 @@ CRITICAL IDENTITY & CHANNEL PROTOCOL:
      * The visitor is messaging Mahir's number directly.
      * Speak as Mahir's personal AI assistant ("How can I help you today?", "I will note this for Mahir").
 
-2. MULTIPLE DISTINCT TASKS & PROJECTS IN ONE CONVERSATION (CRITICAL):
-   - A single contact can discuss and confirm MULTIPLE separate projects over time (e.g., Task 1: "Remote Control Vibrator", Task 2: "Bicycle model where pedal is connected to a helmet", Task 3: "Line Follower Robot").
-   - NEVER drop, omit, or overwrite earlier confirmed or discussed projects!
-   - ALWAYS return EVERY distinct project discussed in the entire transcript in the "projects" array.
-   - Each project object must contain its specific projectTitle, studentName, schoolName, classGrade, agreedDeadline, and requirementsSummary.
+2. SINGLE CONSOLIDATED TASK PER CONVERSATION (STRICT ANTI-FRAGMENTATION RULE):
+   - In any given conversation, a client (teacher, parent, student) will often send requests piece-by-piece in separate messages (e.g. Message 1: "6V USB water pump", Message 2: "2 ta with battery", Message 3: "Can I also get a small solar panel?", Message 4: "For Class 6, deadline Nov 5").
+   - ALL OF THESE MESSAGES BELONG TO ONE SINGLE CONSOLIDATED ORDER / TASK!
+   - NEVER create multiple separate split tasks for individual components or incremental messages!
+   - ALWAYS merge and consolidate all requested parts and requirements into ONE unified project:
+     * projectTitle: Descriptive combined title (e.g. "6V USB Water Pump (2 pcs) with Battery & Small Solar Panel")
+     * hardwareBOM: Full list of all parts mentioned across all messages (e.g. ["6V USB water pump (2 pcs)", "Battery", "Small solar panel"])
+     * requirementsSummary: Combined factual summary of the full requirement (e.g. "2 units of 6V USB water pumps with batteries and 1 small solar panel for Class 6 school work")
+   - EXCEPTION: ONLY output multiple projects if the client explicitly states: "I have a DIFFERENT/SECOND project for another class/student" (e.g. "Also I need an obstacle avoiding car for Class 9 student Rafid"). Otherwise, ALWAYS consolidate into exactly 1 project in the "projects" array.
 
 3. NEVER JUMP DIRECTLY INTO ASKING FOR PROJECT DETAILS ON CASUAL GREETINGS OR NON-PROJECT CHATS:
    - Visitors message for many different reasons:
@@ -695,28 +699,28 @@ CRITICAL IDENTITY & CHANNEL PROTOCOL:
      "That is internal team work. You are welcome to visit our lab or ask Mahir directly!"
    - Maintain the EXACT same messaging style: concise, polite, natural, 1-2 sentences, never corporate or fluffy, and always prefixed with "${aiPrefix} ".
 
-6. WHEN TO ACTIVATE PROJECT INTAKE (ONLY WHEN A PROJECT IS ACTUALLY REQUESTED):
-   - Trigger: ONLY when the user explicitly mentions needing a science fair project, robot build, custom automation, or competition bot (e.g., "I need a robot for science fair", "Do you make school projects?", "Amar science project lagbe", "I want to build an obstacle avoiding car", "arekta project ase").
+6. WHEN TO ACTIVATE PROJECT INTAKE & THE STRICT ANTI-PESTERING RULE (MAX 1 QUESTION):
+   - Trigger: ONLY when the user explicitly mentions needing a science fair project, robot build, custom automation, or ordering specific hardware/components (e.g. "I need a robot", "water pump lagbe", "solar panel ene dite parba").
    - State becomes "IN_DISCUSSION" (or "CONFIRMED_WORK" if Mahir has confirmed).
    - In AUTO_PILOT mode:
-     * Collect the required details in ONE concise message (do NOT ask questions one by one):
-       On Messenger:
-       "${aiPrefix} We would love to help! Please share these details so we can note your project for Mahir and our engineering team:\n1. Project Topic\n2. Student Name\n3. School & Class\n4. Target Deadline"
-       On WhatsApp:
-       "${aiPrefix} Happy to help! Please share these details so I can note your project for Mahir:\n1. Project Topic\n2. Student Name\n3. School & Class\n4. Target Deadline"
-     * If they already provided some info, ask ONLY for the missing items in ONE brief message.
-   - In TASK_OBSERVER mode:
-     * Extract the project into "projects" array so it shows on the Dashboard Project Summary panel.
-     * If critical info is missing, set "needsVerificationMessage": true and "verificationMessage" asking for the missing items in ONE list.
+     * If this is the FIRST time they bring up a project/parts request and details are missing:
+       You may ask for basic details in ONE polite message:
+       "${aiPrefix} Happy to help! Please share your Student Name, School & Class, and Target Deadline so I can note it down for Mahir."
+     * STRICT ANTI-PESTERING RULE: CHECK THE TRANSCRIPT HISTORY!
+       If you (the AI) have ALREADY asked for details (e.g. school name, student name, deadline) in an earlier message:
+       - If the client replied and provided some info (e.g. they stated "Class 6" and "Deadline 5th November"), but did NOT give their School Name:
+         * DO NOT ASK FOR THE MISSING DETAIL AGAIN! NEVER ask a second or third time!
+         * Accept whatever information was provided. Leave missing fields (such as school name) as null / blank.
+         * NEVER send "Could you please share your school name as well?" or repeat the request.
+         * Set "needsVerificationMessage": false, "verificationMessage": null.
+         * Proceed directly to Section 7 (Confirmation & Closing Acknowledgement)!
 
-7. WHEN ALL PROJECT DETAILS HAVE BEEN PROVIDED:
-   - State: "IN_DISCUSSION" (or "CONFIRMED_WORK" if Mahir said ok/confirm).
-   - Send one brief closing reply in "autoPilotReply" or "confirmationMessage":
-     On Messenger:
-     "${aiPrefix} Thank you! I have noted your [Project Title] details for Mahir and our team. Mahir will review and catch up with you soon."
-     On WhatsApp:
-     "${aiPrefix} Thank you! I have noted your [Project Title] details for Mahir. He will review and reply soon."
-   - If the user follows up with "Ok", "Thanks", "Alright", or simple acknowledgement:
+7. CONFIRMATION & CONSOLIDATED CLOSING ACKNOWLEDGEMENT:
+   - When the client has shared their requirements (or after you have asked once and they replied):
+     * Consolidate all mentioned components and details into ONE single summary.
+     * Send ONE reassuring confirmation message listing all consolidated items, class, and deadline:
+       "${aiPrefix} Thank you! I have noted your [Consolidated parts/project, e.g. 6V USB water pump (2 pcs) with battery and small solar panel] details for Class [Class] with the [Deadline] deadline. All items have been recorded, and Mahir will review this and get back to you shortly."
+   - If the user follows up with "Ok", "Thanks", "Alright", "Thik ache", or simple acknowledgement:
      STAY 100% SILENT! Do not repeat or keep talking!
 
 8. WHEN MAHIR EXPLICITLY CONFIRMS ("ok", "confirm", "hobe", "thik ache", "done", "banay dibo"):
@@ -849,43 +853,81 @@ Output ONLY valid JSON matching this schema:
     }
 
     // Save or update Task(s) in Supabase:
-    // IMPORTANT INVARIANT: PostgreSQL check constraint tasks_stage_check requires stage to be
-    // one of: 'backlog', 'in_progress', 'in_review', 'completed'. NEVER write 'in_discussion' to stage!
-    // Discussion status is stored in status: 'in_discussion'.
+    // SINGLE CONSOLIDATED TASK INVARIANT:
+    // Incremental messages in the same conversation belong to ONE consolidated order.
+    // We update the active task instead of splitting into multiple duplicate rows.
     if (projectsToProcess.length > 0 && (result.state === "CONFIRMED_WORK" || result.state === "IN_DISCUSSION")) {
       const { data: existingTasks } = await supabaseAdmin
         .from("tasks")
-        .select("id, title, stage, status")
-        .eq("conversation_id", conversationId);
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: false });
 
       for (const proj of projectsToProcess) {
         if (!proj.projectTitle) continue;
 
-        const projTitleLower = proj.projectTitle.toLowerCase().trim();
-        // Strict matching: Only match existing task if titles are identical or highly similar.
-        // Never blindly overwrite an existing task with an entirely different project!
-        const existingTask = (existingTasks || []).find(
-          (t: { id: string; title?: string; stage?: string; status?: string }) => {
+        // In client visitor conversations, all incremental messages map to the active conversation task.
+        // For Mahir Admin Gateway, match by title or similar title because Mahir logs tasks for various students.
+        let existingTask: any = null;
+        if (!isMahirAdminGateway && existingTasks && existingTasks.length > 0) {
+          existingTask = existingTasks[0];
+        } else if (existingTasks && existingTasks.length > 0) {
+          const projTitleLower = proj.projectTitle.toLowerCase().trim();
+          existingTask = existingTasks.find((t: any) => {
             const tLower = (t.title || "").toLowerCase().trim();
             return (
               tLower === projTitleLower ||
               (tLower.length > 5 && projTitleLower.length > 5 && (tLower.includes(projTitleLower) || projTitleLower.includes(tLower)))
             );
+          });
+        }
+
+        // Merge Key Components / Hardware BOM with any previously recorded components in existingTask
+        const combinedBOM: string[] = [];
+        if (existingTask?.description) {
+          const compMatch = existingTask.description.match(/Key Components:\s*([\s\S]*?)(?:\n\n|$)/i);
+          if (compMatch && compMatch[1]) {
+            const oldLines = compMatch[1]
+              .split("\n")
+              .map((l: string) => l.replace(/^[-*•\s]+/, "").trim())
+              .filter(Boolean);
+            combinedBOM.push(...oldLines);
           }
-        );
+        }
+        if (proj.hardwareBOM && proj.hardwareBOM.length > 0) {
+          combinedBOM.push(...proj.hardwareBOM);
+        }
+
+        // Deduplicate components preserving readability
+        const uniqueBOM: string[] = [];
+        const seenLower = new Set<string>();
+        for (const item of combinedBOM) {
+          const lower = item.toLowerCase();
+          if (!seenLower.has(lower)) {
+            seenLower.add(lower);
+            uniqueBOM.push(item);
+          }
+        }
 
         const descParts: string[] = [];
-        if (proj.classGrade || proj.schoolName) {
-          descParts.push(`Class / School: ${[proj.classGrade, proj.schoolName].filter(Boolean).join(" | ")}`);
+        const resolvedClass = proj.classGrade || existingTask?.class_grade;
+        const resolvedSchool = proj.schoolName || existingTask?.school_name;
+        if (resolvedClass || resolvedSchool) {
+          descParts.push(`Class / School: ${[resolvedClass, resolvedSchool].filter(Boolean).join(" | ")}`);
         }
-        if (proj.studentName) {
-          descParts.push(`Student: ${proj.studentName}`);
+        const resolvedStudent = proj.studentName || existingTask?.student_name || conv.contact_name;
+        if (resolvedStudent) {
+          descParts.push(`Student: ${resolvedStudent}`);
+        }
+        const resolvedDeadline = proj.agreedDeadline || result.agreedDeadline || existingTask?.due_date;
+        if (resolvedDeadline) {
+          descParts.push(`Target Deadline: ${resolvedDeadline}`);
         }
         if (proj.requirementsSummary) {
           descParts.push(`Summary: ${proj.requirementsSummary}`);
         }
-        if (proj.hardwareBOM && proj.hardwareBOM.length > 0) {
-          descParts.push(`Key Components:\n- ${proj.hardwareBOM.join("\n- ")}`);
+        if (uniqueBOM.length > 0) {
+          descParts.push(`Key Components:\n- ${uniqueBOM.join("\n- ")}`);
         }
 
         const isConfirmed = result.state === "CONFIRMED_WORK" || isMahirAdminGateway;
@@ -899,8 +941,11 @@ Output ONLY valid JSON matching this schema:
           ? (existingTask?.status && existingTask.status !== "in_discussion" ? existingTask.status : "pending")
           : "in_discussion";
 
+        // Determine resolved title: prioritize unified title from Gemini or fallback to existing
+        const resolvedTitle = proj.projectTitle || existingTask?.title || "Hardware & Project Requisition";
+
         const taskPayload = {
-          title: proj.projectTitle,
+          title: resolvedTitle,
           description: descParts.join("\n\n") || "Science Fair Project Build",
           assigned_to: "GENERAL",
           assigned_by: isMahirAdminGateway
@@ -911,21 +956,29 @@ Output ONLY valid JSON matching this schema:
           status: resolvedStatus,
           stage: resolvedStage,
           priority: "High",
-          due_date: proj.agreedDeadline || result.agreedDeadline || null,
+          due_date: resolvedDeadline || null,
           conversation_id: conversationId,
           guardian_phone: conv.phone_number,
-          student_name: proj.studentName || result.studentName || conv.contact_name || null,
-          school_name: proj.schoolName || result.schoolName || conv.school_name || null,
-          class_grade: proj.classGrade || result.classGrade || conv.class_grade || null,
-          budget_bdt: proj.budgetBdt || result.budgetBdt || null,
+          student_name: resolvedStudent || null,
+          school_name: resolvedSchool || null,
+          class_grade: resolvedClass || null,
+          budget_bdt: proj.budgetBdt || result.budgetBdt || existingTask?.budget_bdt || null,
           source: isMessenger ? "messenger" : "whatsapp",
+          updated_at: new Date().toISOString(),
         };
 
         if (existingTask) {
           await supabaseAdmin.from("tasks").update(taskPayload).eq("id", existingTask.id);
           console.log(
-            `[AI Agent] Updated Task ${existingTask.id} (${proj.projectTitle}) -> stage=${resolvedStage}, status=${resolvedStatus}.`
+            `[AI Agent] Consolidated & updated existing Task ${existingTask.id} ("${resolvedTitle}") -> stage=${resolvedStage}, status=${resolvedStatus}.`
           );
+
+          // Clean up any historical duplicate tasks created for this same conversation in error
+          if (!isMahirAdminGateway && existingTasks && existingTasks.length > 1) {
+            const duplicateIds = existingTasks.slice(1).map((t: any) => t.id);
+            console.log(`[AI Agent] Auto-merging & removing ${duplicateIds.length} duplicate tasks for conv ${conversationId}`);
+            await supabaseAdmin.from("tasks").delete().in("id", duplicateIds);
+          }
         } else {
           const { data: newTask, error: taskErr } = await supabaseAdmin
             .from("tasks")
@@ -937,17 +990,17 @@ Output ONLY valid JSON matching this schema:
             console.error("[AI Agent] Failed to create Task in Supabase:", taskErr);
           } else {
             console.log(
-              `[AI Agent] Created NEW Task ${newTask?.id} (${proj.projectTitle}) -> stage=${resolvedStage}, status=${resolvedStatus}!`
+              `[AI Agent] Created NEW consolidated Task ${newTask?.id} ("${resolvedTitle}") -> stage=${resolvedStage}, status=${resolvedStatus}!`
             );
             // Trigger instant real-time pop-up notification and audio chime on website
             if (isConfirmed && newTask?.id) {
               try {
                 await notifyTaskAssigned({
                   taskId: newTask.id,
-                  taskTitle: proj.projectTitle,
+                  taskTitle: resolvedTitle,
                   assignedToEmails: ["GENERAL"],
                   priority: "High",
-                  dueDate: proj.agreedDeadline || result.agreedDeadline || undefined,
+                  dueDate: resolvedDeadline || undefined,
                   assignedByName: isMahirAdminGateway ? "Mahir Rahman" : "RoboBee AI",
                   assignedByEmail: "admin@robobee.org",
                 });
@@ -1110,6 +1163,45 @@ Output ONLY valid JSON matching this schema:
     if (executiveOpMessage) {
       outboundText = executiveOpMessage;
     } else {
+      // STRICT ANTI-PESTERING GUARDRAIL (Anti-Nagging):
+      // If the AI has ALREADY asked for school name, student name, or deadline in earlier turns,
+      // and the client already answered with whatever information they have,
+      // NEVER badger them or ask again! Accept what was provided.
+      const pastAiMessages = messages.filter((m) => m.sender_type === "ai_assistant");
+      const pastAiBodies = pastAiMessages.map((m) => (m.body || "").toLowerCase());
+
+      const hasAskedSchoolBefore = pastAiBodies.some((b) => b.includes("school") || b.includes("school name"));
+      const hasAskedQuestionsBefore =
+        pastAiMessages.length >= 1 &&
+        pastAiBodies.some((b) => b.includes("share") || b.includes("could you") || b.includes("please"));
+
+      if (hasAskedSchoolBefore || hasAskedQuestionsBefore) {
+        if (result.needsVerificationMessage) {
+          console.log("[AI Agent] Anti-pestering: Suppressing repeated inquiry since questions were already asked.");
+          result.needsVerificationMessage = false;
+          result.verificationMessage = undefined;
+        }
+
+        // If autoPilotReply ends with or contains a repetitive question for school name, clean it up:
+        if (result.autoPilotReply) {
+          result.autoPilotReply = result.autoPilotReply
+            .replace(/could you please share (your )?school name.*?\?/gi, "")
+            .replace(/would you please share (your )?school name.*?\?/gi, "")
+            .replace(/please share (your )?school name.*?\?/gi, "")
+            .replace(/could you please share.*?\?/gi, "")
+            .replace(/could you share.*?\?/gi, "")
+            .trim();
+
+          // If it ended up blank or incomplete, generate a polished confirmation closing reply:
+          if (!result.autoPilotReply || result.autoPilotReply.endsWith("as well?")) {
+            const classText = result.classGrade ? ` for ${result.classGrade}` : "";
+            const deadlineText = result.agreedDeadline ? ` with the ${result.agreedDeadline} deadline` : "";
+            const projName = result.projectTitle || "project & parts";
+            result.autoPilotReply = `Thank you! I have noted your ${projName} details${classText}${deadlineText}. All items have been recorded, and Mahir will review this and get back to you shortly.`;
+          }
+        }
+      }
+
       const shouldAutoReply =
         isAutoPilot &&
         (lastMsg?.sender_type === "customer" || (isMahirAdminGateway && lastMsg?.sender_type === "agent_mahir"));
