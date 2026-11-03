@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     template: "%s | RoboBEE Innovators",
   },
   description: "Official portal, curriculum laboratory, and STEM academy website for RoboBEE Innovators. Dream. Invent. Experiment. Inspire.",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },

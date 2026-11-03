@@ -41,6 +41,7 @@ export function AdminVoiceCallModal({ onRegisterTrigger }: AdminVoiceCallModalPr
   const ringtoneTimerRef = useRef<NodeJS.Timeout | null>(null);
   const vibrationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const callDurationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const titleFlasherRef = useRef<NodeJS.Timeout | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const recognitionRef = useRef<any>(null);
   const isConnectedRef = useRef<boolean>(false);
@@ -64,6 +65,13 @@ export function AdminVoiceCallModal({ onRegisterTrigger }: AdminVoiceCallModalPr
     if (vibrationIntervalRef.current) {
       clearInterval(vibrationIntervalRef.current);
       vibrationIntervalRef.current = null;
+    }
+    if (titleFlasherRef.current) {
+      clearInterval(titleFlasherRef.current);
+      titleFlasherRef.current = null;
+    }
+    if (typeof document !== "undefined") {
+      document.title = "RoboBEE Innovators | Team Portal & STEM Academy";
     }
     try {
       if (navigator.vibrate) navigator.vibrate(0);
@@ -143,9 +151,78 @@ export function AdminVoiceCallModal({ onRegisterTrigger }: AdminVoiceCallModalPr
       setTranscriptHistory([]);
       setCallDuration(0);
       playRealisticRingCycle();
+
+      // Flash browser document title
+      if (typeof document !== "undefined") {
+        let toggle = false;
+        if (titleFlasherRef.current) clearInterval(titleFlasherRef.current);
+        titleFlasherRef.current = setInterval(() => {
+          toggle = !toggle;
+          document.title = toggle ? "🔴 INCOMING CALL (RoboBee AI)" : "📞 RoboBee Portal";
+        }, 800);
+      }
+
+      // Display system-level heads-up notification if supported
+      if (typeof window !== "undefined") {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: "SHOW_CALL_NOTIFICATION",
+            title: "📞 Incoming Call: RoboBee AI",
+            body: "Executive Voice Line • Tap to Answer",
+            reason: reason,
+          });
+        } else if ("Notification" in window && Notification.permission === "granted") {
+          try {
+            const notif = new Notification("📞 Incoming Call: RoboBee AI", {
+              body: "Executive Voice Line • Tap to Answer",
+              icon: "/icon.png",
+              badge: "/icon.png",
+              vibrate: [600, 300, 600, 300, 600, 300, 1000],
+              tag: "admin-incoming-call",
+              requireInteraction: true,
+            } as any);
+            notif.onclick = () => {
+              window.focus();
+              notif.close();
+            };
+          } catch {}
+        }
+      }
     },
     [playRealisticRingCycle]
   );
+
+  // Register PWA Service Worker & listen to system notification clicks
+  useEffect(() => {
+    if (typeof window === "undefined" || !isMahirAdmin) return;
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+
+      const handleSwMsg = (event: MessageEvent) => {
+        if (event.data?.type === "TRIGGER_CALL") {
+          triggerIncomingCall(event.data.reason || "Mobile Incoming Call");
+          if (event.data.autoAccept) {
+            setTimeout(() => handleAcceptCall(), 400);
+          }
+        }
+      };
+      navigator.serviceWorker.addEventListener("message", handleSwMsg);
+      return () => navigator.serviceWorker.removeEventListener("message", handleSwMsg);
+    }
+  }, [isMahirAdmin, triggerIncomingCall]);
+
+  // Request Notification permission for system alerts & check URL params
+  useEffect(() => {
+    if (typeof window === "undefined" || !isMahirAdmin) return;
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+    if (window.location.search.includes("incoming_call=true")) {
+      triggerIncomingCall("Mobile System Call");
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [isMahirAdmin, triggerIncomingCall]);
 
   // Expose trigger function to parent or layout
   useEffect(() => {
@@ -356,14 +433,14 @@ export function AdminVoiceCallModal({ onRegisterTrigger }: AdminVoiceCallModalPr
       const data = await res.json();
       const greeting =
         data.speech ||
-        "Good morning, Mahir! RoboBee AI is on the line. How can I assist you with your projects today?";
+        "Hello Boss! Do you need anything?";
 
       setTranscriptHistory([{ sender: "ai", text: greeting }]);
       speakAiReply(greeting, () => {
         if (isConnectedRef.current) startListening();
       });
     } catch {
-      const fallbackGreeting = "Good morning, Mahir! RoboBee AI is on the line. How can I assist you?";
+      const fallbackGreeting = "Hello Boss! Do you need anything?";
       setTranscriptHistory([{ sender: "ai", text: fallbackGreeting }]);
       speakAiReply(fallbackGreeting, () => {
         if (isConnectedRef.current) startListening();

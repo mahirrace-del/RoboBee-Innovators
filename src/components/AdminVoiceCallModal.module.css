@@ -1,9 +1,9 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 99999;
-  background: rgba(10, 8, 6, 0.94);
-  backdrop-filter: blur(18px);
+  z-index: 999999;
+  background: rgba(10, 8, 6, 0.96);
+  backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12,6 +12,9 @@
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   color: #fff;
   font-family: inherit;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
 }
 
 @keyframes fadeIn {
@@ -314,4 +317,21 @@
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(122, 28, 36, 0.35) 100%);
   border-color: #f59e0b;
   transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .overlay {
+    padding: 0;
+  }
+  .callCard {
+    max-width: 100vw;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    justify-content: space-between;
+    padding: 3.5rem 1.5rem 3.5rem;
+  }
 }

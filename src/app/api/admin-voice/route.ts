@@ -53,79 +53,73 @@ export async function POST(req: NextRequest) {
 
     // 2. Action: Call initiation / initial greeting
     if (action === "get_initial_greeting") {
-      const greetingReason = reason || "Morning Wake-Up Briefing";
-      const prompt = `
-You are the RoboBee Executive Voice Assistant on a live direct phone call with Team Leader Mahir Rahman (Mostakim Rahman Mahir).
-Reason for this call: ${greetingReason}.
-Today's date: ${new Date().toISOString().split("T")[0]}.
+      const greetingReason = (reason || "").toLowerCase();
+      const isWakeUp = greetingReason.includes("wake") || greetingReason.includes("alarm");
 
-Current live tasks on Sprint Board:
-${liveTasksContext}
+      // Short, respectful greeting without spamming tasks
+      const speech = isWakeUp
+        ? "Good morning Boss! Time to wake up. Do you need anything today?"
+        : "Hello Boss! Do you need anything?";
 
-Instructions:
-- Speak directly, warmly, and crisply to Mahir as his lead operational assistant.
-- Give a quick 2-3 sentence verbal briefing: greet him, mention how many active tasks exist or any urgent deadlines, and ask what he would like to work on or assign.
-- Output ONLY the spoken text to be voiced out loud to Mahir. Do not use asterisks or markdown.
-`;
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        return NextResponse.json({
-          speech: "Good morning, Mahir! RoboBee AI is online. How can I assist you with the team today?",
-        });
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-      const res = await ai.models.generateContent({
-        model: "gemini-3.5-flash-lite",
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-      });
-
-      const speech = res.text?.trim() || "Good morning, Mahir! RoboBee AI is on the line. How can I assist you today?";
       return NextResponse.json({ speech, liveTasks: liveTasksContext });
     }
 
     // 3. Action: Process Mahir's Spoken Input & Execute Commands
     if (action === "process_voice_turn") {
       if (!transcript || !transcript.trim()) {
-        return NextResponse.json({ speech: "I'm listening, Mahir. Go ahead." });
+        return NextResponse.json({ speech: "I am listening Boss, go ahead." });
       }
 
       const prompt = `
 You are RoboBee Innovators' Executive Voice Assistant speaking live over a voice call with Team Leader Mostakim Rahman Mahir (Mahir Rahman).
+Address him respectfully as "Boss" or "Mahir".
 Mahir just spoke into his phone: "${transcript}"
 
-Current Live Tasks on Sprint Board:
+LIVE CONTEXT & ORGANIZATIONAL MEMORY:
+- Team Leader: Mostakim Rahman Mahir (Mahir Rahman)
+- Headquarters / Maker Lab: Flat 2, 75 North Chashara, Narayanganj
+- Programs: Heritage School Science Fair (Class 5-10 projects), Ideal School STEM Mentorship, Indonesia Competition delegation
+- Active Competitions: NRC Bangladesh (500K BDT purse), FIRSO Bangladesh (Mega Sumo, Soccer, LFR)
+- Standard Component Prices (BDT): Arduino Uno (550-650 BDT), ESP32 (480-600 BDT), Ultrasonic (90-120 BDT), L298N (180-230 BDT), SG90 Servo (120-160 BDT), BO Motor + Wheel pair (180-250 BDT)
+- Today's date: ${new Date().toISOString().split("T")[0]}
+
+LIVE TASKS CURRENTLY ON SPRINT BOARD:
 ${liveTasksContext}
 
-YOUR MISSION:
-1. Understand Mahir's command. He may:
-   - Ask to log/confirm a new project or task (e.g. "Add a task for Class 8 student Ayan, obstacle avoider, deadline Friday, budget 2000").
-   - Ask for sprint status, active tasks, or backlog.
-   - Ask for a technical component or BOM recommendation (Arduino, ESP32, L298N, BO motors, servos).
-   - Ask you to set a reminder or confirm an alarm.
-   - Converse naturally about RoboBee lab plans.
-2. If he wants to CREATE or CONFIRM a task:
-   - Populate the "taskToCreate" JSON object with: title, studentName, schoolName, classGrade, dueDate (YYYY-MM-DD), budgetBdt, description.
-3. Formulate a natural, concise, spoken response (1-2 sentences) in "spokenReply". Never use markdown bullets or asterisks in spokenReply because it will be read aloud.
+INSTRUCTIONS:
+1. Understand Mahir's command or question:
+   - If he asks what tasks are active or sprint status: summarize crisply in 1-2 sentences.
+   - If he asks about his schedule or lab: tell him based on lab & session memory.
+   - If he asks to CREATE or CONFIRM a task (e.g. "Add a task for Class 8 student Ayan, obstacle avoider, deadline Friday, budget 2000"):
+     populate "taskToCreate".
+   - If he asks to REMOVE or DELETE a task (e.g. "Remove the bicycle project"):
+     populate "taskToRemoveTitle".
+   - If he asks about components, pricing, or ideas: answer factually in 1-2 sentences.
+   - If he asks casually or gives general instructions: respond naturally and crisply.
+2. Formulate "spokenReply":
+   - Keep it short, sharp, and natural (1-2 sentences).
+   - Address him as "Boss" or "Mahir".
+   - NEVER output markdown asterisks or bullets in spokenReply because it will be voiced out loud!
 
-Output strictly valid JSON:
+Output strictly valid JSON matching this schema:
 {
-  "spokenReply": "Concise spoken text to say out loud to Mahir",
+  "spokenReply": "Short natural spoken response to Mahir",
   "taskToCreate": {
     "title": "Descriptive task title",
     "studentName": "Student name or null",
     "schoolName": "School name or null",
-    "classGrade": "Class or null",
+    "classGrade": "Class grade or null",
     "dueDate": "YYYY-MM-DD or null",
     "budgetBdt": number or null,
     "description": "Short requirements summary"
-  } or null
+  } or null,
+  "taskToRemoveTitle": "Title of task to remove or null"
 }
 `;
 
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        return NextResponse.json({ speech: "Understood, Mahir! I heard: " + transcript });
+        return NextResponse.json({ speech: "Understood Boss! I heard: " + transcript });
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -138,7 +132,7 @@ Output strictly valid JSON:
         },
       });
 
-      let parsed: { spokenReply?: string; taskToCreate?: any } = {};
+      let parsed: { spokenReply?: string; taskToCreate?: any; taskToRemoveTitle?: string } = {};
       try {
         parsed = JSON.parse(res.text || "{}");
       } catch (e) {
@@ -186,8 +180,24 @@ Output strictly valid JSON:
         }
       }
 
+      if (parsed.taskToRemoveTitle) {
+        try {
+          const matchTitle = parsed.taskToRemoveTitle.trim().toLowerCase();
+          const { data: matched } = await supabaseAdmin.from("tasks").select("id, title");
+          const target = (matched || []).find((m: { id: string; title: string }) =>
+            (m.title || "").toLowerCase().includes(matchTitle)
+          );
+          if (target?.id) {
+            await supabaseAdmin.from("tasks").delete().eq("id", target.id);
+            console.log(`[Voice API] Deleted task ${target.id} (${target.title}) on Mahir's voice command.`);
+          }
+        } catch (delErr) {
+          console.warn("Failed to remove task on voice command:", delErr);
+        }
+      }
+
       return NextResponse.json({
-        speech: parsed.spokenReply || "Understood, Mahir! I have noted that.",
+        speech: parsed.spokenReply || "Understood Boss! I have taken care of that.",
         createdTask,
       });
     }
