@@ -107,7 +107,6 @@ export async function opUpdateTaskStage(
       stage: newStage,
       status: newStatus,
       ...(statusNotes ? { description: `${statusNotes}` } : {}),
-      updated_at: new Date().toISOString(),
     })
     .eq("id", task.id)
     .select()

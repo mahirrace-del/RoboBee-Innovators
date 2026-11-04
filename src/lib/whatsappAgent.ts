@@ -1051,7 +1051,6 @@ Output ONLY valid JSON matching this schema:
           class_grade: resolvedClass || null,
           budget_bdt: proj.budgetBdt || result.budgetBdt || existingTask?.budget_bdt || null,
           source: isMessenger ? "messenger" : "whatsapp",
-          updated_at: new Date().toISOString(),
         };
 
         if (existingTask) {

@@ -120,11 +120,26 @@ ${prompt.trim()}
 CURRENT PAGE CONTEXT:
 ${JSON.stringify(context || {})}
 
+CRITICAL ACTION ROUTING RULES (MUST FOLLOW STRICTLY):
+1. "suggest_and_build_bom" (AI Hardware Architect):
+   - CHOOSE THIS whenever the user provides a PROJECT NAME, CONCEPT, OR IDEA and asks to make a BOM or suggest parts!
+   - Examples:
+     * "Industrial Air Quality and Smoke/CO Filtration System cann you make a bom of this"
+     * "Can you make a bom of Smart Solar Dustbin"
+     * "Suggest parts for an Obstacle Avoiding Robot for Class 7"
+     * "Make a BOM for Fire-Fighting Extinguisher Bot"
+   - Set params.projectTopic to the extracted project concept (e.g. "Industrial Air Quality and Smoke/CO Filtration System").
+   - Set params.classGrade to the grade if mentioned or infer appropriate level (e.g. "Class 8-10").
+
+2. "create_bom_from_conversation":
+   - ONLY choose this when the user explicitly provides a PHONE NUMBER (e.g. "8801939426670", "019..."), an existing student's name from chat, or says "from conversation/chat with X".
+   - If the user did NOT give a phone number or reference a specific chat, DO NOT choose this! Choose "suggest_and_build_bom".
+
 Analyze the user's intent. Decide if the user is asking to perform an action or asking a general question/requesting advice.
 Output ONLY valid JSON matching this schema:
 {
   "intent": "ACTION" | "CONVERSATIONAL",
-  "action": "create_bom_from_conversation" | "suggest_and_build_bom" | "create_project_bom" | "add_components_to_bom" | "launch_competition" | "add_achievement" | "add_team_leader" | "add_featured_project" | "assign_task" | "update_task_stage" | "approve_part_request" | "record_treasury" | "update_member_role" | "ingest_robobee_post" | "get_platform_status" | "none",
+  "action": "suggest_and_build_bom" | "create_bom_from_conversation" | "create_project_bom" | "add_components_to_bom" | "launch_competition" | "add_achievement" | "add_team_leader" | "add_featured_project" | "assign_task" | "update_task_stage" | "approve_part_request" | "record_treasury" | "update_member_role" | "ingest_robobee_post" | "get_platform_status" | "none",
   "params": {
     "query": "phone number, student name, or task id for conversation BOM",
     "projectTopic": "topic or project idea for suggest BOM",
@@ -204,17 +219,43 @@ Output ONLY valid JSON matching this schema:
       const p = parsed.params || {};
 
       switch (parsed.action) {
-        case "create_bom_from_conversation":
-          opResult = await executeCreateBOMFromConversation({
-            query: p.query || prompt,
-            projectTitle: p.title || p.name,
-            autoSubmitRequisition: true,
-          });
+        case "create_bom_from_conversation": {
+          const queryStr = p.query || prompt;
+          const hasPhone = /\d{7,}/.test(queryStr);
+          // If no phone number is present and user asked for a BOM of a system/concept, route directly to suggest_and_build_bom
+          if (!hasPhone && (p.projectTopic || /make a bom|bom of/i.test(prompt) || queryStr.length > 10)) {
+            const cleanTopic = (p.projectTopic || queryStr)
+              .replace(/can(n)? you make a bom (of )?(this)?/gi, "")
+              .replace(/make a bom (of )?(this)?/gi, "")
+              .trim();
+            opResult = await executeSuggestAndBuildBOM({
+              projectTopic: cleanTopic || queryStr,
+              classGrade: p.classGrade,
+              studentName: p.studentName,
+              schoolName: p.schoolName,
+              targetDeadline: p.targetDeadline || p.dueDate,
+              existingTaskId: p.taskIdentifier,
+              autoSubmitRequisition: true,
+            });
+          } else {
+            opResult = await executeCreateBOMFromConversation({
+              query: queryStr,
+              projectTitle: p.title || p.name,
+              autoSubmitRequisition: true,
+            });
+          }
           break;
+        }
 
-        case "suggest_and_build_bom":
+        case "suggest_and_build_bom": {
+          const rawTopic = p.projectTopic || p.title || prompt;
+          const cleanTopic = rawTopic
+            .replace(/can(n)? you make a bom (of )?(this)?/gi, "")
+            .replace(/make a bom (of )?(this)?/gi, "")
+            .trim();
+
           opResult = await executeSuggestAndBuildBOM({
-            projectTopic: p.projectTopic || p.title || prompt,
+            projectTopic: cleanTopic || rawTopic,
             classGrade: p.classGrade,
             studentName: p.studentName,
             schoolName: p.schoolName,
@@ -223,6 +264,7 @@ Output ONLY valid JSON matching this schema:
             autoSubmitRequisition: true,
           });
           break;
+        }
 
         case "create_project_bom":
           opResult = await executeCreateProjectBOM({

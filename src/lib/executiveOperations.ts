@@ -468,10 +468,13 @@ Target Class / Grade: "${grade}"
 
 ROBOBEE BANGLADESH HARDWARE STANDARDS & LOCAL PRICING REFERENCE (BDT):
 - Microcontrollers: Arduino Uno R3 (CH340) ~600 BDT, Arduino Nano Type-C ~350 BDT, ESP32 NodeMCU ~550 BDT
-- Sensors: Ultrasonic HC-SR04 ~100 BDT, IR Obstacle / Tracking ~60 BDT, Soil Moisture ~90 BDT, MQ-2 Gas ~140 BDT, PIR Motion ~110 BDT
-- Actuators & Motors: SG90 Micro Servo 9g ~140 BDT, MG996R Metal Servo ~500 BDT, BO Dual Gear Motor + Wheel Pair ~220 BDT, 6V Mini Submersible Water Pump ~150 BDT
-- Drivers & Power: L298N Dual Motor Driver ~200 BDT, Small Solar Panel 5V/6V ~220 BDT, 18650 Li-ion Batteries (2x) + Holder ~400 BDT, 9V Battery + Snap ~80 BDT
-- Prototyping: 400-Point Breadboard + 40-pc Jumpers ~180 BDT, 2WD Robot Chassis Kit ~400 BDT
+- Gas & Environment Sensors: MQ-2 Gas/Smoke Sensor ~140 BDT, MQ-135 Air Quality/Hazardous Gas ~160 BDT, MQ-7 Carbon Monoxide (CO) ~160 BDT, DHT11 Temperature & Humidity ~120 BDT
+- Distance & Motion Sensors: Ultrasonic HC-SR04 ~100 BDT, IR Obstacle / Tracking ~60 BDT, Soil Moisture ~90 BDT, PIR Motion ~110 BDT
+- Displays & Indicators: 16x2 I2C LCD Display Module ~240 BDT, Active Buzzer Alarm ~30 BDT, Status LEDs (5x) ~20 BDT
+- Actuators, Motors & Fans: 5V/12V DC Brushless Exhaust Cooling Fan ~180 BDT, 5V Single/Dual Relay Module ~100 BDT, SG90 Micro Servo 9g ~140 BDT, MG996R Metal Servo ~500 BDT, BO Dual Gear Motor + Wheel Pair ~220 BDT, 6V Mini Submersible Water Pump ~150 BDT
+- Filtration & Mechanical: Activated Carbon Filter / Foam Mesh ~200 BDT, 2WD Robot Chassis Kit ~400 BDT
+- Drivers & Power: L298N Dual Motor Driver ~200 BDT, Small Solar Panel 5V/6V ~220 BDT, 18650 Li-ion Batteries (2x) + Holder ~400 BDT, 12V 2A DC Power Adapter ~250 BDT, 9V Battery + Snap ~80 BDT
+- Prototyping: 400-Point Breadboard + 40-pc Jumpers ~180 BDT
 
 Output ONLY valid JSON matching this schema:
 {
@@ -591,7 +594,17 @@ export async function executeCreateBOMFromConversation(params: {
   autoSubmitRequisition?: boolean;
 }): Promise<OperationResult> {
   try {
+    const hasPhoneNumber = /\d{7,}/.test(params.query);
     const { conversation, messages, tasks } = await opFindConversationAndTask(params.query);
+
+    // If no chat conversation exists and query is a project concept, seamlessly delegate to executeSuggestAndBuildBOM
+    if (!conversation && (!messages || messages.length === 0) && !hasPhoneNumber) {
+      console.log(`[ExecutiveOperations] No student chat found for "${params.query}". Delegating to executeSuggestAndBuildBOM.`);
+      return await executeSuggestAndBuildBOM({
+        projectTopic: params.projectTitle || params.query.replace(/can(n)? you make a bom of this/i, "").trim(),
+        autoSubmitRequisition: params.autoSubmitRequisition,
+      });
+    }
 
     if (!conversation && (!tasks || tasks.length === 0)) {
       return {

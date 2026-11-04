@@ -493,7 +493,6 @@ export async function opCreateProjectBOM(input: CreateProjectBOMInput) {
           budget_bdt: totalBudget,
           attachments: attachments,
           project_id: projectId,
-          updated_at: new Date().toISOString(),
         })
         .eq("id", input.taskId);
     } catch (tErr) {
@@ -604,7 +603,6 @@ export async function opAddComponentsToProjectBOM(
       .update({
         budget_bdt: newTotal,
         attachments,
-        updated_at: new Date().toISOString(),
       })
       .eq("id", taskId);
   }

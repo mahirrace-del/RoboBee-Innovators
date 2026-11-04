@@ -60,6 +60,15 @@ export async function createNotification(params: {
   senderName?: string;
   metadata?: Record<string, any>;
 }): Promise<string> {
+  const cleanedMetadata: Record<string, any> = {};
+  if (params.metadata) {
+    for (const [k, v] of Object.entries(params.metadata)) {
+      if (v !== undefined) {
+        cleanedMetadata[k] = v;
+      }
+    }
+  }
+
   const docRef = await addDoc(collection(db, "notifications"), {
     recipientEmail: params.recipientEmail.trim().toLowerCase(),
     recipientName: params.recipientName || null,
@@ -72,7 +81,7 @@ export async function createNotification(params: {
     createdAt: serverTimestamp(),
     senderEmail: params.senderEmail || null,
     senderName: params.senderName || null,
-    metadata: params.metadata || {},
+    metadata: cleanedMetadata,
   });
   return docRef.id;
 }
